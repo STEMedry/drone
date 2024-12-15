@@ -71,29 +71,47 @@ top: 5px;
 right: 10px;
 background: rgba(0,0,0,0.7);
 color: white;
-padding: 15px;
+padding: 10px;
 border-radius: 5px;
 font-family: Arial, sans-serif;
 width: 280px;
 box-sizing: border-box;
-max-height: 100vh;
-overflow: hidden;
+max-height: 70vh;
+display: flex;
+flex-direction: column;
 }
 
-/* Instructions Panel */
-#instructions {
-position: fixed;
-left: 10px;
-bottom: 10px;
-background: rgba(0,0,0,0.7);
-color: white;
-padding: 15px;
-border-radius: 5px;
-font-family: Arial, sans-serif;
-width: 400px;
-box-sizing: border-box;
-max-height: 40vh;
-overflow: auto;
+#additionalControls h3 {
+    margin-top: 5px;
+    margin-bottom: 2px;
+    font-size: 14px;
+}
+
+#additionalControls div {
+    margin-bottom: 2px;
+}
+
+#additionalControls label {
+    font-size: 14px;
+    margin-top: 2px;
+}
+
+#additionalControls select,
+#additionalControls input,
+#additionalControls button {
+    margin: 2px 0;
+    padding: 2px;
+    font-size: 14px;
+}
+
+#additionalControls button {
+    padding: 4px;
+}
+
+#calc1Results p,
+#calc2Results p {
+    margin: 2px 0;
+    font-size: 14px;
 }
 
 /* Common Styles for Forms */
@@ -273,15 +291,6 @@ width: 90%;
 </div>
 </div>
 
-<!-- Instructions Panel -->
-<div id="instructions">
-<strong>Controls:</strong><br>
-- Left mouse drag: Change drone altitude<br>
-- Right mouse drag: Rotate view<br>
-- Right mouse drag + Shift: Move drone horizontally<br>
-- Middle mouse drag or Mouse wheel: Zoom in/out<br>
-- Click and drag the "School Building", "Bank Tower", or "Trident Blocks" to move them left/right (when visible)
-</div>
 </div>
 
 <!-- Three.js Library -->
@@ -1922,6 +1931,23 @@ renderer.domElement.addEventListener('touchend', function(event) {
 event.preventDefault();
 onMouseUp(event);
 }, { passive: false });
+
+// Add event listeners for aspect ratio changes in calculation panels
+document.getElementById('calc1AspectRatio').addEventListener('change', function() {
+    const aspectRatio = parseFloat(this.value);
+    document.getElementById('aspectRatio').value = aspectRatio;
+    document.getElementById('calc2AspectRatio').value = aspectRatio;
+    currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+    updateFOV();
+});
+
+document.getElementById('calc2AspectRatio').addEventListener('change', function() {
+    const aspectRatio = parseFloat(this.value);
+    document.getElementById('aspectRatio').value = aspectRatio;
+    document.getElementById('calc1AspectRatio').value = aspectRatio;
+    currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+    updateFOV();
+});
 
 </script>
 </body>
