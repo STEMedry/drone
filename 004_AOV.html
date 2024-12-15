@@ -1,0 +1,1913 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Drone Camera AOV Simulation with School Building, Bank Tower, and Trident Blocks</title>
+<style>
+body {
+margin: 0;
+overflow: hidden;
+-webkit-user-select: none; /* Safari */
+-ms-user-select: none; /* Internet Explorer/Edge */
+user-select: none; /* Standard syntax */
+}
+
+/* Additionally, disable text selection for specific interactive elements if needed */
+#controls, #additionalControls, #instructions, button, label {
+-webkit-user-select: none; /* Safari */
+-ms-user-select: none; /* Internet Explorer/Edge */
+user-select: none; /* Standard syntax */
+}
+canvas { display: block; }
+
+/* Title Styles */
+#title {
+position: fixed;
+top: 20px;
+left: 35%;
+transform: translateX(-50%);
+background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
+color: white;
+padding: 10px 20px;
+border-radius: 5px;
+font-family: Arial, sans-serif;
+z-index: 1001; /* Higher than other fixed elements */
+}
+
+#title h1 {
+margin: 0;
+font-size: 24px; /* Adjust the font size as needed */
+text-align: center;
+}
+
+/* Information Panel */
+#controls {
+position: fixed;
+top: 10px;
+left: 10px;
+background: rgba(0,0,0,0.7);
+color: white;
+padding: 15px;
+border-radius: 5px;
+font-family: Arial, sans-serif;
+width: 280px;
+box-sizing: border-box;
+max-height: 80vh;
+overflow: hidden;
+}
+
+/* Calculation Controls Panel */
+#additionalControls {
+position: fixed;
+top: 5px;
+right: 10px;
+background: rgba(0,0,0,0.7);
+color: white;
+padding: 15px;
+border-radius: 5px;
+font-family: Arial, sans-serif;
+width: 280px;
+box-sizing: border-box;
+max-height: 100vh;
+overflow: hidden;
+}
+
+/* Instructions Panel */
+#instructions {
+position: fixed;
+left: 10px;
+bottom: 10px;
+background: rgba(0,0,0,0.7);
+color: white;
+padding: 15px;
+border-radius: 5px;
+font-family: Arial, sans-serif;
+width: 400px;
+box-sizing: border-box;
+max-height: 40vh;
+overflow: auto;
+}
+
+/* Common Styles for Forms */
+select, input, button {
+margin: 5px 0;
+width: 100%;
+padding: 5px;
+border-radius: 3px;
+border: none;
+box-sizing: border-box;
+}
+
+/* Button Styles */
+button {
+-webkit-user-select: none; /* Safari */
+-ms-user-select: none; /* Internet Explorer/Edge */
+user-select: none; /* Standard syntax */
+
+background: #4CAF50;
+color: white;
+cursor: pointer;
+font-weight: bold;
+}
+button:hover {
+background: #45a049;
+}
+
+/* Label Styles */
+label {
+display: block;
+margin-top: 10px;
+font-weight: bold;
+-webkit-user-select: none; /* Safari */
+-ms-user-select: none; /* Internet Explorer/Edge */
+user-select: none; /* Standard syntax */
+}
+
+/* Heading Styles */
+h3 {
+margin-top: 15px;
+margin-bottom: 5px;
+border-bottom: 1px solid #555;
+padding-bottom: 5px;
+-webkit-user-select: none; /* Safari */
+-ms-user-select: none; /* Internet Explorer/Edge */
+user-select: none; /* Standard syntax */
+}
+
+/* Horizontal Rule Styling */
+hr {
+border: none;
+border-bottom: 1px solid #555;
+margin: 15px 0;
+-webkit-user-select: none; /* Safari */
+-ms-user-select: none; /* Internet Explorer/Edge */
+user-select: none; /* Standard syntax */
+}
+
+/* Responsive Design for Smaller Screens (e.g., iPad) */
+@media (max-width: 768px) {
+#controls, #additionalControls, #instructions {
+width: 80%;
+left: 10%;
+right: 10%;
+}
+
+#title {
+left: 50%;
+width: 90%;
+}
+}
+</style>
+</head>
+<body>
+<!-- Title -->
+<div id="title">
+<h1>Drone Camera AOV Simulation</h1>
+</div>
+
+<!-- Information Panel -->
+<div id="controls">
+<div><strong>Main Controls</strong></div>
+<div>
+<label for="aspectRatio">Aspect Ratio:</label>
+<select id="aspectRatio">
+<option value="1.5">3:2</option>
+<option value="1.333">4:3</option>
+<option value="1.778">16:9</option>
+</select>
+</div>
+<div>
+<label for="aov">Horizontal AOV: <span id="aovValue">70</span>°</label>
+<!-- Updated AOV range from 30-120 -->
+<input type="range" id="aov" min="30" max="120" value="70">
+</div>
+<div>
+<label>Vertical AOV: <span id="vaovValue">0.0</span>°</label>
+</div>
+<div>
+<label>Diagonal AOV: <span id="daovValue">0.0</span>°</label>
+</div>
+<hr>
+<div>
+<label>Altitude: <span id="altitudeValue">0</span>m</label>
+</div>
+<div>
+<label>FOV Width: <span id="widthValue">0</span>m</label>
+</div>
+<div>
+<label>FOV Height: <span id="heightValue">0</span>m</label>
+</div>
+<div>
+<label>Area Captured: <span id="areaValue">0</span>m²</label>
+</div>
+<hr>
+<!-- Toggle Buttons -->
+<div>
+<button id="toggleSchoolBuilding">Show School Building</button>
+</div>
+<div>
+<button id="toggleTridentBlocks">Show Trident Blocks</button>
+</div>
+<div>
+<button id="toggleBankTower">Show Bank Tower</button>
+</div>
+</div>
+
+<!-- Calculation Controls Panel -->
+<div id="additionalControls">
+<h3>Calculate AOV</h3>
+<div>
+<label for="calc1AspectRatio">Aspect Ratio:</label>
+<select id="calc1AspectRatio">
+<option value="1.5">3:2</option>
+<option value="1.333">4:3</option>
+<option value="1.778">16:9</option>
+</select>
+</div>
+<div>
+<label for="calc1Altitude">Altitude (m):</label>
+<input type="number" id="calc1Altitude" placeholder="Enter altitude" min="0" step="0.1">
+</div>
+<div>
+<label for="calc1FOVWidth">FOV Width (m):</label>
+<input type="number" id="calc1FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
+</div>
+<button id="calc1Button">Calculate AOV</button>
+<div id="calc1Results">
+<p>Horizontal AOV: <span id="calc1HorizontalAOV">0.0</span>°</p>
+<p>Vertical AOV: <span id="calc1VerticalAOV">0.0</span>°</p>
+<p>Diagonal AOV: <span id="calc1DiagonalAOV">0.0</span>°</p>
+</div>
+
+<hr>
+
+<h3>Calculate Altitude</h3>
+<div>
+<label for="calc2AspectRatio">Aspect Ratio:</label>
+<select id="calc2AspectRatio">
+<option value="1.5">3:2</option>
+<option value="1.333">4:3</option>
+<option value="1.778">16:9</option>
+</select>
+</div>
+<div>
+<label for="calc2DiagonalAOV">Diagonal AOV (°):</label>
+<input type="number" id="calc2DiagonalAOV" placeholder="Enter diagonal AOV" min="0" step="0.1">
+</div>
+<div>
+<label for="calc2FOVWidth">FOV Width (m):</label>
+<input type="number" id="calc2FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
+</div>
+<button id="calc2Button">Calculate Altitude</button>
+<div id="calc2Results">
+<p>Required Altitude: <span id="calc2Altitude">0.0</span>m</p>
+</div>
+</div>
+
+<!-- Instructions Panel -->
+<div id="instructions">
+<strong>Controls:</strong><br>
+- Left mouse drag: Change drone altitude<br>
+- Right mouse drag: Rotate view<br>
+- Right mouse drag + Shift: Move drone horizontally<br>
+- Middle mouse drag or Mouse wheel: Zoom in/out<br>
+- Click and drag the "School Building", "Bank Tower", or "Trident Blocks" to move them left/right (when visible)
+</div>
+
+<!-- Three.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+let scene, camera, renderer, drone, fovArea;
+let isDragging = false;
+let dragStartPosition = { x: 0, y: 0 };
+let cameraAngle = Math.PI / 2;
+let cameraTilt = 0.5;
+let cameraDistance = 100;
+let draggedBuilding = null; // 'school', 'bank', 'trident' or null
+let buildingDragStartX = 0;
+let mouseStartX = 0;
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+
+// Groups for lines
+let verticalLine, fovLines, diagonals, propellers = [], blinkingLights = [];
+let blinkState = true;
+let lastBlinkTime = 0;
+const BLINK_INTERVAL = 500;
+let cornerLabels = [];
+let dimensionLabels = []; // For AB and BC
+let centerLabel = null; // For O
+
+// Variables for Buildings
+let schoolBuilding;
+let bankTower;
+let tridentBlocks; // New Variable
+
+// Initialize the warning sound
+const warnSound = new Audio('warn2.mp3');
+
+// Preload the audio
+warnSound.preload = 'auto';
+
+// Function to play the warning sound with error handling
+function playWarnSound() {
+// Reset the audio to the beginning
+warnSound.currentTime = 0;
+// Attempt to play the sound
+warnSound.play().catch(function(error) {
+console.error("Error playing warning sound:", error);
+});
+}
+
+// Function to calculate maximum Diagonal AOV based on aspect ratio
+function getMaxDiagonalAOV(aspectRatio) {
+const maxHorizontalAOV = 120; // degrees
+const horizontalAOVRad = THREE.MathUtils.degToRad(maxHorizontalAOV);
+const verticalAOVRad = 2 * Math.atan(Math.tan(horizontalAOVRad / 2) / aspectRatio);
+const diagonalTan = Math.sqrt(Math.pow(Math.tan(horizontalAOVRad / 2), 2) +
+Math.pow(Math.tan(verticalAOVRad / 2), 2));
+const diagonalAOVRad = 2 * Math.atan(diagonalTan);
+const diagonalAOV = THREE.MathUtils.radToDeg(diagonalAOVRad);
+return diagonalAOV;
+}
+
+// Store the current max diagonal AOV
+let currentMaxDiagonalAOV = getMaxDiagonalAOV(1.5); // Default aspect ratio 3:2
+
+// Function to create dotted lines
+function createDottedLine(points, color = 0x000000) {
+const geometry = new THREE.BufferGeometry().setFromPoints(points);
+const material = new THREE.LineDashedMaterial({
+color: color,
+dashSize: 1,
+gapSize: 2,
+});
+const line = new THREE.Line(geometry, material);
+line.computeLineDistances();
+return line;
+}
+
+// Function to create propellers
+function createPropeller(color) {
+const geometry = new THREE.BoxGeometry(3, 0.2, 0.4);
+const material = new THREE.MeshBasicMaterial({ color: color });
+return new THREE.Mesh(geometry, material);
+}
+
+// Function to create blinking lights
+function createBlinkingLight() {
+const geometry = new THREE.SphereGeometry(0.3, 16, 16);
+const material = new THREE.MeshBasicMaterial({
+color: 0xffff00,
+transparent: true,
+opacity: 1
+});
+return new THREE.Mesh(geometry, material);
+}
+
+// Function to create corner labels (A, B, C, D)
+function createCornerLabel(text, position) {
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 256;
+canvas.height = 256;
+
+context.clearRect(0, 0, canvas.width, canvas.height); // Ensure transparent background
+context.font = 'bold 30px Arial'; // Font size 30px
+context.fillStyle = '#00FF00'; // Green color
+context.textAlign = 'center';
+context.textBaseline = 'middle';
+context.fillText(text, 128, 128);
+
+const texture = new THREE.CanvasTexture(canvas);
+texture.needsUpdate = true;
+const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+const sprite = new THREE.Sprite(spriteMaterial);
+sprite.position.copy(position);
+sprite.scale.set(30, 30, 1); // Scale (30, 30, 1)
+return sprite;
+}
+
+// Function to create dimension labels (AB, BC) with white font and black outline
+// Modified to accept a scale parameter
+function createDimensionLabel(text, position, scale) {
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 256;
+canvas.height = 256;
+
+// Ensure the background is transparent
+context.clearRect(0, 0, canvas.width, canvas.height);
+
+// Set text properties
+context.font = 'bold 32px Arial'; // Font size 32px
+context.textAlign = 'center';
+context.textBaseline = 'middle';
+context.lineWidth = 2;
+context.strokeStyle = 'black'; // Black outline
+context.strokeText(text, 128, 128); // Draw stroke
+context.fillStyle = 'white'; // White text
+context.fillText(text, 128, 128); // Draw fill
+
+const texture = new THREE.CanvasTexture(canvas);
+texture.needsUpdate = true;
+const spriteMaterial = new THREE.SpriteMaterial({
+map: texture,
+transparent: true // Ensure transparency
+});
+const sprite = new THREE.Sprite(spriteMaterial);
+sprite.position.copy(position);
+sprite.scale.set(scale, scale, 1); // Dynamic scale
+return sprite;
+}
+
+// Function to create center label "O"
+function createCenterLabel(text, position) {
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 256;
+canvas.height = 256;
+
+context.clearRect(0, 0, canvas.width, canvas.height); // Ensure transparent background
+context.font = 'bold 24px Arial'; // Same as corner labels
+context.fillStyle = '#00FF00'; // Green color
+context.textAlign = 'center';
+context.textBaseline = 'middle';
+context.fillText(text, 128, 128);
+
+const texture = new THREE.CanvasTexture(canvas);
+texture.needsUpdate = true;
+const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+const sprite = new THREE.Sprite(spriteMaterial);
+sprite.position.copy(position);
+sprite.scale.set(30, 30, 1); // Same scale as corner labels
+return sprite;
+}
+
+/**
+* Function to create a detailed basketball court.
+*/
+function createCourt() {
+const courtGroup = new THREE.Group();
+
+// Court dimensions (in feet, scaled down)
+const courtLength = 94;
+const courtWidth = 50;
+const sideAreaWidth = 8;
+const endAreaLength = 8;
+
+// Main court (green)
+const mainGeometry = new THREE.PlaneGeometry(courtWidth, courtLength);
+const mainMaterial = new THREE.MeshBasicMaterial({ color: 0x2e8b57, side: THREE.DoubleSide });
+const mainCourt = new THREE.Mesh(mainGeometry, mainMaterial);
+mainCourt.rotation.x = -Math.PI / 2;
+mainCourt.position.y = 0.01; // Slightly above ground to prevent z-fighting
+courtGroup.add(mainCourt);
+
+// Side areas (orange)
+const sideGeometry = new THREE.PlaneGeometry(sideAreaWidth, courtLength + (2 * endAreaLength));
+const sideMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide });
+
+const leftSide = new THREE.Mesh(sideGeometry, sideMaterial);
+leftSide.rotation.x = -Math.PI / 2;
+leftSide.position.x = -(courtWidth/2 + sideAreaWidth/2);
+courtGroup.add(leftSide);
+
+const rightSide = new THREE.Mesh(sideGeometry, sideMaterial);
+rightSide.rotation.x = -Math.PI / 2;
+rightSide.position.x = (courtWidth/2 + sideAreaWidth/2);
+courtGroup.add(rightSide);
+
+// End areas (orange)
+const endGeometry = new THREE.PlaneGeometry(courtWidth + (2 * sideAreaWidth), endAreaLength);
+const endMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500, side: THREE.DoubleSide });
+
+const frontEnd = new THREE.Mesh(endGeometry, endMaterial);
+frontEnd.rotation.x = -Math.PI / 2;
+frontEnd.position.z = -(courtLength/2 + endAreaLength/2);
+courtGroup.add(frontEnd);
+
+const backEnd = new THREE.Mesh(endGeometry, endMaterial);
+backEnd.rotation.x = -Math.PI / 2;
+backEnd.position.z = (courtLength/2 + endAreaLength/2);
+courtGroup.add(backEnd);
+
+// Court lines
+const lineMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+
+function addLine(points) {
+const geometry = new THREE.BufferGeometry().setFromPoints(points);
+const line = new THREE.Line(geometry, lineMaterial);
+courtGroup.add(line);
+}
+
+// Outer boundary
+addLine([
+new THREE.Vector3(-courtWidth/2, 0.01, -courtLength/2),
+new THREE.Vector3(courtWidth/2, 0.01, -courtLength/2),
+new THREE.Vector3(courtWidth/2, 0.01, courtLength/2),
+new THREE.Vector3(-courtWidth/2, 0.01, courtLength/2),
+new THREE.Vector3(-courtWidth/2, 0.01, -courtLength/2)
+]);
+
+// Center line
+addLine([
+new THREE.Vector3(-courtWidth/2, 0.01, 0),
+new THREE.Vector3(courtWidth/2, 0.01, 0)
+]);
+
+// Center circle
+const centerCircle = new THREE.CircleGeometry(10, 32);
+const circleEdges = new THREE.EdgesGeometry(centerCircle);
+const centerCircleLine = new THREE.LineSegments(circleEdges, lineMaterial);
+centerCircleLine.rotation.x = -Math.PI/2;
+centerCircleLine.position.y = 0.01;
+courtGroup.add(centerCircleLine);
+
+// Free throw lines and key
+[-courtLength/2 + 19, courtLength/2 - 19].forEach(z => {
+// Free throw line
+addLine([
+new THREE.Vector3(-6, 0.01, z),
+new THREE.Vector3(6, 0.01, z)
+]);
+
+// Key lines
+addLine([
+new THREE.Vector3(-6, 0.01, z),
+new THREE.Vector3(-6, 0.01, z + (z < 0 ? -19 : 19))
+]);
+addLine([
+new THREE.Vector3(6, 0.01, z),
+new THREE.Vector3(6, 0.01, z + (z < 0 ? -19 : 19))
+]);
+
+// Full circle with dotted line inside rectangle
+for(let i = 0; i <= 360; i++) {
+const angle = (Math.PI * i / 180);
+const x = 6 * Math.cos(angle);
+const zOffset = 6 * Math.sin(angle);
+
+// Outside rectangle - solid line
+if (Math.abs(x) > 6 || (z < 0 && zOffset > 0) || (z > 0 && zOffset < 0)) {
+addLine([
+new THREE.Vector3(x, 0.01, z + zOffset),
+new THREE.Vector3(6 * Math.cos((i + 1) * Math.PI / 180), 0.01,
+z + 6 * Math.sin((i + 1) * Math.PI / 180))
+]);
+}
+// Inside rectangle - dotted line
+else if (i % 10 < 5) {
+addLine([
+new THREE.Vector3(x, 0.01, z + zOffset),
+new THREE.Vector3(6 * Math.cos((i + 2) * Math.PI / 180), 0.01,
+z + 6 * Math.sin((i + 2) * Math.PI / 180))
+]);
+}
+}
+});
+
+// Three-point lines (rotated 180 degrees)
+[1, -1].forEach(sign => {
+const z = sign * courtLength/2;
+const points = [];
+for(let i = 0; i <= 180; i++) {
+const angle = Math.PI + (i * Math.PI / 180); // Rotated 180 degrees
+points.push(new THREE.Vector3(
+Math.cos(angle) * 23.75,
+0.01,
+z + (sign * (Math.sin(angle) * 25.25))
+));
+}
+addLine(points);
+});
+
+// Backboards and hoops
+function createBackboardAndHoop(posZ, rotation) {
+const backboardGroup = new THREE.Group();
+
+// Stand
+const standGeometry = new THREE.BoxGeometry(0.5, 12, 0.5);
+const standMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
+const stand = new THREE.Mesh(standGeometry, standMaterial);
+stand.position.y = 6;
+stand.position.z = posZ + (rotation === 0 ? -4 : 4);
+backboardGroup.add(stand);
+
+// Support beam
+const beamGeometry = new THREE.BoxGeometry(0.5, 0.5, 4);
+const beam = new THREE.Mesh(beamGeometry, standMaterial);
+beam.position.y = 10;
+beam.position.z = posZ + (rotation === 0 ? -2 : 2);
+backboardGroup.add(beam);
+
+// Backboard
+const backboardGeometry = new THREE.BoxGeometry(6, 3.5, 0.2);
+const backboardMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const backboard = new THREE.Mesh(backboardGeometry, backboardMaterial);
+
+// Black rectangle on backboard
+const blackRectGeometry = new THREE.BoxGeometry(2, 1.5, 0.21);
+const blackRectMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+const blackRect = new THREE.Mesh(blackRectGeometry, blackRectMaterial);
+blackRect.position.z = 0.1;
+backboard.add(blackRect);
+
+backboard.position.y = 10;
+backboard.position.z = posZ;
+backboard.rotation.y = rotation;
+backboardGroup.add(backboard);
+
+// Hoop
+const hoopGeometry = new THREE.TorusGeometry(0.75, 0.1, 16, 100);
+const hoopMaterial = new THREE.MeshBasicMaterial({ color: 0xff4500 });
+const hoop = new THREE.Mesh(hoopGeometry, hoopMaterial);
+hoop.position.y = 10;
+hoop.position.z = posZ + (rotation === 0 ? 1 : -1);
+hoop.rotation.x = Math.PI/2;
+backboardGroup.add(hoop);
+
+// Net
+const netMaterial = new THREE.LineBasicMaterial({ color: 0xffffff });
+for(let i = 0; i < 12; i++) {
+const angle = (i / 12) * Math.PI * 2;
+const netGeometry = new THREE.BufferGeometry().setFromPoints([
+new THREE.Vector3(0.75 * Math.cos(angle), 0, 0.75 * Math.sin(angle)),
+new THREE.Vector3(0.4 * Math.cos(angle), -1.5, 0.4 * Math.sin(angle))
+]);
+const netLine = new THREE.Line(netGeometry, netMaterial);
+netLine.position.y = 10;
+netLine.position.z = posZ + (rotation === 0 ? 1 : -1);
+backboardGroup.add(netLine);
+}
+
+return backboardGroup;
+}
+
+// Create two backboards and hoops
+courtGroup.add(createBackboardAndHoop(courtLength/2, Math.PI));
+courtGroup.add(createBackboardAndHoop(-courtLength/2, 0));
+
+return courtGroup;
+}
+
+// Function to create the main building and place the basketball courts
+function createSchoolBuilding() {
+const building = new THREE.Group();
+
+// Main building block
+const mainGeometry = new THREE.BoxGeometry(65, 31, 10);
+const mainMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+const mainBlock = new THREE.Mesh(mainGeometry, mainMaterial);
+// Position the main block so that its base is at y=0
+mainBlock.position.y = 15.5; // Half of the original height (31/2)
+building.add(mainBlock);
+
+// Add thin black outline to mainBlock
+const mainEdges = new THREE.EdgesGeometry(mainGeometry);
+const mainOutline = new THREE.LineSegments(mainEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+mainBlock.add(mainOutline);
+
+// Red vertical accents
+const accentGeometry = new THREE.BoxGeometry(3, 31, 1); // Adjusted height to match standard hoop height
+const accentMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+const accentPositions = [-15, -5, 5, 15];
+accentPositions.forEach(xPos => {
+const accent = new THREE.Mesh(accentGeometry, accentMaterial);
+accent.position.set(xPos, 15.5, 5.1); // Positioned slightly above the main block
+building.add(accent);
+
+// Add thin black outline to accents
+const accentEdges = new THREE.EdgesGeometry(accentGeometry);
+const accentOutline = new THREE.LineSegments(accentEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+accent.add(accentOutline);
+});
+
+// Windows on mainBlock
+const windowRows = 7;
+const windowCols = 15;
+const windowGeometry = new THREE.BoxGeometry(2, 1.5, 0.1);
+const windowMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+for (let i = 0; i < windowRows; i++) {
+for (let j = 0; j < windowCols; j++) {
+const window = new THREE.Mesh(windowGeometry, windowMaterial);
+window.position.x = -17 + (j * 3);
+window.position.y = -6 + (i * 3) + 15; // Adjust y to match building's base
+window.position.z = 5.05;
+building.add(window);
+}
+}
+
+// Assembly hall block
+const hallGeometry = new THREE.BoxGeometry(20, 16, 24);
+const hallMaterial = new THREE.MeshPhongMaterial({ color: 0xffffff });
+const hall = new THREE.Mesh(hallGeometry, hallMaterial);
+hall.position.set(22.5, -7 + 16, 17.1); // Adjust y to match building's base
+building.add(hall);
+
+// Add thin black outline to hall
+const hallEdges = new THREE.EdgesGeometry(hallGeometry);
+const hallOutline = new THREE.LineSegments(hallEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+hall.add(hallOutline);
+
+// Covered leftblock (rotated 90 degrees and moved to left side)
+const leftblockGeometry = new THREE.BoxGeometry(23, 31, 20); // Dimensions swapped for rotation
+const leftblockMaterial = new THREE.MeshPhongMaterial({ color: 0x1E90FF });
+const leftblock = new THREE.Mesh(leftblockGeometry, leftblockMaterial);
+leftblock.position.set(-21, -13.5 + 29, 5); // Moved to left side and adjusted y
+building.add(leftblock);
+
+// Add thin black outline to leftblock
+const leftblockEdges = new THREE.EdgesGeometry(leftblockGeometry);
+const leftblockOutline = new THREE.LineSegments(leftblockEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+leftblock.add(leftblockOutline);
+
+// Add windows to leftblock
+const leftBlockWindowRows = 7;
+const leftBlockWindowCols = 8;
+const leftBlockWindowGeometry = new THREE.BoxGeometry(3, 1.5, 0.3);
+const leftBlockWindowMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+for (let i = 0; i < leftBlockWindowRows; i++) {
+for (let j = 0; j < leftBlockWindowCols; j++) {
+const window = new THREE.Mesh(leftBlockWindowGeometry, leftBlockWindowMaterial);
+window.position.x = -30 + (j * 2.5);
+window.position.y = -11 + (i * 3) + 20; // Adjust y to match building's base
+window.position.z = 15.05; // Front face of leftblock
+building.add(window);
+}
+}
+
+// Support columns for leftblock (adjusted for new position)
+const columnGeometry = new THREE.BoxGeometry(0.5, 3, 0.5);
+const columnMaterial = new THREE.MeshPhongMaterial({ color: 0xDDDDDD });
+
+for (let i = 6; i < 10; i++) {
+const column = new THREE.Mesh(columnGeometry, columnMaterial);
+column.position.set(-20, -13.5 + 15, -18 + (i * 3)); // Adjusted positions for new leftblock orientation and y
+building.add(column);
+}
+
+// Add thin black outlines to vertical accents and columns
+building.children.forEach(child => {
+if (child !== mainBlock && child !== hall && child !== leftblock && child.geometry) {
+const edges = new THREE.EdgesGeometry(child.geometry);
+const outline = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+child.add(outline);
+}
+});
+
+// Add basketball courts to the front using the detailed createCourt function
+const frontCourtPositions = [
+{ x: -10, z: 24 },
+{ x: -10, z: 44 },
+];
+
+const desiredY = 5; // Adjust this value as needed
+frontCourtPositions.forEach((pos, index) => {
+const frontCourt = createCourt();
+frontCourt.position.set(pos.x, 0, pos.z); // Positioning the court
+building.add(frontCourt);
+
+frontCourt.rotation.y += Math.PI / 2; // Rotate 90 degrees around Y-axis
+frontCourt.scale.set(0.3, 0.3, 0.3); // Scale down courts to fit the building
+});
+
+    /*** Start of Trapezoidal Prism Addition ***/
+    // Define the trapezoidal shape
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(8, 0); // Base width: 15m
+    shape.lineTo(8, 8); // Height: 5m (right angle)
+    shape.lineTo(1.5, 8);  // Top width: 10m
+    shape.lineTo(0, 0);
+
+    // Extrude settings
+    const extrudeSettings = {
+        steps: 1,
+        depth: 5, // Depth of the trapezoidal prism
+        bevelEnabled: false
+    };
+
+    // Create the extruded geometry
+    const trapezoidGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    const trapezoidMaterial = new THREE.MeshPhongMaterial({ color: 0xA0A0A0 }); // Orange color for visibility
+    const trapezoid = new THREE.Mesh(trapezoidGeometry, trapezoidMaterial);
+
+    // Rotate the trapezoid to lie flat on the roof (assuming y-up)
+    trapezoid.rotation.y = -Math.PI / 2; // Rotate 90 degrees around X-axis
+    trapezoid.rotation.z = -Math.PI / 2; // Rotate 90 degrees around X-axis
+
+    // Position the trapezoid on top of the leftblock
+    trapezoid.position.set(-2, 20 + 0.1, -5); // Adjust x, y, z as needed
+    // Explanation:
+    // - x: Shifted by -5 to center the trapezoid on the leftblock's roof
+    // - y: 15.5 is the top of leftblock; adding a small offset (0.1) to prevent z-fighting
+    // - z: Centered
+
+    // Optional: Add edges for better visibility
+    const trapezoidEdges = new THREE.EdgesGeometry(trapezoidGeometry);
+    const trapezoidOutline = new THREE.LineSegments(trapezoidEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+    trapezoid.add(trapezoidOutline);
+
+    // Add the trapezoid to the leftblock
+    leftblock.add(trapezoid);
+    /*** End of Trapezoidal Prism Addition ***/
+
+
+
+
+return building;
+}
+
+// Function to create grid texture for Bank Tower
+function createBankGridTexture() {
+const canvas = document.createElement('canvas');
+canvas.width = 512;
+canvas.height = 512;
+const ctx = canvas.getContext('2d');
+
+// Fill background with a light blue color
+ctx.fillStyle = '#ADD8E6'; // Light Cyan background
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+// Set grid line color to light blue
+ctx.strokeStyle = '#ADD8E6'; // Light Blue
+ctx.lineWidth = 5;
+
+const majorGridSize = 64;
+ctx.globalAlpha = 0.8;
+
+// Draw major vertical grid lines
+for(let i = 0; i <= canvas.width; i += majorGridSize) {
+ctx.beginPath();
+ctx.moveTo(i, 0);
+ctx.lineTo(i, canvas.height);
+ctx.stroke();
+}
+
+// Draw major horizontal grid lines
+for(let i = 0; i <= canvas.height; i += majorGridSize) {
+ctx.beginPath();
+ctx.moveTo(0, i);
+ctx.lineTo(canvas.width, i);
+ctx.stroke();
+}
+
+const minorGridSize = 32;
+ctx.globalAlpha = 0.4;
+ctx.lineWidth = 1;
+
+// Draw minor vertical grid lines
+for(let i = 0; i <= canvas.width; i += minorGridSize) {
+if (i % majorGridSize !== 0) { // Skip if it's a major grid line
+ctx.beginPath();
+ctx.moveTo(i, 0);
+ctx.lineTo(i, canvas.height);
+ctx.stroke();
+}
+}
+
+// Draw minor horizontal grid lines
+for(let i = 0; i <= canvas.height; i += minorGridSize) {
+if (i % majorGridSize !== 0) { // Skip if it's a major grid line
+ctx.beginPath();
+ctx.moveTo(0, i);
+ctx.lineTo(canvas.width, i);
+ctx.stroke();
+}
+}
+
+return new THREE.CanvasTexture(canvas);
+}
+
+// Function to create an inclined triangular prism for Bank Tower
+function createBankInclinedTriangularPrism(baseSize, height) {
+const group = new THREE.Group();
+const gridTexture = createBankGridTexture();
+
+// Create vertices for rectangular sides
+const vertices = new Float32Array([
+// Base triangle
+-baseSize, 0, baseSize, // 0
+baseSize, 0, baseSize, // 1
+0, 0, -baseSize, // 2
+
+// Top triangle (rectangular sides)
+-baseSize * 0.7, height, baseSize * 0.7, // 3
+baseSize * 0.7, height, baseSize * 0.7, // 4
+0, height, -baseSize * 0.7, // 5 (now at same height)
+
+// Additional vertices for rectangular sides
+-baseSize, 0, baseSize, // 6 (same as 0)
+baseSize, 0, baseSize, // 7 (same as 1)
+0, 0, -baseSize, // 8 (same as 2)
+-baseSize * 0.7, height, baseSize * 0.7, // 9 (same as 3)
+baseSize * 0.7, height, baseSize * 0.7, // 10 (same as 4)
+0, height, -baseSize * 0.7, // 11 (same as 5)
+]);
+
+const indices = new Uint16Array([
+// Base triangle
+0, 1, 2,
+
+// Top triangle
+3, 4, 5,
+
+// Front rectangular face
+6, 7, 10,
+6, 10, 9,
+
+// Right rectangular face
+7, 8, 11,
+7, 11, 10,
+
+// Left rectangular face
+8, 6, 9,
+8, 9, 11
+]);
+
+const geometry = new THREE.BufferGeometry();
+geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+geometry.setIndex(new THREE.BufferAttribute(indices, 1));
+geometry.computeVertexNormals();
+
+const material = new THREE.MeshPhongMaterial({
+map: gridTexture,
+color: 0xFFFFFF,
+specular: 0x666666,
+shininess: 80,
+side: THREE.DoubleSide
+});
+
+const prism = new THREE.Mesh(geometry, material);
+group.add(prism);
+
+const edges = new THREE.EdgesGeometry(geometry);
+const lineMaterial = new THREE.LineBasicMaterial({
+color: 0x000000,
+linewidth: 3,
+opacity: 1
+});
+const lineSegments = new THREE.LineSegments(edges, lineMaterial);
+group.add(lineSegments);
+
+return group;
+}
+
+// Function to create antennas for Bank Tower
+function createBankAntennas() {
+const antennaGroup = new THREE.Group();
+
+const antennaPositions = [
+[-5, 0, 0],
+[0, 0, 0],
+[5, 0, 0]
+];
+
+antennaPositions.forEach(position => {
+const poleGeometry = new THREE.CylinderGeometry(0.2, 0.2, 65, 12);
+const poleMaterial = new THREE.MeshPhongMaterial({
+color: 0xffff00, // Bright yellow
+emissive: 0xffff00, // Emissive color matching the main color
+emissiveIntensity: 1, // Adjust intensity as needed
+specular: 0x666666,
+shininess: 60
+});
+const pole = new THREE.Mesh(poleGeometry, poleMaterial);
+
+pole.position.set(position[0], position[1] + 15, position[2]);
+
+const crossGeometry = new THREE.CylinderGeometry(0.2, 0.2, 5, 50);
+
+const cross1 = new THREE.Mesh(crossGeometry, poleMaterial);
+cross1.rotation.z = Math.PI / 4;
+cross1.position.y = 10;
+pole.add(cross1);
+
+const cross2 = new THREE.Mesh(crossGeometry, poleMaterial);
+cross2.rotation.z = -Math.PI / 4;
+cross2.position.y = 5;
+pole.add(cross2);
+
+antennaGroup.add(pole);
+});
+
+return antennaGroup;
+}
+
+// Function to create the Bank of China Tower
+function createBankTower() {
+const buildingGroup = new THREE.Group();
+const baseSize = 60; // Adjust base size as needed for scaling
+const scale = 0.28; // Scaling factor to fit the scene
+
+const sections = [
+{ height: 420, offset: [0, 0, 0] },
+{ height: 680, offset: [baseSize * scale * 0.5, 0, -baseSize * scale * 0.866] },
+{ height: 850, offset: [-baseSize * scale * 0.5, 0, -baseSize * scale * 0.866] },
+{ height: 1130, offset: [0, 0, -baseSize * scale * 1.732] }
+];
+
+sections.forEach(section => {
+const prism = createBankInclinedTriangularPrism(baseSize * scale, section.height * scale);
+prism.position.set(...section.offset);
+buildingGroup.add(prism);
+});
+
+const antennas = createBankAntennas();
+const lastSection = sections[sections.length - 1];
+const midHeight = lastSection.height * scale;
+antennas.position.set(
+lastSection.offset[0],
+midHeight,
+lastSection.offset[2]
+);
+buildingGroup.add(antennas);
+
+buildingGroup.rotation.y = Math.PI / 4;
+
+return buildingGroup;
+}
+
+// Function to create Trident Blocks
+function createTridentBlocks() {
+const trident = new THREE.Group();
+
+// Create materials
+const buildingMaterial = new THREE.MeshPhongMaterial({
+color: 0xA3A3A3,
+flatShading: true
+});
+const windowMaterial = new THREE.MeshPhongMaterial({
+color: 0x2266aa,
+opacity: 0.7,
+transparent: true
+});
+const centroidMaterial = new THREE.MeshPhongMaterial({
+color: 0xff0000
+});
+
+// Create single wing (similar to School Building's wing)
+function createWing() {
+const wing = new THREE.Group();
+
+// Main building block
+const mainGeometry = new THREE.BoxGeometry(23, 110, 55);
+const mainBlock = new THREE.Mesh(mainGeometry, buildingMaterial);
+// Move the wing forward so it connects at one end
+mainBlock.position.z = 27.5;
+wing.add(mainBlock);
+
+// Add windows
+const windowRows = 35;
+const windowCols = 8;
+const windowHeight = 2;
+const windowWidth = 4;
+
+for (let row = 0; row < windowRows; row++) {
+for (let col = 0; col < windowCols; col++) {
+// Front windows
+const windowGeometry = new THREE.BoxGeometry(0.5, windowHeight, windowWidth);
+const windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+windowMesh.position.set(11.6,
+-50 + row * 3,
+7.5 + col * 6);
+wing.add(windowMesh);
+
+// Back windows
+const backWindow = windowMesh.clone();
+backWindow.position.set(-11.6,
+-50 + row * 3,
+7.5 + col * 6);
+wing.add(backWindow);
+}
+}
+
+// Add roof structures
+const roofGeometry = new THREE.BoxGeometry(23, 10, 20);
+const roofStructure = new THREE.Mesh(roofGeometry, buildingMaterial);
+roofStructure.position.y = 60;
+roofStructure.position.z = 27.5;
+wing.add(roofStructure);
+
+return wing;
+}
+
+// Create centroid marker
+function createCentroidMarker() {
+const geometry = new THREE.SphereGeometry(2, 32, 32);
+const sphere = new THREE.Mesh(geometry, centroidMaterial);
+sphere.position.y = 55;
+return sphere;
+}
+
+// Create full Trident Blocks building
+function createBuilding() {
+const building = new THREE.Group();
+
+// Create three wings arranged in Y-shape
+const angles = [0, 120, 240]; // 120° apart for Y-shape
+
+for (let i = 0; i < 3; i++) {
+const wing = createWing();
+const angle = angles[i] * Math.PI / 180;
+
+// Rotate wings around center point
+wing.rotation.y = -angle;
+
+building.add(wing);
+}
+
+// Add centroid marker
+const centroidMarker = createCentroidMarker();
+building.add(centroidMarker);
+
+return building;
+}
+
+const building = createBuilding();
+
+    // Add outlines to each wing
+    building.children.forEach(wing => {
+        wing.children.forEach(child => {
+            if (child instanceof THREE.Mesh) {
+                const edges = new THREE.EdgesGeometry(child.geometry);
+                const outline = new THREE.LineSegments(
+                    edges,
+                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
+                );
+                child.add(outline);
+            }
+        });
+    });
+    
+    // Add centroid marker outline
+    building.children.forEach(child => {
+        if (child instanceof THREE.Mesh && child.material.color.getHex() === 0xff0000) { // Assuming centroid is red
+            const edges = new THREE.EdgesGeometry(child.geometry);
+            const outline = new THREE.LineSegments(
+                edges,
+                new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
+            );
+            child.add(outline);
+        }
+    });
+    
+trident.add(building);
+
+// Position the Trident Blocks 200m to the left of the ground center
+trident.position.set(-150, 55, -10); // Adjust as needed based on your scene's scale
+
+return trident;
+}
+
+function init() {
+// Initialize scene
+scene = new THREE.Scene();
+
+// Initialize camera
+camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+// Initialize renderer
+renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// Add grid helper
+const gridHelper = new THREE.GridHelper(1000, 100);
+scene.add(gridHelper);
+
+// Add cross axes with doubled length
+const axesLength = 200; // Doubled from previous value
+
+// Create axes lines
+const axesGeometry = new THREE.BufferGeometry();
+const vertices = new Float32Array([
+-axesLength, 0, 0, // Left
+axesLength, 0, 0, // Right
+0, 0, -axesLength, // Front
+0, 0, axesLength // Rear
+]);
+axesGeometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+const axesMaterial = new THREE.LineBasicMaterial({ color: 0xFFFFFF });
+const axes = new THREE.LineSegments(axesGeometry, axesMaterial);
+scene.add(axes);
+
+// Add direction labels
+const labelDirections = [
+{ text: "REAR", position: new THREE.Vector3(0, 0, axesLength + 5) },
+{ text: "FRONT", position: new THREE.Vector3(0, 0, -axesLength - 5) },
+{ text: "LEFT", position: new THREE.Vector3(-axesLength - 5, 0, 0) },
+{ text: "RIGHT", position: new THREE.Vector3(axesLength + 5, 0, 0) }
+];
+
+labelDirections.forEach(label => {
+const canvas = document.createElement('canvas');
+const context = canvas.getContext('2d');
+canvas.width = 256;
+canvas.height = 256;
+
+// Ensure transparent background
+context.clearRect(0, 0, canvas.width, canvas.height);
+// Set text properties with larger font
+context.font = 'bold 72px Arial'; // Font size 72px
+context.fillStyle = 'white';
+context.textAlign = 'center';
+context.textBaseline = 'middle';
+context.fillText(label.text, 128, 128);
+
+// Create sprite
+const texture = new THREE.CanvasTexture(canvas);
+texture.needsUpdate = true;
+const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+const sprite = new THREE.Sprite(spriteMaterial);
+sprite.position.copy(label.position);
+sprite.scale.set(30, 30, 1); // Scale (30, 30, 1)
+scene.add(sprite);
+});
+
+// Create drone body
+const droneGeometry = new THREE.BoxGeometry(4, 1, 4);
+const droneMaterial = new THREE.MeshBasicMaterial({
+color: 0x87CEFA, // Light blue
+transparent: true,
+opacity: 0.5
+});
+drone = new THREE.Mesh(droneGeometry, droneMaterial);
+drone.position.y = 0;
+scene.add(drone);
+
+// Add yellow edges to drone
+const edges = new THREE.EdgesGeometry(droneGeometry);
+const edgesMaterial = new THREE.LineBasicMaterial({ color: 0xffff00 });
+const edgeLines = new THREE.LineSegments(edges, edgesMaterial);
+drone.add(edgeLines);
+
+// Add propellers and blinking lights
+const propellerPositions = [
+{ x: 2.5, y: 0.5, z: 2.5, color: 0x00ff00, clockwise: false }, // Rear right - Green
+{ x: -2.5, y: 0.5, z: 2.5, color: 0x00ff00, clockwise: true }, // Rear left - Green
+{ x: 2.5, y: 0.5, z: -2.5, color: 0xff0000, clockwise: true }, // Front right - Red
+{ x: -2.5, y: 0.5, z: -2.5, color: 0xff0000, clockwise: false } // Front left - Red
+];
+
+propellerPositions.forEach(pos => {
+const propeller = createPropeller(pos.color);
+propeller.position.set(pos.x, pos.y, pos.z);
+propeller.userData.clockwise = pos.clockwise;
+drone.add(propeller);
+propellers.push(propeller);
+
+const light = createBlinkingLight();
+light.position.set(pos.x, pos.y + 0.2, pos.z);
+drone.add(light);
+blinkingLights.push(light);
+});
+
+// Create FOV area
+const fovGeometry = new THREE.PlaneGeometry(1, 1);
+const fovMaterial = new THREE.MeshBasicMaterial({
+color: 0x00ff00,
+transparent: true,
+opacity: 0.3,
+side: THREE.DoubleSide
+});
+fovArea = new THREE.Mesh(fovGeometry, fovMaterial);
+fovArea.rotation.x = -Math.PI / 2;
+scene.add(fovArea);
+
+// Groups for lines
+verticalLine = new THREE.Group();
+fovLines = new THREE.Group();
+diagonals = new THREE.Group();
+scene.add(verticalLine);
+scene.add(fovLines);
+scene.add(diagonals);
+
+// Initialize camera position
+updateCamera();
+
+// Initialize School Building (hidden by default)
+schoolBuilding = createSchoolBuilding();
+schoolBuilding.position.set(-50, 0, -20); // y = half of building height to align base at y=0
+schoolBuilding.visible = false; // Hidden by default
+scene.add(schoolBuilding);
+
+// Initialize Bank Tower (hidden by default)
+bankTower = createBankTower();
+bankTower.position.set(50, 0, 10); // Positioned 50m to the right from center
+bankTower.visible = false; // Hidden by default
+scene.add(bankTower);
+
+// Initialize Trident Blocks (hidden by default)
+tridentBlocks = createTridentBlocks();
+tridentBlocks.visible = false; // Hidden by default
+scene.add(tridentBlocks);
+
+// Lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(50, 50, 50);
+scene.add(directionalLight);
+
+// Event listeners
+window.addEventListener('resize', onWindowResize, false);
+renderer.domElement.addEventListener('mousedown', onMouseDown, false);
+renderer.domElement.addEventListener('mousemove', onMouseMove, false);
+renderer.domElement.addEventListener('mouseup', onMouseUp, false);
+renderer.domElement.addEventListener('wheel', onWheel, false);
+renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault(), false);
+
+document.getElementById('aspectRatio').addEventListener('change', function() {
+// Update max diagonal AOV when aspect ratio changes
+const aspectRatio = parseFloat(this.value);
+currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+console.log("Updated Max Diagonal AOV:", currentMaxDiagonalAOV.toFixed(1), "degrees");
+
+// Synchronize aspect ratio selects in calculation panels
+document.getElementById('calc1AspectRatio').value = aspectRatio;
+document.getElementById('calc2AspectRatio').value = aspectRatio;
+
+// Update FOV with the new aspect ratio
+updateFOV();
+});
+document.getElementById('aov').addEventListener('input', updateFOV);
+
+// Additional Controls Event Listeners
+document.getElementById('calc1Button').addEventListener('click', calculateAOV);
+document.getElementById('calc2Button').addEventListener('click', calculateAltitude);
+
+// School Building Toggle Button
+document.getElementById('toggleSchoolBuilding').addEventListener('click', toggleSchoolBuilding);
+
+// Bank Tower Toggle Button
+document.getElementById('toggleBankTower').addEventListener('click', toggleBankTower);
+
+// Trident Blocks Toggle Button
+document.getElementById('toggleTridentBlocks').addEventListener('click', toggleTridentBlocks);
+
+// Initial FOV setup
+updateFOV();
+}
+
+function toggleSchoolBuilding() {
+if (schoolBuilding) {
+schoolBuilding.visible = !schoolBuilding.visible;
+document.getElementById('toggleSchoolBuilding').textContent = schoolBuilding.visible ? 'Hide School Building' : 'Show School Building';
+}
+}
+
+function toggleBankTower() {
+if (bankTower) {
+bankTower.visible = !bankTower.visible;
+document.getElementById('toggleBankTower').textContent = bankTower.visible ? 'Hide Bank Tower' : 'Show Bank Tower';
+}
+}
+
+function toggleTridentBlocks() { // New Function
+if (tridentBlocks) {
+tridentBlocks.visible = !tridentBlocks.visible;
+document.getElementById('toggleTridentBlocks').textContent = tridentBlocks.visible ? 'Hide Trident Blocks' : 'Show Trident Blocks';
+}
+}
+
+function updateCamera() {
+const x = cameraDistance * Math.cos(cameraAngle) * Math.cos(cameraTilt);
+const y = cameraDistance * Math.sin(cameraTilt);
+const z = cameraDistance * Math.sin(cameraAngle) * Math.cos(cameraTilt);
+camera.position.set(x, y, z);
+camera.lookAt(0, 0, 0);
+}
+
+function updateBlinkingLights() {
+const currentTime = Date.now();
+if (currentTime - lastBlinkTime > BLINK_INTERVAL) {
+blinkState = !blinkState;
+blinkingLights.forEach(light => {
+light.material.opacity = blinkState ? 1 : 0.3;
+});
+lastBlinkTime = currentTime;
+}
+}
+
+function onWheel(event) {
+event.preventDefault();
+cameraDistance += event.deltaY * 0.1;
+cameraDistance = Math.max(10, Math.min(1000, cameraDistance)); // Adjusted max zoom to 1000 for larger scene
+updateCamera();
+}
+
+function onMouseDown(event) {
+isDragging = true;
+dragStartPosition.x = event.clientX;
+dragStartPosition.y = event.clientY;
+const button = event.button;
+
+// If left mouse button, check if schoolBuilding, bankTower, or tridentBlocks is clicked
+if (button === 0) {
+const rect = renderer.domElement.getBoundingClientRect();
+mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+raycaster.setFromCamera(mouse, camera);
+
+const intersectsSchool = schoolBuilding.visible ? raycaster.intersectObject(schoolBuilding, true) : [];
+const intersectsBank = bankTower.visible ? raycaster.intersectObject(bankTower, true) : [];
+const intersectsTrident = tridentBlocks.visible ? raycaster.intersectObject(tridentBlocks, true) : [];
+
+if (intersectsSchool.length > 0) {
+draggedBuilding = 'school';
+buildingDragStartX = schoolBuilding.position.x;
+mouseStartX = event.clientX;
+} else if (intersectsBank.length > 0) {
+draggedBuilding = 'bank';
+buildingDragStartX = bankTower.position.x;
+mouseStartX = event.clientX;
+} else if (intersectsTrident.length > 0) {
+draggedBuilding = 'trident';
+buildingDragStartX = tridentBlocks.position.x;
+mouseStartX = event.clientX;
+} else {
+draggedBuilding = null;
+}
+}
+}
+
+function onMouseMove(event) {
+if (isDragging) {
+const deltaX = event.clientX - dragStartPosition.x;
+const deltaY = event.clientY - dragStartPosition.y;
+
+if (draggedBuilding) {
+// Calculate movement only along X axis
+const movementX = (event.clientX - mouseStartX) * 0.5; // Adjust sensitivity as needed
+if (draggedBuilding === 'school') {
+schoolBuilding.position.x = buildingDragStartX + movementX;
+} else if (draggedBuilding === 'bank') {
+bankTower.position.x = buildingDragStartX + movementX;
+} else if (draggedBuilding === 'trident') {
+tridentBlocks.position.x = buildingDragStartX + movementX;
+}
+} else {
+if (event.buttons & 1) { // Left mouse button
+// Change drone altitude based on deltaY
+const newAltitude = parseFloat(drone.position.y) - deltaY * 0.5;
+drone.position.y = Math.max(0, Math.min(500, newAltitude));
+updateFOV();
+} else if (event.buttons & 2) { // Right mouse button
+if (event.shiftKey) {
+// Move drone horizontally
+drone.position.x += deltaX * 0.5;
+drone.position.z += deltaY * 0.5;
+updateFOV();
+} else {
+// Rotate camera based on deltas
+cameraAngle -= deltaX * 0.01;
+cameraTilt += deltaY * 0.01;
+cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
+updateCamera();
+}
+}
+}
+
+dragStartPosition.x = event.clientX;
+dragStartPosition.y = event.clientY;
+}
+}
+
+function onMouseUp(event) {
+isDragging = false;
+draggedBuilding = null;
+}
+
+function onWindowResize() {
+camera.aspect = window.innerWidth / window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// Calculation Functions for Additional Controls
+
+// Section 1: Calculate AOV based on Altitude and FOV Width
+function calculateAOV() {
+const aspectRatio = parseFloat(document.getElementById('calc1AspectRatio').value);
+const altitude = parseFloat(document.getElementById('calc1Altitude').value);
+const fovWidth = parseFloat(document.getElementById('calc1FOVWidth').value);
+
+if (isNaN(aspectRatio) || isNaN(altitude) || isNaN(fovWidth)) {
+playWarnSound(); // Play sound before alert
+alert("Please enter valid numerical values.");
+return;
+}
+
+if (altitude <= 0 || fovWidth <= 0) {
+playWarnSound(); // Play sound before alert
+alert("Altitude and FOV Width must be greater than zero.");
+return;
+}
+
+// Check if altitude exceeds the maximum allowed (500m)
+if (altitude > 500) {
+playWarnSound(); // Play sound before alert
+alert("Altitude exceeds the maximum allowed range of 500m.");
+return;
+}
+
+// Calculate Horizontal AOV
+const horizontalAOVRad = 2 * Math.atan(fovWidth / (2 * altitude));
+const horizontalAOV = THREE.MathUtils.radToDeg(horizontalAOVRad);
+
+// Check if calculated Horizontal AOV is within 30-120 degrees
+if (horizontalAOV < 30 || horizontalAOV > 120) {
+playWarnSound(); // Play sound before alert
+alert("Calculated Horizontal AOV is out of the allowed range (30-120°).");
+return;
+}
+
+// Calculate Vertical AOV
+const verticalAOVRad = 2 * Math.atan(Math.tan(horizontalAOVRad / 2) / aspectRatio);
+const verticalAOV = THREE.MathUtils.radToDeg(verticalAOVRad);
+
+// Calculate Diagonal AOV
+const diagonalTan = Math.sqrt(Math.pow(Math.tan(horizontalAOVRad / 2), 2) + Math.pow(Math.tan(verticalAOVRad / 2), 2));
+const diagonalAOVRad = 2 * Math.atan(diagonalTan);
+const diagonalAOV = THREE.MathUtils.radToDeg(diagonalAOVRad);
+
+// Calculate Maximum Allowed Diagonal AOV for current aspect ratio
+const maxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+
+// Check if calculated Diagonal AOV exceeds the maximum allowed
+if (diagonalAOV > maxDiagonalAOV) {
+playWarnSound(); // Play sound before alert
+alert(`Calculated Diagonal AOV (${diagonalAOV.toFixed(1)}°) exceeds the maximum allowed (${maxDiagonalAOV.toFixed(1)}°) for the selected aspect ratio.`);
+return;
+}
+
+// Display Results
+document.getElementById('calc1HorizontalAOV').textContent = horizontalAOV.toFixed(1);
+document.getElementById('calc1VerticalAOV').textContent = verticalAOV.toFixed(1);
+document.getElementById('calc1DiagonalAOV').textContent = diagonalAOV.toFixed(1);
+
+// Update Simulation Controls
+document.getElementById('aspectRatio').value = aspectRatio;
+document.getElementById('aov').value = horizontalAOV.toFixed(1);
+document.getElementById('altitudeValue').textContent = altitude.toFixed(1);
+document.getElementById('widthValue').textContent = fovWidth.toFixed(1);
+
+// Update drone altitude
+drone.position.y = altitude;
+
+// Update FOV Width in FOV Area
+fovArea.scale.set(fovWidth, fovWidth / aspectRatio, 1);
+
+// Trigger FOV update
+updateFOV();
+}
+
+// Section 2: Calculate Required Altitude based on Diagonal AOV and FOV Width
+function calculateAltitude() {
+const aspectRatio = parseFloat(document.getElementById('calc2AspectRatio').value);
+const diagonalAOVDegrees = parseFloat(document.getElementById('calc2DiagonalAOV').value);
+const fovWidth = parseFloat(document.getElementById('calc2FOVWidth').value);
+
+if (isNaN(aspectRatio) || isNaN(diagonalAOVDegrees) || isNaN(fovWidth)) {
+playWarnSound(); // Play sound before alert
+alert("Please enter valid numerical values.");
+return;
+}
+
+if (diagonalAOVDegrees <= 0 || fovWidth <= 0) {
+playWarnSound(); // Play sound before alert
+alert("Diagonal AOV and FOV Width must be greater than zero.");
+return;
+}
+
+// Calculate Maximum Allowed Diagonal AOV for current aspect ratio
+const maxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+
+// Check if input Diagonal AOV exceeds its maximum allowed
+if (diagonalAOVDegrees > maxDiagonalAOV) {
+playWarnSound(); // Play sound before alert
+alert(`Input Diagonal AOV (${diagonalAOVDegrees.toFixed(1)}°) exceeds the maximum allowed (${maxDiagonalAOV.toFixed(1)}°) for the selected aspect ratio.`);
+return;
+}
+
+// Convert diagonal AOV to radians
+const diagonalAOVRad = THREE.MathUtils.degToRad(diagonalAOVDegrees);
+
+// Calculate the required altitude
+// altitude = (FOV width / 2) * sqrt(1 + 1/AR^2) / tan(diagonal AOV / 2)
+const altitude = (fovWidth / 2) * Math.sqrt(1 + 1 / Math.pow(aspectRatio, 2)) / Math.tan(diagonalAOVRad / 2);
+
+// Check if calculated altitude is within 0-500m
+if (altitude < 0 || altitude > 500) {
+playWarnSound(); // Play sound before alert
+alert("Calculated altitude is out of the allowed range (0-500m).");
+return;
+}
+
+// Calculate Horizontal AOV based on altitude and fovWidth
+const horizontalAOVRad = 2 * Math.atan(fovWidth / (2 * altitude));
+const horizontalAOV = THREE.MathUtils.radToDeg(horizontalAOVRad);
+
+// Check if calculated Horizontal AOV is within 30-120 degrees
+if (horizontalAOV < 30 || horizontalAOV > 120) {
+playWarnSound(); // Play sound before alert
+alert("Calculated Horizontal AOV is out of the allowed range (30-120°).");
+return;
+}
+
+// Calculate Vertical AOV
+const verticalAOVRad = 2 * Math.atan(Math.tan(horizontalAOVRad / 2) / aspectRatio);
+const verticalAOV = THREE.MathUtils.radToDeg(verticalAOVRad);
+
+// Calculate Diagonal AOV (should match input, but for consistency)
+const diagonalTan = Math.sqrt(Math.pow(Math.tan(horizontalAOVRad / 2), 2) + Math.pow(Math.tan(verticalAOVRad / 2), 2));
+const diagonalAOVCalcRad = 2 * Math.atan(diagonalTan);
+const diagonalAOVCalc = THREE.MathUtils.radToDeg(diagonalAOVCalcRad);
+
+// Display Result
+document.getElementById('calc2Altitude').textContent = altitude.toFixed(1);
+
+// Update Calculation 1 Results
+document.getElementById('calc1AspectRatio').value = aspectRatio;
+document.getElementById('calc1Altitude').value = altitude.toFixed(1);
+document.getElementById('calc1FOVWidth').value = fovWidth.toFixed(1);
+document.getElementById('calc1HorizontalAOV').textContent = horizontalAOV.toFixed(1);
+document.getElementById('calc1VerticalAOV').textContent = verticalAOV.toFixed(1);
+document.getElementById('calc1DiagonalAOV').textContent = diagonalAOVCalc.toFixed(1);
+
+// Update Simulation Controls
+document.getElementById('aspectRatio').value = aspectRatio;
+document.getElementById('aov').value = horizontalAOV.toFixed(1);
+document.getElementById('altitudeValue').textContent = altitude.toFixed(1);
+document.getElementById('widthValue').textContent = fovWidth.toFixed(1);
+
+// Update drone altitude
+drone.position.y = altitude;
+
+// Update FOV Width in FOV Area
+fovArea.scale.set(fovWidth, fovWidth / aspectRatio, 1);
+
+// Trigger FOV update
+updateFOV();
+}
+
+function updateFOV() {
+const altitude = drone.position.y;
+const aov = parseFloat(document.getElementById('aov').value);
+const aspectRatio = parseFloat(document.getElementById('aspectRatio').value);
+
+let width = 0;
+let height = 0;
+let area = 0;
+let verticalAOV = 0;
+let diagonalAOV = 0;
+
+if (altitude > 0) {
+width = 2 * altitude * Math.tan(THREE.MathUtils.degToRad(aov) / 2);
+height = width / aspectRatio;
+area = width * height;
+
+// Calculate Vertical Angle of View
+verticalAOV = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(aov) / 2) / aspectRatio));
+
+// Calculate Diagonal Angle of View
+const diagonalTan = Math.sqrt(Math.pow(Math.tan(THREE.MathUtils.degToRad(aov) / 2), 2) + Math.pow(Math.tan(THREE.MathUtils.degToRad(verticalAOV) / 2), 2));
+diagonalAOV = 2 * THREE.MathUtils.radToDeg(Math.atan(diagonalTan));
+
+// Check if Diagonal AOV exceeds the maximum allowed
+if (diagonalAOV > currentMaxDiagonalAOV) {
+playWarnSound(); // Play sound before alert
+alert(`Calculated Diagonal AOV (${diagonalAOV.toFixed(1)}°) exceeds the maximum allowed (${currentMaxDiagonalAOV.toFixed(1)}°) for the selected aspect ratio.`);
+}
+}
+
+// Update FOV area
+fovArea.scale.set(width, height, 1);
+fovArea.position.copy(drone.position);
+fovArea.position.y = 0;
+
+// Update vertical line (height indicator)
+verticalLine.clear();
+const centerPoint = new THREE.Vector3(drone.position.x, 0, drone.position.z);
+const verticalLineGeometry = createDottedLine([
+drone.position.clone(),
+centerPoint
+], 0xFFFFFF);
+verticalLine.add(verticalLineGeometry);
+
+// Clear previous FOV lines
+fovLines.clear();
+
+// Calculate corners A, B, C, D
+const halfWidth = width / 2;
+const halfHeight = height / 2;
+const corners = [
+new THREE.Vector3(drone.position.x + halfWidth, 0, drone.position.z + halfHeight), // A
+new THREE.Vector3(drone.position.x - halfWidth, 0, drone.position.z + halfHeight), // B
+new THREE.Vector3(drone.position.x - halfWidth, 0, drone.position.z - halfHeight), // C
+new THREE.Vector3(drone.position.x + halfWidth, 0, drone.position.z - halfHeight) // D
+];
+
+// Add lines from drone to corners
+corners.forEach(corner => {
+const line = createDottedLine([drone.position.clone(), corner], 0xFFFFFF);
+fovLines.add(line);
+});
+
+// Clear previous diagonals
+diagonals.clear();
+
+// Add yellow dotted diagonals A-C and B-D
+if (altitude > 0) {
+const diagonalAC = createDottedLine([corners[0], corners[2]], 0xFFFF00); // Yellow
+const diagonalBD = createDottedLine([corners[1], corners[3]], 0xFFFF00); // Yellow
+diagonals.add(diagonalAC);
+diagonals.add(diagonalBD);
+}
+
+// Remove existing corner labels
+cornerLabels.forEach(label => scene.remove(label));
+cornerLabels = [];
+
+// Add new corner labels
+const labels = ['A', 'B', 'C', 'D'];
+corners.forEach((corner, index) => {
+const label = createCornerLabel(labels[index], corner);
+scene.add(label);
+cornerLabels.push(label);
+});
+
+// Remove existing dimension labels
+dimensionLabels.forEach(label => scene.remove(label));
+dimensionLabels = [];
+
+if (altitude > 0) {
+// Calculate midpoints for AB and BC
+const midpointAB = new THREE.Vector3(
+(corners[0].x + corners[1].x) / 2,
+0,
+(corners[0].z + corners[1].z) / 2
+);
+const midpointBC = new THREE.Vector3(
+(corners[1].x + corners[2].x) / 2,
+0,
+(corners[1].z + corners[2].z) / 2
+);
+
+// Offset for AB and BC labels to avoid overlapping with rectangle
+const offsetDistance = -5; // Adjust as needed
+// Calculate direction vectors for offset
+const directionAB = new THREE.Vector3(corners[1].x - corners[0].x, 0, corners[1].z - corners[0].z).normalize();
+const perpendicularAB = new THREE.Vector3(-directionAB.z, 0, directionAB.x); // Perpendicular to AB
+const directionBC = new THREE.Vector3(corners[2].x - corners[1].x, 0, corners[2].z - corners[1].z).normalize();
+const perpendicularBC = new THREE.Vector3(-directionBC.z, 0, directionBC.x); // Perpendicular to BC
+
+// Apply offset to midpoints
+const offsetMidpointAB = midpointAB.clone().add(perpendicularAB.multiplyScalar(offsetDistance));
+const offsetMidpointBC = midpointBC.clone().add(perpendicularBC.multiplyScalar(offsetDistance));
+
+// Calculate scaling factor based on altitude
+// Base scale at altitude = 100m, increases linearly up to altitude = 500m
+const baseAltitude = 100;
+const minScale = 20;
+const maxScale = 120;
+let scaleFactor = 20; // Initialize to minScale
+if (altitude <= baseAltitude) {
+scaleFactor = minScale;
+} else if (altitude >= 500) {
+scaleFactor = maxScale;
+} else {
+scaleFactor = minScale + ((altitude - baseAltitude) / (500 - baseAltitude)) * (maxScale - minScale);
+}
+
+// Create AB label
+const abLength = Math.sqrt(
+Math.pow(corners[1].x - corners[0].x, 2) +
+Math.pow(corners[1].z - corners[0].z, 2)
+);
+const abLabel = createDimensionLabel(`AB: ${abLength.toFixed(1)}m`, offsetMidpointAB, scaleFactor);
+scene.add(abLabel);
+dimensionLabels.push(abLabel);
+
+// Create BC label
+const bcLength = Math.sqrt(
+Math.pow(corners[2].x - corners[1].x, 2) +
+Math.pow(corners[2].z - corners[1].z, 2)
+);
+const bcLabel = createDimensionLabel(`BC: ${bcLength.toFixed(1)}m`, offsetMidpointBC, scaleFactor);
+scene.add(bcLabel);
+dimensionLabels.push(bcLabel);
+}
+
+// Remove existing center label
+if (centerLabel) {
+scene.remove(centerLabel);
+}
+
+// Create and add center label "O"
+const centerPosition = new THREE.Vector3(
+drone.position.x,
+0,
+drone.position.z
+);
+centerLabel = createCenterLabel('O', centerPosition);
+scene.add(centerLabel);
+
+// Update UI elements
+document.getElementById('aovValue').textContent = aov.toFixed(1);
+
+let verticalAOVDisplay = altitude > 0 ? verticalAOV.toFixed(1) : '0.0';
+let diagonalAOVDisplay = altitude > 0 ? diagonalAOV.toFixed(1) : '0.0';
+document.getElementById('vaovValue').textContent = verticalAOVDisplay;
+document.getElementById('daovValue').textContent = diagonalAOVDisplay;
+
+document.getElementById('altitudeValue').textContent = altitude.toFixed(1);
+document.getElementById('widthValue').textContent = width.toFixed(1);
+document.getElementById('heightValue').textContent = height.toFixed(1);
+document.getElementById('areaValue').textContent = area.toFixed(1);
+}
+
+function animate() {
+requestAnimationFrame(animate);
+
+// Rotate propellers
+propellers.forEach(propeller => {
+propeller.rotation.y += propeller.userData.clockwise ? 0.3 : -0.3;
+});
+
+// Update blinking lights
+updateBlinkingLights();
+
+// Render the scene
+renderer.render(scene, camera);
+}
+
+// Initialization
+init();
+animate();
+
+// Prevent text selection but allow scrolling on touch devices
+let isTouchMoving = false;
+
+document.body.addEventListener('touchstart', function(event) {
+isTouchMoving = false;
+}, { passive: false });
+
+document.body.addEventListener('touchmove', function(event) {
+isTouchMoving = true;
+}, { passive: false });
+
+document.body.addEventListener('touchend', function(event) {
+if (!isTouchMoving) {
+event.preventDefault(); // Prevent tap-triggered text selection
+}
+}, { passive: false });
+
+
+// Utility function to get touch positions
+function getTouchPos(touchEvent) {
+const rect = renderer.domElement.getBoundingClientRect();
+return {
+x: ((touchEvent.touches[0].clientX - rect.left) / rect.width) * 2 - 1,
+y: -((touchEvent.touches[0].clientY - rect.top) / rect.height) * 2 + 1
+};
+}
+
+// Add touch event listeners
+renderer.domElement.addEventListener('touchstart', function(event) {
+// Prevent default to avoid unwanted scrolling
+event.preventDefault();
+if (event.touches.length === 1) {
+// Single touch
+onMouseDown({
+clientX: event.touches[0].clientX,
+clientY: event.touches[0].clientY,
+button: 0 // Simulate left mouse button
+});
+}
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', function(event) {
+event.preventDefault();
+if (event.touches.length === 1) {
+onMouseMove({
+clientX: event.touches[0].clientX,
+clientY: event.touches[0].clientY,
+buttons: 1 // Simulate left mouse button held down
+});
+}
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchend', function(event) {
+event.preventDefault();
+onMouseUp(event);
+}, { passive: false });
+
+</script>
+</body>
+</html>

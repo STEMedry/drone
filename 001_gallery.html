@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Drones 3D Gallery</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            width: 95%;
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin: 20px 0;
+            font-size: clamp(24px, 4vw, 36px);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .cell {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 15px;
+            height: fit-content;
+        }
+        
+        .model-title {
+            font-size: clamp(16px, 2vw, 20px);
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            text-align: center;
+        }
+        
+        .sketchfab-embed-wrapper {
+            position: relative;
+            padding-bottom: 75%;
+            height: 0;
+            overflow: hidden;
+        }
+        
+        .sketchfab-embed-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 5px;
+            transform: translate3d(0,0,0);
+            -webkit-transform: translate3d(0,0,0);
+            -webkit-backface-visibility: hidden;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                width: 98%;
+                padding: 5px;
+            }
+            
+            .grid {
+                gap: 15px;
+            }
+            
+            .cell {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Drones 3D Gallery</h1>
+        
+        <div class="grid">
+
+            <div class="cell">
+                <div class="model-title">DJI Inspire 2 (2016)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="DJI Inspire 2"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/models/d1721af20fa8405780ff38a4c3b31d60/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">DJI Mavic Air (2018)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="DJI Mavic Air"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/models/a6445d82c2704c5e8aecbb9458bcf538/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">DJI Tello (2018)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="DJI Tello"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/models/2c8b6a9110f24c5da04a2561bbf855c2/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">DJI Mavic 2 Pro (2018)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="DJI Mavic 2 Pro Hasselblad"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/models/9410281016a540f583fa97b7d8ac9902/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">DJI M300 (2020)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="DJI M300"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/3d-models/dji-m300-drone-animated-d60665a39f774fe1b49a152f30588666/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">NASA Mars Ingenuity (2021)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="Ingenuity"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/3d-models/mars-ingenuity-helicopter-201020c6e7e04440a7a956abeda32040/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">NASA Titan Dragonfly (2023)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="Dragonfly"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/3d-models/nasa-dragonfly-quadcopter-fa2d23cbce6642598f5e6e6f65b8b312/embed">
+                    </iframe>
+                </div>
+            </div>
+
+            <div class="cell">
+                <div class="model-title">DJI Mini 4 Pro (2023)</div>
+                <div class="sketchfab-embed-wrapper">
+                    <iframe title="DJI Mini 4 Pro"
+                        frameborder="0"
+                        allowfullscreen 
+                        mozallowfullscreen="true"
+                        webkitallowfullscreen="true"
+                        allow="autoplay; fullscreen; xr-spatial-tracking"
+                        src="https://sketchfab.com/models/d5e04a9802af4e4fb2089c96d0f70db4/embed">
+                    </iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

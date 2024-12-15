@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quadcopter Controls Simulator</title>
+    <style>
+
+        /* Global Styles to Disable Highlight and User Selection */
+        * {
+            -webkit-user-select: none; /* Disable text selection in Chrome/Safari */
+            -moz-user-select: none;    /* Disable text selection in Firefox */
+            -ms-user-select: none;     /* Disable text selection in IE10+ */
+            user-select: none;         /* Standard syntax */
+            -webkit-tap-highlight-color: transparent; /* Disable tap highlight in Safari */
+            touch-action: manipulation; /* Optimize for touch interactions */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .simulator {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 1400px; /* Increased max-width for better layout */
+            margin: 0 auto;
+            background-color: white;
+            padding: 5px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 5px;
+        }
+        /* Updated Controls and Simulator Layout */
+        .controls-and-simulator {
+            display: flex;
+            width: 100%;
+            justify-content: space-between; /* Ensure space distribution */
+            align-items: flex-start; /* Align items to the top */
+        }
+        .left-side, .center-side, .right-side-panel {
+            padding: 10px;
+        }
+        .left-side {
+            width: 30%; /* Accommodate instructions and controls */
+            border-right: 1px solid #ccc;
+        }
+        .center-side {
+            width: 60%; /* Allocated ample space for simulation */
+            text-align: center;
+            position: relative;
+        }
+        .right-side-panel {
+            width: 10%; /* Reduced from 20% */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        /* New Status Panel Styles */
+        .new-status-panel {
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 5px;
+            background-color: #ecf0f1;
+            border-radius: 8px;
+        }
+        .new-status-panel .status {
+            margin: 5px 0;
+        }
+        /* Simulation Area */
+        #scene {
+            width: 700px; /* Increased width for better viewing */
+            height: 370px; /* Increased height for better viewing */
+            perspective: 1000px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            cursor: grab; /* Indicate draggable area */
+        }
+        #scene.dragging {
+            cursor: grabbing;
+        }
+        #world {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.1s ease-out; /* Smoother transition */
+        }
+        #grid {
+            width: 700px; /* Updated to match scene */
+            height: 700px;
+            position: absolute;
+            top: -150px;
+            left: 0;
+            background-image:
+                linear-gradient(to right, rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            transform: rotateX(90deg);
+        }
+        #horizontal-plane {
+            width: 700px;
+            height: 600px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background-color: rgba(200, 200, 200, 0.3);
+            transform: translateY(300px) rotateX(90deg);
+        }
+        /* New Quadcopter Container */
+        #quadcopter-container {
+            position: absolute;
+            top: 46%;
+            left: 51%;
+            transform-style: preserve-3d;
+            transition: transform 0.05s; /* Smoother and faster transition */
+            /* Center the container */
+            transform: translate(-50%, -50%);
+        }
+        /* Quadcopter Styles */
+        #quadcopter {
+            width: 48px;
+            height: 48px;
+            transform-style: preserve-3d;
+            transition: transform 0.05s; /* Smoother and faster transition */
+            position: relative; /* To position propellers absolutely inside */
+        }
+        .face {
+            position: absolute;
+            width: 48px;
+            height: 30px;
+            background-color: rgba(52, 152, 219, 0.8);
+            border: 2px solid #2980b9;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            color: white;
+        }
+        /* Corrected Front and Back Labels */
+        .front { 
+            transform: translateZ(24px);
+            /* Label correctly as Front */
+            content: "F";
+        }
+        .back { 
+            transform: translateZ(-24px) rotateY(180deg);
+            /* Label correctly as Back */
+            content: "B";
+        }
+        .right { transform: translateX(24px) rotateY(90deg); }
+        .left { transform: translateX(-24px) rotateY(-90deg); }
+        .top { 
+            transform: translateY(-20px) rotateX(90deg);
+            position: relative; /* For positioning propellers */
+        }
+        .bottom { transform: translateY(-20px) rotateX(-90deg); }
+        .controls {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 5px;
+        }
+        .control-group {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 40px);
+            gap: 5px;
+            margin: 10px;
+        }
+        button {
+            font-size: 13px;
+            padding: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: manipulation;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .left-button {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .right-button {
+            background-color: #FFA500;
+            color: white;
+        }
+        #reset {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        #reset:hover {
+            background-color: #c0392b;
+        }
+        #practice {
+            background-color: #3498db;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 10px;
+            margin-left: 10px; /* Space between Reset and Practice buttons */
+        }
+
+        #practice:hover {
+            background-color: #2980b9;
+        }
+         .empty-button {
+            visibility: hidden;
+        }
+        #instructions {
+            margin-bottom: 10px; /* Adjusted for new position */
+            font-size: 14px;
+            text-align: left;
+        }
+        .info-section h3 {
+            margin-bottom: 5px;
+        }
+        .info-section p {
+            margin: 4px 0;
+            font-size: 13px;
+        }
+        .green {
+            color: #4CAF50;
+        }
+        .orange {
+            color: #FFA500;
+        }
+        /* Status Panel Styles (Updated) */
+        .status {
+            background-color: #bdc3c7;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            width: 90%; /* Reduced width */
+        }
+        .status span {
+            display: block;
+            margin: 5px 0;
+        }
+        /* Practice Counter Styling */
+        .practice-counter {
+            background-color: #ecf0f1;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 14px;
+            color: #2c3e50;
+            margin-top: 10px;
+            width: 90%; /* Match the status panel width */
+        }
+        /* Axes Styles */
+        #axis {
+            position: absolute;
+            top: 50%;
+            left: 12%;
+            transform-style: preserve-3d;
+        }
+        .axis-line {
+            position: absolute;
+            width: 600px; /* Updated to match scene size */
+            height: 2px;
+            background-color: black;
+            transform-origin: center;
+        }
+        #x-axis { 
+            transform: rotateY(-90deg); 
+            background-color: red; 
+        }
+        #y-axis { transform: rotateZ(90deg); background-color: green; }
+        #z-axis { background-color: blue; }
+        .axis-label {
+            position: absolute;
+            font-size: 12px;
+            font-weight: bold;
+            color: black;
+        }
+        #front-label {
+            left: 10px;
+            top: -25px;
+        }
+        #rear-label {
+            right: 10px;
+            top: -25px;
+        }
+        #right-label {
+            left: 580px; /* Adjusted for new axis size */
+            top: 10px;
+        }
+        #left-label {
+            left: 10px; /* Adjusted for new axis size */
+            top: 10px;
+        }
+        #up-label {
+            left: 120px; /* Adjusted for new axis size */
+            top: 10px;
+        }
+        #down-label {
+            left: 450px; /* Adjusted for new axis size */
+            top: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1500px) {
+            .controls-and-simulator {
+                flex-direction: column;
+                align-items: center;
+            }
+            .left-side, .center-side, .right-side-panel {
+                width: 100%;
+                border: none;
+            }
+            #scene {
+                width: 100%;
+                height: 400px;
+            }
+            .new-status-panel {
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Propeller Styles */
+        .propeller {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #333;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Center the label */
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            transition: transform 0.2s ease; /* For smooth scaling */
+        }
+
+        /* New Propeller Rotating Inner Div */
+        .propeller-rotating {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Specific Propeller Positions */
+        #prop-A {
+            top: -20px; /* Adjust as needed */
+            left: -20px; /* Adjust as needed */
+            background-color: red;
+        }
+        #prop-B {
+            top: -20px; /* Adjust as needed */
+            right: -20px; /* Adjust as needed */
+            background-color: red;
+        }
+        #prop-C {
+            bottom: -20px; /* Adjust as needed */
+            left: -20px; /* Adjust as needed */
+            background-color: green;
+        }
+        #prop-D {
+            bottom: -20px; /* Adjust as needed */
+            right: -20px; /* Adjust as needed */
+            background-color: green;
+        }
+
+        /* Rotation Animations */
+        @keyframes spin-clockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        @keyframes spin-anticlockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+        /* Applying Animations to Inner Rotating Divs */
+        #prop-A .propeller-rotating, #prop-D .propeller-rotating {
+            animation: spin-clockwise 1s linear infinite;
+        }
+        #prop-B .propeller-rotating, #prop-C .propeller-rotating {
+            animation: spin-anticlockwise 1s linear infinite;
+        }
+
+        /* Scale Up and Down Classes */
+        .scale-up {
+            transform: scale(1.5);
+        }
+        .scale-down {
+            transform: scale(0.4);
+        }
+        /* Scale Classes for Pitch Controls */
+        .scale-pitch-forward {
+         transform: scale(1.5);
+        }
+        .scale-pitch-backward {
+         transform: scale(1.5);
+      }
+         .scale-roll-left {
+         transform: scale(1.5);
+         }
+         .scale-roll-right {
+         transform: scale(1.5);
+       }
+         .scale-yaw-left {
+         transform: scale(1.5);
+       }
+         .scale-yaw-right {
+         transform: scale(1.5);
+       }
+    </style>
+</head>
+<body>
+    <div class="simulator">
+        <div class="header">
+            <h1>Quadcopter Controls Simulator</h1>
+        </div>
+        <!-- Controls and Simulator Layout -->
+        <div class="controls-and-simulator">
+            <div class="left-side">
+                <!-- Instructions above Keyboard Controls and Piloting Techniques -->
+                <div id="instructions">
+                    <h3>Instructions:</h3>
+                    <ol>
+                        <li>Use the on-screen buttons or keyboard keys to control the quadcopter.</li>
+                        <li>Observe the status panel to monitor yaw, pitch, roll, and throttle values.</li>
+                        <li>Experiment with different control combinations to perform piloting techniques.</li>
+                        <li>Click and drag on the simulation area to change your view perspective.</li>
+                        <li>Click the Reset button to bring the quadcopter back to its initial state.</li>
+                    </ol>
+                </div>
+                <div class="info-section">
+                    <h3>Keyboard Controls</h3>
+                    <p><span class="green"><strong>W / S</strong> = Throttle Up / Down</span></p>
+                    <p><span class="green"><strong>A / D</strong> = Yaw Left / Right</span></p>
+                    <p><span class="orange"><strong>Up / Down Arrow</strong> = Pitch Forward / Backward</span></p>
+                    <p><span class="orange"><strong>Left / Right Arrow</strong> = Roll Left / Right</span></p>
+                    <p><span class="red"><strong>R</strong> = Reset</span></p>
+                </div>
+                <div class="info-section">
+                    <h3>Piloting Techniques</h3>
+                    <p><span class="green"><strong>Yaw Left</strong></span> + <span class="orange"><strong>Roll Right</strong></span> = Anti-clockwise Orbit</p>
+                    <p><span class="green"><strong>Yaw Right</strong></span> + <span class="orange"><strong>Roll Left</strong></span> = Clockwise Orbit</p>
+                    <p><span class="green"><strong>Yaw Left</strong></span> + <span class="orange"><strong>Pitch Forward</strong></span> = Anticlockwise Circles</p>
+                    <p><span class="green"><strong>Yaw Right</strong></span> + <span class="orange"><strong>Pitch Forward</strong></span> = Clockwise Circles</p>
+                    <p><span class="orange"><strong>Pitch Forward</strong></span> + <span class="green"><strong>Yaw Left/Right</strong></span> = Figure 8</p>
+                </div>
+            </div>
+            <div class="center-side">
+                <div id="scene">
+                    <div id="world">
+                        <div id="grid"></div>
+                        <div id="horizontal-plane"></div>
+                        <!-- New Quadcopter Container -->
+                        <div id="quadcopter-container">
+                            <div id="quadcopter">
+                                <!-- Corrected Front and Back Labels -->
+                                <div class="face front">B</div>
+                                <div class="face back">F</div>
+                                <div class="face right">R</div>
+                                <div class="face left">L</div>
+                                <div class="face top">
+                                    <div class="corner-light front-light" id="front-left-light"></div>
+                                    <div class="corner-light front-light" id="front-right-light"></div>
+                                    <div class="corner-light rear-light" id="rear-left-light"></div>
+                                    <div class="corner-light rear-light" id="rear-right-light"></div>
+                                    <div class="arrow"></div>
+                                    <!-- Added Propellers -->
+                                    <div class="propeller" id="prop-A">
+                                         <div class="propeller-rotating">A</div></div>
+                                    <div class="propeller" id="prop-B">
+                                         <div class="propeller-rotating">B</div></div>
+                                    <div class="propeller" id="prop-C">
+                                         <div class="propeller-rotating">C</div></div>
+                                    <div class="propeller" id="prop-D">
+                                         <div class="propeller-rotating">D</div></div>
+                                </div>
+                                <div class="face bottom"></div>
+                            </div>
+                        </div>
+                        <div id="axis">
+                            <div class="axis-line" id="x-axis">
+                                <span class="axis-label" id="rear-label">REAR (-y)</span>
+                                <span class="axis-label" id="front-label">FRONT (+y)</span>
+                            </div>
+                            <div class="axis-line" id="y-axis">
+                                <span class="axis-label" id="up-label">UP (+z)</span>
+                                <span class="axis-label" id="down-label">DOWN (-z)</span>
+                            </div>
+                            <div class="axis-line" id="z-axis">
+                                <span class="axis-label" id="right-label">RIGHT (+x)</span>
+                                <span class="axis-label" id="left-label">LEFT (-x)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <button class="empty-button"></button>
+                        <button id="throttle-up" class="left-button">Throttle Up</button>
+                        <button class="empty-button"></button>
+                        <button id="yaw-left" class="left-button">Yaw Left</button>
+                        <button class="empty-button"></button>
+                        <button id="yaw-right" class="left-button">Yaw Right</button>
+                        <button class="empty-button"></button>
+                        <button id="throttle-down" class="left-button">Throttle Down</button>
+                        <button class="empty-button"></button>
+                    </div>
+                    <div class="control-group">
+                        <button class="empty-button"></button>
+                        <button id="pitch-forward" class="right-button">Pitch Forward</button>
+                        <button class="empty-button"></button>
+                        <button id="roll-left" class="right-button">Roll Left</button>
+                        <button class="empty-button"></button>
+                        <button id="roll-right" class="right-button">Roll Right</button>
+                        <button class="empty-button"></button>
+                        <button id="pitch-backward" class="right-button">Pitch Backward</button>
+                        <button class="empty-button"></button>
+                    </div>
+                </div>
+                <button id="reset">Reset</button>
+            </div>
+            <div class="right-side-panel">
+                <div class="new-status-panel">
+                    <div class="status">
+                        <strong>Yaw:</strong> <span id="status-yaw">0°</span>
+                    </div>
+                    <div class="status">
+                        <strong>Pitch:</strong> <span id="status-pitch">0°</span>
+                    </div>
+                    <div class="status">
+                        <strong>Roll:</strong> <span id="status-roll">0°</span>
+                    </div>
+                    <div class="status">
+                        <strong>Throttle:</strong> <span id="status-throttle">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // References to DOM elements
+        const quadcopterContainer = document.getElementById('quadcopter-container');
+        const quadcopter = document.getElementById('quadcopter');
+        const world = document.getElementById('world');
+        const statusYaw = document.getElementById('status-yaw');
+        const statusPitch = document.getElementById('status-pitch');
+        const statusRoll = document.getElementById('status-roll');
+        const statusThrottle = document.getElementById('status-throttle');
+        const propellers = document.querySelectorAll('.propeller');
+
+// References to specific propellers for pitch scaling
+const propA = document.getElementById('prop-A');
+const propB = document.getElementById('prop-B');
+const propC = document.getElementById('prop-C');
+const propD = document.getElementById('prop-D');
+
+        // Initial state variables
+        let yaw = 0;
+        let pitch = 0;
+        let roll = 0;
+        let throttle = 0;
+        let x = 0; // Left-Right position
+        let y = 0; // Forward-Backward position
+        let z = 0; // Up-Down position
+        let scale = 1.2;
+        let viewAngleX = -20;
+        let viewAngleY = 30; // Initial view angle
+
+        // Pitch and Roll limits
+        const MAX_PITCH = 20;
+        const MIN_PITCH = -20;
+        const MAX_ROLL = 20;
+        const MIN_ROLL = -20;
+
+        // Update the status panel with current values
+        function updateStatusPanel() {
+            statusYaw.textContent = `${yaw}°`;
+            statusPitch.textContent = `${pitch}°`;
+            statusRoll.textContent = `${roll}°`;
+            statusThrottle.textContent = `${throttle}`;
+        }
+
+        // Update the quadcopter's position and rotation
+        function updateQuadcopterPosition() {
+            // Apply translation to the container
+            quadcopterContainer.style.transform = `
+                translate3d(${x}px, ${z}px, ${y}px) 
+                scale3d(${scale}, ${scale}, ${scale})
+            `;
+            // Apply rotation to the quadcopter
+            quadcopter.style.transform = `
+                rotateY(${yaw}deg)
+                rotateX(${pitch}deg)
+                rotateZ(${-roll}deg)
+            `;
+            // Apply view rotations to the world
+            world.style.transform = `
+                rotateX(${viewAngleX}deg)
+                rotateY(${viewAngleY}deg)
+            `;
+            // Update the status panel
+            updateStatusPanel();
+        }
+
+        // Movement Functions
+        function throttleUp() { 
+            throttle = Math.min(throttle + 4, 100); // Increased increment
+            z = Math.min(z - 4, 200); // Increase upward movement
+            updateQuadcopterPosition(); 
+        }
+        function throttleDown() { 
+            throttle = Math.max(throttle - 4, 0); // Increased decrement
+            z = Math.max(z + 4, -200); // Increase downward movement
+            updateQuadcopterPosition(); 
+        }
+        function yawLeft() { 
+            yaw += 4; // Continuous rotation
+            updateQuadcopterPosition(); 
+        }
+        function yawRight() { 
+            yaw -= 4; // Continuous rotation
+            updateQuadcopterPosition(); 
+        }
+        function pitchForward() { 
+            if (pitch = MAX_PITCH) { // Limit pitch
+                pitch = Math.min(pitch + 2, MAX_PITCH);
+                const angle = yaw * Math.PI / 180;
+                y -= 4 * Math.cos(angle); // Forward movement
+                x -= 4 * Math.sin(angle); // Adjust based on yaw
+                updateQuadcopterPosition();
+            }
+        }
+        function pitchBackward() { 
+            if (pitch = MIN_PITCH) { // Limit pitch
+                pitch = Math.max(pitch - 2, MIN_PITCH);
+                const angle = yaw * Math.PI / 180;
+                y += 4 * Math.cos(angle); // Backward movement
+                x += 4 * Math.sin(angle); // Adjust based on yaw
+                updateQuadcopterPosition();
+            }
+        }
+        function rollLeft() { 
+            if (roll = MAX_ROLL) { // Limit roll
+                roll = Math.min(roll + 2, MAX_ROLL);
+                const angle = yaw * Math.PI / 180;
+                x -= 4 * Math.cos(angle); // Left movement
+                y += 4 * Math.sin(angle); // Adjust based on yaw
+                updateQuadcopterPosition();
+            }
+        }
+        function rollRight() { 
+            if (roll = MIN_ROLL) { // Limit roll
+                roll = Math.max(roll - 2, MIN_ROLL);
+                const angle = yaw * Math.PI / 180;
+                x += 4 * Math.cos(angle); // Right movement
+                y -= 4 * Math.sin(angle); // Adjust based on yaw
+                updateQuadcopterPosition();
+            }
+        }
+
+        // Release transformations for smooth transitions
+function releasePitch() {
+const intervalId = setInterval(() => {
+if (pitch > 0) {
+pitch = Math.max(pitch - 2, 0);
+const angle = yaw * Math.PI / 180;
+y -= 4 * Math.cos(angle);
+x -= 4 * Math.sin(angle);
+}
+else if (pitch < 0) {
+pitch = Math.min(pitch + 2, 0);
+const angle = yaw * Math.PI / 180;
+y += 4 * Math.cos(angle);
+x += 4 * Math.sin(angle);
+}
+else {
+clearInterval(intervalId);
+}
+updateQuadcopterPosition();
+}, 50);
+}
+
+        function releaseRoll() {
+            const intervalId = setInterval(() => {
+                if (roll > 0) {
+                    roll = Math.max(roll - 2, 0);
+                    const angle = yaw * Math.PI / 180;
+                }
+                else if (roll < 0) {
+                    roll = Math.min(roll + 2, 0);
+                    const angle = yaw * Math.PI / 180;
+                }
+                else {
+                    clearInterval(intervalId);
+                }
+                updateQuadcopterPosition();
+            }, 50);
+        }
+
+        // Function to add continuous event listeners for buttons
+        function addContinuousEventListener(elementId, callback, releaseCallback = null, onStart = null) {
+            let intervalId = null;
+            const element = document.getElementById(elementId);
+            
+            const startAction = (e) => {
+                e.preventDefault();
+                if (onStart) onStart();
+                callback();
+                intervalId = setInterval(callback, 50); // Smooth continuous action
+            };
+            
+            const stopAction = (e) => {
+                e.preventDefault();
+                clearInterval(intervalId);
+                if (releaseCallback) releaseCallback();
+            }
+
+            element.addEventListener('mousedown', startAction);
+            element.addEventListener('touchstart', startAction);
+            
+            element.addEventListener('mouseup', stopAction);
+            element.addEventListener('mouseleave', stopAction);
+            element.addEventListener('touchend', stopAction);
+            element.addEventListener('touchcancel', stopAction);
+        }
+
+// Functions to handle scaling
+function scaleUp() {
+    propellers.forEach(p => p.classList.add('scale-up'));
+}
+
+function scaleDown() {
+    propellers.forEach(p => p.classList.add('scale-down'));
+}
+
+function stopScaleUp() {
+    propellers.forEach(p => p.classList.remove('scale-up'));
+}
+
+function stopScaleDown() {
+    propellers.forEach(p => p.classList.remove('scale-down'));
+}
+
+function scalePitchForward() {
+propC.classList.add('scale-pitch-forward');
+propD.classList.add('scale-pitch-forward');
+}
+
+function stopScalePitchForward() {
+propC.classList.remove('scale-pitch-forward');
+propD.classList.remove('scale-pitch-forward');
+}
+
+function scalePitchBackward() {
+propA.classList.add('scale-pitch-backward');
+propB.classList.add('scale-pitch-backward');
+}
+
+function stopScalePitchBackward() {
+propA.classList.remove('scale-pitch-backward');
+propB.classList.remove('scale-pitch-backward');
+}
+
+function scaleRollLeft() {
+propB.classList.add('scale-roll-left');
+propD.classList.add('scale-roll-left');
+}
+
+function stopScaleRollLeft() {
+propB.classList.remove('scale-roll-left');
+propD.classList.remove('scale-roll-left');
+}
+
+function scaleRollRight() {
+propA.classList.add('scale-roll-right');
+propC.classList.add('scale-roll-right');
+}
+
+function stopScaleRollRight() {
+propA.classList.remove('scale-roll-right');
+propC.classList.remove('scale-roll-right');
+}
+
+function scaleYawLeft() {
+propA.classList.add('scale-yaw-left');
+propD.classList.add('scale-yaw-left');
+}
+
+function stopScaleYawLeft() {
+propA.classList.remove('scale-yaw-left');
+propD.classList.remove('scale-yaw-left');
+}
+
+function scaleYawRight() {
+propB.classList.add('scale-yaw-right');
+propC.classList.add('scale-yaw-right');
+}
+
+function stopScaleYawRight() {
+propB.classList.remove('scale-yaw-right');
+propC.classList.remove('scale-yaw-right');
+}
+
+        // Reset Function
+        function reset() {
+            yaw = 0;
+            pitch = 0;
+            roll = 0;
+            throttle = 0;
+            x = 0;
+            y = 0;
+            z = 0;
+            scale = 1.2;
+            viewAngleX = -20;
+            viewAngleY = 30; // Reset to initial view angle
+            updateQuadcopterPosition();
+
+    // Remove all scaling classes from propellers
+    propellers.forEach(p => {
+        p.classList.remove('scale-up');
+        p.classList.remove('scale-down');
+        p.classList.remove('scale-pitch-forward');
+        p.classList.remove('scale-pitch-backward');
+        p.classList.remove('scale-roll-left');
+p.classList.remove('scale-roll-right');
+p.classList.remove('scale-yaw-left');
+p.classList.remove('scale-yaw-right');
+    });
+        }
+
+        // Adding event listeners to buttons for continuous actions
+        addContinuousEventListener('throttle-up', throttleUp, stopScaleUp, scaleUp);
+        addContinuousEventListener('throttle-down', throttleDown, stopScaleDown, scaleDown);                 
+        addContinuousEventListener('yaw-left', yawLeft, stopScaleYawLeft, scaleYawLeft);
+        addContinuousEventListener('yaw-right', yawRight, stopScaleYawRight, scaleYawRight);
+        addContinuousEventListener('pitch-forward', pitchForward, () => { releasePitch(); stopScalePitchForward(); }, scalePitchForward);
+addContinuousEventListener('pitch-backward', pitchBackward, () => { releasePitch(); stopScalePitchBackward(); }, scalePitchBackward);
+        addContinuousEventListener('roll-left', rollLeft, () => { releaseRoll(); stopScaleRollLeft(); }, scaleRollLeft);
+        addContinuousEventListener('roll-right', rollRight, () => { releaseRoll(); stopScaleRollRight(); }, scaleRollRight);
+
+        // Adding event listener to Reset button
+        document.getElementById('reset').addEventListener('click', reset);
+
+        // Keyboard controls
+        const keyMap = {
+            'w': throttleUp,
+            's': throttleDown,
+            'a': yawLeft,
+            'd': yawRight,
+            'arrowup': pitchForward,
+            'arrowdown': pitchBackward,
+            'arrowleft': rollLeft,
+            'arrowright': rollRight,
+            'q': () => {}, // Removed view controls
+            'e': () => {}, // Removed view controls
+            'r': reset
+        };
+
+        const keyReleaseMap = {
+    'arrowup': () => { releasePitch(); stopScalePitchForward(); },
+    'arrowdown': () => { releasePitch(); stopScalePitchBackward(); },    
+    'arrowleft': () => { releaseRoll(); stopScaleRollLeft(); },
+    'arrowright': () => { releaseRoll(); stopScaleRollRight(); },
+    // Adding release functions for throttle scaling
+    'w': stopScaleUp,
+    's': stopScaleDown,
+'a': stopScaleYawLeft,
+'d': stopScaleYawRight
+};
+        let keyIntervals = {};
+
+        document.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (keyMap[key] && !keyIntervals[key]) {
+                keyMap[key]();
+                keyIntervals[key] = setInterval(keyMap[key], 50); // Smooth continuous action
+        // Handle scaling for throttle via keyboard
+        if (key === 'w') {
+            scaleUp();
+        }
+        if (key === 's') {
+            scaleDown();
+        }
+
+// Handle scaling for yaw via keyboard
+if (key === 'a') {
+scaleYawLeft();
+}
+if (key === 'd') {
+scaleYawRight();
+}
+
+       // Handle scaling for pitch via keyboard
+        if (key === 'arrowup') {
+            scalePitchForward();
+        }
+        if (key === 'arrowdown') {
+            scalePitchBackward();
+        }
+
+// Handle scaling for roll via keyboard
+if (key === 'arrowleft') {
+scaleRollLeft();
+}
+if (key === 'arrowright') {
+scaleRollRight();
+}
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (keyIntervals[key]) {
+                clearInterval(keyIntervals[key]);
+                delete keyIntervals[key];
+                if (keyReleaseMap[key]) keyReleaseMap[key]();
+            }
+        });
+
+        // Initialize the quadcopter position
+        updateQuadcopterPosition();
+
+        // Implement Drag-to-Rotate functionality
+        const scene = document.getElementById('scene');
+        let isDragging = false;
+        let previousMouseX = 0;
+        let previousMouseY = 0;
+        const dragSensitivity = 0.4; // Adjusted sensitivity for better control
+
+        scene.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            scene.classList.add('dragging');
+            previousMouseX = e.clientX;
+            previousMouseY = e.clientY;
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const deltaX = e.clientX - previousMouseX;
+                const deltaY = e.clientY - previousMouseY;
+                viewAngleY += deltaX * dragSensitivity;
+                viewAngleX -= deltaY * dragSensitivity;
+                // Limit the vertical angle to prevent flipping
+                viewAngleX = Math.max(-90, Math.min(90, viewAngleX));
+                updateQuadcopterPosition();
+                previousMouseX = e.clientX;
+                previousMouseY = e.clientY;
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isDragging) {
+                isDragging = false;
+                scene.classList.remove('dragging');
+            }
+        });
+
+        // Touch support for mobile devices
+        scene.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                scene.classList.add('dragging');
+                previousMouseX = e.touches[0].clientX;
+                previousMouseY = e.touches[0].clientY;
+            }
+        });
+
+        document.addEventListener('touchmove', (e) => {
+            if (isDragging && e.touches.length === 1) {
+                const deltaX = e.touches[0].clientX - previousMouseX;
+                const deltaY = e.touches[0].clientY - previousMouseY;
+                viewAngleY += deltaX * dragSensitivity;
+                viewAngleX -= deltaY * dragSensitivity;
+                // Limit the vertical angle to prevent flipping
+                viewAngleX = Math.max(-90, Math.min(90, viewAngleX));
+                updateQuadcopterPosition();
+                previousMouseX = e.touches[0].clientX;
+                previousMouseY = e.touches[0].clientY;
+            }
+        });
+
+        document.addEventListener('touchend', () => {
+            if (isDragging) {
+                isDragging = false;
+                scene.classList.remove('dragging');
+            }
+        });
+    </script>
+</body>
+</html>

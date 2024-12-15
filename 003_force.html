@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlyHigh: Quadcopter Physics Explorer</title>
+    <style>
+        body { 
+            margin: 0; 
+            overflow: hidden; 
+            font-family: Arial, sans-serif; 
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        /* Header Section for Information */
+        #header {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 2; /* Increased z-index for visibility */
+            width: 100%;
+            flex: 0 0 auto;
+        }
+        #header h1 {
+            margin: 0;
+            font-size: 28px; /* Increased font size for better visibility */
+        }
+
+        /* Container for GUI and Status Box */
+        #controls-container {
+            position: absolute;
+            top: 80px; /* Lowered position */
+            left: 10px; /* Moved from right to left */
+            z-index: 3; /* Increased z-index to appear above other elements */
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align items to the left */
+            user-select: none; /* Prevent text selection in the entire control panel */
+        }
+
+        /* Status Box Above Control Panel */
+        #statusBox {
+            margin-bottom: 20px; /* Space between Status Box and GUI */
+            background: rgba(0,0,0,0.7);
+            color: gold;
+            padding: 15px;
+            font-size: 24px; /* Increased font size */
+            border-radius: 8px;
+            width: 300px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px; /* Added spacing between Force and Status */
+            z-index: 1; /* Ensure it stays above other elements in controls-container */
+            user-select: none; /* Prevent text selection */
+        }
+
+        #statusBox div {
+            /* Ensure all child divs have the same font size and prevent text selection */
+            font-size: 24px;
+            user-select: none; /* Prevent text selection */
+        }
+
+        /* Informational Message Styling */
+        #relativeScaleMessage {
+            font-weight: bold;
+            color: white;
+            margin-top: 10px; /* Space above the message */
+        }
+
+        /* dat.GUI Styling */
+        .dg.main { 
+            width: 450px !important; /* Adjusted width for longer sliders */
+            font-size: 18px; /* Increased font size */
+            user-select: none; /* Prevent text selection in dat.GUI */
+        }
+        .dg.main .close-button { display: none !important; }
+        .dg .property-value { 
+            display: inline-block !important; 
+            width: 30px !important; /* Reduced width to half (from 60px to 30px) */
+            text-align: right;
+            user-select: none; /* Prevent text selection */
+        }
+        .dg .property-name {
+            user-select: none; /* Prevent text selection */
+        }
+        .dg .slider {
+            position: relative;
+            height: 12px; 
+            width: 400px; /* Lengthened the sliders */
+            user-select: none; /* Prevent text selection */
+        }
+        .dg .slider .slider-fg { height: 12px; }
+        .dg .slider .ticks {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            user-select: none; /* Prevent text selection */
+        }
+        .dg .slider .tick {
+            width: 1px;
+            height: 12px;
+            background-color: #555;
+            user-select: none; /* Prevent text selection */
+        }
+        .dg .slider input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 12px;
+            background: #ddd; /* Default background */
+            outline: none;
+            border-radius: 6px;
+            margin: 0;
+            padding: 0;
+            border: 1px solid #555; /* Added border for better visibility */
+            user-select: none; /* Prevent text selection */
+            -webkit-user-select: none; /* Prevent text selection in Safari */
+        }
+        /* Remove default tooltip on iOS by removing title attribute */
+        .dg .slider input[type=range]::-webkit-slider-runnable-track {
+            /* Additional styling if needed */
+        }
+        /* Default Thumb Styles */
+        .dg .slider input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+            margin-top: -4px;
+        }
+        .dg .slider input[type=range]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            cursor: pointer;
+            border-radius: 50%;
+            border: none;
+        }
+        /* Customized Slider Background Colors */
+        /* Weight Slider - Light Blue with Blue Border */
+        .dg .slider.property-weight input[type=range] {
+            background: #ADD8E6;
+            border: 1px solid #0000FF; /* Blue border */
+        }
+        /* Rotor Speed Slider - Light Pink with Pink Border */
+        .dg .slider.property-rotorSpeed input[type=range] {
+            background: #FFB6C1;
+            border: 1px solid #FF69B4; /* Pink border */
+        }
+        /* Gravity Slider - Light Purple with Purple Border */
+        .dg .slider.property-gravity input[type=range] {
+            background: #D8BFD8;
+            border: 1px solid #BA55D3; /* Purple border */
+        }
+        /* Atmospheric Pressure Slider - Light Yellow with Gold Border */
+        .dg .slider.property-pressure input[type=range] {
+            background: #FFFFE0;
+            border: 1px solid #FFD700; /* Gold border */
+        }
+        /* Customized Slider Thumb Colors */
+        /* Weight Slider - Light Green */
+        .dg .slider.property-weight input[type=range]::-webkit-slider-thumb {
+            background: #90EE90 !important;
+        }
+        .dg .slider.property-weight input[type=range]::-moz-range-thumb {
+            background: #90EE90 !important;
+        }
+        /* Rotor Speed Slider - Light Coral */
+        .dg .slider.property-rotorSpeed input[type=range]::-webkit-slider-thumb {
+            background: #F08080 !important;
+        }
+        .dg .slider.property-rotorSpeed input[type=range]::-moz-range-thumb {
+            background: #F08080 !important;
+        }
+        /* Gravity Slider - Light Grey */
+        .dg .slider.property-gravity input[type=range]::-webkit-slider-thumb {
+            background: #D3D3D3 !important;
+        }
+        .dg .slider.property-gravity input[type=range]::-moz-range-thumb {
+            background: #D3D3D3 !important;
+        }
+        /* Atmospheric Pressure Slider - Light Orange */
+        .dg .slider.property-pressure input[type=range]::-webkit-slider-thumb {
+            background: #FFA07A !important;
+        }
+        .dg .slider.property-pressure input[type=range]::-moz-range-thumb {
+            background: #FFA07A !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+        <h1>Fly High: Quadcopter Physics Explorer (with sound)</h1>
+    </div>
+
+    <!-- Container for Controls and Status -->
+    <div id="controls-container">
+        <!-- New Status Box -->
+        <div id="statusBox">
+            <div id="force">Force: N/A</div>
+            <div id="statusMessage">Status: N/A</div>
+            <div id="hoverRotorSpeed">Hover Rotor Speed: N/A</div> <!-- New Element -->
+        </div>
+        <!-- Informational Message Below Control Panel -->
+        <div id="relativeScaleMessage">All values are on relative scales and not real precise values.<p></p></div>
+        <!-- dat.GUI will be injected here by dat.GUI library -->
+    </div>
+
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OrbitControls Library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- dat.GUI Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+    <script>
+        let scene, camera, renderer, quadcopter, ground;
+        let orbitControls; // Added OrbitControls
+        let blinkingBalls = [];
+        let blinkInterval = 1000;
+        let lastBlinkTime = 0;
+        let isBlinkVisible = true;
+        let isHovering = false; // Flag for hovering
+        let hoverStartY = 0; // Base Y position when hover starts
+        let hoverTime = 0; // Time accumulator for hover animation
+        const hoverFrequency = 1; // Hz
+        const hoverAmplitude = 0.2; // Amplitude of hover oscillation
+
+        let particles; // Particle system variable
+
+        // Velocity Variables for Smooth Movement
+        let velocity = {
+            y: 0
+        };
+
+        let guiControls = { // Renamed to avoid conflict with OrbitControls
+            weight: 5,
+            rotorSpeed: 0,
+            gravity: 5,
+            pressure: 5,
+            reset: function() {
+                guiControls.weight = 5;
+                guiControls.rotorSpeed = 0;
+                guiControls.gravity = 5;
+                guiControls.pressure = 5;
+                quadcopter.position.set(0, 0, 0);
+                quadcopter.scale.set(1, 1, 1); // Reset scale based on weight
+                scene.rotation.y = 0;
+                velocity.y = 0; // Reset velocity
+                updateQuadcopter();
+                for (let i in gui.__controllers) {
+                    gui.__controllers[i].updateDisplay();
+                }
+                // Play dji.mp3 when reset is pressed
+                djiAudio.currentTime = 0;
+                djiAudio.play().catch((error) => {
+                    console.warn('dji.mp3 play failed:', error);
+                });
+                // Reset the takeoff flag
+                hasTakenOff = false;
+                // Reset hover variables
+                isHovering = false;
+                hoverTime = 0;
+                // Stop hovering sound if playing
+                if (hoveringAudio && !hoveringAudio.paused) {
+                    hoveringAudio.pause();
+                    hoveringAudio.currentTime = 0;
+                    isHoveringSoundPlayed = false;
+                }
+                // Update particles to reflect pressure reset
+                updateParticles();
+                // Ensure quadcopter stays on the ground
+                quadcopter.position.y = 0;
+            }
+        };
+        let gui;
+        let rotorAudio;
+        let djiAudio;
+        let takeoffAudio;
+        let hoveringAudio; // New Audio
+        let hasTakenOff = false; // Flag to ensure takeoff sound plays only once
+        let isHoveringSoundPlayed = false; // Flag to track if hovering sound has been played in current hover
+
+        init();
+        animate();
+
+        function init() {
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(5, 5, 5);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            document.body.appendChild(renderer.domElement);
+
+            // Initialize OrbitControls
+            orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
+            orbitControls.enableDamping = true; // Optional: for smoother controls
+            orbitControls.dampingFactor = 0.05;
+            orbitControls.screenSpacePanning = false;
+            orbitControls.minDistance = 2;
+            orbitControls.maxDistance = 50;
+            orbitControls.maxPolarAngle = Math.PI / 2; // Limit to prevent flipping
+
+            const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+            directionalLight.position.set(10, 20, 10);
+            scene.add(directionalLight);
+
+            createGround();
+            createGrid();
+            createQuadcopter();
+
+            // Initialize Audio
+            rotorAudio = new Audio('rotor.mp3');
+            rotorAudio.loop = true;
+            rotorAudio.volume = 0;
+            rotorAudio.preload = 'auto';
+
+            // Initialize DJI Sound Effect
+            djiAudio = new Audio('dji.mp3');
+            djiAudio.loop = false;
+            djiAudio.volume = 0.1;
+            djiAudio.preload = 'auto';
+            // Attempt to play DJI sound on load
+            djiAudio.play().catch((error) => {
+                console.warn('Autoplay blocked for dji.mp3. User interaction required to play sound.');
+            });
+
+            // Initialize Takeoff Sound Effect
+            takeoffAudio = new Audio('takeoff.mp3');
+            takeoffAudio.loop = false;
+            takeoffAudio.volume = 0.5;
+            takeoffAudio.preload = 'auto';
+
+            // Initialize Hovering Sound Effect
+            hoveringAudio = new Audio('hovering.mp3');
+            hoveringAudio.loop = false; // Play only once per hover
+            hoveringAudio.volume = 1.0; // Maximum volume (cannot exceed 1.0)
+            hoveringAudio.preload = 'auto';
+
+            // Initialize GUI
+            gui = new dat.GUI({ autoPlace: false, width: 450 }); // Adjusted width
+            document.getElementById('controls-container').appendChild(gui.domElement); // Append after statusBox
+
+            // Add controllers
+            const weightController = gui.add(guiControls, 'weight', 1, 20).step(0.1).name('Weight').onChange(updateQuadcopter).listen();
+            const rotorSpeedController = gui.add(guiControls, 'rotorSpeed', 0, 20).step(0.1).name('Rotor Speed').onChange(updateQuadcopter).listen();
+            const gravityController = gui.add(guiControls, 'gravity', 0.1, 20).step(0.1).name('Gravity').onChange(updateQuadcopter).listen();
+            const pressureController = gui.add(guiControls, 'pressure', 0, 20).step(0.1).name('Atm. Pressure').onChange(function(value) {
+                updateQuadcopter();
+                updateParticles();
+            }).listen();
+
+            gui.add(guiControls, 'reset').name('Reset');
+
+            gui.domElement.style.fontSize = '18px'; // Increased font size
+            gui.domElement.style.marginBottom = '20px'; // Space between GUI and Status Box
+
+            addScales(weightController);
+            addScales(rotorSpeedController);
+            addScales(gravityController);
+            addScales(pressureController);
+
+            // Remove 'title' attribute from all range inputs to prevent tooltip text like "be selected"
+            const rangeInputs = document.querySelectorAll('.dg .slider input[type=range]');
+            rangeInputs.forEach(input => {
+                input.removeAttribute('title');
+            });
+
+            // Initialize Particle System
+            createParticles();
+
+            window.addEventListener('resize', onWindowResize, false);
+        }
+
+        function createGround() {
+            const geometry = new THREE.PlaneGeometry(10, 10, 100, 100);
+            const vertices = geometry.attributes.position;
+            for (let i = 0; i < vertices.count; i++) {
+                vertices.setZ(i, Math.random() * 0.2);
+            }
+
+            const craterCenters = [
+                { x: -2, y: -2, radius: 1 },
+                { x: 3, y: 3, radius: 1.5 },
+                { x: -4, y: 2, radius: 1 }
+            ];
+
+            craterCenters.forEach(crater => {
+                for (let i = 0; i < vertices.count; i++) {
+                    const vx = vertices.getX(i);
+                    const vy = vertices.getY(i);
+                    const distance = Math.sqrt((vx - crater.x) ** 2 + (vy - crater.y) ** 2);
+                    if (distance < crater.radius) {
+                        const falloff = 1 - (distance / crater.radius);
+                        const depth = falloff * 0.5;
+                        vertices.setZ(i, vertices.getZ(i) - depth);
+                    }
+                }
+            });
+
+            geometry.computeVertexNormals();
+
+            const material = new THREE.MeshPhongMaterial({ color: 0x8B4513, side: THREE.DoubleSide, wireframe: false });
+            ground = new THREE.Mesh(geometry, material);
+            ground.rotation.x = -Math.PI / 2;
+            ground.position.y = -0.5;
+            scene.add(ground);
+        }
+
+        function createGrid() {
+            const gridHelper = new THREE.GridHelper(10, 10, 0xffffff, 0xffffff);
+            gridHelper.position.y = 0;
+            gridHelper.material.opacity = 0.6;
+            gridHelper.material.transparent = true;
+            scene.add(gridHelper);
+        }
+
+        function createQuadcopter() {
+            quadcopter = new THREE.Group();
+
+            const bodyGeometry = new THREE.BoxGeometry(2, 0.4, 2);
+            const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x0000FF, transparent: true, opacity: 0.8 });
+            const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+            quadcopter.add(body);
+
+            const armGeometry = new THREE.CylinderGeometry(0.1, 0.1, 2);
+            const armMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+
+            for (let i = 0; i < 4; i++) {
+                const arm = new THREE.Mesh(armGeometry, armMaterial);
+                arm.position.set(
+                    (i < 2 ? -1 : 1),
+                    0,
+                    (i % 2 === 0 ? -1 : 1)
+                );
+                arm.rotation.z = Math.PI / 2;
+                quadcopter.add(arm);
+
+                // Increase propeller length by 1.2x
+                const propellerLength = 1.2 * 1.2; // Original length multiplied by 1.2
+                const propellerGeometry = new THREE.BoxGeometry(0.2, 0.02, propellerLength);
+                
+                // Swap rotation directions for red and green propellers
+                const rotationDirection = (i === 0 || i === 3) ? 1 : -1;
+
+                const propellerMaterial = new THREE.MeshPhongMaterial({ color: (i < 2 ? 0xFF0000 : 0x00FF00) });
+                const propeller = new THREE.Mesh(propellerGeometry, propellerMaterial);
+                propeller.position.set(
+                    (i < 2 ? -1 : 1),
+                    0.2,
+                    (i % 2 === 0 ? -1 : 1)
+                );
+                propeller.rotation.y = 0; // Ensure initial rotation
+                propeller.userData = { rotationDirection: rotationDirection };
+                quadcopter.add(propeller);
+
+                const ballGeometry = new THREE.SphereGeometry(0.3, 32, 32);
+                const ballMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
+                const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+                ball.position.set(
+                    (i < 2 ? -1 : 1),
+                    0,
+                    (i % 2 === 0 ? -1 : 1)
+                );
+                quadcopter.add(ball);
+                blinkingBalls.push(ball);
+            }
+
+            // Existing "EdUHK" Label
+            const canvas = document.createElement('canvas');
+            canvas.width = 512; // Increased canvas size for better text quality
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = 'gold';
+            ctx.font = 'bold 140px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.translate(256, 256);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('EdUHK', 0, -40); // Adjusted position to make space for the new label
+
+            // Added "Quadcopter" Label
+            ctx.fillStyle = 'white';
+            ctx.font = 'bold 80px Arial';
+            ctx.fillText('Quadcopter', 0, 80); // Position below "EdUHK"
+
+            const texture = new THREE.CanvasTexture(canvas);
+            const labelGeometry = new THREE.PlaneGeometry(2, 2); // Increased size for visibility
+            const labelMaterial = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+            const label = new THREE.Mesh(labelGeometry, labelMaterial);
+            label.position.set(0, 0.21, 0);
+            label.rotation.x = -Math.PI / 2;
+            quadcopter.add(label);
+
+            quadcopter.position.set(0, 0, 0);
+            scene.add(quadcopter);
+        }
+
+        // Helper function to round down to one decimal
+        function roundDownToOneDecimal(num) {
+            return Math.floor(num * 10) / 10;
+        }
+
+        function updateQuadcopter() {
+            let netForce;
+            let hoverRotorSpeed;
+
+            const gravityForce = (guiControls.weight * guiControls.gravity) / 10;
+
+            // **Modified Condition to Handle Gravity = 0**
+            if (guiControls.pressure === 0 || guiControls.gravity === 0) {
+                // When pressure or gravity is zero, the quadcopter should stay on the ground
+                netForce = 0;
+                hoverRotorSpeed = NaN; // Not Applicable
+
+                // Set quadcopter's Y position to ground level
+                quadcopter.position.y = 0;
+
+                // Reset velocity to prevent residual movement
+                velocity.y = 0;
+
+                // Disable hovering
+                isHovering = false;
+            } else {
+                // Calculate hover rotor speed based on weight, gravity, and pressure
+                const rawHoverRotorSpeed = Math.sqrt((guiControls.weight * guiControls.gravity) / guiControls.pressure);
+                hoverRotorSpeed = roundDownToOneDecimal(rawHoverRotorSpeed > 0 ? rawHoverRotorSpeed : 0.1); // Ensure it's not zero
+
+                // Calculate net force based on rotor speed and hover rotor speed
+                const rotorSpeedRatio = guiControls.rotorSpeed / hoverRotorSpeed;
+                netForce = (Math.pow(rotorSpeedRatio, 2) - 1) * gravityForce;
+
+                // Determine hovering state based on net force
+                if (Math.abs(netForce) < 0.0001) { // Considering floating point precision
+                    if (!isHovering) {
+                        hoverStartY = quadcopter.position.y;
+                        hoverTime = 0;
+                    }
+                    isHovering = true;
+                } else {
+                    isHovering = false;
+                }
+            }
+
+            if (!isHovering) {
+                // **Prevent Updating Position with NaN**
+                if (!isNaN(netForce)) {
+                    // Update velocity based on net force
+                    velocity.y += netForce * 0.016; // Assuming ~60fps, deltaTime ~0.016 seconds
+
+                    // Cap the velocity to prevent unrealistic speed (e.g., max 1 unit/sec)
+                    velocity.y = THREE.MathUtils.clamp(velocity.y, -1, 1);
+
+                    // Update quadcopter's Y position based on velocity
+                    quadcopter.position.y += velocity.y * 0.016;
+
+                    // Optionally, apply damping to velocity for smoother motion
+                    velocity.y *= 0.98;
+                }
+            }
+
+            // Check if quadcopter flies too high and reset automatically
+            if (quadcopter.position.y > 10) { // Threshold can be adjusted
+                guiControls.reset();
+                return; // Exit the function to prevent further processing
+            }
+
+            if (quadcopter.position.y < 0) {
+                quadcopter.position.y = 0;
+                velocity.y = 0;
+            }
+
+            quadcopter.children.forEach(child => {
+                if (child.geometry instanceof THREE.BoxGeometry && child.geometry.parameters.height === 0.02) {
+                    const rotationDir = child.userData.rotationDirection || 1;
+                    child.rotation.y += rotationDir * guiControls.rotorSpeed * 0.1;
+                }
+            });
+
+            updateStatus(hoverRotorSpeed, netForce);
+            handleAudio();
+
+            // Update ground color based on gravity
+            updateGroundColor();
+            
+            // Update quadcopter scale based on weight
+            updateQuadcopterScale();
+        }
+
+        function updateStatus(hoverRotorSpeed, netForce) {
+            let forceStatus, statusStatus;
+
+            if (guiControls.pressure === 0 || guiControls.gravity === 0) {
+                forceStatus = "Force: N/A";
+                statusStatus = "Status: On Ground";
+                isHovering = false;
+            } else if (Math.abs(netForce) < 0.0001) { // Considering floating point precision
+                forceStatus = "Force: Lift = Gravity";
+                statusStatus = "Status: Hovering";
+                // Enable hovering effect
+                if (!isHovering) {
+                    hoverStartY = quadcopter.position.y;
+                    hoverTime = 0;
+                }
+                isHovering = true;
+            } else if (netForce > 0) {
+                forceStatus = "Force: Lift > Gravity";
+                statusStatus = "Status: Throttle Up";
+                // Play takeoff sound if not already played
+                if (!hasTakenOff) {
+                    takeoffAudio.play().catch((error) => {
+                        console.warn('Takeoff audio play failed:', error);
+                    });
+                    hasTakenOff = true;
+                }
+                isHovering = false;
+            } else {
+                forceStatus = "Force: Lift < Gravity";
+                statusStatus = "Status: Throttle Down";
+                // Reset the takeoff flag if lifting is no longer sufficient
+                hasTakenOff = false;
+                isHovering = false;
+            }
+
+            document.getElementById('force').innerText = forceStatus;
+            document.getElementById('statusMessage').innerText = statusStatus;
+
+            // Display Hover Rotor Speed with 1 decimal digit
+            const formattedHoverRotorSpeed = isNaN(hoverRotorSpeed) ? "N/A" : hoverRotorSpeed.toFixed(1);
+            document.getElementById('hoverRotorSpeed').innerText = `Hover Rotor Speed: ${formattedHoverRotorSpeed}`;
+
+            const currentTime = Date.now();
+            if (currentTime - lastBlinkTime > blinkInterval) {
+                isBlinkVisible = !isBlinkVisible;
+                lastBlinkTime = currentTime;
+            }
+            blinkingBalls.forEach(ball => {
+                ball.visible = isBlinkVisible;
+            });
+
+            // Handle Hovering Sound Effect
+            if (isHovering && !isHoveringSoundPlayed) {
+                hoveringAudio.currentTime = 0;
+                hoveringAudio.play().catch((error) => {
+                    console.warn('Hovering audio play failed:', error);
+                });
+                isHoveringSoundPlayed = true;
+            } else if (!isHovering && isHoveringSoundPlayed) {
+                // Ensure the sound is not playing if not hovering
+                if (!hoveringAudio.paused) {
+                    hoveringAudio.pause();
+                    hoveringAudio.currentTime = 0;
+                }
+                isHoveringSoundPlayed = false;
+            }
+        }
+
+        function addScales(controller) {
+            const slider = controller.__li.querySelector('.slider');
+            
+            const ticksContainer = document.createElement('div');
+            ticksContainer.className = 'ticks';
+            const numberOfTicks = 20;
+            for (let i = 0; i <= numberOfTicks; i++) {
+                const tick = document.createElement('div');
+                tick.className = 'tick';
+                ticksContainer.appendChild(tick);
+            }
+            // Assign a unique class based on property name for styling
+            const propertyName = controller.property;
+            slider.classList.add(`property-${propertyName}`);
+            slider.appendChild(ticksContainer);
+        }
+
+        function handleAudio() {
+            if (guiControls.rotorSpeed > 0 && guiControls.pressure > 0) {
+                if (rotorAudio.paused) {
+                    rotorAudio.play().catch((error) => {
+                        console.warn('Rotor audio play failed:', error);
+                    });
+                }
+                // Volume proportional to rotor speed (assuming max rotorSpeed =20)
+                rotorAudio.volume = Math.min(guiControls.rotorSpeed / 20, 1); // Corrected max volume to 1
+            } else {
+                if (!rotorAudio.paused) {
+                    rotorAudio.pause();
+                    rotorAudio.currentTime = 0;
+                }
+            }
+        }
+
+        // Particle System Functions
+        function createParticles() {
+            const maxPressure = 20;
+            const maxParticles = 10000;
+
+            // Calculate current particle count based on pressure
+            const currentPressure = guiControls.pressure;
+            const particleCount = Math.floor((currentPressure / maxPressure) * maxParticles);
+
+            if (particles) {
+                scene.remove(particles);
+            }
+
+            if (particleCount === 0) return; // No particles to display
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+
+            const simulationArea = 10; // Define the range for particles (±10 units in each direction)
+
+            for (let i = 0; i < particleCount; i++) {
+                const x = (Math.random() - 0.5) * simulationArea * 2;
+                const y = (Math.random() - 0.5) * simulationArea * 2;
+                const z = (Math.random() - 0.5) * simulationArea * 2;
+                positions.push(x, y, z);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+            // Create a circular texture for particles
+            const circleCanvas = document.createElement('canvas');
+            circleCanvas.width = 64;
+            circleCanvas.height = 64;
+            const circleCtx = circleCanvas.getContext('2d');
+            circleCtx.beginPath();
+            circleCtx.arc(32, 32, 30, 0, 2 * Math.PI);
+            circleCtx.fillStyle = 'white';
+            circleCtx.fill();
+
+            const circleTexture = new THREE.CanvasTexture(circleCanvas);
+            circleTexture.needsUpdate = true;
+
+            const material = new THREE.PointsMaterial({ 
+                color: 0xFFFFFF, 
+                size: 0.1, 
+                transparent: true, 
+                opacity: 0.5,
+                map: circleTexture,
+                alphaTest: 0.5,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+
+        function updateParticles() {
+            createParticles();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            updateQuadcopter();
+
+            if (isHovering) {
+                hoverTime += 0.016; // Approximate frame time (60fps)
+                const hoverOffset = Math.sin(hoverTime * 2 * Math.PI * hoverFrequency) * hoverAmplitude;
+                quadcopter.position.y = hoverStartY + hoverOffset;
+            }
+
+            orbitControls.update(); // Update OrbitControls
+
+            renderer.render(scene, camera);
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Function to update ground color based on gravity
+        function updateGroundColor() {
+            // Map gravity (1 to 20) to color intensity (lighter to deeper brown)
+            const gravity = guiControls.gravity; // 0 to 20
+            const minColor = new THREE.Color(0xC49E7F); // Lighter brown
+            const maxColor = new THREE.Color(0x4E342E); // Deeper brown
+
+            // Handle gravity = 0 by clamping
+            const t = gravity > 0 ? THREE.MathUtils.clamp((gravity - 1) / 19, 0, 1) : 0;
+            const newColor = minColor.clone().lerp(maxColor, t);
+            ground.material.color.set(newColor);
+        }
+
+        // Function to update quadcopter scale based on weight
+        function updateQuadcopterScale() {
+            // Map weight (1 to 20) to scale factor (0.5 to 2.0)
+            const weight = guiControls.weight; // 1 to 20
+            const minScale = 0.5;
+            const maxScale = 2.0;
+            const t = THREE.MathUtils.clamp((weight - 1) / 19, 0, 1);
+            const scaleFactor = minScale + t * (maxScale - minScale);
+            quadcopter.scale.set(scaleFactor, scaleFactor, scaleFactor);
+        }
+    </script>
+</body>
+</html>
