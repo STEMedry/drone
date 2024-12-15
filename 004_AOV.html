@@ -3,9 +3,18 @@
 <head>
 <title>Drone Camera AOV Simulation with School Building, Bank Tower, and Trident Blocks</title>
 <style>
-body {
-margin: 0;
-overflow: hidden;
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+#container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+
 -webkit-user-select: none; /* Safari */
 -ms-user-select: none; /* Internet Explorer/Edge */
 user-select: none; /* Standard syntax */
@@ -159,6 +168,7 @@ width: 90%;
 </style>
 </head>
 <body>
+    <div id="container">
 <!-- Title -->
 <div id="title">
 <h1>Drone Camera AOV Simulation</h1>
@@ -271,6 +281,7 @@ width: 90%;
 - Right mouse drag + Shift: Move drone horizontally<br>
 - Middle mouse drag or Mouse wheel: Zoom in/out<br>
 - Click and drag the "School Building", "Bank Tower", or "Trident Blocks" to move them left/right (when visible)
+</div>
 </div>
 
 <!-- Three.js Library -->
@@ -1171,9 +1182,10 @@ scene = new THREE.Scene();
 camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
 // Initialize renderer
+const container = document.getElementById('container');
 renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
+renderer.setSize(container.clientWidth, container.clientHeight);
+container.appendChild(renderer.domElement);
 
 // Add grid helper
 const gridHelper = new THREE.GridHelper(1000, 100);
@@ -1321,6 +1333,8 @@ renderer.domElement.addEventListener('mousemove', onMouseMove, false);
 renderer.domElement.addEventListener('mouseup', onMouseUp, false);
 renderer.domElement.addEventListener('wheel', onWheel, false);
 renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault(), false);
+
+    window.addEventListener('resize', onWindowResize, false); // New line
 
 document.getElementById('aspectRatio').addEventListener('change', function() {
 // Update max diagonal AOV when aspect ratio changes
@@ -1484,9 +1498,10 @@ draggedBuilding = null;
 }
 
 function onWindowResize() {
-camera.aspect = window.innerWidth / window.innerHeight;
-camera.updateProjectionMatrix();
-renderer.setSize(window.innerWidth, window.innerHeight);
+    const container = document.getElementById('container');
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
 }
 
 // Calculation Functions for Additional Controls
