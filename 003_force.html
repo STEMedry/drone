@@ -13,31 +13,30 @@
             flex-direction: column;
             height: 100vh;
         }
-        /* Header Section for Information */
-        #header {
+
+        #title {
+            position: absolute;
+            top: 20px;
+            left: 15%;
+            transform: translateX(-50%);
             background: rgba(0, 0, 0, 0.7);
             color: white;
-            padding: 20px;
-            box-sizing: border-box;
-            z-index: 2; /* Increased z-index for visibility */
-            width: 100%;
-            flex: 0 0 auto;
-        }
-        #header h1 {
-            margin: 0;
-            font-size: 28px; /* Increased font size for better visibility */
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 28px;
+            z-index: 10;
         }
 
         /* Container for GUI and Status Box */
         #controls-container {
             position: absolute;
-            top: 80px; /* Lowered position */
-            left: 10px; /* Moved from right to left */
-            z-index: 3; /* Increased z-index to appear above other elements */
+            top: 80px; /* Adjusted to accommodate the new title position */
+            left: 10px;
+            z-index: 3;
             display: flex;
             flex-direction: column;
-            align-items: flex-start; /* Align items to the left */
-            user-select: none; /* Prevent text selection in the entire control panel */
+            align-items: flex-start;
+            user-select: none;
         }
 
         /* Status Box Above Control Panel */
@@ -199,9 +198,7 @@
     </style>
 </head>
 <body>
-    <div id="header">
-        <h1>Fly High: Quadcopter Physics Explorer (with sound)</h1>
-    </div>
+    <div id="title">Quadcopter Physics Explorer</div>
 
     <!-- Container for Controls and Status -->
     <div id="controls-container">
@@ -340,7 +337,7 @@
             });
 
             // Initialize Takeoff Sound Effect
-            takeoffAudio = new Audio('Takeoff.mp3');
+            takeoffAudio = new Audio('takeoff.mp3');
             takeoffAudio.loop = false;
             takeoffAudio.volume = 0.5;
             takeoffAudio.preload = 'auto';
