@@ -237,7 +237,7 @@ user-select: none; /* Standard syntax */
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 6 Controls</strong></div>
+<div><strong>Main 7 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -2053,7 +2053,11 @@ function handleTouchStart(event) {
     const tapLength = currentTime - lastTapTime;
     if (tapLength < 300 && tapLength > 0) {
         isAltitudeMode = !isAltitudeMode;
-        alert(isAltitudeMode ? "Altitude adjustment mode" : "Camera rotation mode");
+        if (isAltitudeMode) {
+            alert("Altitude adjustment mode: Drag up/down to adjust drone height. Drag buildings to move them.");
+        } else {
+            alert("Camera rotation mode: Drag to rotate camera. Drag buildings to move them.");
+        }
     }
     lastTapTime = currentTime;
 
@@ -2068,16 +2072,28 @@ function handleTouchMove(event) {
         const deltaX = touch.clientX - touchStartX;
         const deltaY = touch.clientY - touchStartY;
 
-        if (isDraggingBuilding) {
-            moveBuildingHorizontally(deltaX);
-        } else if (isAltitudeMode) {
-            adjustDroneAltitude(deltaY);
+        console.log('Touch move:', { isDraggingBuilding, isAltitudeMode, deltaX, deltaY });
+
+        if (isAltitudeMode) {
+            if (isDraggingBuilding) {
+                console.log('Moving building in altitude mode');
+                moveBuildingHorizontally(deltaX);
+            } else {
+                console.log('Adjusting altitude');
+                adjustDroneAltitude(deltaY);
+            }
         } else {
-            // Rotate camera
-            cameraAngle -= deltaX * 0.01;
-            cameraTilt += deltaY * 0.01;
-            cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
-            updateCamera();
+            if (isDraggingBuilding) {
+                console.log('Moving building in camera mode');
+                moveBuildingHorizontally(deltaX);
+            } else {
+                console.log('Rotating camera');
+                // Rotate camera
+                cameraAngle -= deltaX * 0.01;
+                cameraTilt += deltaY * 0.01;
+                cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
+                updateCamera();
+            }
         }
 
         touchStartX = touch.clientX;
