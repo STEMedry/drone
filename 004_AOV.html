@@ -237,7 +237,7 @@ user-select: none; /* Standard syntax */
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 7 Controls</strong></div>
+<div><strong>Main 8 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -2082,13 +2082,14 @@ function handleTouchMove(event) {
                 console.log('Adjusting altitude');
                 adjustDroneAltitude(deltaY);
             }
+            // Camera rotation is explicitly disabled in altitude mode
         } else {
             if (isDraggingBuilding) {
                 console.log('Moving building in camera mode');
                 moveBuildingHorizontally(deltaX);
             } else {
                 console.log('Rotating camera');
-                // Rotate camera
+                // Rotate camera only in camera mode
                 cameraAngle -= deltaX * 0.01;
                 cameraTilt += deltaY * 0.01;
                 cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
