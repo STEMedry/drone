@@ -237,7 +237,7 @@ user-select: none; /* Standard syntax */
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 4 Controls</strong></div>
+<div><strong>Main 5 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -2034,8 +2034,8 @@ document.getElementById('calc2AspectRatio').addEventListener('change', function(
 
 // Add touch event listeners
 let lastTouchX, lastTouchY;
-let isTwoFingerTouch = false;
-let isAltitudeAdjustment = false;
+let lastTapTime = 0;
+let isAltitudeMode = false;
 
 renderer.domElement.addEventListener('touchstart', function(event) {
     event.preventDefault();
@@ -2044,17 +2044,17 @@ renderer.domElement.addEventListener('touchstart', function(event) {
         lastTouchX = touch.clientX;
         lastTouchY = touch.clientY;
         
+        // Check for double tap
+        const currentTime = new Date().getTime();
+        const tapLength = currentTime - lastTapTime;
+        if (tapLength < 300 && tapLength > 0) {
+            isAltitudeMode = !isAltitudeMode;
+            alert(isAltitudeMode ? "Altitude adjustment mode" : "Camera rotation mode");
+        }
+        lastTapTime = currentTime;
+        
         // Check if a building is being dragged
         checkBuildingDrag(touch.clientX, touch.clientY);
-        
-        if (!draggedBuilding) {
-            isAltitudeAdjustment = false;
-        }
-    } else if (event.touches.length === 2) {
-        isTwoFingerTouch = true;
-        const dx = event.touches[0].clientX - event.touches[1].clientX;
-        const dy = event.touches[0].clientY - event.touches[1].clientY;
-        lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
     }
 }, { passive: false });
 
@@ -2066,10 +2066,8 @@ renderer.domElement.addEventListener('touchmove', function(event) {
         const deltaY = touch.clientY - lastTouchY;
         
         if (draggedBuilding) {
-            // Move building horizontally
             moveBuildingHorizontally(deltaX);
-        } else if (isAltitudeAdjustment) {
-            // Adjust drone altitude
+        } else if (isAltitudeMode) {
             adjustDroneAltitude(deltaY);
         } else {
             // Rotate camera
@@ -2082,27 +2080,25 @@ renderer.domElement.addEventListener('touchmove', function(event) {
         lastTouchX = touch.clientX;
         lastTouchY = touch.clientY;
     } else if (event.touches.length === 2) {
-        const dx = event.touches[0].clientX - event.touches[1].clientX;
-        const dy = event.touches[0].clientY - event.touches[1].clientY;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const distanceDelta = distance - lastTouchDistance;
+        // Handle pinch zoom
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        const dist = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
         
-        // Zoom in/out
-        cameraDistance -= distanceDelta * 0.1;
-        cameraDistance = Math.max(10, Math.min(1000, cameraDistance));
-        
-        lastTouchDistance = distance;
-        updateCamera();
+        if (this.lastDist) {
+            const delta = this.lastDist - dist;
+            cameraDistance += delta * 0.1;
+            cameraDistance = Math.max(10, Math.min(1000, cameraDistance));
+            updateCamera();
+        }
+        this.lastDist = dist;
     }
 }, { passive: false });
 
 renderer.domElement.addEventListener('touchend', function(event) {
     event.preventDefault();
-    if (event.touches.length === 0) {
-        draggedBuilding = null;
-        isTwoFingerTouch = false;
-        isAltitudeAdjustment = false;
-    }
+    draggedBuilding = null;
+    this.lastDist = null;
 }, { passive: false });
 
 document.getElementById('calc1AspectRatio').addEventListener('change', function() {
@@ -2141,32 +2137,24 @@ function checkBuildingDrag(clientX, clientY) {
     const intersectsTrident = tridentBlocks.visible ? raycaster.intersectObject(tridentBlocks, true) : [];
 
     if (intersectsSchool.length > 0) {
-        draggedBuilding = 'school';
-        buildingDragStartX = schoolBuilding.position.x;
+        draggedBuilding = schoolBuilding;
     } else if (intersectsBank.length > 0) {
-        draggedBuilding = 'bank';
-        buildingDragStartX = bankTower.position.x;
+        draggedBuilding = bankTower;
     } else if (intersectsTrident.length > 0) {
-        draggedBuilding = 'trident';
-        buildingDragStartX = tridentBlocks.position.x;
+        draggedBuilding = tridentBlocks;
     } else {
         draggedBuilding = null;
     }
 }
 
 function moveBuildingHorizontally(deltaX) {
-    const movementX = deltaX * 0.1; // Adjust sensitivity as needed
-    if (draggedBuilding === 'school') {
-        schoolBuilding.position.x += movementX;
-    } else if (draggedBuilding === 'bank') {
-        bankTower.position.x += movementX;
-    } else if (draggedBuilding === 'trident') {
-        tridentBlocks.position.x += movementX;
+    if (draggedBuilding) {
+        draggedBuilding.position.x += deltaX * 0.1; // Adjust sensitivity as needed
     }
 }
 
 function adjustDroneAltitude(deltaY) {
-    const newAltitude = parseFloat(drone.position.y) - deltaY * 0.1;
+    const newAltitude = drone.position.y - deltaY * 0.1;
     drone.position.y = Math.max(0, Math.min(500, newAltitude));
     updateFOV();
 }
