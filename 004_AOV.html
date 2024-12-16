@@ -3,6 +3,7 @@
 <head>
 <title>Drone Camera AOV Simulation with School Building, Bank Tower, and Trident Blocks</title>
 <style>
+
 html, body {
     margin: 0;
     padding: 0;
@@ -10,22 +11,22 @@ html, body {
     width: 100%;
     height: 100%;
 }
+
 #container {
     position: relative;
     width: 100%;
     height: 100%;
-
--webkit-user-select: none; /* Safari */
--ms-user-select: none; /* Internet Explorer/Edge */
-user-select: none; /* Standard syntax */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
 
-/* Additionally, disable text selection for specific interactive elements if needed */
 #controls, #additionalControls, #instructions, button, label {
--webkit-user-select: none; /* Safari */
--ms-user-select: none; /* Internet Explorer/Edge */
-user-select: none; /* Standard syntax */
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
 }
+
 canvas { display: block; }
 
 /* Title Styles */
@@ -55,7 +56,7 @@ top: 10px;
 left: 10px;
 background: rgba(0,0,0,0.7);
 color: white;
-padding: 8px;
+padding: 25px;
 border-radius: 5px;
 font-family: Arial, sans-serif;
 width: 280px;
@@ -1948,6 +1949,59 @@ document.getElementById('calc2AspectRatio').addEventListener('change', function(
     currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
     updateFOV();
 });
+
+// Add touch event listeners
+renderer.domElement.addEventListener('touchstart', function(event) {
+    event.preventDefault();
+    if (event.touches.length === 1) {
+        onMouseDown({
+            clientX: event.touches[0].clientX,
+            clientY: event.touches[0].clientY,
+            button: 0 // Simulate left mouse button
+        });
+    }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', function(event) {
+    event.preventDefault();
+    if (event.touches.length === 1) {
+        onMouseMove({
+            clientX: event.touches[0].clientX,
+            clientY: event.touches[0].clientY,
+            buttons: 1 // Simulate left mouse button held down
+        });
+    }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchend', function(event) {
+    event.preventDefault();
+    onMouseUp(event);
+}, { passive: false });
+
+document.getElementById('calc1AspectRatio').addEventListener('change', function() {
+    const aspectRatio = parseFloat(this.value);
+    document.getElementById('aspectRatio').value = aspectRatio;
+    document.getElementById('calc2AspectRatio').value = aspectRatio;
+    currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+    updateFOV();
+});
+
+document.getElementById('calc2AspectRatio').addEventListener('change', function() {
+    const aspectRatio = parseFloat(this.value);
+    document.getElementById('aspectRatio').value = aspectRatio;
+    document.getElementById('calc1AspectRatio').value = aspectRatio;
+    currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
+    updateFOV();
+});
+
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+    const container = document.getElementById('container');
+    camera.aspect = container.clientWidth / container.clientHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(container.clientWidth, container.clientHeight);
+}
 
 </script>
 </body>
