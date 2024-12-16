@@ -237,7 +237,7 @@ user-select: none; /* Standard syntax */
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 8 Controls</strong></div>
+<div><strong>Main 9 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -2034,8 +2034,8 @@ document.getElementById('calc2AspectRatio').addEventListener('change', function(
 
 // Add touch event listeners
 let touchStartX, touchStartY;
-let isDraggingBuilding = false;
 let isAltitudeMode = false;
+let isdraggedBuilding = null;
 let lastTapTime = 0;
 
 renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
@@ -2053,16 +2053,13 @@ function handleTouchStart(event) {
     const tapLength = currentTime - lastTapTime;
     if (tapLength < 300 && tapLength > 0) {
         isAltitudeMode = !isAltitudeMode;
-        if (isAltitudeMode) {
-            alert("Altitude adjustment mode: Drag up/down to adjust drone height. Drag buildings to move them.");
-        } else {
-            alert("Camera rotation mode: Drag to rotate camera. Drag buildings to move them.");
-        }
+        alert(isAltitudeMode ? "Altitude mode: Drag to adjust drone height or move buildings" : "Camera mode: Drag to rotate camera");
     }
     lastTapTime = currentTime;
 
-    // Check if a building is being dragged
-    isDraggingBuilding = checkBuildingDrag(touch.clientX, touch.clientY);
+    if (isAltitudeMode) {
+        draggedBuilding = checkBuildingDrag(touch.clientX, touch.clientY);
+}
 }
 
 function handleTouchMove(event) {
@@ -2072,29 +2069,19 @@ function handleTouchMove(event) {
         const deltaX = touch.clientX - touchStartX;
         const deltaY = touch.clientY - touchStartY;
 
-        console.log('Touch move:', { isDraggingBuilding, isAltitudeMode, deltaX, deltaY });
-
         if (isAltitudeMode) {
             if (isDraggingBuilding) {
-                console.log('Moving building in altitude mode');
                 moveBuildingHorizontally(deltaX);
             } else {
-                console.log('Adjusting altitude');
                 adjustDroneAltitude(deltaY);
             }
             // Camera rotation is explicitly disabled in altitude mode
         } else {
-            if (isDraggingBuilding) {
-                console.log('Moving building in camera mode');
-                moveBuildingHorizontally(deltaX);
-            } else {
-                console.log('Rotating camera');
-                // Rotate camera only in camera mode
-                cameraAngle -= deltaX * 0.01;
-                cameraTilt += deltaY * 0.01;
-                cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
-                updateCamera();
-            }
+            // Camera rotation mode
+            cameraAngle -= deltaX * 0.01;
+            cameraTilt += deltaY * 0.01;
+            cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
+            updateCamera();
         }
 
         touchStartX = touch.clientX;
@@ -2117,7 +2104,7 @@ function handleTouchMove(event) {
 
 function handleTouchEnd(event) {
     event.preventDefault();
-    isDraggingBuilding = false;
+    isDraggingBuilding = null;
     this.lastDist = null;
 }
 
@@ -2152,22 +2139,8 @@ function checkBuildingDrag(clientX, clientY) {
     mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
     raycaster.setFromCamera(mouse, camera);
 
-    const intersectsSchool = schoolBuilding.visible ? raycaster.intersectObject(schoolBuilding, true) : [];
-    const intersectsBank = bankTower.visible ? raycaster.intersectObject(bankTower, true) : [];
-    const intersectsTrident = tridentBlocks.visible ? raycaster.intersectObject(tridentBlocks, true) : [];
-
-    if (intersectsSchool.length > 0) {
-        draggedBuilding = schoolBuilding;
-        return true;
-    } else if (intersectsBank.length > 0) {
-        draggedBuilding = bankTower;
-        return true;
-    } else if (intersectsTrident.length > 0) {
-        draggedBuilding = tridentBlocks;
-        return true;
-    }
-    draggedBuilding = null;
-    return false;
+    const intersects = raycaster.intersectObjects([schoolBuilding, bankTower, tridentBlocks], true);
+    return intersects.length > 0 ? intersects[0].object : null;
 }
 
 function moveBuildingHorizontally(deltaX) {
