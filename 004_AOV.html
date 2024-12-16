@@ -121,6 +121,19 @@ flex-direction: column;
     margin-bottom: 5px;
 }
 
+/* Improve select dropdown appearance */
+#controls select,
+#additionalControls select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 30px;
+}
+
 #additionalControls button {
     padding: 2px;
 }
@@ -188,17 +201,30 @@ user-select: none; /* Standard syntax */
 }
 
 /* Responsive Design for Smaller Screens (e.g., iPad) */
-@media (max-width: 768px) {
-#controls, #additionalControls, #instructions {
-width: 80%;
-left: 10%;
-right: 10%;
-}
+@media (max-width: 1024px) {
+    #controls,
+    #additionalControls {
+        width: 90%;
+        max-width: 400px;
+        left: 50%;
+        transform: translateX(-50%);
+    }
 
-#title {
-left: 50%;
-width: 90%;
-}
+    #controls {
+        top: 10px;
+    }
+
+    #additionalControls {
+        top: auto;
+        bottom: 10px;
+    }
+
+    #title {
+        left: 50%;
+        transform: translateX(-50%);
+        width: 90%;
+        max-width: 400px;
+    }
 }
 </style>
 </head>
@@ -211,7 +237,7 @@ width: 90%;
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 2 Controls</strong></div>
+<div><strong>Main 3 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -347,12 +373,24 @@ warnSound.preload = 'auto';
 
 // Function to play the warning sound with error handling
 function playWarnSound() {
-// Reset the audio to the beginning
-warnSound.currentTime = 0;
-// Attempt to play the sound
-warnSound.play().catch(function(error) {
-console.error("Error playing warning sound:", error);
-});
+    // Reset the audio to the beginning
+    warnSound.currentTime = 0;
+    
+    // Create a temporary button for iOS devices
+    const tempButton = document.createElement('button');
+    tempButton.style.display = 'none';
+    document.body.appendChild(tempButton);
+    
+    // Play the sound when the temporary button is clicked
+    tempButton.addEventListener('click', function() {
+        warnSound.play().catch(function(error) {
+            console.error("Error playing warning sound:", error);
+        });
+        document.body.removeChild(tempButton);
+    });
+    
+    // Programmatically click the button
+    tempButton.click();
 }
 
 // Function to calculate maximum Diagonal AOV based on aspect ratio
@@ -1920,56 +1958,61 @@ y: -((touchEvent.touches[0].clientY - rect.top) / rect.height) * 2 + 1
 }
 
 // Add touch event listeners
-let lastTouchX, lastTouchY;
+let lastTouchDistance = 0;
 
 renderer.domElement.addEventListener('touchstart', function(event) {
     event.preventDefault();
-    const touch = event.touches[0];
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
-    onMouseDown({
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        button: 0
-    });
+    if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        lastTouchX = touch.clientX;
+        lastTouchY = touch.clientY;
+        onMouseDown({
+            clientX: touch.clientX,
+            clientY: touch.clientY,
+            button: 0
+        });
+    } else if (event.touches.length === 2) {
+        const dx = event.touches[0].clientX - event.touches[1].clientX;
+        const dy = event.touches[0].clientY - event.touches[1].clientY;
+        lastTouchDistance = Math.sqrt(dx * dx + dy * dy);
+    }
 }, { passive: false });
 
 renderer.domElement.addEventListener('touchmove', function(event) {
     event.preventDefault();
-    const touch = event.touches[0];
-    const deltaX = touch.clientX - lastTouchX;
-    const deltaY = touch.clientY - lastTouchY;
-    lastTouchX = touch.clientX;
-    lastTouchY = touch.clientY;
-    
-    onMouseMove({
-        clientX: touch.clientX,
-        clientY: touch.clientY,
-        buttons: 1,
-        movementX: deltaX,
-        movementY: deltaY
-    });
+    if (event.touches.length === 1) {
+        const touch = event.touches[0];
+        const deltaX = touch.clientX - lastTouchX;
+        const deltaY = touch.clientY - lastTouchY;
+        lastTouchX = touch.clientX;
+        lastTouchY = touch.clientY;
+        
+        // Tilt up/down
+        cameraTilt += deltaY * 0.01;
+        cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
+        
+        // Rotate left/right
+        cameraAngle -= deltaX * 0.01;
+        
+        updateCamera();
+    } else if (event.touches.length === 2) {
+        const dx = event.touches[0].clientX - event.touches[1].clientX;
+        const dy = event.touches[0].clientY - event.touches[1].clientY;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const distanceDelta = distance - lastTouchDistance;
+        
+        // Zoom in/out
+        cameraDistance -= distanceDelta * 0.1;
+        cameraDistance = Math.max(10, Math.min(1000, cameraDistance));
+        
+        lastTouchDistance = distance;
+        updateCamera();
+    }
 }, { passive: false });
 
 renderer.domElement.addEventListener('touchend', function(event) {
     event.preventDefault();
     onMouseUp(event);
-}, { passive: false });
-
-renderer.domElement.addEventListener('touchmove', function(event) {
-event.preventDefault();
-if (event.touches.length === 1) {
-onMouseMove({
-clientX: event.touches[0].clientX,
-clientY: event.touches[0].clientY,
-buttons: 1 // Simulate left mouse button held down
-});
-}
-}, { passive: false });
-
-renderer.domElement.addEventListener('touchend', function(event) {
-event.preventDefault();
-onMouseUp(event);
 }, { passive: false });
 
 // Add event listeners for aspect ratio changes in calculation panels
