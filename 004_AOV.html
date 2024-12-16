@@ -237,7 +237,7 @@ user-select: none; /* Standard syntax */
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 9 Controls</strong></div>
+<div><strong>Main 10 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -2087,6 +2087,7 @@ function handleTouchMove(event) {
         touchStartX = touch.clientX;
         touchStartY = touch.clientY;
     } else if (event.touches.length === 2) {
+
         // Handle pinch zoom
         const touch1 = event.touches[0];
         const touch2 = event.touches[1];
