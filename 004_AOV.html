@@ -237,7 +237,7 @@ user-select: none; /* Standard syntax */
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 5 Controls</strong></div>
+<div><strong>Main 6 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -2033,39 +2033,42 @@ document.getElementById('calc2AspectRatio').addEventListener('change', function(
 });
 
 // Add touch event listeners
-let lastTouchX, lastTouchY;
-let lastTapTime = 0;
+let touchStartX, touchStartY;
+let isDraggingBuilding = false;
 let isAltitudeMode = false;
+let lastTapTime = 0;
 
-renderer.domElement.addEventListener('touchstart', function(event) {
+renderer.domElement.addEventListener('touchstart', handleTouchStart, { passive: false });
+renderer.domElement.addEventListener('touchmove', handleTouchMove, { passive: false });
+renderer.domElement.addEventListener('touchend', handleTouchEnd, { passive: false });
+
+function handleTouchStart(event) {
     event.preventDefault();
-    if (event.touches.length === 1) {
-        const touch = event.touches[0];
-        lastTouchX = touch.clientX;
-        lastTouchY = touch.clientY;
-        
-        // Check for double tap
-        const currentTime = new Date().getTime();
-        const tapLength = currentTime - lastTapTime;
-        if (tapLength < 300 && tapLength > 0) {
-            isAltitudeMode = !isAltitudeMode;
-            alert(isAltitudeMode ? "Altitude adjustment mode" : "Camera rotation mode");
-        }
-        lastTapTime = currentTime;
-        
-        // Check if a building is being dragged
-        checkBuildingDrag(touch.clientX, touch.clientY);
+    const touch = event.touches[0];
+    touchStartX = touch.clientX;
+    touchStartY = touch.clientY;
+
+    // Check for double tap
+    const currentTime = new Date().getTime();
+    const tapLength = currentTime - lastTapTime;
+    if (tapLength < 300 && tapLength > 0) {
+        isAltitudeMode = !isAltitudeMode;
+        alert(isAltitudeMode ? "Altitude adjustment mode" : "Camera rotation mode");
     }
-}, { passive: false });
+    lastTapTime = currentTime;
 
-renderer.domElement.addEventListener('touchmove', function(event) {
+    // Check if a building is being dragged
+    isDraggingBuilding = checkBuildingDrag(touch.clientX, touch.clientY);
+}
+
+function handleTouchMove(event) {
     event.preventDefault();
     if (event.touches.length === 1) {
         const touch = event.touches[0];
-        const deltaX = touch.clientX - lastTouchX;
-        const deltaY = touch.clientY - lastTouchY;
-        
-        if (draggedBuilding) {
+        const deltaX = touch.clientX - touchStartX;
+        const deltaY = touch.clientY - touchStartY;
+
+        if (isDraggingBuilding) {
             moveBuildingHorizontally(deltaX);
         } else if (isAltitudeMode) {
             adjustDroneAltitude(deltaY);
@@ -2076,9 +2079,9 @@ renderer.domElement.addEventListener('touchmove', function(event) {
             cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
             updateCamera();
         }
-        
-        lastTouchX = touch.clientX;
-        lastTouchY = touch.clientY;
+
+        touchStartX = touch.clientX;
+        touchStartY = touch.clientY;
     } else if (event.touches.length === 2) {
         // Handle pinch zoom
         const touch1 = event.touches[0];
@@ -2093,13 +2096,13 @@ renderer.domElement.addEventListener('touchmove', function(event) {
         }
         this.lastDist = dist;
     }
-}, { passive: false });
+}
 
-renderer.domElement.addEventListener('touchend', function(event) {
+function handleTouchEnd(event) {
     event.preventDefault();
-    draggedBuilding = null;
+    isDraggingBuilding = false;
     this.lastDist = null;
-}, { passive: false });
+}
 
 document.getElementById('calc1AspectRatio').addEventListener('change', function() {
     const aspectRatio = parseFloat(this.value);
@@ -2138,13 +2141,16 @@ function checkBuildingDrag(clientX, clientY) {
 
     if (intersectsSchool.length > 0) {
         draggedBuilding = schoolBuilding;
+        return true;
     } else if (intersectsBank.length > 0) {
         draggedBuilding = bankTower;
+        return true;
     } else if (intersectsTrident.length > 0) {
         draggedBuilding = tridentBlocks;
-    } else {
-        draggedBuilding = null;
+        return true;
     }
+    draggedBuilding = null;
+    return false;
 }
 
 function moveBuildingHorizontally(deltaX) {
