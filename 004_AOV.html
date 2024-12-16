@@ -97,16 +97,32 @@ flex-direction: column;
     margin-top: 2px;
 }
 
-#additionalControls select,
+#controls button,
+#additionalControls button,
+#controls input,
 #additionalControls input,
-#additionalControls button {
-    margin: 2px 0;
+#controls select,
+#additionalControls select {
+    font-size: 16px;
     padding: 2px;
-    font-size: 14px;
+    margin: 5px 0;
+    height: 24px; /* Minimum touch target size */
+}
+
+/* Increase label font size */
+#controls label,
+#additionalControls label {
+    font-size: 16px;
+}
+
+/* Adjust spacing */
+#controls div,
+#additionalControls div {
+    margin-bottom: 5px;
 }
 
 #additionalControls button {
-    padding: 4px;
+    padding: 2px;
 }
 
 #calc1Results p,
@@ -195,7 +211,7 @@ width: 90%;
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main 1 Controls</strong></div>
+<div><strong>Main 2 Controls</strong></div>
 <div>
 <label for="aspectRatio">Aspect Ratio:</label>
 <select id="aspectRatio">
@@ -1461,11 +1477,11 @@ draggedBuilding = null;
 }
 
 function onMouseMove(event) {
-if (isDragging) {
-const deltaX = event.clientX - dragStartPosition.x;
-const deltaY = event.clientY - dragStartPosition.y;
+    if (isDragging) {
+        const deltaX = event.movementX || event.clientX - dragStartPosition.x;
+        const deltaY = event.movementY || event.clientY - dragStartPosition.y;
 
-if (draggedBuilding) {
+        if (draggedBuilding) {
 // Calculate movement only along X axis
 const movementX = (event.clientX - mouseStartX) * 0.5; // Adjust sensitivity as needed
 if (draggedBuilding === 'school') {
@@ -1476,23 +1492,23 @@ bankTower.position.x = buildingDragStartX + movementX;
 tridentBlocks.position.x = buildingDragStartX + movementX;
 }
 } else {
-if (event.buttons & 1) { // Left mouse button
-// Change drone altitude based on deltaY
-const newAltitude = parseFloat(drone.position.y) - deltaY * 0.5;
-drone.position.y = Math.max(0, Math.min(500, newAltitude));
-updateFOV();
-} else if (event.buttons & 2) { // Right mouse button
-if (event.shiftKey) {
-// Move drone horizontally
-drone.position.x += deltaX * 0.5;
-drone.position.z += deltaY * 0.5;
-updateFOV();
-} else {
-// Rotate camera based on deltas
-cameraAngle -= deltaX * 0.01;
-cameraTilt += deltaY * 0.01;
-cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
-updateCamera();
+            if (event.buttons & 1) { // Left mouse button or touch
+                // Change drone altitude based on deltaY
+                const newAltitude = parseFloat(drone.position.y) - deltaY * 0.5;
+                drone.position.y = Math.max(0, Math.min(500, newAltitude));
+                updateFOV();
+            } else if (event.buttons & 2) { // Right mouse button
+                if (event.shiftKey) {
+                    // Move drone horizontally
+                    drone.position.x += deltaX * 0.5;
+                    drone.position.z += deltaY * 0.5;
+                    updateFOV();
+                } else {
+                    // Rotate camera based on deltas
+                    cameraAngle -= deltaX * 0.01;
+                    cameraTilt += deltaY * 0.01;
+                    cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
+                    updateCamera();
 }
 }
 }
@@ -1904,17 +1920,40 @@ y: -((touchEvent.touches[0].clientY - rect.top) / rect.height) * 2 + 1
 }
 
 // Add touch event listeners
+let lastTouchX, lastTouchY;
+
 renderer.domElement.addEventListener('touchstart', function(event) {
-// Prevent default to avoid unwanted scrolling
-event.preventDefault();
-if (event.touches.length === 1) {
-// Single touch
-onMouseDown({
-clientX: event.touches[0].clientX,
-clientY: event.touches[0].clientY,
-button: 0 // Simulate left mouse button
-});
-}
+    event.preventDefault();
+    const touch = event.touches[0];
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+    onMouseDown({
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        button: 0
+    });
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', function(event) {
+    event.preventDefault();
+    const touch = event.touches[0];
+    const deltaX = touch.clientX - lastTouchX;
+    const deltaY = touch.clientY - lastTouchY;
+    lastTouchX = touch.clientX;
+    lastTouchY = touch.clientY;
+    
+    onMouseMove({
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        buttons: 1,
+        movementX: deltaX,
+        movementY: deltaY
+    });
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchend', function(event) {
+    event.preventDefault();
+    onMouseUp(event);
 }, { passive: false });
 
 renderer.domElement.addEventListener('touchmove', function(event) {
@@ -1975,6 +2014,26 @@ renderer.domElement.addEventListener('touchmove', function(event) {
 
 renderer.domElement.addEventListener('touchend', function(event) {
     event.preventDefault();
+    onMouseUp(event);
+}, { passive: false });
+
+let touchStartTime;
+renderer.domElement.addEventListener('touchstart', function(event) {
+    // ... (existing touchstart code)
+    touchStartTime = Date.now();
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchend', function(event) {
+    event.preventDefault();
+    const touchEndTime = Date.now();
+    const touchDuration = touchEndTime - touchStartTime;
+    
+    // If touch duration is short, treat it as a tap for camera rotation
+    if (touchDuration < 200) { // 200ms threshold for tap
+        cameraAngle += Math.PI / 4; // Rotate 45 degrees
+        updateCamera();
+    }
+    
     onMouseUp(event);
 }, { passive: false });
 
