@@ -42,7 +42,6 @@ canvas { display: block; }
     border-radius: 5px;
     width: 280px;
     box-sizing: border-box;
-    max-height: 72vh; /* Reduced from 80vh to 72vh (10% reduction) */
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -50,11 +49,13 @@ canvas { display: block; }
 #controls {
     top: 80px;
     left: 10px;
+    max-height: calc(100vh - 100px);
 }
 
 #additionalControls {
     top: 80px;
     right: 10px;
+    max-height: calc(100vh - 100px);
 }
 
 select, input[type="number"], button {
@@ -153,11 +154,36 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 50%;
 }
 
+/* View control buttons */
+#viewControls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.viewButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     #controls, #additionalControls {
         width: 45%;
         max-width: none;
+        font-size: 14px;
     }
 
     #controls {
@@ -172,117 +198,134 @@ input[type="range"]::-moz-range-thumb {
         font-size: 14px;
         padding: 10px;
     }
+
+    .viewButton {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
 }
 </style>
 </head>
 <body>
 <!-- Title -->
 <div id="title">
-<h1>Drone Camera AOV Simulation</h1>
+    <h1>Drone Camera AOV Simulation</h1>
 </div>
 
 <!-- Information Panel -->
 <div id="controls">
-<div><strong>Main K Controls</strong></div>
-<div>
-<label for="aspectRatio">Aspect Ratio:</label>
-<select id="aspectRatio">
-<option value="1.5">3:2</option>
-<option value="1.333">4:3</option>
-<option value="1.778">16:9</option>
-</select>
-</div>
-<div>
-<label for="aov">Horizontal AOV: <span id="aovValue">70</span>°</label>
-<!-- Updated AOV range from 30-120 -->
-<input type="range" id="aov" min="30" max="120" value="70">
-</div>
-<div>
-<label>Vertical AOV: <span id="vaovValue">0.0</span>°</label>
-</div>
-<div>
-<label>Diagonal AOV: <span id="daovValue">0.0</span>°</label>
-</div>
-<hr>
-<div>
-<label>Altitude: <span id="altitudeValue">0</span>m</label>
-</div>
-<div>
-<label>FOV Width: <span id="widthValue">0</span>m</label>
-</div>
-<div>
-<label>FOV Height: <span id="heightValue">0</span>m</label>
-</div>
-<div>
-<label>Area Captured: <span id="areaValue">0</span>m²</label>
-</div>
-<hr>
-<!-- Toggle Buttons -->
-<div>
-<button id="toggleSchoolBuilding">Show School Building</button>
-</div>
-<div>
-<button id="toggleTridentBlocks">Show Trident Blocks</button>
-</div>
-<div>
-<button id="toggleBankTower">Show Bank Tower</button>
-</div>
+    <div><strong>Main L Controls</strong></div>
+    <div>
+        <label for="aspectRatio">Aspect Ratio:</label>
+        <select id="aspectRatio">
+            <option value="1.5">3:2</option>
+            <option value="1.333">4:3</option>
+            <option value="1.778">16:9</option>
+        </select>
+    </div>
+    <div>
+        <label for="aov">Horizontal AOV: <span id="aovValue">70</span>°</label>
+        <input type="range" id="aov" min="30" max="120" value="70">
+    </div>
+    <div>
+        <label>Vertical AOV: <span id="vaovValue">0.0</span>°</label>
+    </div>
+    <div>
+        <label>Diagonal AOV: <span id="daovValue">0.0</span>°</label>
+    </div>
+    <hr>
+    <div>
+        <label>Altitude: <span id="altitudeValue">0</span>m</label>
+    </div>
+    <div>
+        <label>FOV Width: <span id="widthValue">0</span>m</label>
+    </div>
+    <div>
+        <label>FOV Height: <span id="heightValue">0</span>m</label>
+    </div>
+    <div>
+        <label>Area Captured: <span id="areaValue">0</span>m²</label>
+    </div>
+    <hr>
+    <!-- Toggle Buttons -->
+    <div>
+        <button id="toggleSchoolBuilding">Show School Building</button>
+    </div>
+    <div>
+        <button id="toggleTridentBlocks">Show Trident Blocks</button>
+    </div>
+    <div>
+        <button id="toggleBankTower">Show Bank Tower</button>
+    </div>
 </div>
 
 <!-- Calculation Controls Panel -->
 <div id="additionalControls">
-<h3>Calculate AOV</h3>
-<div>
-<label for="calc1AspectRatio">Aspect Ratio:</label>
-<select id="calc1AspectRatio">
-<option value="1.5">3:2</option>
-<option value="1.333">4:3</option>
-<option value="1.778">16:9</option>
-</select>
-</div>
-<div>
-<label for="calc1Altitude">Altitude (m):</label>
-<input type="number" id="calc1Altitude" placeholder="Enter altitude" min="0" step="0.1">
-</div>
-<div>
-<label for="calc1FOVWidth">FOV Width (m):</label>
-<input type="number" id="calc1FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
-</div>
-<button id="calc1Button">Calculate AOV</button>
-<div id="calc1Results">
-<p>Horizontal AOV: <span id="calc1HorizontalAOV">0.0</span>°</p>
-<p>Vertical AOV: <span id="calc1VerticalAOV">0.0</span>°</p>
-<p>Diagonal AOV: <span id="calc1DiagonalAOV">0.0</span>°</p>
+    <h3>Calculate AOV</h3>
+    <div>
+        <label for="calc1AspectRatio">Aspect Ratio:</label>
+        <select id="calc1AspectRatio">
+            <option value="1.5">3:2</option>
+            <option value="1.333">4:3</option>
+            <option value="1.778">16:9</option>
+        </select>
+    </div>
+    <div>
+        <label for="calc1Altitude">Altitude (m):</label>
+        <input type="number" id="calc1Altitude" placeholder="Enter altitude" min="0" step="0.1">
+    </div>
+    <div>
+        <label for="calc1FOVWidth">FOV Width (m):</label>
+        <input type="number" id="calc1FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
+    </div>
+    <button id="calc1Button">Calculate AOV</button>
+    <div id="calc1Results">
+        <p>Horizontal AOV: <span id="calc1HorizontalAOV">0.0</span>°</p>
+        <p>Vertical AOV: <span id="calc1VerticalAOV">0.0</span>°</p>
+        <p>Diagonal AOV: <span id="calc1DiagonalAOV">0.0</span>°</p>
+    </div>
+
+    <hr>
+
+    <h3>Calculate Altitude</h3>
+    <div>
+        <label for="calc2AspectRatio">Aspect Ratio:</label>
+        <select id="calc2AspectRatio">
+            <option value="1.5">3:2</option>
+            <option value="1.333">4:3</option>
+            <option value="1.778">16:9</option>
+        </select>
+    </div>
+    <div>
+        <label for="calc2DiagonalAOV">Diagonal AOV (°):</label>
+        <input type="number" id="calc2DiagonalAOV" placeholder="Enter diagonal AOV" min="0" step="0.1">
+    </div>
+    <div>
+        <label for="calc2FOVWidth">FOV Width (m):</label>
+        <input type="number" id="calc2FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
+    </div>
+    <button id="calc2Button">Calculate Altitude</button>
+    <div id="calc2Results">
+        <p>Required Altitude: <span id="calc2Altitude">0.0</span>m</p>
+    </div>
 </div>
 
-<hr>
-
-<h3>Calculate Altitude</h3>
-<div>
-<label for="calc2AspectRatio">Aspect Ratio:</label>
-<select id="calc2AspectRatio">
-<option value="1.5">3:2</option>
-<option value="1.333">4:3</option>
-<option value="1.778">16:9</option>
-</select>
-</div>
-<div>
-<label for="calc2DiagonalAOV">Diagonal AOV (°):</label>
-<input type="number" id="calc2DiagonalAOV" placeholder="Enter diagonal AOV" min="0" step="0.1">
-</div>
-<div>
-<label for="calc2FOVWidth">FOV Width (m):</label>
-<input type="number" id="calc2FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
-</div>
-<button id="calc2Button">Calculate Altitude</button>
-<div id="calc2Results">
-<p>Required Altitude: <span id="calc2Altitude">0.0</span>m</p>
-</div>
+<!-- View Control Buttons -->
+<div id="viewControls">
+    <button class="viewButton" id="tiltUp">↑</button>
+    <button class="viewButton" id="tiltDown">↓</button>
+    <button class="viewButton" id="rotateLeft">←</button>
+    <button class="viewButton" id="rotateRight">→</button>
+    <button class="viewButton" id="zoomIn">+</button>
+    <button class="viewButton" id="zoomOut">-</button>
+    <button class="viewButton" id="homeView">⌂</button>
 </div>
 
 <!-- Three.js Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
+
 let scene, camera, renderer, drone, fovArea;
 let isDragging = false;
 let dragStartPosition = { x: 0, y: 0 };
@@ -1951,6 +1994,96 @@ onMouseUp(event);
             lastTouchEnd = now;
         }, false);
 
+function tiltUp() {
+    cameraTilt = Math.min(cameraTilt + 0.1, Math.PI / 2 - 0.1);
+    updateCamera();
+}
+
+function tiltDown() {
+    cameraTilt = Math.max(cameraTilt - 0.1, -Math.PI / 2 + 0.1);
+    updateCamera();
+}
+
+function rotateLeft() {
+    cameraAngle += 0.1;
+    updateCamera();
+}
+
+function rotateRight() {
+    cameraAngle -= 0.1;
+    updateCamera();
+}
+
+function zoomIn() {
+    cameraDistance = Math.max(cameraDistance - 10, 10);
+    updateCamera();
+}
+
+function zoomOut() {
+    cameraDistance = Math.min(cameraDistance + 10, 1000);
+    updateCamera();
+}
+
+function resetView() {
+    cameraAngle = Math.PI / 2;
+    cameraTilt = 0.5;
+    cameraDistance = 100;
+    updateCamera();
+}
+
+// Add event listeners for the new buttons
+document.getElementById('tiltUp').addEventListener('click', tiltUp);
+document.getElementById('tiltDown').addEventListener('click', tiltDown);
+document.getElementById('rotateLeft').addEventListener('click', rotateLeft);
+document.getElementById('rotateRight').addEventListener('click', rotateRight);
+document.getElementById('zoomIn').addEventListener('click', zoomIn);
+document.getElementById('zoomOut').addEventListener('click', zoomOut);
+document.getElementById('homeView').addEventListener('click', resetView);
+
+// Modify your existing touch event listeners to include these new functions
+renderer.domElement.addEventListener('touchstart', function(event) {
+    event.preventDefault();
+    if (event.touches.length === 1) {
+        onMouseDown({
+            clientX: event.touches[0].clientX,
+            clientY: event.touches[0].clientY,
+            button: 0
+        });
+    } else if (event.touches.length === 2) {
+        // Handle pinch-to-zoom
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        const dist = Math.hypot(
+            touch1.pageX - touch2.pageX,
+            touch1.pageY - touch2.pageY);
+        this.pinchStartDistance = dist;
+    }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', function(event) {
+    event.preventDefault();
+    if (event.touches.length === 1) {
+        onMouseMove({
+            clientX: event.touches[0].clientX,
+            clientY: event.touches[0].clientY,
+            buttons: 1
+        });
+    } else if (event.touches.length === 2) {
+        // Handle pinch-to-zoom
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        const dist = Math.hypot(
+            touch1.pageX - touch2.pageX,
+            touch1.pageY - touch2.pageY);
+        const delta = dist - this.pinchStartDistance;
+        if (delta > 0) {
+            zoomIn();
+        } else {
+            zoomOut();
+        }
+        this.pinchStartDistance = dist;
+    }
+}, { passive: false });
 
 </script>
 </body>
