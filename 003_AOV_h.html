@@ -1992,13 +1992,15 @@ function resetView() {
 }
 
 function moveUp() {
-    camera.position.y = Math.max(5, camera.position.y + 1);
-    camera.lookAt(0, camera.position.y, 0);
+    drone.position.y = Math.min(500, drone.position.y + 1);
+    updateFOV();
+    updateCamera();
 }
 
 function moveDown() {
-    camera.position.y = Math.max(5, camera.position.y - 1);
-    camera.lookAt(0, camera.position.y, 0);
+    drone.position.y = Math.max(0, drone.position.y - 1);
+    updateFOV();
+    updateCamera();
 }
 
 function moveForward() {
