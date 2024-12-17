@@ -34,40 +34,99 @@ canvas { display: block; }
     font-size: 24px;
 }
 
-#controls, #additionalControls {
+#controls {
+    position: fixed;
+    top: 40px; /* Moved up from 80px */
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+    width: 220px; /* Adjusted for better fit */
+}
+
+#controls button {
+    display: block;
+    width: 100%;
+    margin: 5px 0;
+    padding: 8px;
+    background: #4CAF50;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+#controls button:hover {
+    background: #45a049;
+}
+
+#additionalControls {
     position: fixed;
     background: rgba(0,0,0,0.7);
     color: white;
-    padding: 15px;
+    padding: 10px;
     border-radius: 5px;
     width: 280px;
     box-sizing: border-box;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
-}
-
-#controls {
-    top: 80px;
-    left: 10px;
-    max-height: calc(100vh - 100px);
-}
-
-#additionalControls {
-    top: 80px;
+    top: 60px;
     right: 10px;
-    max-height: calc(100vh - 100px);
+    max-height: calc(100vh - 70px);
+    font-size: 14px; /* Reduced font size */
 }
 
-select, input[type="number"], button {
-    width: 100%;
-    padding: 12px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 5px;
+#additionalControls h3 {
     font-size: 16px;
-    -webkit-appearance: none;
-    appearance: none;
-    background-color: #fff;
+    margin: 0px 0 5px;
+}
+
+#additionalControls label {
+    display: block;
+    margin-top: 5px;
+}
+
+#additionalControls input[type="number"],
+#additionalControls select {
+    width: 100%;
+    padding: 5px;
+    margin: 2px 0 8px;
+    font-size: 12px;
+}
+
+#additionalControls button {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+#additionalControls p {
+    margin: 5px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #additionalControls {
+        width: 45%;
+        max-width: none;
+        font-size: 12px;
+        top: 50px;
+        right: 2.5%;
+    }
+
+    #additionalControls h3 {
+        font-size: 14px;
+    }
+
+    #additionalControls input[type="number"],
+    #additionalControls select,
+    #additionalControls button {
+        font-size: 12px;
+        padding: 5px;
+    }
 }
 
 select {
@@ -162,6 +221,9 @@ input[type="range"]::-moz-range-thumb {
     transform: translateX(-50%);
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 90%;
 }
 
 .viewButton {
@@ -178,33 +240,6 @@ input[type="range"]::-moz-range-thumb {
     justify-content: center;
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    #controls, #additionalControls {
-        width: 45%;
-        max-width: none;
-        font-size: 14px;
-    }
-
-    #controls {
-        left: 2.5%;
-    }
-
-    #additionalControls {
-        right: 2.5%;
-    }
-
-    select, input[type="number"], button {
-        font-size: 14px;
-        padding: 10px;
-    }
-
-    .viewButton {
-        width: 30px;
-        height: 30px;
-        font-size: 16px;
-    }
-}
 </style>
 </head>
 <body>
@@ -215,7 +250,7 @@ input[type="range"]::-moz-range-thumb {
 
 <!-- Information Panel -->
 <div id="controls">
-    <div><strong>Main L Controls</strong></div>
+    <div><strong>Main M Controls</strong></div>
     <div>
         <label for="aspectRatio">Aspect Ratio:</label>
         <select id="aspectRatio">
@@ -320,6 +355,10 @@ input[type="range"]::-moz-range-thumb {
     <button class="viewButton" id="zoomIn">+</button>
     <button class="viewButton" id="zoomOut">-</button>
     <button class="viewButton" id="homeView">⌂</button>
+    <button class="viewButton" id="moveUp">⇧</button>
+    <button class="viewButton" id="moveDown">⇩</button>
+    <button class="viewButton" id="moveForward">⇨</button>
+    <button class="viewButton" id="moveBackward">⇦</button>
 </div>
 
 <!-- Three.js Library -->
@@ -1426,11 +1465,15 @@ document.getElementById('toggleTridentBlocks').textContent = tridentBlocks.visib
 }
 
 function updateCamera() {
-const x = cameraDistance * Math.cos(cameraAngle) * Math.cos(cameraTilt);
-const y = cameraDistance * Math.sin(cameraTilt);
-const z = cameraDistance * Math.sin(cameraAngle) * Math.cos(cameraTilt);
-camera.position.set(x, y, z);
-camera.lookAt(0, 0, 0);
+    const x = cameraDistance * Math.cos(cameraAngle) * Math.cos(cameraTilt);
+    const y = cameraDistance * Math.sin(cameraTilt);
+    const z = cameraDistance * Math.sin(cameraAngle) * Math.cos(cameraTilt);
+    camera.position.set(
+        drone.position.x + x,
+        drone.position.y + y,
+        drone.position.z + z
+    );
+    camera.lookAt(drone.position);
 }
 
 function updateBlinkingLights() {
@@ -1487,45 +1530,45 @@ draggedBuilding = null;
 }
 
 function onMouseMove(event) {
-if (isDragging) {
-const deltaX = event.clientX - dragStartPosition.x;
-const deltaY = event.clientY - dragStartPosition.y;
+    if (isDragging) {
+        const deltaX = event.clientX - dragStartPosition.x;
+        const deltaY = event.clientY - dragStartPosition.y;
 
-if (draggedBuilding) {
-// Calculate movement only along X axis
-const movementX = (event.clientX - mouseStartX) * 0.5; // Adjust sensitivity as needed
-if (draggedBuilding === 'school') {
-schoolBuilding.position.x = buildingDragStartX + movementX;
-} else if (draggedBuilding === 'bank') {
-bankTower.position.x = buildingDragStartX + movementX;
-} else if (draggedBuilding === 'trident') {
-tridentBlocks.position.x = buildingDragStartX + movementX;
-}
-} else {
-if (event.buttons & 1) { // Left mouse button
-// Change drone altitude based on deltaY
-const newAltitude = parseFloat(drone.position.y) - deltaY * 0.5;
-drone.position.y = Math.max(0, Math.min(500, newAltitude));
-updateFOV();
-} else if (event.buttons & 2) { // Right mouse button
-if (event.shiftKey) {
-// Move drone horizontally
-drone.position.x += deltaX * 0.5;
-drone.position.z += deltaY * 0.5;
-updateFOV();
-} else {
-// Rotate camera based on deltas
-cameraAngle -= deltaX * 0.01;
-cameraTilt += deltaY * 0.01;
-cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
-updateCamera();
-}
-}
-}
+        if (draggedBuilding) {
+            // Calculate movement only along X axis
+            const movementX = (event.clientX - mouseStartX) * 0.5; // Adjust sensitivity as needed
+            if (draggedBuilding === 'school') {
+                schoolBuilding.position.x = buildingDragStartX + movementX;
+            } else if (draggedBuilding === 'bank') {
+                bankTower.position.x = buildingDragStartX + movementX;
+            } else if (draggedBuilding === 'trident') {
+                tridentBlocks.position.x = buildingDragStartX + movementX;
+            }
+        } else {
+            if (event.buttons & 1) { // Left mouse button
+                // Change drone altitude based on deltaY
+                const newAltitude = parseFloat(drone.position.y) - deltaY * 0.5;
+                drone.position.y = Math.max(0, Math.min(500, newAltitude));
+                updateFOV();
+            } else if (event.buttons & 2) { // Right mouse button
+                if (event.shiftKey) {
+                    // Move drone horizontally
+                    drone.position.x += deltaX * 0.5;
+                    drone.position.z += deltaY * 0.5;
+                    updateFOV();
+                } else {
+                    // Rotate camera around drone position
+                    cameraAngle -= deltaX * 0.01;
+                    cameraTilt += deltaY * 0.01;
+                    cameraTilt = Math.max(-Math.PI / 2 + 0.1, Math.min(Math.PI / 2 - 0.1, cameraTilt));
+                    updateCamera();
+                }
+            }
+        }
 
-dragStartPosition.x = event.clientX;
-dragStartPosition.y = event.clientY;
-}
+        dragStartPosition.x = event.clientX;
+        dragStartPosition.y = event.clientY;
+    }
 }
 
 function onMouseUp(event) {
@@ -2015,12 +2058,12 @@ function rotateRight() {
 }
 
 function zoomIn() {
-    cameraDistance = Math.max(cameraDistance - 10, 10);
+    cameraDistance = Math.max(cameraDistance - 2, 10);
     updateCamera();
 }
 
 function zoomOut() {
-    cameraDistance = Math.min(cameraDistance + 10, 1000);
+    cameraDistance = Math.min(cameraDistance + 2, 1000);
     updateCamera();
 }
 
@@ -2031,6 +2074,32 @@ function resetView() {
     updateCamera();
 }
 
+function moveUp() {
+    camera.position.y = Math.max(5, camera.position.y + 1);
+    camera.lookAt(0, camera.position.y, 0);
+}
+
+function moveDown() {
+    camera.position.y = Math.max(5, camera.position.y - 1);
+    camera.lookAt(0, camera.position.y, 0);
+}
+
+function moveForward() {
+    const moveDistance = 1;
+    drone.position.z -= moveDistance; // Move along the front-rear axis (negative Z is forward)
+    updateFOV();
+    updateCamera();
+}
+
+function moveBackward() {
+    const moveDistance = 1;
+    drone.position.z += moveDistance; // Move along the front-rear axis (positive Z is backward)
+    updateFOV();
+    updateCamera();
+}
+
+
+
 // Add event listeners for the new buttons
 document.getElementById('tiltUp').addEventListener('click', tiltUp);
 document.getElementById('tiltDown').addEventListener('click', tiltDown);
@@ -2039,6 +2108,10 @@ document.getElementById('rotateRight').addEventListener('click', rotateRight);
 document.getElementById('zoomIn').addEventListener('click', zoomIn);
 document.getElementById('zoomOut').addEventListener('click', zoomOut);
 document.getElementById('homeView').addEventListener('click', resetView);
+document.getElementById('moveUp').addEventListener('click', moveUp);
+document.getElementById('moveDown').addEventListener('click', moveDown);
+document.getElementById('moveForward').addEventListener('click', moveForward);
+document.getElementById('moveBackward').addEventListener('click', moveBackward);
 
 // Modify your existing touch event listeners to include these new functions
 renderer.domElement.addEventListener('touchstart', function(event) {
