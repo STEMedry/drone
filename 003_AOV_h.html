@@ -4,646 +4,513 @@
 <title>Drone Camera AOV Simulation with School Building, Bank Tower, and Trident Blocks</title>
 <style>
 body {
-margin: 0;
-overflow: hidden;
--webkit-user-select: none; /* Safari */
--ms-user-select: none; /* Internet Explorer/Edge */
-user-select: none; /* Standard syntax */
-font-family: Arial, sans-serif;
-
+    margin: 0;
+    overflow: hidden;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-family: Arial, sans-serif;
 }
 
-/* Additionally, disable text selection for specific interactive elements if needed /
-#controls, #additionalControls, #instructions, button, label {
--webkit-user-select: none; / Safari /
--ms-user-select: none; / Internet Explorer/Edge /
-user-select: none; / Standard syntax */
-}
 canvas { display: block; }
 
-/* Title Styles */
 #title {
-position: fixed;
-top: 20px;
-left: 35%;
-transform: translateX(-50%);
-background: rgba(0, 0, 0, 0.7); /* Semi-transparent background */
-color: white;
-padding: 10px 20px;
-border-radius: 5px;
-font-family: Arial, sans-serif;
-z-index: 1001; /* Higher than other fixed elements */
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    z-index: 1001;
+    width: 90%;
+    max-width: 600px;
+    text-align: center;
 }
 
 #title h1 {
-margin: 0;
-font-size: 24px; /* Adjust the font size as needed */
-text-align: center;
+    margin: 0;
+    font-size: 24px;
 }
 
-/* Information Panel */
+#controls, #additionalControls {
+    position: fixed;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 15px;
+    border-radius: 5px;
+    width: 280px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 #controls {
-position: fixed;
-top: 10px;
-left: 10px;
-background: rgba(0,0,0,0.7);
-color: white;
-padding: 15px;
-border-radius: 5px;
-font-family: Arial, sans-serif;
-width: 280px;
-box-sizing: border-box;
-max-height: 80vh;
-overflow: hidden;
+    top: 80px;
+    left: 10px;
+    max-height: calc(100vh - 100px);
 }
 
-/* Calculation Controls Panel */
 #additionalControls {
-position: fixed;
-top: 5px;
-right: 10px;
-background: rgba(0,0,0,0.7);
-color: white;
-padding: 15px;
-border-radius: 5px;
-font-family: Arial, sans-serif;
-width: 280px;
-box-sizing: border-box;
-max-height: 100vh;
-overflow: hidden;
+    top: 80px;
+    right: 10px;
+    max-height: calc(100vh - 100px);
 }
 
-/* Common Styles for Forms */
-select, input, button {
-margin: 5px 0;
-width: 100%;
-padding: 5px;
-border-radius: 3px;
-border: none;
-box-sizing: border-box;
+select, input[type="number"], button {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    -webkit-appearance: none;
+    appearance: none;
+    background-color: #fff;
 }
 
-/* Button Styles */
+select {
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23007CB2%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px top 50%;
+    background-size: 12px auto;
+    padding-right: 30px;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+    -webkit-appearance: none;
+    margin: 0;
+}
+
 button {
--webkit-user-select: none; /* Safari */
--ms-user-select: none; /* Internet Explorer/Edge */
-user-select: none; /* Standard syntax */
-
-background: #4CAF50;
-color: white;
-cursor: pointer;
-font-weight: bold;
-}
-button:hover {
-background: #45a049;
+    background: #4CAF50;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.3s;
 }
 
-/* Label Styles /
+button:hover, button:focus {
+    background: #45a049;
+}
+
+button:active {
+    background: #3d8b40;
+}
+
 label {
-display: block;
-margin-top: 10px;
-font-weight: bold;
--webkit-user-select: none; / Safari /
--ms-user-select: none; / Internet Explorer/Edge /
-user-select: none; / Standard syntax */
+    display: block;
+    margin-top: 10px;
+    font-weight: bold;
 }
 
-/* Heading Styles /
 h3 {
-margin-top: 15px;
-margin-bottom: 5px;
-border-bottom: 1px solid #555;
-padding-bottom: 5px;
--webkit-user-select: none; / Safari /
--ms-user-select: none; / Internet Explorer/Edge /
-user-select: none; / Standard syntax */
+    margin-top: 15px;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
 }
 
-/* Horizontal Rule Styling /
 hr {
-border: none;
-border-bottom: 1px solid #555;
-margin: 15px 0;
--webkit-user-select: none; / Safari /
--ms-user-select: none; / Internet Explorer/Edge /
-user-select: none; / Standard syntax */
+    border: none;
+    border-bottom: 1px solid #555;
+    margin: 15px 0;
 }
 
-/* Responsive Design for Smaller Screens (e.g., iPad) */
+/* Improved touch targets for range inputs */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 25px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    border-radius: 12px;
+    margin: 8px 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 35px;
+    height: 35px;
+    background: #4CAF50;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 35px;
+    height: 35px;
+    background: #4CAF50;
+    cursor: pointer;
+    border-radius: 50%;
+}
+
+/* View control buttons */
+#viewControls {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+}
+
+.viewButton {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-#controls, #additionalControls, #instructions {
-width: 80%;
-left: 10%;
-right: 10%;
-}
+    #controls, #additionalControls {
+        width: 45%;
+        max-width: none;
+        font-size: 14px;
+    }
 
-#title {
-left: 50%;
-width: 90%;
-}
+    #controls {
+        left: 2.5%;
+    }
+
+    #additionalControls {
+        right: 2.5%;
+    }
+
+    select, input[type="number"], button {
+        font-size: 14px;
+        padding: 10px;
+    }
+
+    .viewButton {
+        width: 30px;
+        height: 30px;
+        font-size: 16px;
+    }
 }
 </style>
-
 </head>
-
 <body>
-
 <!-- Title -->
-
 <div id="title">
-
-<h1>Drone Camera AOV Simulation</h1>
-
+    <h1>Drone Camera AOV Simulation</h1>
 </div>
 
 <!-- Information Panel -->
-
 <div id="controls">
-
-<div><strong>Main Controls</strong></div>
-
-<div>
-
-<label for="aspectRatio">Aspect Ratio:</label>
-
-<select id="aspectRatio">
-
-<option value="1.5">3:2</option>
-
-<option value="1.333">4:3</option>
-
-<option value="1.778">16:9</option>
-
-</select>
-
-</div>
-
-<div>
-
-<label for="aov">Horizontal AOV: <span id="aovValue">70</span>°</label>
-
-<!-- Updated AOV range from 30-120 -->
-
-<input type="range" id="aov" min="30" max="120" value="70">
-
-</div>
-
-<div>
-
-<label>Vertical AOV: <span id="vaovValue">0.0</span>°</label>
-
-</div>
-
-<div>
-
-<label>Diagonal AOV: <span id="daovValue">0.0</span>°</label>
-
-</div>
-
-<hr>
-
-<div>
-
-<label>Altitude: <span id="altitudeValue">0</span>m</label>
-
-</div>
-
-<div>
-
-<label>FOV Width: <span id="widthValue">0</span>m</label>
-
-</div>
-
-<div>
-
-<label>FOV Height: <span id="heightValue">0</span>m</label>
-
-</div>
-
-<div>
-
-<label>Area Captured: <span id="areaValue">0</span>m²</label>
-
-</div>
-
-<hr>
-
-<!-- Toggle Buttons -->
-
-<div>
-
-<button id="toggleSchoolBuilding">Show School Building</button>
-
-</div>
-
-<div>
-
-<button id="toggleTridentBlocks">Show Trident Blocks</button>
-
-</div>
-
-<div>
-
-<button id="toggleBankTower">Show Bank Tower</button>
-
-</div>
-
+    <div><strong>Main L Controls</strong></div>
+    <div>
+        <label for="aspectRatio">Aspect Ratio:</label>
+        <select id="aspectRatio">
+            <option value="1.5">3:2</option>
+            <option value="1.333">4:3</option>
+            <option value="1.778">16:9</option>
+        </select>
+    </div>
+    <div>
+        <label for="aov">Horizontal AOV: <span id="aovValue">70</span>°</label>
+        <input type="range" id="aov" min="30" max="120" value="70">
+    </div>
+    <div>
+        <label>Vertical AOV: <span id="vaovValue">0.0</span>°</label>
+    </div>
+    <div>
+        <label>Diagonal AOV: <span id="daovValue">0.0</span>°</label>
+    </div>
+    <hr>
+    <div>
+        <label>Altitude: <span id="altitudeValue">0</span>m</label>
+    </div>
+    <div>
+        <label>FOV Width: <span id="widthValue">0</span>m</label>
+    </div>
+    <div>
+        <label>FOV Height: <span id="heightValue">0</span>m</label>
+    </div>
+    <div>
+        <label>Area Captured: <span id="areaValue">0</span>m²</label>
+    </div>
+    <hr>
+    <!-- Toggle Buttons -->
+    <div>
+        <button id="toggleSchoolBuilding">Show School Building</button>
+    </div>
+    <div>
+        <button id="toggleTridentBlocks">Show Trident Blocks</button>
+    </div>
+    <div>
+        <button id="toggleBankTower">Show Bank Tower</button>
+    </div>
 </div>
 
 <!-- Calculation Controls Panel -->
-
 <div id="additionalControls">
+    <h3>Calculate AOV</h3>
+    <div>
+        <label for="calc1AspectRatio">Aspect Ratio:</label>
+        <select id="calc1AspectRatio">
+            <option value="1.5">3:2</option>
+            <option value="1.333">4:3</option>
+            <option value="1.778">16:9</option>
+        </select>
+    </div>
+    <div>
+        <label for="calc1Altitude">Altitude (m):</label>
+        <input type="number" id="calc1Altitude" placeholder="Enter altitude" min="0" step="0.1">
+    </div>
+    <div>
+        <label for="calc1FOVWidth">FOV Width (m):</label>
+        <input type="number" id="calc1FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
+    </div>
+    <button id="calc1Button">Calculate AOV</button>
+    <div id="calc1Results">
+        <p>Horizontal AOV: <span id="calc1HorizontalAOV">0.0</span>°</p>
+        <p>Vertical AOV: <span id="calc1VerticalAOV">0.0</span>°</p>
+        <p>Diagonal AOV: <span id="calc1DiagonalAOV">0.0</span>°</p>
+    </div>
 
-<h3>Calculate AOV</h3>
+    <hr>
 
-<div>
-
-<label for="calc1Altitude">Altitude (m):</label>
-
-<input type="number" id="calc1Altitude" placeholder="Enter altitude" min="0" step="0.1">
-
+    <h3>Calculate Altitude</h3>
+    <div>
+        <label for="calc2AspectRatio">Aspect Ratio:</label>
+        <select id="calc2AspectRatio">
+            <option value="1.5">3:2</option>
+            <option value="1.333">4:3</option>
+            <option value="1.778">16:9</option>
+        </select>
+    </div>
+    <div>
+        <label for="calc2DiagonalAOV">Diagonal AOV (°):</label>
+        <input type="number" id="calc2DiagonalAOV" placeholder="Enter diagonal AOV" min="0" step="0.1">
+    </div>
+    <div>
+        <label for="calc2FOVWidth">FOV Width (m):</label>
+        <input type="number" id="calc2FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
+    </div>
+    <button id="calc2Button">Calculate Altitude</button>
+    <div id="calc2Results">
+        <p>Required Altitude: <span id="calc2Altitude">0.0</span>m</p>
+    </div>
 </div>
 
-<div>
-
-<label for="calc1FOVWidth">FOV Width (m):</label>
-
-<input type="number" id="calc1FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
-
-</div>
-
-<button id="calc1Button">Calculate AOV</button>
-
-<div id="calc1Results">
-
-<p>Horizontal AOV: <span id="calc1HorizontalAOV">0.0</span>°</p>
-
-<p>Vertical AOV: <span id="calc1VerticalAOV">0.0</span>°</p>
-
-<p>Diagonal AOV: <span id="calc1DiagonalAOV">0.0</span>°</p>
-
-</div>
-
-<hr>
-
-<h3>Calculate Altitude</h3>
-
-<div>
-
-<label for="calc2DiagonalAOV">Diagonal AOV (°):</label>
-
-<input type="number" id="calc2DiagonalAOV" placeholder="Enter diagonal AOV" min="0" step="0.1">
-
-</div>
-
-<div>
-
-<label for="calc2FOVWidth">FOV Width (m):</label>
-
-<input type="number" id="calc2FOVWidth" placeholder="Enter FOV width" min="0" step="0.1">
-
-</div>
-
-<button id="calc2Button">Calculate Altitude</button>
-
-<div id="calc2Results">
-
-<p>Required Altitude: <span id="calc2Altitude">0.0</span>m</p>
-
-</div>
-
+<!-- View Control Buttons -->
+<div id="viewControls">
+    <button class="viewButton" id="tiltUp">↑</button>
+    <button class="viewButton" id="tiltDown">↓</button>
+    <button class="viewButton" id="rotateLeft">←</button>
+    <button class="viewButton" id="rotateRight">→</button>
+    <button class="viewButton" id="zoomIn">+</button>
+    <button class="viewButton" id="zoomOut">-</button>
+    <button class="viewButton" id="homeView">⌂</button>
 </div>
 
 <!-- Three.js Library -->
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-
 <script>
 
 let scene, camera, renderer, drone, fovArea;
-
 let isDragging = false;
-
 let dragStartPosition = { x: 0, y: 0 };
-
 let cameraAngle = Math.PI / 2;
-
 let cameraTilt = 0.5;
-
 let cameraDistance = 100;
-
 let draggedBuilding = null; // 'school', 'bank', 'trident' or null
-
 let buildingDragStartX = 0;
-
 let mouseStartX = 0;
-
 const raycaster = new THREE.Raycaster();
-
 const mouse = new THREE.Vector2();
 
 // Groups for lines
-
 let verticalLine, fovLines, diagonals, propellers = [], blinkingLights = [];
-
 let blinkState = true;
-
 let lastBlinkTime = 0;
-
 const BLINK_INTERVAL = 500;
-
 let cornerLabels = [];
-
 let dimensionLabels = []; // For AB and BC
-
 let centerLabel = null; // For O
 
 // Variables for Buildings
-
 let schoolBuilding;
-
 let bankTower;
-
 let tridentBlocks; // New Variable
 
 // Initialize the warning sound
-
 const warnSound = new Audio('warn2.mp3');
 
 // Preload the audio
-
 warnSound.preload = 'auto';
 
 // Function to play the warning sound with error handling
-
 function playWarnSound() {
-
 // Reset the audio to the beginning
-
 warnSound.currentTime = 0;
-
 // Attempt to play the sound
-
 warnSound.play().catch(function(error) {
-
 console.error("Error playing warning sound:", error);
-
 });
-
 }
 
 // Function to calculate maximum Diagonal AOV based on aspect ratio
-
 function getMaxDiagonalAOV(aspectRatio) {
-
 const maxHorizontalAOV = 120; // degrees
-
 const horizontalAOVRad = THREE.MathUtils.degToRad(maxHorizontalAOV);
-
 const verticalAOVRad = 2 * Math.atan(Math.tan(horizontalAOVRad / 2) / aspectRatio);
-
 const diagonalTan = Math.sqrt(Math.pow(Math.tan(horizontalAOVRad / 2), 2) +
-
 Math.pow(Math.tan(verticalAOVRad / 2), 2));
-
 const diagonalAOVRad = 2 * Math.atan(diagonalTan);
-
 const diagonalAOV = THREE.MathUtils.radToDeg(diagonalAOVRad);
-
 return diagonalAOV;
-
 }
 
 // Store the current max diagonal AOV
-
 let currentMaxDiagonalAOV = getMaxDiagonalAOV(1.5); // Default aspect ratio 3:2
 
 // Function to create dotted lines
-
 function createDottedLine(points, color = 0x000000) {
-
 const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
 const material = new THREE.LineDashedMaterial({
-
 color: color,
-
 dashSize: 1,
-
 gapSize: 2,
-
 });
-
 const line = new THREE.Line(geometry, material);
-
 line.computeLineDistances();
-
 return line;
-
 }
 
 // Function to create propellers
-
 function createPropeller(color) {
-
 const geometry = new THREE.BoxGeometry(3, 0.2, 0.4);
-
 const material = new THREE.MeshBasicMaterial({ color: color });
-
 return new THREE.Mesh(geometry, material);
-
 }
 
 // Function to create blinking lights
-
 function createBlinkingLight() {
-
 const geometry = new THREE.SphereGeometry(0.3, 16, 16);
-
 const material = new THREE.MeshBasicMaterial({
-
 color: 0xffff00,
-
 transparent: true,
-
 opacity: 1
-
 });
-
 return new THREE.Mesh(geometry, material);
-
 }
 
 // Function to create corner labels (A, B, C, D)
-
 function createCornerLabel(text, position) {
-
 const canvas = document.createElement('canvas');
-
 const context = canvas.getContext('2d');
-
 canvas.width = 256;
-
 canvas.height = 256;
 
 context.clearRect(0, 0, canvas.width, canvas.height); // Ensure transparent background
-
 context.font = 'bold 30px Arial'; // Font size 30px
-
 context.fillStyle = '#00FF00'; // Green color
-
 context.textAlign = 'center';
-
 context.textBaseline = 'middle';
-
 context.fillText(text, 128, 128);
 
 const texture = new THREE.CanvasTexture(canvas);
-
 texture.needsUpdate = true;
-
 const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-
 const sprite = new THREE.Sprite(spriteMaterial);
-
 sprite.position.copy(position);
-
 sprite.scale.set(30, 30, 1); // Scale (30, 30, 1)
-
 return sprite;
-
 }
 
 // Function to create dimension labels (AB, BC) with white font and black outline
-
 // Modified to accept a scale parameter
-
 function createDimensionLabel(text, position, scale) {
-
 const canvas = document.createElement('canvas');
-
 const context = canvas.getContext('2d');
-
 canvas.width = 256;
-
 canvas.height = 256;
 
 // Ensure the background is transparent
-
 context.clearRect(0, 0, canvas.width, canvas.height);
 
 // Set text properties
-
 context.font = 'bold 32px Arial'; // Font size 32px
-
 context.textAlign = 'center';
-
 context.textBaseline = 'middle';
-
 context.lineWidth = 2;
-
 context.strokeStyle = 'black'; // Black outline
-
 context.strokeText(text, 128, 128); // Draw stroke
-
 context.fillStyle = 'white'; // White text
-
 context.fillText(text, 128, 128); // Draw fill
 
 const texture = new THREE.CanvasTexture(canvas);
-
 texture.needsUpdate = true;
-
 const spriteMaterial = new THREE.SpriteMaterial({
-
 map: texture,
-
 transparent: true // Ensure transparency
-
 });
-
 const sprite = new THREE.Sprite(spriteMaterial);
-
 sprite.position.copy(position);
-
 sprite.scale.set(scale, scale, 1); // Dynamic scale
-
 return sprite;
-
 }
 
 // Function to create center label "O"
-
 function createCenterLabel(text, position) {
-
 const canvas = document.createElement('canvas');
-
 const context = canvas.getContext('2d');
-
 canvas.width = 256;
-
 canvas.height = 256;
 
 context.clearRect(0, 0, canvas.width, canvas.height); // Ensure transparent background
-
 context.font = 'bold 24px Arial'; // Same as corner labels
-
 context.fillStyle = '#00FF00'; // Green color
-
 context.textAlign = 'center';
-
 context.textBaseline = 'middle';
-
 context.fillText(text, 128, 128);
 
 const texture = new THREE.CanvasTexture(canvas);
-
 texture.needsUpdate = true;
-
 const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-
 const sprite = new THREE.Sprite(spriteMaterial);
-
 sprite.position.copy(position);
-
 sprite.scale.set(30, 30, 1); // Same scale as corner labels
-
 return sprite;
-
 }
 
 /**
-
 * Function to create a detailed basketball court.
-
 */
-
 function createCourt() {
-
 const courtGroup = new THREE.Group();
 
 // Court dimensions (in feet, scaled down)
-
 const courtLength = 94;
-
 const courtWidth = 50;
-
 const sideAreaWidth = 8;
-
 const endAreaLength = 8;
 
 // Main court (green)
-
 const mainGeometry = new THREE.PlaneGeometry(courtWidth, courtLength);
-
 const mainMaterial = new THREE.MeshBasicMaterial({ color: 0x2e8b57, side: THREE.DoubleSide });
-
 const mainCourt = new THREE.Mesh(mainGeometry, mainMaterial);
-
 mainCourt.rotation.x = -Math.PI / 2;
-
 mainCourt.position.y = 0.01; // Slightly above ground to prevent z-fighting
-
 courtGroup.add(mainCourt);
 
 // Side areas (orange)
@@ -769,7 +636,7 @@ function createBackboardAndHoop(posZ, rotation) {
 const backboardGroup = new THREE.Group();
 
 // Stand
-const standGeometry = new THREE.CylinderGeometry(0.2, 0.2, 12, 12);
+const standGeometry = new THREE.BoxGeometry(0.5, 12, 0.5);
 const standMaterial = new THREE.MeshBasicMaterial({ color: 0x808080 });
 const stand = new THREE.Mesh(standGeometry, standMaterial);
 stand.position.y = 6;
@@ -957,46 +824,49 @@ frontCourt.rotation.y += Math.PI / 2; // Rotate 90 degrees around Y-axis
 frontCourt.scale.set(0.3, 0.3, 0.3); // Scale down courts to fit the building
 });
 
-/*** Start of Trapezoidal Prism Addition ***/
-// Define the trapezoidal shape
-const shape = new THREE.Shape();
-shape.moveTo(0, 0);
-shape.lineTo(8, 0); // Base width: 15m
-shape.lineTo(8, 8); // Height: 5m (right angle)
-shape.lineTo(1.5, 8);  // Top width: 10m
-shape.lineTo(0, 0);
+    /*** Start of Trapezoidal Prism Addition ***/
+    // Define the trapezoidal shape
+    const shape = new THREE.Shape();
+    shape.moveTo(0, 0);
+    shape.lineTo(8, 0); // Base width: 15m
+    shape.lineTo(8, 8); // Height: 5m (right angle)
+    shape.lineTo(1.5, 8);  // Top width: 10m
+    shape.lineTo(0, 0);
 
-// Extrude settings
-const extrudeSettings = {
-steps: 1,
-depth: 5, // Depth of the trapezoidal prism
-bevelEnabled: false
-};
+    // Extrude settings
+    const extrudeSettings = {
+        steps: 1,
+        depth: 5, // Depth of the trapezoidal prism
+        bevelEnabled: false
+    };
 
-// Create the extruded geometry
-const trapezoidGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
-const trapezoidMaterial = new THREE.MeshPhongMaterial({ color: 0xA0A0A0 }); // Orange color for visibility
-const trapezoid = new THREE.Mesh(trapezoidGeometry, trapezoidMaterial);
+    // Create the extruded geometry
+    const trapezoidGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    const trapezoidMaterial = new THREE.MeshPhongMaterial({ color: 0xA0A0A0 }); // Orange color for visibility
+    const trapezoid = new THREE.Mesh(trapezoidGeometry, trapezoidMaterial);
 
-// Rotate the trapezoid to lie flat on the roof (assuming y-up)
-trapezoid.rotation.y = -Math.PI / 2; // Rotate 90 degrees around X-axis
-trapezoid.rotation.z = -Math.PI / 2; // Rotate 90 degrees around X-axis
+    // Rotate the trapezoid to lie flat on the roof (assuming y-up)
+    trapezoid.rotation.y = -Math.PI / 2; // Rotate 90 degrees around X-axis
+    trapezoid.rotation.z = -Math.PI / 2; // Rotate 90 degrees around X-axis
 
-// Position the trapezoid on top of the leftblock
-trapezoid.position.set(-2, 20 + 0.1, -5); // Adjust x, y, z as needed
-// Explanation:
-// - x: Shifted by -5 to center the trapezoid on the leftblock's roof
-// - y: 15.5 is the top of leftblock; adding a small offset (0.1) to prevent z-fighting
-// - z: Centered
+    // Position the trapezoid on top of the leftblock
+    trapezoid.position.set(-2, 20 + 0.1, -5); // Adjust x, y, z as needed
+    // Explanation:
+    // - x: Shifted by -5 to center the trapezoid on the leftblock's roof
+    // - y: 15.5 is the top of leftblock; adding a small offset (0.1) to prevent z-fighting
+    // - z: Centered
 
-// Optional: Add edges for better visibility
-const trapezoidEdges = new THREE.EdgesGeometry(trapezoidGeometry);
-const trapezoidOutline = new THREE.LineSegments(trapezoidEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
-trapezoid.add(trapezoidOutline);
+    // Optional: Add edges for better visibility
+    const trapezoidEdges = new THREE.EdgesGeometry(trapezoidGeometry);
+    const trapezoidOutline = new THREE.LineSegments(trapezoidEdges, new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 }));
+    trapezoid.add(trapezoidOutline);
 
-// Add the trapezoid to the leftblock
-leftblock.add(trapezoid);
-/*** End of Trapezoidal Prism Addition ***/
+    // Add the trapezoid to the leftblock
+    leftblock.add(trapezoid);
+    /*** End of Trapezoidal Prism Addition ***/
+
+
+
 
 return building;
 }
@@ -1309,32 +1179,32 @@ return building;
 
 const building = createBuilding();
 
-// Add outlines to each wing
-building.children.forEach(wing => {
-wing.children.forEach(child => {
-if (child instanceof THREE.Mesh) {
-const edges = new THREE.EdgesGeometry(child.geometry);
-const outline = new THREE.LineSegments(
-edges,
-new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
-);
-child.add(outline);
-}
-});
-});
-
-// Add centroid marker outline
-building.children.forEach(child => {
-if (child instanceof THREE.Mesh && child.material.color.getHex() === 0xff0000) { // Assuming centroid is red
-const edges = new THREE.EdgesGeometry(child.geometry);
-const outline = new THREE.LineSegments(
-edges,
-new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
-);
-child.add(outline);
-}
-});
-
+    // Add outlines to each wing
+    building.children.forEach(wing => {
+        wing.children.forEach(child => {
+            if (child instanceof THREE.Mesh) {
+                const edges = new THREE.EdgesGeometry(child.geometry);
+                const outline = new THREE.LineSegments(
+                    edges,
+                    new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
+                );
+                child.add(outline);
+            }
+        });
+    });
+    
+    // Add centroid marker outline
+    building.children.forEach(child => {
+        if (child instanceof THREE.Mesh && child.material.color.getHex() === 0xff0000) { // Assuming centroid is red
+            const edges = new THREE.EdgesGeometry(child.geometry);
+            const outline = new THREE.LineSegments(
+                edges,
+                new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 1 })
+            );
+            child.add(outline);
+        }
+    });
+    
 trident.add(building);
 
 // Position the Trident Blocks 200m to the left of the ground center
@@ -1508,6 +1378,10 @@ const aspectRatio = parseFloat(this.value);
 currentMaxDiagonalAOV = getMaxDiagonalAOV(aspectRatio);
 console.log("Updated Max Diagonal AOV:", currentMaxDiagonalAOV.toFixed(1), "degrees");
 
+// Synchronize aspect ratio selects in calculation panels
+document.getElementById('calc1AspectRatio').value = aspectRatio;
+document.getElementById('calc2AspectRatio').value = aspectRatio;
+
 // Update FOV with the new aspect ratio
 updateFOV();
 });
@@ -1669,7 +1543,7 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 
 // Section 1: Calculate AOV based on Altitude and FOV Width
 function calculateAOV() {
-const aspectRatio = parseFloat(document.getElementById('aspectRatio').value);
+const aspectRatio = parseFloat(document.getElementById('calc1AspectRatio').value);
 const altitude = parseFloat(document.getElementById('calc1Altitude').value);
 const fovWidth = parseFloat(document.getElementById('calc1FOVWidth').value);
 
@@ -1728,6 +1602,7 @@ document.getElementById('calc1VerticalAOV').textContent = verticalAOV.toFixed(1)
 document.getElementById('calc1DiagonalAOV').textContent = diagonalAOV.toFixed(1);
 
 // Update Simulation Controls
+document.getElementById('aspectRatio').value = aspectRatio;
 document.getElementById('aov').value = horizontalAOV.toFixed(1);
 document.getElementById('altitudeValue').textContent = altitude.toFixed(1);
 document.getElementById('widthValue').textContent = fovWidth.toFixed(1);
@@ -1744,7 +1619,7 @@ updateFOV();
 
 // Section 2: Calculate Required Altitude based on Diagonal AOV and FOV Width
 function calculateAltitude() {
-const aspectRatio = parseFloat(document.getElementById('aspectRatio').value);
+const aspectRatio = parseFloat(document.getElementById('calc2AspectRatio').value);
 const diagonalAOVDegrees = parseFloat(document.getElementById('calc2DiagonalAOV').value);
 const fovWidth = parseFloat(document.getElementById('calc2FOVWidth').value);
 
@@ -1808,6 +1683,7 @@ const diagonalAOVCalc = THREE.MathUtils.radToDeg(diagonalAOVCalcRad);
 document.getElementById('calc2Altitude').textContent = altitude.toFixed(1);
 
 // Update Calculation 1 Results
+document.getElementById('calc1AspectRatio').value = aspectRatio;
 document.getElementById('calc1Altitude').value = altitude.toFixed(1);
 document.getElementById('calc1FOVWidth').value = fovWidth.toFixed(1);
 document.getElementById('calc1HorizontalAOV').textContent = horizontalAOV.toFixed(1);
@@ -1815,6 +1691,7 @@ document.getElementById('calc1VerticalAOV').textContent = verticalAOV.toFixed(1)
 document.getElementById('calc1DiagonalAOV').textContent = diagonalAOVCalc.toFixed(1);
 
 // Update Simulation Controls
+document.getElementById('aspectRatio').value = aspectRatio;
 document.getElementById('aov').value = horizontalAOV.toFixed(1);
 document.getElementById('altitudeValue').textContent = altitude.toFixed(1);
 document.getElementById('widthValue').textContent = fovWidth.toFixed(1);
@@ -2079,6 +1956,133 @@ buttons: 1 // Simulate left mouse button held down
 renderer.domElement.addEventListener('touchend', function(event) {
 event.preventDefault();
 onMouseUp(event);
+}, { passive: false });
+
+        // Add touch-friendly event listeners
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                this.click();
+            });
+        });
+
+        document.querySelectorAll('input[type="range"]').forEach(range => {
+            range.addEventListener('touchstart', function(e) {
+                e.preventDefault();
+            });
+            range.addEventListener('touchmove', function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const min = parseFloat(this.min);
+                const max = parseFloat(this.max);
+                const rect = this.getBoundingClientRect();
+                const ratio = (touch.clientX - rect.left) / rect.width;
+                const value = min + ratio * (max - min);
+                this.value = value;
+                // Trigger the input event to update the simulation
+                this.dispatchEvent(new Event('input'));
+            });
+        });
+
+        // Prevent zoom on double tap
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(event) {
+            const now = (new Date()).getTime();
+            if (now - lastTouchEnd <= 300) {
+                event.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+
+function tiltUp() {
+    cameraTilt = Math.min(cameraTilt + 0.1, Math.PI / 2 - 0.1);
+    updateCamera();
+}
+
+function tiltDown() {
+    cameraTilt = Math.max(cameraTilt - 0.1, -Math.PI / 2 + 0.1);
+    updateCamera();
+}
+
+function rotateLeft() {
+    cameraAngle += 0.1;
+    updateCamera();
+}
+
+function rotateRight() {
+    cameraAngle -= 0.1;
+    updateCamera();
+}
+
+function zoomIn() {
+    cameraDistance = Math.max(cameraDistance - 10, 10);
+    updateCamera();
+}
+
+function zoomOut() {
+    cameraDistance = Math.min(cameraDistance + 10, 1000);
+    updateCamera();
+}
+
+function resetView() {
+    cameraAngle = Math.PI / 2;
+    cameraTilt = 0.5;
+    cameraDistance = 100;
+    updateCamera();
+}
+
+// Add event listeners for the new buttons
+document.getElementById('tiltUp').addEventListener('click', tiltUp);
+document.getElementById('tiltDown').addEventListener('click', tiltDown);
+document.getElementById('rotateLeft').addEventListener('click', rotateLeft);
+document.getElementById('rotateRight').addEventListener('click', rotateRight);
+document.getElementById('zoomIn').addEventListener('click', zoomIn);
+document.getElementById('zoomOut').addEventListener('click', zoomOut);
+document.getElementById('homeView').addEventListener('click', resetView);
+
+// Modify your existing touch event listeners to include these new functions
+renderer.domElement.addEventListener('touchstart', function(event) {
+    event.preventDefault();
+    if (event.touches.length === 1) {
+        onMouseDown({
+            clientX: event.touches[0].clientX,
+            clientY: event.touches[0].clientY,
+            button: 0
+        });
+    } else if (event.touches.length === 2) {
+        // Handle pinch-to-zoom
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        const dist = Math.hypot(
+            touch1.pageX - touch2.pageX,
+            touch1.pageY - touch2.pageY);
+        this.pinchStartDistance = dist;
+    }
+}, { passive: false });
+
+renderer.domElement.addEventListener('touchmove', function(event) {
+    event.preventDefault();
+    if (event.touches.length === 1) {
+        onMouseMove({
+            clientX: event.touches[0].clientX,
+            clientY: event.touches[0].clientY,
+            buttons: 1
+        });
+    } else if (event.touches.length === 2) {
+        // Handle pinch-to-zoom
+        const touch1 = event.touches[0];
+        const touch2 = event.touches[1];
+        const dist = Math.hypot(
+            touch1.pageX - touch2.pageX,
+            touch1.pageY - touch2.pageY);
+        const delta = dist - this.pinchStartDistance;
+        if (delta > 0) {
+            zoomIn();
+        } else {
+            zoomOut();
+        }
+        this.pinchStartDistance = dist;
+    }
 }, { passive: false });
 
 </script>
