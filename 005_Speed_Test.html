@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Explorer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        h2 {
+            text-align: center;
+            font-style: italic;
+            font-weight: normal;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            color: #555;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .left-side, .right-side {
+            /* Adjusted widths for 4:6 ratio */
+            width: 48%;
+            min-width: 300px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            min-height: 600px; /* Adjusted for similar heights */
+        }
+        .right-side {
+            width: 52%;
+        }
+        .left-side {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fdfdfd;
+            position: relative;
+        }
+        .language-switcher {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+        .section {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .independent-section {
+            background-color: #FFFC33; /* Pale Yellow */
+        }
+        .dependent-section {
+            background-color: #33FFD4; /* Pale Blue */
+        }
+        .average-section {
+            background-color: #e5ffe5; /* Pale Green */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 10px;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+            word-wrap: break-word;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        /* Color Classes for Experiments */
+        .red-text { color: red; }
+        .blue-text { color: blue; }
+        .green-text { color: green; }
+        .orange-text { color: orange; }
+        /* Background Colors for Dependent Variable Rows */
+        .red-bg { background-color: #ffe5e5; }
+        .blue-bg { background-color: #e5f0ff; }
+        .green-bg { background-color: #e5ffe5; }
+        .orange-bg { background-color: #fff5e5; }
+        input[type="number"], input[type="email"] {
+            width: 60%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        select {
+            width: 30%;
+            padding: 5px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+        }
+        .average-box {
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .average-box span {
+            font-weight: bold;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            width: 76%;
+            height: auto;
+            background-color: #ffffff;
+            position: relative;
+        }
+        .trendline-equation {
+            position: absolute;
+            font-weight: bold;
+            color: purple;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            transform: translate(-50%, -100%);
+            pointer-events: none;
+            font-size: 1.8em; /* Adjusted for better visibility */
+        }
+        .r-squared {
+            position: absolute;
+            font-weight: bold;
+            color: purple;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 3px 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            transform: translate(-50%, 0);
+            pointer-events: none;
+            font-size: 1.2em; /* Adjusted for better visibility */
+        }
+        .annotation {
+            position: absolute;
+            /* Moved inside the grid area by adjusting top and left */
+            top: 120px; /* Increased top spacing */
+            left: 120px; /* Increased left spacing */
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 1.8em; /* Adjusted for better visibility */
+            color: #FF3333;
+        }
+        /* Responsive Design */
+        @media (max-width: 800px) {
+            .left-side, .right-side {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+        }
+        /* Additional Styling for Dependent Variable Rows */
+        .dependent-section table tr.red-bg td:first-child,
+        .dependent-section table tr.red-bg td:last-child {
+            color: red;
+            font-weight: bold;
+        }
+        .dependent-section table tr.blue-bg td:first-child,
+        .dependent-section table tr.blue-bg td:last-child {
+            color: blue;
+            font-weight: bold;
+        }
+        .dependent-section table tr.green-bg td:first-child,
+        .dependent-section table tr.green-bg td:last-child {
+            color: green;
+            font-weight: bold;
+        }
+        .dependent-section table tr.orange-bg td:first-child,
+        .dependent-section table tr.orange-bg td:last-child {
+            color: orange;
+            font-weight: bold;
+        }
+        /* Tooltip Styles */
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            border-bottom: 1px dotted black; /* Optional: underline to indicate tooltip */
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%; /* Position above the text */
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%; /* At the bottom of the tooltip */
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Export and Share Button Styles */
+        #exportButton, #shareButton {
+            padding: 5px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+
+        #exportButton:hover, #shareButton:hover {
+            background-color: #45a049;
+        }
+
+        /* Email Input Styles */
+        #emailInput {
+            width: 50%;
+            padding: 5px;
+            box-sizing: border-box;
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        /* Language Switcher Button Styles */
+        #languageSwitcher {
+            padding: 5px 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        #languageSwitcher:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1 id="title">Speed Explorer</h1>
+    <h2 id="subtitle">Discover How Distance, Time, and Speed Relate!</h2>
+
+    <div class="container">
+        <!-- Left Side: Input Sections -->
+        <div class="left-side">
+            <!-- Language Switcher Button -->
+            <button id="languageSwitcher" class="language-switcher">繁體中文</button>
+
+            <!-- Independent Variable Section -->
+            <div class="section independent-section">
+                <strong>
+                    <span class="tooltip" id="indepVarTooltip">Select Independent Variable:
+                        <span class="tooltiptext" id="indepVarTooltipText">The independent variable is the variable you change or control in an experiment to test its effects on the dependent variable.</span>
+                    </span>
+                </strong>
+                <select id="independentVariable">
+                    <option value="distance">Distance (m)</option>
+                    <option value="time">Time (s)</option>
+                </select>
+
+                <!-- Independent Variable Input Table -->
+                <table id="indepVarTable">
+                    <thead>
+                        <tr>
+                            <th>Experiment</th>
+                            <th class="red-text">A (Red)</th>
+                            <th class="blue-text">B (Blue)</th>
+                            <th class="green-text">C (Green)</th>
+                            <th class="orange-text">D (Orange)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td id="indepVarLabel">
+                                <span class="tooltip" id="indepLabelTooltip">Distance (m):
+                                    <span class="tooltiptext" id="indepLabelTooltipText">Distance is how far an object travels and is measured in meters (m).</span>
+                                </span>
+                            </td>
+                            <td><input type="number" id="indepA" min="0" step="0.1"></td>
+                            <td><input type="number" id="indepB" min="0" step="0.1"></td>
+                            <td><input type="number" id="indepC" min="0" step="0.1"></td>
+                            <td><input type="number" id="indepD" min="0" step="0.1"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Dependent Variable Section -->
+            <div class="section dependent-section">
+                <strong>
+                    <span class="tooltip" id="depVarTooltip">Dependent Variable:
+                        <span class="tooltiptext" id="depVarTooltipText">The dependent variable is the variable being tested and measured in an experiment. It depends on the independent variable.</span>
+                    </span>
+                    <span id="dependentVarLabel">Time (s)</span>
+                </strong>
+                <!-- Combined Dependent Variable Input Table -->
+                <table id="depVarTable">
+                    <thead>
+                        <tr>
+                            <th>Experiment</th>
+                            <th>Trial 1</th>
+                            <th>Trial 2</th>
+                            <th>Trial 3</th>
+                            <th>Trial 4</th>
+                            <th>
+                                <span class="tooltip" id="avgSpeedTooltip">Average Speed (m/s):
+                                    <span class="tooltiptext" id="avgSpeedTooltipText">Average speed is calculated as the total distance divided by total time.</span>
+                                </span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="red-bg">
+                            <td>A (Red)</td>
+                            <td><input type="number" id="depA1" min="0" step="0.1"></td>
+                            <td><input type="number" id="depA2" min="0" step="0.1"></td>
+                            <td><input type="number" id="depA3" min="0" step="0.1"></td>
+                            <td><input type="number" id="depA4" min="0" step="0.1"></td>
+                            <td><span id="avgA">0.00</span></td>
+                        </tr>
+                        <tr class="blue-bg">
+                            <td>B (Blue)</td>
+                            <td><input type="number" id="depB1" min="0" step="0.1"></td>
+                            <td><input type="number" id="depB2" min="0" step="0.1"></td>
+                            <td><input type="number" id="depB3" min="0" step="0.1"></td>
+                            <td><input type="number" id="depB4" min="0" step="0.1"></td>
+                            <td><span id="avgB">0.00</span></td>
+                        </tr>
+                        <tr class="green-bg">
+                            <td>C (Green)</td>
+                            <td><input type="number" id="depC1" min="0" step="0.1"></td>
+                            <td><input type="number" id="depC2" min="0" step="0.1"></td>
+                            <td><input type="number" id="depC3" min="0" step="0.1"></td>
+                            <td><input type="number" id="depC4" min="0" step="0.1"></td>
+                            <td><span id="avgC">0.00</span></td>
+                        </tr>
+                        <tr class="orange-bg">
+                            <td>D (Orange)</td>
+                            <td><input type="number" id="depD1" min="0" step="0.1"></td>
+                            <td><input type="number" id="depD2" min="0" step="0.1"></td>
+                            <td><input type="number" id="depD3" min="0" step="0.1"></td>
+                            <td><input type="number" id="depD4" min="0" step="0.1"></td>
+                            <td><span id="avgD">0.00</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Overall Average Speed Section -->
+            <div class="section average-section">
+                <!-- Overall Average Speed Display -->
+                <div class="average-box">
+                    <strong id="overallAverageLabel">Overall Average Speed:</strong> <span id="overallAverage">0.00 m/s</span>
+                </div>
+                <!-- Export CSV Button -->
+                <button id="exportButton">Export CSV</button>
+                <button id="shareButton">Share via Email</button>
+                <label for="emailInput" id="emailLabel">Email:</label>
+                <input type="email" id="emailInput" placeholder="Enter email address">
+            </div>
+        </div>
+
+        <!-- Right Side: Graphical Representation -->
+        <div class="right-side" style="position: relative;">
+            <canvas id="graph" width="500" height="500"></canvas>
+            <div class="trendline-equation" id="trendlineEquation"></div>
+            <div class="r-squared" id="rSquaredDisplay"></div>
+            <div class="annotation" id="trendlineAnnotation"></div>
+        </div>
+    </div>
+
+    <script>
+        // ----------------------- Language Support -----------------------
+        const translations = {
+            'en': {
+                'title': 'Speed Explorer',
+                'subtitle': 'Discover How Distance, Time, and Speed Relate!',
+                'indepVarTooltip': 'Select Independent Variable:',
+                'indepVarTooltipText': 'The independent variable is the variable you change or control in an experiment to test its effects on the dependent variable.',
+                'indepLabelTooltip': 'Distance (m):',
+                'indepLabelTooltipText': 'Distance is how far an object travels and is measured in meters (m).',
+                'dependentVarTooltip': 'Dependent Variable:',
+                'depVarTooltipText': 'The dependent variable is the variable being tested and measured in an experiment. It depends on the independent variable.',
+                'avgSpeedTooltip': 'Average Speed (m/s):',
+                'avgSpeedTooltipText': 'Average speed is calculated as the total distance divided by total time.',
+                'overallAverageLabel': 'Overall Average Speed:',
+                'exportButton': 'Export CSV',
+                'shareButton': 'Share via Email',
+                'emailLabel': 'Email:',
+                'emailPlaceholder': 'Enter email address',
+                'languageSwitcher': '繁體中文'
+            },
+            'zh-TW': {
+                'title': '速度探索者',
+                'subtitle': '發現距離、時間和速度之間的關係！',
+                'indepVarTooltip': '選擇自變量：',
+                'indepVarTooltipText': '自變量是您在實驗中更改或控制的變量，以測試其對因變量的影響。',
+                'indepLabelTooltip': '距離 (m)：',
+                'indepLabelTooltipText': '距離是物體移動的遠度，單位為米 (m)。',
+                'dependentVarTooltip': '因變量：',
+                'depVarTooltipText': '因變量是在實驗中被測試和測量的變量。它依賴於自變量。',
+                'avgSpeedTooltip': '平均速度 (m/s)：',
+                'avgSpeedTooltipText': '平均速度計算為總距離除以總時間。',
+                'overallAverageLabel': '總平均速度：',
+                'exportButton': '匯出 CSV',
+                'shareButton': '通過電子郵件分享',
+                'emailLabel': '電子郵件：',
+                'emailPlaceholder': '輸入電子郵件地址',
+                'languageSwitcher': 'English'
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        const languageSwitcher = document.getElementById('languageSwitcher');
+        languageSwitcher.addEventListener('click', () => {
+            currentLanguage = currentLanguage === 'en' ? 'zh-TW' : 'en';
+            updateLanguage();
+        });
+
+        function updateLanguage() {
+            const lang = translations[currentLanguage];
+
+            // Update textual content
+            document.getElementById('title').textContent = lang.title;
+            document.getElementById('subtitle').textContent = lang.subtitle;
+            document.getElementById('indepVarTooltip').childNodes[0].textContent = lang.indepVarTooltip;
+            document.getElementById('indepVarTooltipText').textContent = lang.indepVarTooltipText;
+            document.getElementById('indepLabelTooltip').childNodes[0].textContent = lang.indepLabelTooltip;
+            document.getElementById('indepLabelTooltipText').textContent = lang.indepLabelTooltipText;
+            document.getElementById('depVarTooltip').childNodes[0].textContent = lang.dependentVarTooltip;
+            document.getElementById('depVarTooltipText').textContent = lang.depVarTooltipText;
+            document.getElementById('avgSpeedTooltip').childNodes[0].textContent = lang.avgSpeedTooltip;
+            document.getElementById('avgSpeedTooltipText').textContent = lang.avgSpeedTooltipText;
+            document.getElementById('overallAverageLabel').textContent = lang.overallAverageLabel;
+            document.getElementById('exportButton').textContent = lang.exportButton;
+            document.getElementById('shareButton').textContent = lang.shareButton;
+            document.getElementById('emailLabel').textContent = lang.emailLabel;
+            document.getElementById('emailInput').placeholder = lang.emailPlaceholder;
+            languageSwitcher.textContent = lang.languageSwitcher;
+
+            // Update option texts if needed
+            const independentVariable = document.getElementById('independentVariable');
+            if(currentLanguage === 'zh-TW') {
+                independentVariable.options[0].text = '距離 (m)';
+                independentVariable.options[1].text = '時間 (s)';
+                document.getElementById('dependentVarLabel').textContent = independentVariable.value === 'distance' ? '時間 (s)' : '距離 (m)';
+            } else {
+                independentVariable.options[0].text = 'Distance (m)';
+                independentVariable.options[1].text = 'Time (s)';
+                document.getElementById('dependentVarLabel').textContent = independentVariable.value === 'distance' ? 'Time (s)' : 'Distance (m)';
+            }
+        }
+
+        // Initialize language on page load
+        updateLanguage();
+
+        // ----------------------- Variable Selection and Dynamic Tables -----------------------
+        const independentVariableSelect = document.getElementById('independentVariable');
+        const indepVarLabel = document.getElementById('indepVarLabel');
+        const dependentVarLabel = document.getElementById('dependentVarLabel');
+        const depVarTable = document.getElementById('depVarTable');
+        const overallAverageDisplay = document.getElementById('overallAverage');
+        const exportButton = document.getElementById('exportButton');
+        const shareButton = document.getElementById('shareButton');
+        const emailInput = document.getElementById('emailInput');
+
+        // Function to update the dependent variable label
+        function updateDependentVarLabel(indepVar) {
+            if (currentLanguage === 'zh-TW') {
+                dependentVarLabel.textContent = indepVar === 'distance' ? '時間 (s)' : '距離 (m)';
+            } else {
+                dependentVarLabel.textContent = indepVar === 'distance' ? 'Time (s)' : 'Distance (m)';
+            }
+            // Update table header based on dependent variable
+            const depHeader = depVarTable.querySelector('th:last-child');
+            depHeader.textContent = currentLanguage === 'zh-TW' ? '平均速度 (m/s)' : 'Average Speed (m/s)';
+        }
+
+        // Function to calculate overall average speed correctly
+        function calculateOverallAverage() {
+            const independents = ['A', 'B', 'C', 'D'];
+            let totalDistance = 0;
+            let totalTime = 0;
+
+            independents.forEach(expt => {
+                const indepVal = parseFloat(document.getElementById(`indep${expt}`).value);
+                if (isNaN(indepVal) || indepVal <= 0) return;
+
+                if (independentVariableSelect.value === 'distance') {
+                    // Independent Variable is Distance
+                    let sumTime = 0;
+                    let validTrials = 0;
+                    for(let i=1; i<=4; i++) {
+                        const depVal = parseFloat(document.getElementById(`dep${expt}${i}`).value);
+                        if(!isNaN(depVal) && depVal > 0) {
+                            sumTime += depVal;
+                            validTrials++;
+                        }
+                    }
+                    if(validTrials > 0) {
+                        const avgTime = sumTime / validTrials;
+                        totalDistance += indepVal;
+                        totalTime += avgTime;
+                        // Update average speed per experiment
+                        const avgSpeed = indepVal / avgTime;
+                        document.getElementById(`avg${expt}`).textContent = avgSpeed.toFixed(2);
+                    } else {
+                        document.getElementById(`avg${expt}`).textContent = '0.00';
+                    }
+                } else {
+                    // Independent Variable is Time
+                    let sumDistance = 0;
+                    let validTrials = 0;
+                    for(let i=1; i<=4; i++) {
+                        const depVal = parseFloat(document.getElementById(`dep${expt}${i}`).value);
+                        if(!isNaN(depVal) && depVal > 0) {
+                            sumDistance += depVal;
+                            validTrials++;
+                        }
+                    }
+                    if(validTrials > 0) {
+                        const avgDistance = sumDistance / validTrials;
+                        totalDistance += avgDistance;
+                        totalTime += indepVal;
+                        // Update average speed per experiment
+                        const avgSpeed = avgDistance / indepVal;
+                        document.getElementById(`avg${expt}`).textContent = avgSpeed.toFixed(2);
+                    } else {
+                        document.getElementById(`avg${expt}`).textContent = '0.00';
+                    }
+                }
+            });
+
+            // Calculate overall average speed
+            if(totalTime > 0) {
+                const overallAvg = totalDistance / totalTime;
+                overallAverageDisplay.textContent = overallAvg.toFixed(2) + (currentLanguage === 'zh-TW' ? ' m/s' : ' m/s');
+                return overallAvg;
+            } else {
+                overallAverageDisplay.textContent = '0.00 m/s';
+                return 0;
+            }
+        }
+
+        // Function to handle input changes and recalculate
+        function handleInputChange(expt) {
+            calculateOverallAverage();
+            drawGraph();
+        }
+
+        // Event Listeners for Input Changes to Calculate Averages
+        ['A', 'B', 'C', 'D'].forEach(expt => {
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`dep${expt}${i}`).addEventListener('input', () => {
+                    handleInputChange(expt);
+                });
+            }
+            document.getElementById(`indep${expt}`).addEventListener('input', () => {
+                handleInputChange(expt);
+            });
+        });
+
+        independentVariableSelect.addEventListener('change', () => {
+            const selectedVar = independentVariableSelect.value;
+            if(currentLanguage === 'zh-TW') {
+                indepVarLabel.textContent = selectedVar === 'distance' ? '距離 (m)' : '時間 (s)';
+            } else {
+                indepVarLabel.textContent = selectedVar === 'distance' ? 'Distance (m)' : 'Time (s)';
+            }
+            updateDependentVarLabel(selectedVar);
+            // Reset dependent variable inputs and averages
+            ['A', 'B', 'C', 'D'].forEach(expt => {
+                for(let i=1; i<=4; i++) {
+                    document.getElementById(`dep${expt}${i}`).value = '';
+                }
+                document.getElementById(`avg${expt}`).textContent = '0.00';
+            });
+            // Reset overall average
+            calculateOverallAverage();
+            // Redraw graph
+            drawGraph();
+        });
+
+        // ----------------------- Graphical Representation -----------------------
+        const canvas = document.getElementById('graph');
+        const ctx = canvas.getContext('2d');
+        const trendlineEquationDisplay = document.getElementById('trendlineEquation');
+        const rSquaredDisplayElement = document.getElementById('rSquaredDisplay');
+        const trendlineAnnotation = document.getElementById('trendlineAnnotation');
+
+        function drawGraph() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            trendlineEquationDisplay.textContent = '';
+            rSquaredDisplayElement.textContent = '';
+            trendlineAnnotation.textContent = '';
+
+            // Define margins
+            const margin = 50; // Increased margin for better label spacing
+            const width = canvas.width - 2 * margin;
+            const height = canvas.height - 2 * margin;
+
+            // Draw grid with scales
+            drawGrid(ctx, margin, width, height);
+
+            // Draw axes
+            ctx.beginPath();
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.moveTo(margin, margin);
+            ctx.lineTo(margin, margin + height);
+            ctx.lineTo(margin + width, margin + height);
+            ctx.stroke();
+
+            // Axis Labels
+            ctx.font = '10px Arial';
+            ctx.fillStyle = '#000';
+            // X-axis label positioned closer to the axis
+            const xLabel = (currentLanguage === 'zh-TW' ? (independentVariableSelect.value === 'distance' ? '距離 (m)' : '時間 (s)') : (independentVariableSelect.value === 'distance' ? 'Distance (m)' : 'Time (s)'));
+            ctx.fillText(xLabel, margin + width / 2 - 20, margin + height + 30); // Adjusted position
+
+            // Y-axis label positioned closer to the axis
+            ctx.save();
+            ctx.translate(margin - 30, margin + height / 2 + 20); // Increased left spacing
+            ctx.rotate(-Math.PI / 2);
+            const yLabel = (currentLanguage === 'zh-TW' ? (independentVariableSelect.value === 'distance' ? '時間 (s)' : '距離 (m)') : (independentVariableSelect.value === 'distance' ? 'Time (s)' : 'Distance (m)'));
+            ctx.fillText(yLabel, 0, 0);
+            ctx.restore();
+
+            // Gather all data points
+            const expts = ['A', 'B', 'C', 'D'];
+            let dataPoints = [];
+
+            expts.forEach(expt => {
+                const indepVal = parseFloat(document.getElementById(`indep${expt}`).value);
+                if (isNaN(indepVal) || indepVal <= 0) return;
+
+                if (independentVariableSelect.value === 'distance') {
+                    for(let i=1; i<=4; i++) {
+                        const depVal = parseFloat(document.getElementById(`dep${expt}${i}`).value);
+                        if(!isNaN(depVal) && depVal > 0) {
+                            dataPoints.push({
+                                expt: expt,
+                                color: expt === 'A' ? 'red' : expt === 'B' ? 'blue' : expt === 'C' ? 'green' : 'orange',
+                                x: indepVal,
+                                y: depVal
+                            });
+                        }
+                    }
+                } else {
+                    for(let i=1; i<=4; i++) {
+                        const depVal = parseFloat(document.getElementById(`dep${expt}${i}`).value);
+                        if(!isNaN(depVal) && depVal > 0) {
+                            dataPoints.push({
+                                expt: expt,
+                                color: expt === 'A' ? 'red' : expt === 'B' ? 'blue' : expt === 'C' ? 'green' : 'orange',
+                                x: depVal,
+                                y: indepVal
+                            });
+                        }
+                    }
+                }
+            });
+
+            if(dataPoints.length === 0) return;
+
+            // Determine scales
+            const maxX = Math.max(...dataPoints.map(p => p.x)) * 1.2;
+            const maxY = Math.max(...dataPoints.map(p => p.y)) * 1.2;
+
+            // Draw data points
+            dataPoints.forEach(point => {
+                const x = margin + (point.x / maxX) * width;
+                const y = margin + height - (point.y / maxY) * height;
+                ctx.beginPath();
+                ctx.fillStyle = point.color;
+                ctx.arc(x, y, 5, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+
+            // Perform linear regression passing through origin
+            const n = dataPoints.length;
+            let sumXY = 0, sumX2 = 0;
+
+            dataPoints.forEach(p => {
+                sumXY += p.x * p.y;
+                sumX2 += p.x * p.x;
+            });
+
+            const slope = sumX2 !== 0 ? sumXY / sumX2 : 0;
+
+            // Calculate R² value
+            let ssTotal = 0;
+            let ssRes = 0;
+            let sumY = dataPoints.reduce((acc, p) => acc + p.y, 0);
+            let meanY = sumY / n;
+
+            dataPoints.forEach(p => {
+                const predictedY = slope * p.x;
+                ssTotal += (p.y - meanY) ** 2;
+                ssRes += (p.y - predictedY) ** 2;
+            });
+
+            const rSquared = ssTotal !== 0 ? 1 - (ssRes / ssTotal) : 0;
+
+            // Draw trendline passing through origin
+            if(!isNaN(slope) && slope !== 0) {
+                const startXVal = 0;
+                const startYVal = slope * startXVal;
+                const endXVal = maxX;
+                const endYVal = slope * endXVal;
+
+                const startX = margin + (startXVal / maxX) * width;
+                const startY = margin + height - (startYVal / maxY) * height;
+                const endX = margin + (endXVal / maxX) * width;
+                const endY = margin + height - (endYVal / maxY) * height;
+
+                ctx.beginPath();
+                ctx.strokeStyle = 'purple'; // Trendline color
+                ctx.lineWidth = 2;
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+
+                // Display trendline equation
+                trendlineEquationDisplay.textContent = (currentLanguage === 'zh-TW' ? 'y = ' : 'y = ') + slope.toFixed(3) + 'x';
+                // Position the trendline equation in the middle of the trendline
+                const midX = (startX + endX) / 2;
+                const midY = (startY + endY) / 2;
+                trendlineEquationDisplay.style.left = `${midX}px`;
+                trendlineEquationDisplay.style.top = `${midY}px`;
+
+                // Display R² value below the trendline equation
+                rSquaredDisplayElement.textContent = (currentLanguage === 'zh-TW' ? '(R² = ' : '(R² = ') + rSquared.toFixed(2) + ')';
+                rSquaredDisplayElement.style.left = `${midX}px`;
+                rSquaredDisplayElement.style.top = `${midY + 15}px`; // 15px below the equation
+                rSquaredDisplayElement.style.transform = `translate(-50%, 0)`;
+
+                // Annotation for slope and average speed relationship inside grid
+                let relationshipText = '';
+                if(independentVariableSelect.value === 'distance') {
+                    relationshipText = (currentLanguage === 'zh-TW' ? '平均速度 = ' : 'Average Speed = ') + (1 / slope).toFixed(3) + ' m/s';
+                } else {
+                    relationshipText = (currentLanguage === 'zh-TW' ? '平均速度 = ' : 'Average Speed = ') + slope.toFixed(3) + ' m/s';
+                }
+                trendlineAnnotation.textContent = relationshipText;
+            }
+
+            // Draw scales on X and Y axes
+            drawScales(ctx, margin, width, height, maxX, maxY);
+        }
+
+        // Function to draw grid
+        function drawGrid(ctx, margin, width, height) {
+            const gridSize = 20; // Adjust grid size as needed
+            ctx.beginPath();
+            ctx.strokeStyle = '#e0e0e0';
+            ctx.lineWidth = 1;
+            // Vertical lines
+            for(let x = margin; x <= margin + width; x += gridSize) {
+                ctx.moveTo(x, margin);
+                ctx.lineTo(x, margin + height);
+            }
+            // Horizontal lines
+            for(let y = margin; y <= margin + height; y += gridSize) {
+                ctx.moveTo(margin, y);
+                ctx.lineTo(margin + width, y);
+            }
+            ctx.stroke();
+        }
+
+        // Function to draw scales with tick marks and labels
+        function drawScales(ctx, margin, width, height, maxX, maxY) {
+            const numTicks = 10;
+            ctx.fillStyle = '#000';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            // X-axis ticks and labels
+            for(let i = 0; i <= numTicks; i++) {
+                const xVal = (maxX / numTicks) * i;
+                const xPos = margin + (xVal / maxX) * width;
+                ctx.beginPath();
+                ctx.moveTo(xPos, margin + height);
+                ctx.lineTo(xPos, margin + height + 5);
+                ctx.stroke();
+                const label = xVal.toFixed(1);
+                ctx.fillText(label, xPos, margin + height + 8);
+            }
+
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            // Y-axis ticks and labels
+            for(let i = 0; i <= numTicks; i++) {
+                const yVal = (maxY / numTicks) * i;
+                const yPos = margin + height - (yVal / maxY) * height;
+                ctx.beginPath();
+                ctx.moveTo(margin - 5, yPos);
+                ctx.lineTo(margin, yPos);
+                ctx.stroke();
+                const label = yVal.toFixed(1);
+                ctx.fillText(label, margin - 7, yPos);
+            }
+        }
+
+        // ----------------------- Initialize Graph -----------------------
+        drawGraph();
+
+        // Re-draw graph when independent variable or data changes
+        // Event listeners already trigger drawGraph via handleInputChange
+
+        // ----------------------- Export CSV Functionality -----------------------
+        exportButton.addEventListener('click', () => {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += (currentLanguage === 'zh-TW' ? "速度探索者結果\n\n" : "Speed Explorer Results\n\n");
+
+            // Independent Variable
+            csvContent += (currentLanguage === 'zh-TW' ? "自變量," : "Independent Variable,") + (independentVariableSelect.value === 'distance' ? (currentLanguage === 'zh-TW' ? "距離 (m)" : "Distance (m)") : (currentLanguage === 'zh-TW' ? "時間 (s)" : "Time (s)")) + "\n\n";
+
+            // Dependent Variable Table Headers
+            let headers = [(currentLanguage === 'zh-TW' ? "實驗" : "Experiment"), (currentLanguage === 'zh-TW' ? "試驗 1" : "Trial 1"), (currentLanguage === 'zh-TW' ? "試驗 2" : "Trial 2"), (currentLanguage === 'zh-TW' ? "試驗 3" : "Trial 3"), (currentLanguage === 'zh-TW' ? "試驗 4" : "Trial 4"), (currentLanguage === 'zh-TW' ? "平均速度 (m/s)" : "Average Speed (m/s)")];
+            csvContent += headers.join(",") + "\n";
+
+            // Dependent Variable Table Data
+            ['A', 'B', 'C', 'D'].forEach(expt => {
+                let row = [`${currentLanguage === 'zh-TW' ? '實驗' : 'Expt.'} ${expt} (${getColor(expt)})`];
+                for(let i=1; i<=4; i++) {
+                    const depVal = document.getElementById(`dep${expt}${i}`).value;
+                    row.push(depVal ? depVal : "0");
+                }
+                const avgSpeed = document.getElementById(`avg${expt}`).textContent;
+                row.push(avgSpeed);
+                csvContent += row.join(",") + "\n";
+            });
+
+            csvContent += "\n";
+
+            // Overall Average Speed
+            csvContent += `${currentLanguage === 'zh-TW' ? '總平均速度' : 'Overall Average Speed'},${overallAverageDisplay.textContent}\n`;
+
+            // Trendline Equation and R-squared
+            const trendlineEq = trendlineEquationDisplay.textContent;
+            const rSquared = rSquaredDisplayElement.textContent;
+            csvContent += `${currentLanguage === 'zh-TW' ? '趨勢線方程式' : 'Trendline Equation'},${trendlineEq}\n`;
+            csvContent += `${currentLanguage === 'zh-TW' ? 'R 平方值' : 'R-squared'},${rSquared}\n`;
+
+            // Encode the URI
+            const encodedUri = encodeURI(csvContent);
+            // Create a temporary link and trigger download
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", currentLanguage === 'zh-TW' ? "速度探索者結果.csv" : "speed_explorer_results.csv");
+            document.body.appendChild(link); // Required for FF
+
+            link.click();
+            document.body.removeChild(link);
+        });
+
+        // ----------------------- Share via Email Functionality -----------------------
+        shareButton.addEventListener('click', () => {
+            const emailAddress = emailInput.value.trim();
+            if(emailAddress === '') {
+                alert(currentLanguage === 'zh-TW' ? '請輸入電子郵件地址。' : 'Please enter an email address.');
+                return;
+            }
+
+            let csvContent = "";
+            csvContent += (currentLanguage === 'zh-TW' ? "速度探索者結果\n\n" : "Speed Explorer Results\n\n");
+
+            // Independent Variable
+            csvContent += (currentLanguage === 'zh-TW' ? "自變量," : "Independent Variable,") + (independentVariableSelect.value === 'distance' ? (currentLanguage === 'zh-TW' ? "距離 (m)" : "Distance (m)") : (currentLanguage === 'zh-TW' ? "時間 (s)" : "Time (s)")) + "\n\n";
+
+            // Dependent Variable Table Headers
+            let headers = [(currentLanguage === 'zh-TW' ? "實驗" : "Experiment"), (currentLanguage === 'zh-TW' ? "試驗 1" : "Trial 1"), (currentLanguage === 'zh-TW' ? "試驗 2" : "Trial 2"), (currentLanguage === 'zh-TW' ? "試驗 3" : "Trial 3"), (currentLanguage === 'zh-TW' ? "試驗 4" : "Trial 4"), (currentLanguage === 'zh-TW' ? "平均速度 (m/s)" : "Average Speed (m/s)")];
+            csvContent += headers.join(",") + "\n";
+
+            // Dependent Variable Table Data
+            ['A', 'B', 'C', 'D'].forEach(expt => {
+                let row = [`${currentLanguage === 'zh-TW' ? '實驗' : 'Expt.'} ${expt} (${getColor(expt)})`];
+                for(let i=1; i<=4; i++) {
+                    const depVal = document.getElementById(`dep${expt}${i}`).value;
+                    row.push(depVal ? depVal : "0");
+                }
+                const avgSpeed = document.getElementById(`avg${expt}`).textContent;
+                row.push(avgSpeed);
+                csvContent += row.join(",") + "\n";
+            });
+
+            csvContent += "\n";
+
+            // Overall Average Speed
+            csvContent += `${currentLanguage === 'zh-TW' ? '總平均速度' : 'Overall Average Speed'},${overallAverageDisplay.textContent}\n`;
+
+            // Trendline Equation and R-squared
+            const trendlineEq = trendlineEquationDisplay.textContent;
+            const rSquared = rSquaredDisplayElement.textContent;
+            csvContent += `${currentLanguage === 'zh-TW' ? '趨勢線方程式' : 'Trendline Equation'},${trendlineEq}\n`;
+            csvContent += `${currentLanguage === 'zh-TW' ? 'R 平方值' : 'R-squared'},${rSquared}\n`;
+
+            // Encode the CSV content
+            const encodedCsv = encodeURIComponent(csvContent);
+
+            // Construct the mailto link
+            const subject = encodeURIComponent(currentLanguage === 'zh-TW' ? "速度探索者結果" : "Speed Explorer Results");
+            const body = `Hi,\n\n${currentLanguage === 'zh-TW' ? "請查閱以下速度探索者結果：" : "Please find the Speed Explorer results below:"}\n\n${csvContent}\n\n${currentLanguage === 'zh-TW' ? "謝謝！" : "Thank you!"}`;
+
+            const mailtoLink = `mailto:${emailAddress}?subject=${subject}&body=${encodeURIComponent(body)}`;
+
+            // Open the mail client
+            window.location.href = mailtoLink;
+        });
+
+        // Helper function to get color based on experiment
+        function getColor(expt) {
+            switch(expt) {
+                case 'A': return currentLanguage === 'zh-TW' ? '紅色' : 'Red';
+                case 'B': return currentLanguage === 'zh-TW' ? '藍色' : 'Blue';
+                case 'C': return currentLanguage === 'zh-TW' ? '綠色' : 'Green';
+                case 'D': return currentLanguage === 'zh-TW' ? '橙色' : 'Orange';
+                default: return '';
+            }
+        }
+    </script>
+</body>
+</html>
