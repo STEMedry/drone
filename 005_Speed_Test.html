@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speed Explorer</title>
+    <title>Speed Test Experiment</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -14,16 +14,8 @@
         }
         h1 {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 10px; /* Reduced margin for better spacing */
             color: #333;
-        }
-        h2 {
-            text-align: center;
-            font-style: italic;
-            font-weight: normal;
-            margin-top: 5px;
-            margin-bottom: 20px;
-            color: #555;
         }
         .container {
             display: flex;
@@ -45,7 +37,7 @@
         }
         .left-side {
             border: 1px solid #ddd;
-            padding: 20px;
+            padding: 10px;
             border-radius: 5px;
             background-color: #fdfdfd;
             position: relative;
@@ -56,9 +48,9 @@
             right: 20px;
         }
         .section {
-            padding: 15px;
+            padding: 5px;
             border-radius: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* You might adjust this if needed */
         }
         .independent-section {
             background-color: #FFFC33; /* Pale Yellow */
@@ -68,18 +60,30 @@
         }
         .average-section {
             background-color: #e5ffe5; /* Pale Green */
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .average-box {
+            padding: 5px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            /* Removed margin-bottom to reduce spacing */
+        }
+        .average-box span {
+            font-weight: bold;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
             table-layout: fixed;
         }
         th, td {
             border: 1px solid #ddd;
             padding: 8px;
             text-align: center;
-            word-wrap: break-word;
+            white-space: nowrap; /* Prevent word wrapping */
         }
         th {
             background-color: #f2f2f2;
@@ -94,7 +98,7 @@
         .blue-bg { background-color: #e5f0ff; }
         .green-bg { background-color: #e5ffe5; }
         .orange-bg { background-color: #fff5e5; }
-        input[type="number"], input[type="email"] {
+        input[type="number"] {
             width: 60%;
             padding: 5px;
             box-sizing: border-box;
@@ -105,17 +109,8 @@
             margin-top: 5px;
             margin-bottom: 10px;
         }
-        .average-box {
-            padding: 10px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-        .average-box span {
-            font-weight: bold;
-        }
         canvas {
-            border: 1px solid #ddd;
+            border: 2px solid #ddd;
             width: 76%;
             height: auto;
             background-color: #ffffff;
@@ -162,6 +157,13 @@
             .left-side, .right-side {
                 width: 100%;
                 margin-bottom: 20px;
+            }
+            .average-section {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .export-button {
+                margin-top: 10px;
             }
         }
         /* Additional Styling for Dependent Variable Rows */
@@ -226,8 +228,8 @@
             opacity: 1;
         }
 
-        /* Export and Share Button Styles */
-        #exportButton, #shareButton {
+        /* Export Button Styles */
+        #exportButton {
             padding: 5px 15px;
             background-color: #4CAF50;
             color: white;
@@ -235,20 +237,10 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
         }
 
-        #exportButton:hover, #shareButton:hover {
+        #exportButton:hover {
             background-color: #45a049;
-        }
-
-        /* Email Input Styles */
-        #emailInput {
-            width: 50%;
-            padding: 5px;
-            box-sizing: border-box;
-            margin-top: 10px;
-            margin-bottom: 10px;
         }
 
         /* Language Switcher Button Styles */
@@ -268,8 +260,7 @@
     </style>
 </head>
 <body>
-    <h1 id="title">Speed Explorer</h1>
-    <h2 id="subtitle">Discover How Distance, Time, and Speed Relate!</h2>
+    <h1 id="title">Speed Test Experiment</h1>
 
     <div class="container">
         <!-- Left Side: Input Sections -->
@@ -334,8 +325,8 @@
                             <th>Trial 3</th>
                             <th>Trial 4</th>
                             <th>
-                                <span class="tooltip" id="avgSpeedTooltip">Average Speed (m/s):
-                                    <span class="tooltiptext" id="avgSpeedTooltipText">Average speed is calculated as the total distance divided by total time.</span>
+                                <span class="tooltip" id="avgSpeedTooltip">Speed (m/s):
+                                    <span class="tooltiptext" id="avgSpeedTooltipText">Speed is calculated as the total distance divided by total time.</span>
                                 </span>
                             </th>
                         </tr>
@@ -385,9 +376,6 @@
                 </div>
                 <!-- Export CSV Button -->
                 <button id="exportButton">Export CSV</button>
-                <button id="shareButton">Share via Email</button>
-                <label for="emailInput" id="emailLabel">Email:</label>
-                <input type="email" id="emailInput" placeholder="Enter email address">
             </div>
         </div>
 
@@ -404,39 +392,39 @@
         // ----------------------- Language Support -----------------------
         const translations = {
             'en': {
-                'title': 'Speed Explorer',
-                'subtitle': 'Discover How Distance, Time, and Speed Relate!',
+                'title': 'Speed Test Experiment',
+                // 'subtitle': 'Discover How Distance, Time, and Speed Relate!', // Removed subtitle
                 'indepVarTooltip': 'Select Independent Variable:',
                 'indepVarTooltipText': 'The independent variable is the variable you change or control in an experiment to test its effects on the dependent variable.',
                 'indepLabelTooltip': 'Distance (m):',
                 'indepLabelTooltipText': 'Distance is how far an object travels and is measured in meters (m).',
                 'dependentVarTooltip': 'Dependent Variable:',
                 'depVarTooltipText': 'The dependent variable is the variable being tested and measured in an experiment. It depends on the independent variable.',
-                'avgSpeedTooltip': 'Average Speed (m/s):',
-                'avgSpeedTooltipText': 'Average speed is calculated as the total distance divided by total time.',
+                'avgSpeedTooltip': 'Speed (m/s):',
+                'avgSpeedTooltipText': 'Speed is calculated as the total distance divided by total time.',
                 'overallAverageLabel': 'Overall Average Speed:',
                 'exportButton': 'Export CSV',
-                'shareButton': 'Share via Email',
-                'emailLabel': 'Email:',
-                'emailPlaceholder': 'Enter email address',
+                // 'shareButton': 'Share via Email', // Removed share button
+                // 'emailLabel': 'Email:', // Removed email label
+                // 'emailPlaceholder': 'Enter email address', // Removed email input
                 'languageSwitcher': '繁體中文'
             },
             'zh-TW': {
-                'title': '速度探索者',
-                'subtitle': '發現距離、時間和速度之間的關係！',
+                'title': '速度測試實驗',
+                // 'subtitle': '發現距離、時間和速度之間的關係！', // Removed subtitle
                 'indepVarTooltip': '選擇自變量：',
                 'indepVarTooltipText': '自變量是您在實驗中更改或控制的變量，以測試其對因變量的影響。',
                 'indepLabelTooltip': '距離 (m)：',
                 'indepLabelTooltipText': '距離是物體移動的遠度，單位為米 (m)。',
                 'dependentVarTooltip': '因變量：',
                 'depVarTooltipText': '因變量是在實驗中被測試和測量的變量。它依賴於自變量。',
-                'avgSpeedTooltip': '平均速度 (m/s)：',
-                'avgSpeedTooltipText': '平均速度計算為總距離除以總時間。',
+                'avgSpeedTooltip': '速度 (m/s)：',
+                'avgSpeedTooltipText': '速度計算為總距離除以總時間。',
                 'overallAverageLabel': '總平均速度：',
                 'exportButton': '匯出 CSV',
-                'shareButton': '通過電子郵件分享',
-                'emailLabel': '電子郵件：',
-                'emailPlaceholder': '輸入電子郵件地址',
+                // 'shareButton': '通過電子郵件分享', // Removed share button
+                // 'emailLabel': '電子郵件：', // Removed email label
+                // 'emailPlaceholder': '輸入電子郵件地址', // Removed email input
                 'languageSwitcher': 'English'
             }
         };
@@ -454,7 +442,7 @@
 
             // Update textual content
             document.getElementById('title').textContent = lang.title;
-            document.getElementById('subtitle').textContent = lang.subtitle;
+            // document.getElementById('subtitle').textContent = lang.subtitle; // Removed subtitle
             document.getElementById('indepVarTooltip').childNodes[0].textContent = lang.indepVarTooltip;
             document.getElementById('indepVarTooltipText').textContent = lang.indepVarTooltipText;
             document.getElementById('indepLabelTooltip').childNodes[0].textContent = lang.indepLabelTooltip;
@@ -465,9 +453,9 @@
             document.getElementById('avgSpeedTooltipText').textContent = lang.avgSpeedTooltipText;
             document.getElementById('overallAverageLabel').textContent = lang.overallAverageLabel;
             document.getElementById('exportButton').textContent = lang.exportButton;
-            document.getElementById('shareButton').textContent = lang.shareButton;
-            document.getElementById('emailLabel').textContent = lang.emailLabel;
-            document.getElementById('emailInput').placeholder = lang.emailPlaceholder;
+            // document.getElementById('shareButton').textContent = lang.shareButton; // Removed share button
+            // document.getElementById('emailLabel').textContent = lang.emailLabel; // Removed email label
+            // document.getElementById('emailInput').placeholder = lang.emailPlaceholder; // Removed email input
             languageSwitcher.textContent = lang.languageSwitcher;
 
             // Update option texts if needed
@@ -493,8 +481,8 @@
         const depVarTable = document.getElementById('depVarTable');
         const overallAverageDisplay = document.getElementById('overallAverage');
         const exportButton = document.getElementById('exportButton');
-        const shareButton = document.getElementById('shareButton');
-        const emailInput = document.getElementById('emailInput');
+        // const shareButton = document.getElementById('shareButton'); // Removed share button
+        // const emailInput = document.getElementById('emailInput'); // Removed email input
 
         // Function to update the dependent variable label
         function updateDependentVarLabel(indepVar) {
@@ -505,7 +493,7 @@
             }
             // Update table header based on dependent variable
             const depHeader = depVarTable.querySelector('th:last-child');
-            depHeader.textContent = currentLanguage === 'zh-TW' ? '平均速度 (m/s)' : 'Average Speed (m/s)';
+            depHeader.textContent = currentLanguage === 'zh-TW' ? '速度 (m/s)' : 'Speed (m/s)';
         }
 
         // Function to calculate overall average speed correctly
@@ -842,13 +830,13 @@
         // ----------------------- Export CSV Functionality -----------------------
         exportButton.addEventListener('click', () => {
             let csvContent = "data:text/csv;charset=utf-8,";
-            csvContent += (currentLanguage === 'zh-TW' ? "速度探索者結果\n\n" : "Speed Explorer Results\n\n");
+            csvContent += (currentLanguage === 'zh-TW' ? "速度測試實驗結果\n\n" : "Speed Test Experiment Results\n\n");
 
             // Independent Variable
             csvContent += (currentLanguage === 'zh-TW' ? "自變量," : "Independent Variable,") + (independentVariableSelect.value === 'distance' ? (currentLanguage === 'zh-TW' ? "距離 (m)" : "Distance (m)") : (currentLanguage === 'zh-TW' ? "時間 (s)" : "Time (s)")) + "\n\n";
 
             // Dependent Variable Table Headers
-            let headers = [(currentLanguage === 'zh-TW' ? "實驗" : "Experiment"), (currentLanguage === 'zh-TW' ? "試驗 1" : "Trial 1"), (currentLanguage === 'zh-TW' ? "試驗 2" : "Trial 2"), (currentLanguage === 'zh-TW' ? "試驗 3" : "Trial 3"), (currentLanguage === 'zh-TW' ? "試驗 4" : "Trial 4"), (currentLanguage === 'zh-TW' ? "平均速度 (m/s)" : "Average Speed (m/s)")];
+            let headers = [(currentLanguage === 'zh-TW' ? "實驗" : "Experiment"), (currentLanguage === 'zh-TW' ? "試驗 1" : "Trial 1"), (currentLanguage === 'zh-TW' ? "試驗 2" : "Trial 2"), (currentLanguage === 'zh-TW' ? "試驗 3" : "Trial 3"), (currentLanguage === 'zh-TW' ? "試驗 4" : "Trial 4"), (currentLanguage === 'zh-TW' ? "速度 (m/s)" : "Speed (m/s)")];
             csvContent += headers.join(",") + "\n";
 
             // Dependent Variable Table Data
@@ -879,7 +867,7 @@
             // Create a temporary link and trigger download
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", currentLanguage === 'zh-TW' ? "速度探索者結果.csv" : "speed_explorer_results.csv");
+            link.setAttribute("download", currentLanguage === 'zh-TW' ? "速度測試實驗結果.csv" : "speed_test_experiment_results.csv");
             document.body.appendChild(link); // Required for FF
 
             link.click();
@@ -887,58 +875,7 @@
         });
 
         // ----------------------- Share via Email Functionality -----------------------
-        shareButton.addEventListener('click', () => {
-            const emailAddress = emailInput.value.trim();
-            if(emailAddress === '') {
-                alert(currentLanguage === 'zh-TW' ? '請輸入電子郵件地址。' : 'Please enter an email address.');
-                return;
-            }
-
-            let csvContent = "";
-            csvContent += (currentLanguage === 'zh-TW' ? "速度探索者結果\n\n" : "Speed Explorer Results\n\n");
-
-            // Independent Variable
-            csvContent += (currentLanguage === 'zh-TW' ? "自變量," : "Independent Variable,") + (independentVariableSelect.value === 'distance' ? (currentLanguage === 'zh-TW' ? "距離 (m)" : "Distance (m)") : (currentLanguage === 'zh-TW' ? "時間 (s)" : "Time (s)")) + "\n\n";
-
-            // Dependent Variable Table Headers
-            let headers = [(currentLanguage === 'zh-TW' ? "實驗" : "Experiment"), (currentLanguage === 'zh-TW' ? "試驗 1" : "Trial 1"), (currentLanguage === 'zh-TW' ? "試驗 2" : "Trial 2"), (currentLanguage === 'zh-TW' ? "試驗 3" : "Trial 3"), (currentLanguage === 'zh-TW' ? "試驗 4" : "Trial 4"), (currentLanguage === 'zh-TW' ? "平均速度 (m/s)" : "Average Speed (m/s)")];
-            csvContent += headers.join(",") + "\n";
-
-            // Dependent Variable Table Data
-            ['A', 'B', 'C', 'D'].forEach(expt => {
-                let row = [`${currentLanguage === 'zh-TW' ? '實驗' : 'Expt.'} ${expt} (${getColor(expt)})`];
-                for(let i=1; i<=4; i++) {
-                    const depVal = document.getElementById(`dep${expt}${i}`).value;
-                    row.push(depVal ? depVal : "0");
-                }
-                const avgSpeed = document.getElementById(`avg${expt}`).textContent;
-                row.push(avgSpeed);
-                csvContent += row.join(",") + "\n";
-            });
-
-            csvContent += "\n";
-
-            // Overall Average Speed
-            csvContent += `${currentLanguage === 'zh-TW' ? '總平均速度' : 'Overall Average Speed'},${overallAverageDisplay.textContent}\n`;
-
-            // Trendline Equation and R-squared
-            const trendlineEq = trendlineEquationDisplay.textContent;
-            const rSquared = rSquaredDisplayElement.textContent;
-            csvContent += `${currentLanguage === 'zh-TW' ? '趨勢線方程式' : 'Trendline Equation'},${trendlineEq}\n`;
-            csvContent += `${currentLanguage === 'zh-TW' ? 'R 平方值' : 'R-squared'},${rSquared}\n`;
-
-            // Encode the CSV content
-            const encodedCsv = encodeURIComponent(csvContent);
-
-            // Construct the mailto link
-            const subject = encodeURIComponent(currentLanguage === 'zh-TW' ? "速度探索者結果" : "Speed Explorer Results");
-            const body = `Hi,\n\n${currentLanguage === 'zh-TW' ? "請查閱以下速度探索者結果：" : "Please find the Speed Explorer results below:"}\n\n${csvContent}\n\n${currentLanguage === 'zh-TW' ? "謝謝！" : "Thank you!"}`;
-
-            const mailtoLink = `mailto:${emailAddress}?subject=${subject}&body=${encodeURIComponent(body)}`;
-
-            // Open the mail client
-            window.location.href = mailtoLink;
-        });
+        // Removed entirely as per user request
 
         // Helper function to get color based on experiment
         function getColor(expt) {
