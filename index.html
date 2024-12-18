@@ -13,12 +13,12 @@
         }
         .button-container {
             text-align: center;
-            margin-top: 10px; /* Reduced from 10px */
+            margin-top: 5px; /* Reduced from 10px */
         }
         button {
-            padding: 10px 20px; /* Reduced from 10px 20px */
-            font-size: 16px; /* Reduced from 16px */
-            margin: 3px; /* Reduced from 3px */
+            padding: 5px 15px; /* Reduced from 10px 20px */
+            font-size: 14px; /* Reduced from 16px */
+            margin: 2px; /* Reduced from 3px */
             cursor: pointer;
             border: 2;
             border-radius: 6px; /* Reduced from 8px */
@@ -36,6 +36,15 @@
             background-color: brown;
             color: white;
         }
+        .button-blue {
+            background-color: blue;
+            color: white;
+        }
+        .button-orange {
+            background-color: orange;
+            color: white;
+        }
+
         .button-teal {
             background-color: teal;
             color: white;
@@ -49,11 +58,11 @@
             color: white;
         }
         h1 {
-            margin: 10px 0; /* Reduced spacing */
+            margin: 3px 0; /* Reduced spacing */
             font-size: 24px; /* Reduced from default size */
         }
         h3 {
-            margin: 5px 0; /* Reduced spacing */
+            margin: 3px 0; /* Reduced spacing */
             font-size: 16px; /* Reduced from default size */
         }
     </style>
@@ -65,33 +74,44 @@
         <button class="button-slateblue" onclick="showApp('app1')">Drone Gallery</button>
         <button class="button-green" onclick="showApp('app2')">Control Simulator</button>
         <button class="button-brown" onclick="showApp('app3')">Physics Explorer</button>
-        <button class="button-teal" onclick="showApp('app4')">AOV Simulation</button>
-        <button class="button-salmon" onclick="showApp('app5')">Circumnavigation</button>
-        <button class="button-chocolate" onclick="showApp('app6')">Obstacle Course</button>
+        <button class="button-blue" onclick="showApp('app4')">Horizontal Speed</button>
+        <button class="button-orange" onclick="showApp('app5')">Speed Test</button>
+
+        <button class="button-teal" onclick="showApp('app6')">AOV Simulation</button>
+        <button class="button-salmon" onclick="showApp('app7')">Circumnavigation</button>
+        <button class="button-chocolate" onclick="showApp('app8')">Obstacle Course</button>
     </div>
 
     <div id="app1" class="app">
-        <iframe src="001_gallery.html" width="100%" height="800px" frameborder="0"></iframe>
+        <iframe src="001_gallery.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app2" class="app">
-        <iframe src="002_control.html" width="100%" height="800px" frameborder="0"></iframe>
+        <iframe src="002_control.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app3" class="app">
-        <iframe src="003_force.html" width="100%" height="800px" frameborder="0"></iframe>
+        <iframe src="003_force.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app4" class="app">
-        <iframe src="004_AOV.html" width="100%" height="800px" frameborder="0"></iframe>
+        <iframe src="004_Hor_Speed.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app5" class="app">
-        <iframe src="005_Polygon.html" width="100%" height="800px" frameborder="0"></iframe>
+        <iframe src="005_Speed_Test.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app6" class="app">
-        <iframe src="006_Obstacle.html" width="100%" height="800px" frameborder="0"></iframe>
+        <iframe src="006_AOV.html" width="100%" height="600px" frameborder="0"></iframe>
+    </div>
+
+    <div id="app5" class="app">
+        <iframe src="007_Polygon.html" width="100%" height="600px" frameborder="0"></iframe>
+    </div>
+
+    <div id="app6" class="app">
+        <iframe src="008_Obstacle.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <script>
