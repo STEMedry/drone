@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,15 +14,22 @@
         }
         .button-container {
             text-align: center;
-            margin-top: 5px; /* Reduced from 10px */
+            margin-top: 5px;
+            position: relative;
+        }
+        .language-toggle {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 5px;
         }
         button {
-            padding: 5px 15px; /* Reduced from 10px 20px */
-            font-size: 14px; /* Reduced from 16px */
-            margin: 2px; /* Reduced from 3px */
+            padding: 5px 15px;
+            font-size: 16px;
+            margin: 2px;
             cursor: pointer;
             border: 2;
-            border-radius: 6px; /* Reduced from 8px */
+            border-radius: 6px;
             font-weight: bold;
         }
         .button-slateblue {
@@ -40,46 +48,59 @@
             background-color: blue;
             color: white;
         }
-        .button-orange {
-            background-color: orange;
+        .button-tomato {
+            background-color: tomato;
             color: white;
         }
-
         .button-teal {
             background-color: teal;
             color: white;
         }
-        .button-salmon {
-            background-color: salmon;
+        .button-red {
+            background-color: red;
             color: white;
         }
         .button-chocolate {
             background-color: chocolate;
             color: white;
         }
+        .button-language {
+            background-color: black;
+            color: white;
+        }
         h1 {
-            margin: 3px 0; /* Reduced spacing */
-            font-size: 24px; /* Reduced from default size */
+            margin: 3px 0;
+            font-size: 24px;
         }
         h3 {
-            margin: 3px 0; /* Reduced spacing */
-            font-size: 16px; /* Reduced from default size */
+            margin: 3px 0;
+            font-size: 16px;
         }
+
+.language-toggle {
+    position: absolute;
+    top: -60px; /* Moved further up */
+    right: 0;
+    margin: 5px;
+    font-size: 12px;
+}
+
     </style>
 </head>
 <body>
-    <h1 style="text-align: center;">Drone-Integrated Cross-Disciplinary STEM Curriculum (DCSC)</h1>
-    <h3 style="text-align: center;">By Richard C Y YEUNG, The Education University of Hong Kong</h3>
+    <h1 id="main-title" style="text-align: center;">Drone-Integrated Cross-Disciplinary STEM Curriculum (DCSC)</h1>
+    <h3 id="author-name" style="text-align: center;">By Richard C Y YEUNG, The Education University of Hong Kong</h3>
+    
     <div class="button-container">
-        <button class="button-slateblue" onclick="showApp('app1')">Drone Gallery</button>
-        <button class="button-green" onclick="showApp('app2')">Control Simulator</button>
-        <button class="button-brown" onclick="showApp('app3')">Physics Explorer</button>
-        <button class="button-blue" onclick="showApp('app4')">Horizontal Speed</button>
-        <button class="button-orange" onclick="showApp('app5')">Speed Test</button>
-
-        <button class="button-teal" onclick="showApp('app6')">AOV Simulation</button>
-        <button class="button-salmon" onclick="showApp('app7')">Circumnavigation</button>
-        <button class="button-chocolate" onclick="showApp('app8')">Obstacle Course</button>
+        <button class="button-language language-toggle" onclick="toggleLanguage()">中文/ENGLISH</button>
+        <button class="button-slateblue" onclick="showApp('app1')" id="btn-gallery">Drone Gallery</button>
+        <button class="button-green" onclick="showApp('app2')" id="btn-control">Control Simulator</button>
+        <button class="button-brown" onclick="showApp('app3')" id="btn-physics">Physics Explorer</button>
+        <button class="button-blue" onclick="showApp('app4')" id="btn-horizontal">Horizontal Speed</button>
+        <button class="button-tomato" onclick="showApp('app5')" id="btn-speedtest">Speed Test</button>
+        <button class="button-teal" onclick="showApp('app6')" id="btn-aov">AOV Simulation</button>
+        <button class="button-red" onclick="showApp('app7')" id="btn-circumnavigation">Circumnavigation</button>
+        <button class="button-chocolate" onclick="showApp('app8')" id="btn-obstacle">Obstacle Course</button>
     </div>
 
     <div id="app1" class="app">
@@ -106,15 +127,72 @@
         <iframe src="006_AOV.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
-    <div id="app5" class="app">
+    <div id="app7" class="app">
         <iframe src="007_Polygon.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
-    <div id="app6" class="app">
+    <div id="app8" class="app">
         <iframe src="008_Obstacle.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <script>
+        // Language data
+        const translations = {
+            en: {
+                mainTitle: 'Drone-Integrated Cross-Disciplinary STEM Curriculum (DCSC)',
+                authorName: 'By Richard C Y YEUNG, The Education University of Hong Kong',
+                buttons: {
+                    gallery: 'Drone Gallery',
+                    control: 'Control Simulator',
+                    physics: 'Physics Explorer',
+                    horizontal: 'Horizontal Speed',
+                    speedTest: 'Speed Test',
+                    aov: 'AOV Simulation',
+                    circumnavigation: 'Circumnavigation',
+                    obstacle: 'Obstacle Course'
+                }
+            },
+            zh: {
+                mainTitle: '無 人 機 跨 學 科 STEM 課程 (DCSC)',
+                authorName: '楊 仲 堯，香 港 教 育 大 學 (EdUHK)',
+                buttons: {
+                    gallery: '無人機圖庫',
+                    control: '操作模擬器',
+                    physics: '升空及懸停物理',
+                    horizontal: '水平飛行速度',
+                    speedTest: '速度測試實驗',
+                    aov: '航拍視角模擬',
+                    circumnavigation: '環繞軌跡飛行',
+                    obstacle: '越礙編程設計'
+                }
+            }
+        };
+
+        let currentLanguage = 'en';
+
+        function toggleLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+            updateLanguage();
+        }
+
+        function updateLanguage() {
+            const lang = translations[currentLanguage];
+            
+            // Update title and author
+            document.getElementById('main-title').textContent = lang.mainTitle;
+            document.getElementById('author-name').textContent = lang.authorName;
+
+            // Update button texts
+            document.getElementById('btn-gallery').textContent = lang.buttons.gallery;
+            document.getElementById('btn-control').textContent = lang.buttons.control;
+            document.getElementById('btn-physics').textContent = lang.buttons.physics;
+            document.getElementById('btn-horizontal').textContent = lang.buttons.horizontal;
+            document.getElementById('btn-speedtest').textContent = lang.buttons.speedTest;
+            document.getElementById('btn-aov').textContent = lang.buttons.aov;
+            document.getElementById('btn-circumnavigation').textContent = lang.buttons.circumnavigation;
+            document.getElementById('btn-obstacle').textContent = lang.buttons.obstacle;
+        }
+
         function showApp(appId) {
             document.querySelectorAll('.app').forEach(app => app.classList.remove('active'));
             document.getElementById(appId).classList.add('active');
