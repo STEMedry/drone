@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,24 +13,29 @@
         }
         .button-container {
             text-align: center;
-            margin-top: 5px;
+            margin-top: 15px;
             position: relative;
+            margin-bottom: 15px;
         }
-        .language-toggle {
-            position: absolute;
-            top: 0;
-            right: 0;
-            margin: 5px;
-        }
+
         button {
             padding: 5px 15px;
             font-size: 16px;
-            margin: 2px;
+            margin: 4px;
             cursor: pointer;
-            border: 2;
+            border: 2px solid transparent;
             border-radius: 6px;
             font-weight: bold;
+            transition: all 0.3s ease;
         }
+		.selected-button {
+		    border-color: rgba(255, 255, 255, 0.7);
+		    box-shadow: 0 0 20px rgba(255, 255, 255, 0.7), 
+                0 0 50px rgba(255, 255, 255, 0.5);
+		    outline: none;
+		    transform: scale(1.15);
+		}
+
         .button-slateblue {
             background-color: slateblue;
             color: white;
@@ -194,8 +198,21 @@
         }
 
         function showApp(appId) {
+            document.querySelectorAll('button:not(.language-toggle)').forEach(btn => {
+                btn.classList.remove('selected-button');
+        });
+
+            // Hide all apps
             document.querySelectorAll('.app').forEach(app => app.classList.remove('active'));
+
+            // Show the selected app
             document.getElementById(appId).classList.add('active');
+
+            // Add selected-button class to the clicked button
+            const selectedButton = document.querySelector(`[onclick="showApp('${appId}')"]`);
+            if (selectedButton) {
+                selectedButton.classList.add('selected-button');
+            }
         }
 
         // Initialize the page
