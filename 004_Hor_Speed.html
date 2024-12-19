@@ -262,12 +262,12 @@
         }
         .calc-button, .clear-button {
             margin-top: 5px;
-            padding: 5px;
+            padding: 8px 10px; /* Reduced padding */
             background-color: #2196F3;
             color: white;
             border: none;
             cursor: pointer;
-            font-size: 16px;
+            font-size: 14px; /* Slightly reduced font size */
             width: 15%; /* Adjust width to place them side by side */
             border-radius: 4px;
             transition: background-color 0.3s;
@@ -731,7 +731,7 @@
             startTime = null;
             elapsedTime = 0;
             isPaused = false;
-            pauseResumeBtn.textContent = 'Pause';
+            pauseResumeBtn.textContent = translations[currentLang]['Pause'];
 
             // Reset quadcopter positions
             quadcopterA.style.left = '0px';
@@ -826,13 +826,15 @@
                 'title': 'Concepts of Average Horizontal Speed',
                 'Time (s)': 'Time (s)',
                 'Distance (m)': 'Distance (m)',
-                // Add more translations as needed
+		        'Pause': 'Pause',
+		        'Resume': 'Resume'
             },
             'zh': {
                 'title': '平均水平速度概念',
                 'Time (s)': '時間（秒）',
                 'Distance (m)': '距離（米）',
-                // Add more translations as needed
+		        'Pause': '暫停',
+		        'Resume': '繼續'
             }
         };
 
@@ -852,6 +854,9 @@
 
             // Update button text
             languageSwitch.textContent = languageSwitch.getAttribute(`data-${currentLang}`);
+
+    // Update pause/resume button text
+    pauseResumeBtn.textContent = translations[currentLang][isPaused ? 'Resume' : 'Pause'];
 
             // Update document title
             document.title = translations[currentLang]['title'];
@@ -992,7 +997,7 @@ function drawGraph() {
             startTime = null;
             elapsedTime = 0;
             isPaused = false;
-            pauseResumeBtn.textContent = 'Pause';
+            pauseResumeBtn.textContent = translations[currentLang]['Pause'];
             animationId = requestAnimationFrame(animate);
 
             // Add spinning class to start propellers spinning
@@ -1003,7 +1008,7 @@ function drawGraph() {
         // Pause/Resume Button Handler
         pauseResumeBtn.addEventListener('click', () => {
             isPaused = !isPaused;
-            pauseResumeBtn.textContent = isPaused ? 'Resume' : 'Pause';
+            pauseResumeBtn.textContent = translations[currentLang][isPaused ? 'Resume' : 'Pause'];
             if (!isPaused) {
                 startTime = performance.now() - elapsedTime * 1000;
                 animationId = requestAnimationFrame(animate);
