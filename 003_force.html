@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FlyHigh: Quadcopter Physics Explorer</title>
     <style>
         body { 
@@ -207,6 +208,21 @@
         .dg .slider.property-pressure input[type=range]::-moz-range-thumb {
             background: #FFA07A !important;
         }
+
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input, textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
     </style>
 </head>
 <body>
@@ -888,6 +904,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update status messages
     updateStatus(hoverRotorSpeed, netForce);
 
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
 
     </script>
 </body>
