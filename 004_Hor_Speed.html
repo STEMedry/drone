@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concepts of Average Horizontal Speed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            background-color: #f9f9f9;
+        }
+        h1 {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            justify-content: space-around;
+            flex-wrap: wrap;
+        }
+        .left-side, .right-side {
+            width: 49%;
+            min-width: 300px;
+            box-sizing: border-box;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .param-button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            font-weight: bold;
+            padding: 8px 16px;
+            cursor: pointer;
+            width: 80px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .param-button.selected {
+            background-color: orange;
+        }
+        .param-value {
+            text-align: center;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .slider, .number-input {
+            width: 100%;
+            box-sizing: border-box;
+            margin-bottom: 2px;
+        }
+        button {
+            margin-right: 10px;
+            margin-bottom: 20px;
+        }
+        .track-container {
+            position: relative;
+            width: 100%;
+            height: 75px; /* Increased height for quadcopter visibility */
+            margin-bottom: 5px;
+            overflow-x: auto;
+            background-color: #ffffe0;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+        .track {
+            height: 75px; /* Adjusted to accommodate quadcopter height */
+            background-color: #f0f0f0;
+            position: absolute;
+            top: 0;
+            background-image: linear-gradient(to right, #ccc 1px, transparent 1px);
+            background-size: 20px 100%;
+            border-radius: 4px;
+        }
+        .track-scale {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 20px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            width: 100%;
+        }
+        /* Quadcopter Styles */
+        .quadcopter {
+            position: absolute; /* Changed to absolute for movement */
+            width: 75px;
+            height: 75px;
+            transform: rotate(90deg);
+        }
+        
+        .quadcopter .body {
+            position: absolute;
+            width: 25px;
+            height: 25px;
+            background-color: rgba(0, 0, 255, 0.5); /* Default color, overridden by specific classes */
+            left: 25px;
+            top: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: white;
+            font-family: Arial, sans-serif;
+            border-radius: 50%;
+        }
+        
+        .quadcopter .propeller {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* Initially no animation */
+        }
+        
+        .quadcopter .propeller::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 3px;
+            background-color: currentColor;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        /* Specific Positions for Propellers */
+        .quadcopter .front-left {
+            left: 12.5px;
+            top: 13px;
+            color: red; /* Inherits from .quadcopter */
+        }
+        
+        .quadcopter .front-right {
+            right: 12.5px;
+            top: 13px;
+            color: red;
+        }
+        
+        .quadcopter .rear-left {
+            left: 12.5px;
+            bottom: 13px;
+            color: green;
+        }
+        
+        .quadcopter .rear-right {
+            right: 12.5px;
+            bottom: 13px;
+            color: green;
+        }
+
+        /* Corner Lights */
+        .quadcopter .corner-light {
+            position: absolute;
+            width: 6px;
+            height: 6px;
+            background-color: yellow;
+            border-radius: 50%;
+            animation: blink 1s ease-in-out infinite;
+        }
+
+        .quadcopter .light-fl {
+            left: 20px;
+            top: 20px;
+        }
+
+        .quadcopter .light-fr {
+            right: 20px;
+            top: 20px;
+        }
+
+        .quadcopter .light-rl {
+            left: 20px;
+            bottom: 20px;
+        }
+
+        .quadcopter .light-rr {
+            right: 20px;
+            bottom: 20px;
+        }
+        
+        /* Animation Keyframes */
+        @keyframes rotate-clockwise {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes rotate-counterclockwise {
+            from { transform: rotate(360deg); }
+            to { transform: rotate(0deg); }
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Spinning Animations Triggered by 'spinning' Class */
+        .quadcopter.spinning .front-left {
+            animation: rotate-clockwise 0.5s linear infinite;
+        }
+        
+        .quadcopter.spinning .front-right {
+            animation: rotate-counterclockwise 0.5s linear infinite;
+        }
+        
+        .quadcopter.spinning .rear-left {
+            animation: rotate-counterclockwise 0.5s linear infinite;
+        }
+        
+        .quadcopter.spinning .rear-right {
+            animation: rotate-clockwise 0.5s linear infinite;
+        }
+
+        /* Specific Colors for Quadcopters */
+        .quadcopterA .body {
+            background-color: rgba(255, 0, 0, 0.5); /* Red */
+        }
+
+        .quadcopterB .body {
+            background-color: rgba(0, 0, 255, 0.5); /* Blue */
+        }
+
+        canvas {
+            border: 1px solid #ddd;
+            background-color: #fff; /* Ensure the canvas has white background */
+            border-radius: 4px;
+            width: 100%;
+            height: auto;
+        }
+        .red-text {
+            color: red;
+        }
+        .blue-text {
+            color: blue;
+        }
+        .calc-button, .clear-button {
+            margin-top: 5px;
+            padding: 5px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            width: 15%; /* Adjust width to place them side by side */
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .calc-button:disabled {
+            background-color: #90CAF9;
+            cursor: not-allowed;
+        }
+        .calc-button:hover:not(:disabled) {
+            background-color: #0b7dda;
+        }
+        .clear-button {
+            background-color: #f44336; /* Red color for clear button */
+            margin-left: 4%;
+        }
+        .clear-button:disabled {
+            background-color: #e57373;
+            cursor: not-allowed;
+        }
+        .clear-button:hover:not(:disabled) {
+            background-color: #d32f2f;
+        }
+        .param-input-group {
+            display: flex;
+            gap: 5px;
+        }
+        .param-input-group input[type="number"] {
+            width: 50%;
+            padding: 6px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .controls {
+            margin-bottom: 20px;
+        }
+        .controls button {
+            margin-right: 10px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #555;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+        .controls button:hover {
+            background-color: #333;
+        }
+
+        #languageSwitch {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: black;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+
+        #languageSwitch:hover {
+            background-color: #333;
+        }
+
+    </style>
+</head>
+<body>
+
+    <button id="languageSwitch" data-en="Traditional Chinese" data-zh="English">中文</button>
+
+    <h1 data-en="Horizontal Flight Speed" data-zh="水平飛行速度">Horizontal Flight Speed</h1>
+
+    <div class="container">
+        <div class="left-side">
+            <table>
+                <tr>
+                   <th data-en="Parameter" data-zh="參數">Parameter</th>
+                    <th class="red-text" data-en="Quadcopter A (Red)" data-zh="四軸飛行器 A（紅色）">Quadcopter A (Red)</th>
+                    <th class="blue-text" data-en="Quadcopter B (Blue)" data-zh="四軸飛行器 B（藍色）">Quadcopter B (Blue)</th>
+                </tr>
+
+                <tr>
+                    <td>
+                        <button class="param-button" data-param="distance" data-en="Distance (m)" data-zh="距離（m）">Distance (m)</button>
+                    </td>
+                    <td>
+                        <div class="param-value" id="distanceValueA">0.00</div>
+                        <div class="param-input-group">
+                            <input type="number" id="distanceInputA" class="number-input" min="0" step="0.01" placeholder="Enter distance" disabled>
+                            <input type="range" class="slider" id="distanceA" min="0" max="180000" step="0.1" value="0" disabled>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="param-value" id="distanceValueB">0.00</div>
+                        <div class="param-input-group">
+                            <input type="number" id="distanceInputB" class="number-input" min="0" step="0.01" placeholder="Enter distance" disabled>
+                            <input type="range" class="slider" id="distanceB" min="0" max="180000" step="0.1" value="0" disabled>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button class="param-button" data-param="time" data-en="Time (s)" data-zh="時間（s）">Time (s)</button>
+                    </td>
+                    <td>
+                        <div class="param-value" id="timeValueA">0.00</div>
+                        <div class="param-input-group">
+                            <input type="number" id="timeInputA" class="number-input" min="0" step="0.01" placeholder="Enter time" disabled>
+                            <input type="range" class="slider" id="timeA" min="0" max="180" step="0.1" value="0" disabled>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="param-value" id="timeValueB">0.00</div>
+                        <div class="param-input-group">
+                            <input type="number" id="timeInputB" class="number-input" min="0" step="0.01" placeholder="Enter time" disabled>
+                            <input type="range" class="slider" id="timeB" min="0" max="180" step="0.1" value="0" disabled>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <button class="param-button" data-param="speed" data-en="Speed (m/s)" data-zh="速度（m/s）">Speed (m/s)</button>
+                    </td>
+                    <td>
+                        <div class="param-value" id="speedValueA">0.00</div>
+                        <div class="param-input-group">
+                            <input type="number" id="speedInputA" class="number-input" min="0" step="0.01" placeholder="Enter speed" disabled>
+                            <input type="range" class="slider" id="speedA" min="0" max="1000" step="0.1" value="0" disabled>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="param-value" id="speedValueB">0.00</div>
+                        <div class="param-input-group">
+                            <input type="number" id="speedInputB" class="number-input" min="0" step="0.01" placeholder="Enter speed" disabled>
+                            <input type="range" class="slider" id="speedB" min="0" max="1000" step="0.1" value="0" disabled>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <div class="controls">
+                <button id="calculateBtn" class="calc-button" disabled data-en="Calculate" data-zh="計算">Calculate</button>
+                <button id="clearBtn" class="clear-button" disabled data-en="Clear" data-zh="清除">Clear</button>
+            </div>
+            <div class="controls">
+                <button id="startBtn" data-en="Start" data-zh="開始">Start</button>
+                <button id="pauseResumeBtn" data-en="Pause" data-zh="暫停">Pause</button>
+                <button id="homeBtn" data-en="Home" data-zh="主頁">Home</button>
+            </div>
+
+            <div class="track-container">
+                <div id="trackA" class="track">
+                    <!-- Replaced BallA with QuadcopterA -->
+                    <div id="ballA" class="quadcopter quadcopterA">
+                        <div class="body">A</div>
+                        <div class="propeller front-left"></div>
+                        <div class="propeller front-right"></div>
+                        <div class="propeller rear-left"></div>
+                        <div class="propeller rear-right"></div>
+                        <div class="corner-light light-fl"></div>
+                        <div class="corner-light light-fr"></div>
+                        <div class="corner-light light-rl"></div>
+                        <div class="corner-light light-rr"></div>
+                    </div>
+                </div>
+                <div id="scaleA" class="track-scale"></div>
+            </div>
+            <div class="track-container">
+                <div id="trackB" class="track">
+                    <!-- Replaced BallB with QuadcopterB -->
+                    <div id="ballB" class="quadcopter quadcopterB">
+                        <div class="body">B</div>
+                        <div class="propeller front-left"></div>
+                        <div class="propeller front-right"></div>
+                        <div class="propeller rear-left"></div>
+                        <div class="propeller rear-right"></div>
+                        <div class="corner-light light-fl"></div>
+                        <div class="corner-light light-fr"></div>
+                        <div class="corner-light light-rl"></div>
+                        <div class="corner-light light-rr"></div>
+                    </div>
+                </div>
+                <div id="scaleB" class="track-scale"></div>
+            </div>
+        </div>
+        <div class="right-side">
+            <canvas id="graph" width="800" height="600"></canvas>
+        </div>
+    </div>
+    <script>
+        // Element References
+        const distanceA = document.getElementById('distanceA');
+        const timeA = document.getElementById('timeA');
+        const speedA = document.getElementById('speedA');
+        const distanceInputA = document.getElementById('distanceInputA');
+        const timeInputA = document.getElementById('timeInputA');
+        const speedInputA = document.getElementById('speedInputA');
+
+        const distanceB = document.getElementById('distanceB');
+        const timeB = document.getElementById('timeB');
+        const speedB = document.getElementById('speedB');
+        const distanceInputB = document.getElementById('distanceInputB');
+        const timeInputB = document.getElementById('timeInputB');
+        const speedInputB = document.getElementById('speedInputB');
+
+        const calculateBtn = document.getElementById('calculateBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const startBtn = document.getElementById('startBtn');
+        const pauseResumeBtn = document.getElementById('pauseResumeBtn');
+        const homeBtn = document.getElementById('homeBtn');
+
+        const quadcopterA = document.getElementById('ballA');
+        const quadcopterB = document.getElementById('ballB');
+        const trackA = document.getElementById('trackA');
+        const trackB = document.getElementById('trackB');
+        const scaleA = document.getElementById('scaleA');
+        const scaleB = document.getElementById('scaleB');
+
+        const canvas = document.getElementById('graph');
+        const paramButtons = document.querySelectorAll('.param-button');
+        const ctx = canvas.getContext('2d');
+
+        // Animation Variables
+        let animationId;
+        let isPaused = false;
+        let startTime;
+        let elapsedTime = 0;
+        let selectedParams = [];
+
+        // Function to update the state of the Calculate and Clear buttons
+        function updateCalculateButtonState() {
+            calculateBtn.disabled = selectedParams.length !== 2;
+            // Clear button is enabled when there are any selections or non-zero values
+            const anySelected = selectedParams.length > 0;
+            clearBtn.disabled = !anySelected;
+        }
+
+        // Parameter Selection Handling
+        paramButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const param = button.dataset.param;
+                if (button.classList.contains('selected')) {
+                    button.classList.remove('selected');
+                    selectedParams = selectedParams.filter(p => p !== param);
+                } else {
+                    if (selectedParams.length < 2) {
+                        button.classList.add('selected');
+                        selectedParams.push(param);
+                    } else {
+                        alert('Please select only two parameters.');
+                    }
+                }
+
+                // Enable or disable sliders and number inputs based on selection
+                ['distance', 'time', 'speed'].forEach(p => {
+                    const isSelected = selectedParams.includes(p);
+                    ['A', 'B'].forEach(obj => {
+                        const slider = document.getElementById(p + obj);
+                        const numberInput = document.getElementById(p + 'Input' + obj);
+                        slider.disabled = !isSelected;
+                        numberInput.disabled = !isSelected;
+                        if (!isSelected) {
+                            // Optionally reset values if the parameter is deselected
+                            slider.value = 0;
+                            numberInput.value = '';
+                            document.getElementById(p + 'Value' + obj).textContent = '0.00';
+                        }
+                    });
+                });
+
+                updateCalculateButtonState();
+            });
+        });
+
+        // Function to synchronize sliders and number inputs
+        function syncInputs(slider, numberInput, valueDisplay) {
+            // When slider changes, update number input and value display
+            slider.addEventListener('input', () => {
+                const val = parseFloat(slider.value);
+                if (!isNaN(val)) {
+                    numberInput.value = val.toFixed(2);
+                    valueDisplay.textContent = val.toFixed(2);
+                } else {
+                    numberInput.value = '';
+                    valueDisplay.textContent = '0.00';
+                }
+                updateScaleAndGraph();
+            });
+
+            // When number input changes, update slider and value display
+            numberInput.addEventListener('input', () => {
+                const val = parseFloat(numberInput.value);
+                if (!isNaN(val)) {
+                    if (val >= parseFloat(slider.min) && val <= parseFloat(slider.max)) {
+                        slider.value = val;
+                        valueDisplay.textContent = val.toFixed(2);
+                    } else {
+                        // Update display but keep actual slider value clamped
+                        valueDisplay.textContent = val.toFixed(2);
+                        slider.value = Math.max(parseFloat(slider.min), Math.min(parseFloat(slider.max), val));
+                    }
+                    updateScaleAndGraph();
+                } else {
+                    // Invalid input
+                    valueDisplay.textContent = '0.00';
+                }
+                // Do not set numberInput.value here; let the user type
+            });
+
+            // When number input loses focus, format to two decimals and clamp
+            numberInput.addEventListener('blur', () => {
+                let val = parseFloat(numberInput.value);
+                if (isNaN(val)) {
+                    val = 0;
+                }
+                const min = parseFloat(slider.min);
+                const max = parseFloat(slider.max);
+                if (val < min || val > max) {
+                    alert(`${numberInput.placeholder} value is out of range (${min} - ${max}) and has been clamped.`);
+                    val = Math.max(min, Math.min(max, val));
+                }
+                numberInput.value = val.toFixed(2);
+                slider.value = val;
+                valueDisplay.textContent = val.toFixed(2);
+                updateScaleAndGraph();
+            });
+        }
+
+        // Apply synchronization to all parameters
+        syncInputs(distanceA, distanceInputA, document.getElementById('distanceValueA'));
+        syncInputs(timeA, timeInputA, document.getElementById('timeValueA'));
+        syncInputs(speedA, speedInputA, document.getElementById('speedValueA'));
+
+        syncInputs(distanceB, distanceInputB, document.getElementById('distanceValueB'));
+        syncInputs(timeB, timeInputB, document.getElementById('timeValueB'));
+        syncInputs(speedB, speedInputB, document.getElementById('speedValueB'));
+
+        // Calculate Button Handler
+        calculateBtn.addEventListener('click', () => {
+            calculateMissing('A');
+            calculateMissing('B');
+            updateScaleAndGraph();
+        });
+
+        // Function to Calculate Missing Parameter
+        function calculateMissing(object) {
+            const missingParam = ['distance', 'time', 'speed'].find(p => !selectedParams.includes(p));
+            if (!missingParam) return; // All params selected
+
+            const paramSlider = document.getElementById(missingParam + object);
+            const paramNumberInput = document.getElementById(missingParam + 'Input' + object);
+            const paramValueDisplay = document.getElementById(missingParam + 'Value' + object);
+
+            const distance = parseFloat(document.getElementById('distance' + object).value) || 0;
+            const time = parseFloat(document.getElementById('time' + object).value) || 0;
+            const speed = parseFloat(document.getElementById('speed' + object).value) || 0;
+
+            let computedValue = 0;
+            if (missingParam === 'speed') {
+                if (time === 0) {
+                    alert(`Time cannot be zero for Object ${object}.`);
+                    return;
+                }
+                computedValue = distance / time;
+            }
+            else if (missingParam === 'time') {
+                if (speed === 0) {
+                    alert(`Speed cannot be zero for Object ${object}.`);
+                    return;
+                }
+                computedValue = distance / speed;
+            }
+            else if (missingParam === 'distance') {
+                computedValue = speed * time;
+            }
+
+            const min = parseFloat(paramSlider.min);
+            const max = parseFloat(paramSlider.max);
+            const rawComputedValue = computedValue;
+            computedValue = Math.max(min, Math.min(max, computedValue));
+
+            if (computedValue !== rawComputedValue) {
+                alert(`Calculated ${missingParam} for Object ${object} is out of range (${min} - ${max}) and has been clamped to ${computedValue.toFixed(2)}.`);
+            }
+
+            paramSlider.value = computedValue.toFixed(2);
+            paramNumberInput.value = computedValue.toFixed(2);
+            paramValueDisplay.textContent = computedValue.toFixed(2);
+        }
+
+        // Calculation Functions (Optional, kept for clarity)
+        function calculateSpeed(distance, time) {
+            return distance / time;
+        }
+
+        function calculateTime(distance, speed) {
+            return distance / speed;
+        }
+
+        function calculateDistance(speed, time) {
+            return speed * time;
+        }
+
+        // Clear Button Handler
+        clearBtn.addEventListener('click', () => {
+            // Reset all sliders and number inputs to zero and empty
+            ['distance', 'time', 'speed'].forEach(param => {
+                ['A', 'B'].forEach(obj => {
+                    const slider = document.getElementById(param + obj);
+                    const numberInput = document.getElementById(param + 'Input' + obj);
+                    const valueDisplay = document.getElementById(param + 'Value' + obj);
+                    slider.value = 0;
+                    numberInput.value = '';
+                    valueDisplay.textContent = '0.00';
+                });
+            });
+
+            // Disable all sliders and number inputs
+            ['A', 'B'].forEach(obj => {
+                ['distance', 'time', 'speed'].forEach(param => {
+                    const slider = document.getElementById(param + obj);
+                    const numberInput = document.getElementById(param + 'Input' + obj);
+                    slider.disabled = true;
+                    numberInput.disabled = true;
+                });
+            });
+
+            // Reset parameter selections
+            paramButtons.forEach(button => {
+                button.classList.remove('selected');
+            });
+            selectedParams = [];
+
+            // Disable Calculate and Clear buttons
+            calculateBtn.disabled = true;
+            clearBtn.disabled = true;
+
+            // Reset tracks and graph
+            updateScaleAndGraph();
+
+            // Reset animation
+            cancelAnimationFrame(animationId);
+            quadcopterA.style.left = '0px';
+            quadcopterB.style.left = '0px';
+            startTime = null;
+            elapsedTime = 0;
+            isPaused = false;
+            pauseResumeBtn.textContent = 'Pause';
+
+            // Remove spinning classes
+            quadcopterA.classList.remove('spinning');
+            quadcopterB.classList.remove('spinning');
+        });
+
+        // Home Button Handler
+        homeBtn.addEventListener('click', () => {
+            // Stop any ongoing animation
+            cancelAnimationFrame(animationId);
+            startTime = null;
+            elapsedTime = 0;
+            isPaused = false;
+            pauseResumeBtn.textContent = 'Pause';
+
+            // Reset quadcopter positions
+            quadcopterA.style.left = '0px';
+            quadcopterB.style.left = '0px';
+
+            // Remove spinning classes
+            quadcopterA.classList.remove('spinning');
+            quadcopterB.classList.remove('spinning');
+
+            // Redraw the graph to clear any coordinate labels
+            drawGraph();
+        });
+
+        // Function to update scale and graph
+        function updateScaleAndGraph() {
+            updateTrackScale();
+            drawGraph();
+        }
+
+        // Initialize value displays to zero and disable sliders
+        ['distance', 'time', 'speed'].forEach(param => {
+            ['A', 'B'].forEach(obj => {
+                const slider = document.getElementById(param + obj);
+                const numberInput = document.getElementById(param + 'Input' + obj);
+                const valueDisplay = document.getElementById(param + 'Value' + obj);
+                slider.value = 0;
+                numberInput.value = '';
+                valueDisplay.textContent = '0.00';
+            });
+        });
+
+        // Update Track Scale Based on Distance
+        function updateTrackScale() {
+            const distanceValueA = parseFloat(distanceA.value) || 0;
+            const distanceValueB = parseFloat(distanceB.value) || 0;
+            const maxDistance = Math.max(distanceValueA, distanceValueB, 1); // Prevent division by zero
+
+            const containerWidth = document.querySelector('.track-container').clientWidth - 40; // 40px padding
+            const maxPixelWidth = containerWidth; // Use full horizontal space
+            const scaleFactor = maxDistance > 0 ? maxPixelWidth / maxDistance : 1;
+
+            // Update Track A
+            trackA.style.width = `${distanceValueA * scaleFactor}px`;
+            scaleA.innerHTML = '';
+            if (distanceValueA > 0) {
+                const scaleCountA = Math.min(10, Math.max(5, Math.floor(distanceValueA / 50)));
+                for (let i = 0; i < scaleCountA; i++) {
+                    const scaleMarker = document.createElement('span');
+                    const label = ((i * maxDistance) / (scaleCountA - 1)).toFixed(2) + 'm';
+                    scaleMarker.textContent = label;
+                    scaleMarker.style.position = 'absolute';
+                    scaleMarker.style.left = `${(i / (scaleCountA - 1)) * (distanceValueA * scaleFactor)}px`;
+                    scaleMarker.style.transform = 'translateX(-50%)';
+                    scaleMarker.style.whiteSpace = 'nowrap';
+                    scaleA.appendChild(scaleMarker);
+                }
+            }
+
+            // Update Track B
+            trackB.style.width = `${distanceValueB * scaleFactor}px`;
+            scaleB.innerHTML = '';
+            if (distanceValueB > 0) {
+                const scaleCountB = Math.min(10, Math.max(5, Math.floor(distanceValueB / 50)));
+                for (let i = 0; i < scaleCountB; i++) {
+                    const scaleMarker = document.createElement('span');
+                    const label = ((i * maxDistance) / (scaleCountB - 1)).toFixed(2) + 'm';
+                    scaleMarker.textContent = label;
+                    scaleMarker.style.position = 'absolute';
+                    scaleMarker.style.left = `${(i / (scaleCountB - 1)) * (distanceValueB * scaleFactor)}px`;
+                    scaleMarker.style.transform = 'translateX(-50%)';
+                    scaleMarker.style.whiteSpace = 'nowrap';
+                    scaleB.appendChild(scaleMarker);
+                }
+            }
+
+            // Adjust quadcopter positions based on new scaling
+            if (elapsedTime > 0) {
+                const timeAVal = parseFloat(timeA.value) || 1;
+                const timeBVal = parseFloat(timeB.value) || 1;
+                const progressA = Math.min(elapsedTime / timeAVal, 1);
+                const progressB = Math.min(elapsedTime / timeBVal, 1);
+                const scaledDistanceA = distanceValueA * scaleFactor;
+                const scaledDistanceB = distanceValueB * scaleFactor;
+                quadcopterA.style.left = `${scaledDistanceA * progressA}px`;
+                quadcopterB.style.left = `${scaledDistanceB * progressB}px`;
+            }
+        }
+
+        // Translation dictionary
+        const translations = {
+            'en': {
+                'title': 'Concepts of Average Horizontal Speed',
+                'Time (s)': 'Time (s)',
+                'Distance (m)': 'Distance (m)',
+                // Add more translations as needed
+            },
+            'zh': {
+                'title': '平均水平速度概念',
+                'Time (s)': '時間（秒）',
+                'Distance (m)': '距離（米）',
+                // Add more translations as needed
+            }
+        };
+
+        // Language switch functionality
+        const languageSwitch = document.getElementById('languageSwitch');
+        let currentLang = 'en';
+
+        languageSwitch.addEventListener('click', () => {
+            currentLang = currentLang === 'en' ? 'zh' : 'en';
+            translatePage();
+        });
+
+        function translatePage() {
+            document.querySelectorAll('[data-en]').forEach(elem => {
+                elem.textContent = elem.getAttribute(`data-${currentLang}`);
+            });
+
+            // Update button text
+            languageSwitch.textContent = languageSwitch.getAttribute(`data-${currentLang}`);
+
+            // Update document title
+            document.title = translations[currentLang]['title'];
+
+            // Redraw graph with translated labels
+            drawGraph();
+        }
+
+        // Draw the Graph with White Background for Moving Coordinates
+function drawGraph() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw grid
+    ctx.beginPath();
+    ctx.strokeStyle = '#ddd';
+    for (let i = 50; i <= canvas.width - 50; i += 20) {
+        ctx.moveTo(i, 50);
+        ctx.lineTo(i, canvas.height - 50);
+        ctx.moveTo(50, i);
+        ctx.lineTo(canvas.width - 50, i);
+    }
+    ctx.stroke();
+
+    // Draw axes
+    ctx.beginPath();
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 2;
+    ctx.moveTo(50, canvas.height - 50);
+    ctx.lineTo(canvas.width - 50, canvas.height - 50);
+    ctx.moveTo(50, canvas.height - 50);
+    ctx.lineTo(50, 50);
+    ctx.stroke();
+
+    // Draw labels
+    ctx.font = '14px Arial';
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    ctx.fillText('Time (s)', (canvas.width) / 2, canvas.height - 10);
+    ctx.save();
+    ctx.translate(20, canvas.height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.fillText('Distance (m)', 0, 0);
+    ctx.restore();
+
+    // Determine maximum values for scaling
+    const maxTime = Math.max(parseFloat(timeA.value), parseFloat(timeB.value), 1);
+    const maxDistance = Math.max(parseFloat(distanceA.value), parseFloat(distanceB.value), 1);
+
+    // Draw scale numbers
+    ctx.font = '12px Arial';
+    ctx.fillStyle = '#000';
+    ctx.textAlign = 'center';
+    for (let i = 0; i <= 10; i++) {
+        // Time (x-axis)
+        const x = 50 + ((canvas.width - 100) * i / 10);
+        ctx.fillText((maxTime * i / 10).toFixed(2), x, canvas.height - 35);
+        // Distance (y-axis)
+        const y = canvas.height - 50 - ((canvas.height - 100) * i / 10);
+        ctx.fillText((maxDistance * i / 10).toFixed(2), 35, y + 5);
+    }
+
+    // Draw lines for objects A and B
+    const drawLine = (distance, time, color) => {
+        const x = 50 + ((canvas.width - 100) * (time / maxTime));
+        const y = canvas.height - 50 - ((canvas.height - 100) * (distance / maxDistance));
+        ctx.beginPath();
+        ctx.moveTo(50, canvas.height - 50);
+        ctx.lineTo(x, y);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    };
+
+    drawLine(parseFloat(distanceA.value) || 0, parseFloat(timeA.value) || 1, 'red');
+    drawLine(parseFloat(distanceB.value) || 0, parseFloat(timeB.value) || 1, 'blue');
+}
+
+        // Update Quadcopter Position Based on Elapsed Time
+        function updateQuadcopterPosition(quadcopter, distance, time, elapsed) {
+            if (time === 0) return;
+            const progress = Math.min(elapsed / time, 1);
+            const scaledDistance = distance * (document.querySelector('.track-container').clientWidth - 40) / Math.max(parseFloat(distanceA.value) || 1, parseFloat(distanceB.value) || 1, 1);
+            const position = progress * scaledDistance;
+            quadcopter.style.left = `${position}px`;
+        }
+
+        // Update Coordinates with White Background
+        function updateCoordinates(object, distance, time, elapsed) {
+            if (time === 0) return;
+            const progress = Math.min(elapsed / time, 1);
+            const currentDistance = progress * distance;
+            const maxTime = Math.max(parseFloat(timeA.value), parseFloat(timeB.value), 1);
+            const maxDistance = Math.max(parseFloat(distanceA.value), parseFloat(distanceB.value), 1);
+            const x = 50 + ((canvas.width - 100) * (elapsed / maxTime));
+            const y = canvas.height - 50 - ((canvas.height - 100) * (currentDistance / maxDistance));
+
+            const label = `(${elapsed.toFixed(2)}, ${currentDistance.toFixed(2)})`;
+            const textWidth = ctx.measureText(label).width;
+
+            // Draw white background for the label
+            ctx.fillStyle = 'white';
+            ctx.fillRect(x - textWidth / 2 - 2, y - 12, textWidth + 4, 14);
+
+            // Draw the label text
+            ctx.fillStyle = object === 'A' ? 'red' : 'blue';
+            ctx.fillText(label, x, y);
+        }
+
+        // Animation Function
+        function animate(timestamp) {
+            if (!startTime) startTime = timestamp;
+            if (!isPaused) elapsedTime = (timestamp - startTime) / 1000;
+
+            const timeValueA = parseFloat(timeA.value) || 0;
+            const timeValueB = parseFloat(timeB.value) || 0;
+            const distanceValueA = parseFloat(distanceA.value) || 0;
+            const distanceValueB = parseFloat(distanceB.value) || 0;
+
+            updateQuadcopterPosition(quadcopterA, distanceValueA, timeValueA, elapsedTime);
+            updateQuadcopterPosition(quadcopterB, distanceValueB, timeValueB, elapsedTime);
+
+            drawGraph();
+            updateCoordinates('A', distanceValueA, timeValueA, Math.min(elapsedTime, timeValueA));
+            updateCoordinates('B', distanceValueB, timeValueB, Math.min(elapsedTime, timeValueB));
+
+            if (elapsedTime < Math.max(timeValueA, timeValueB)) {
+                animationId = requestAnimationFrame(animate);
+            } else {
+                // Stop spinning when animation ends
+                quadcopterA.classList.remove('spinning');
+                quadcopterB.classList.remove('spinning');
+            }
+        }
+
+        // Start Button Handler
+        startBtn.addEventListener('click', () => {
+            if (animationId) cancelAnimationFrame(animationId);
+            startTime = null;
+            elapsedTime = 0;
+            isPaused = false;
+            pauseResumeBtn.textContent = 'Pause';
+            animationId = requestAnimationFrame(animate);
+
+            // Add spinning class to start propellers spinning
+            quadcopterA.classList.add('spinning');
+            quadcopterB.classList.add('spinning');
+        });
+
+        // Pause/Resume Button Handler
+        pauseResumeBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            pauseResumeBtn.textContent = isPaused ? 'Resume' : 'Pause';
+            if (!isPaused) {
+                startTime = performance.now() - elapsedTime * 1000;
+                animationId = requestAnimationFrame(animate);
+            }
+        });
+
+        // Function to update scale and graph
+        function updateScaleAndGraph() {
+            updateTrackScale();
+            drawGraph();
+        }
+
+        // Initialize the Graph and Tracks
+        updateScaleAndGraph();
+        drawGraph();
+
+    </script>
+</body>
+</html>
