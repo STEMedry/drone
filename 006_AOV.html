@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Drone Camera AOV Simulation with School Building, Bank Tower, and Trident Blocks</title>
+<title>Drone Camera Angle of View (AOV) Simulation</title>
 <style>
 body {
     margin: 0;
@@ -33,6 +33,13 @@ canvas { display: block; }
     margin: 0;
     font-size: 24px;
 }
+
+    #languageToggle {
+      margin-bottom: 10px;
+      padding: 5px 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
 
 #controls {
     position: fixed;
@@ -251,102 +258,188 @@ input[type="range"]::-moz-range-thumb {
     background-color: #FFA500;
 }
 
+.buildingToggle {
+    background-color: #4CAF50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.buildingToggle.active {
+    background-color: #FFA500;
+}
+
+#calc1Results {
+  display: flex;
+  align-items: center;
+}
+
+#calc1Results label {
+  margin-right: 2px;
+}
+
+#calc1Results span {
+  margin-right: 2px;
+}
+
 </style>
 </head>
 <body>
 <!-- Title -->
 <div id="title">
-    <h1>Drone Camera AOV Simulation</h1>
+    <h1 data-i18n="Drone Camera AOV Simulation" data-i18n-zh="無人機相機視角模擬">Drone Camera AOV Simulation</h1>
 </div>
 
 <!-- Information Panel -->
 <div id="controls">
-    <div><strong>Main Controls</strong></div>
-    <div class="aspectRatioButtons">
+
+<button id="languageToggle">繁體中文</button><p>
+
+    <h2 data-i18n="Main Controls" data-i18n-zh="主要控制">Main Controls</h2>
+
+   <h3 data-i18n="Aspect Ratio" data-i18n-zh="畫幅比例">Aspect Ratio</h3>
+   <div class="aspectRatioButtons">
         <button class="aspectRatioBtn" data-ratio="1.5">3:2</button>
         <button class="aspectRatioBtn" data-ratio="1.333">4:3</button>
         <button class="aspectRatioBtn" data-ratio="1.778">16:9</button>
     </div>
-    <div>
-        <label for="aov">Horizontal AOV: <span id="aovValue">70</span>°</label>
-        <input type="range" id="aov" min="30" max="120" value="70">
-    </div>
-    <div>
-        <label>Vertical AOV: <span id="vaovValue">0.0</span>°</label>
-    </div>
-    <div>
-        <label>Diagonal AOV: <span id="daovValue">0.0</span>°</label>
-    </div>
-    <hr>
-    <div>
-        <label>Altitude: <span id="altitudeValue">0</span>m</label>
-    </div>
-    <div>
-        <label>FOV Width: <span id="widthValue">0</span>m</label>
-    </div>
-    <div>
-        <label>FOV Height: <span id="heightValue">0</span>m</label>
-    </div>
-    <div>
-        <label>Area Captured: <span id="areaValue">0</span>m²</label>
-    </div>
+<div>
+    <label for="aov">
+        <span data-i18n="Horizontal AOV:" data-i18n-zh="水平視角:">Horizontal AOV:</span>
+        <span id="aovValue">70</span>°
+    </label>
+    <input type="range" id="aov" min="30" max="120" value="70">
+</div>
+<div>
+    <label>
+        <span data-i18n="Vertical AOV:" data-i18n-zh="垂直視角:">Vertical AOV:</span>
+        <span id="vaovValue">0.0</span>°
+    </label>
+</div>
+<div>
+    <label>
+        <span data-i18n="Diagonal AOV:" data-i18n-zh="對角線視角:">Diagonal AOV:</span>
+        <span id="daovValue">0.0</span>°
+    </label>
+</div>
+<div>
+    <label>
+        <span data-i18n="Altitude:" data-i18n-zh="高度:">Altitude:</span>
+        <span id="altitudeValue">0</span>m
+    </label>
+</div>
+<div>
+    <label>
+        <span data-i18n="FOV Width:" data-i18n-zh="視野寬度:">FOV Width:</span>
+        <span id="widthValue">0</span>m
+    </label>
+</div>
+<div>
+    <label>
+        <span data-i18n="FOV Height:" data-i18n-zh="視野高度:">FOV Height:</span>
+        <span id="heightValue">0</span>m
+    </label>
+</div>
+<div>
+    <label>
+        <span data-i18n="Area Captured:" data-i18n-zh="捕捉面積:">Area Captured:</span>
+        <span id="areaValue">0</span>m²
+    </label>
+</div>
+
     <hr>
     <!-- Toggle Buttons -->
-    <div>
-        <button id="toggleSchoolBuilding">Show School Building</button>
-    </div>
-    <div>
-        <button id="toggleTridentBlocks">Show Trident Blocks</button>
-    </div>
-    <div>
-        <button id="toggleBankTower">Show Bank Tower</button>
-    </div>
+<div>
+	<button id="toggleSchoolBuilding">
+        <span data-i18n="School Building" data-i18n-zh="學校建築">School Building</span>
+    </button>
+</div>
+<div>
+    <button id="toggleTridentBlocks">
+        <span data-i18n="Trident Blocks" data-i18n-zh="Y型大厦">Trident Blocks</span>
+    </button>
+</div>
+<div>
+    <button id="toggleBankTower">
+        <span data-i18n="Bank Tower" data-i18n-zh="銀行大廈">Bank Tower</span>
+    </button>
+</div>
 </div>
 
 <!-- Calculation Controls Panel -->
 <div id="additionalControls">
-    <h3>Calculate AOV</h3>
+    <h3 data-i18n="Calculate AOV" data-i18n-zh="計算視角">Calculate AOV</h3>
     <div class="aspectRatioButtons">
         <button class="aspectRatioBtn" data-ratio="1.5">3:2</button>
         <button class="aspectRatioBtn" data-ratio="1.333">4:3</button>
         <button class="aspectRatioBtn" data-ratio="1.778">16:9</button>
     </div>
     <div>
-        <label for="calc1Altitude">Altitude: <span id="calc1AltitudeValue">0</span>m</label>
+        <label for="calc1Altitude">
+		<span data-i18n="Altitude:" data-i18n-zh="高度：">Altitude:</span>
+		<span id="calc1AltitudeValue">0</span>m</label>
         <input type="range" id="calc1Altitude" min="0" max="500" value="0">
     </div>
     <div>
-        <label for="calc1FOVWidth">FOV Width: <span id="calc1FOVWidthValue">0</span>m</label>
+	  <label for="calc1FOVWidth">
+ 		<span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
+		<span id="calc1FOVWidthValue">0</span>m</label>
         <input type="range" id="calc1FOVWidth" min="0" max="1732" value="0">
     </div>
-    <button id="calc1Button">Calculate AOV</button>
+    <button id="calc1Button">
+    <span data-i18n="Calculate AOV" data-i18n-zh="計算視角">Calculate AOV</span>
+</button>
+
     <div id="calc1Results">
-        <p>Horizontal AOV: <span id="calc1HorizontalAOV">0.0</span>°</p>
-        <p>Vertical AOV: <span id="calc1VerticalAOV">0.0</span>°</p>
-        <p>Diagonal AOV: <span id="calc1DiagonalAOV">0.0</span>°</p>
+  <p><label data-i18n="Horizontal AOV:" data-i18n-zh="水平視角：">Horizontal AOV:</label>
+  <span id="calc1HorizontalAOV">0.0</span>°</p>
+  <p><label data-i18n="Vertical AOV:" data-i18n-zh="垂直視角：">Vertical AOV:</label><span id="calc1VerticalAOV">0.0</span>°</p>
+  <p><label data-i18n="Diagonal AOV:" data-i18n-zh="對角視角：">Diagonal AOV:</label><span id="calc1DiagonalAOV">0.0</span>°</p>
     </div>
 
     <hr>
 
-    <h3>Calculate Altitude</h3>
+    <h3 data-i18n="Calculate Altitude" data-i18n-zh="計算高度">Calculate Altitude</h3>
     <div class="aspectRatioButtons">
         <button class="aspectRatioBtn" data-ratio="1.5">3:2</button>
         <button class="aspectRatioBtn" data-ratio="1.333">4:3</button>
         <button class="aspectRatioBtn" data-ratio="1.778">16:9</button>
     </div>
+
     <div>
-        <label for="calc2DiagonalAOV">Diagonal AOV: <span id="calc2DiagonalAOVValue">0</span>°</label>
+        <label for="calc2DiagonalAOV">
+		<span data-i18n="Diagonal AOV:" data-i18n-zh="對角線視角：">Diagonal AOV:</span>
+		<span id="calc2DiagonalAOVValue">0</span><span>°</span></label>
         <input type="range" id="calc2DiagonalAOV" min="0" max="128" value="0">
     </div>
+
     <div>
-        <label for="calc2FOVWidth">FOV Width: <span id="calc2FOVWidthValue">0</span>m</label>
+        <label for="calc2FOVWidth">
+		<span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
+		<span id="calc2FOVWidthValue">0</span><span>°</span></label>
         <input type="range" id="calc2FOVWidth" min="0" max="1732" value="0">
     </div>
-    <button id="calc2Button">Calculate Altitude</button>
+
+<button id="calc2Button">
+    <span data-i18n="Calculate Altitude" data-i18n-zh="計算高度">Calculate Altitude</span>
+</button>
+
+
+
     <div id="calc2Results">
-        <p>Required Altitude: <span id="calc2Altitude">0.0</span>m</p>
-    </div>
+<label data-i18n="Required Altitude:" data-i18n-zh="所需高度：">Required Altitude:</label>
+  <span id="calc2Altitude">0.0</span>m
 </div>
+
+
+
+</div>
+
+
+
+
+
+
 
 <!-- View Control Buttons -->
 <div id="viewControls">
@@ -1375,6 +1468,17 @@ function init() {
     renderer.domElement.addEventListener('wheel', onWheel, false);
     renderer.domElement.addEventListener('contextmenu', (e) => e.preventDefault(), false);
 
+
+function initBuildingButtons() {
+    document.getElementById('toggleSchoolBuilding').classList.toggle('active', schoolBuilding.visible);
+    document.getElementById('toggleBankTower').classList.toggle('active', bankTower.visible);
+    document.getElementById('toggleTridentBlocks').classList.toggle('active', tridentBlocks.visible);
+}
+
+// Call this function in your init() or after you've created the buildings
+initBuildingButtons();
+
+
  // Add this new function to your JavaScript code
 function initAspectRatioButtons() {
     document.querySelectorAll('#controls .aspectRatioBtn, #additionalControls .aspectRatioBtn').forEach(button => {
@@ -1427,9 +1531,6 @@ function init() {
         document.getElementById('calc2FOVWidthValue').textContent = this.value;
     });
 
-    document.getElementById('toggleSchoolBuilding').addEventListener('click', toggleSchoolBuilding);
-    document.getElementById('toggleBankTower').addEventListener('click', toggleBankTower);
-    document.getElementById('toggleTridentBlocks').addEventListener('click', toggleTridentBlocks);
 
     // Set initial aspect ratio
     document.querySelector('.aspectRatioBtn[data-ratio="1.5"]').click();
@@ -1437,26 +1538,37 @@ function init() {
     updateFOV();
 }
 
-function toggleSchoolBuilding() {
-    if (schoolBuilding) {
-        schoolBuilding.visible = !schoolBuilding.visible;
-        document.getElementById('toggleSchoolBuilding').textContent = schoolBuilding.visible ? 'Hide School Building' : 'Show School Building';
+function toggleBuilding(buildingType) {
+    let building, button;
+    
+    switch(buildingType) {
+        case 'school':
+            building = schoolBuilding;
+            button = document.getElementById('toggleSchoolBuilding');
+            break;
+        case 'bank':
+            building = bankTower;
+            button = document.getElementById('toggleBankTower');
+            break;
+        case 'trident':
+            building = tridentBlocks;
+            button = document.getElementById('toggleTridentBlocks');
+            break;
+    }
+    
+    if (building) {
+        building.visible = !building.visible;
+        if (building.visible) {
+            button.classList.add('active');
+        } else {
+            button.classList.remove('active');
+        }
     }
 }
 
-function toggleBankTower() {
-    if (bankTower) {
-        bankTower.visible = !bankTower.visible;
-        document.getElementById('toggleBankTower').textContent = bankTower.visible ? 'Hide Bank Tower' : 'Show Bank Tower';
-    }
-}
-
-function toggleTridentBlocks() {
-    if (tridentBlocks) {
-        tridentBlocks.visible = !tridentBlocks.visible;
-        document.getElementById('toggleTridentBlocks').textContent = tridentBlocks.visible ? 'Hide Trident Blocks' : 'Show Trident Blocks';
-    }
-}
+document.getElementById('toggleSchoolBuilding').addEventListener('click', () => toggleBuilding('school'));
+document.getElementById('toggleBankTower').addEventListener('click', () => toggleBuilding('bank'));
+document.getElementById('toggleTridentBlocks').addEventListener('click', () => toggleBuilding('trident'));
 
 function updateCamera() {
     const x = cameraDistance * Math.cos(cameraAngle) * Math.cos(cameraTilt);
@@ -2082,6 +2194,24 @@ renderer.domElement.addEventListener('touchmove', function(event) {
         this.pinchStartDistance = dist;
     }
 }, { passive: false });
+
+  // Language switching
+  const languageToggle = document.getElementById('languageToggle');
+  const elements = document.querySelectorAll('[data-i18n]');
+
+  languageToggle.addEventListener('click', () => {
+    if (languageToggle.textContent === '繁體中文') {
+      languageToggle.textContent = 'English';
+      elements.forEach(element => {
+        element.textContent = element.getAttribute('data-i18n-zh');
+      });
+    } else {
+      languageToggle.textContent = '繁體中文';
+      elements.forEach(element => {
+        element.textContent = element.getAttribute('data-i18n');
+      });
+    }
+  });
 
 </script>
 </body>
