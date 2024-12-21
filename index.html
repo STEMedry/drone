@@ -83,7 +83,7 @@
 
 .language-toggle {
     position: absolute;
-    top: -60px; /* Moved further up */
+    top: -60px;
     right: 0;
     margin: 5px;
     font-size: 12px;
@@ -96,7 +96,7 @@
     <h3 id="author-name" style="text-align: center;">By Richard C Y YEUNG, The Education University of Hong Kong</h3>
     
     <div class="button-container">
-        <button class="button-language language-toggle" onclick="toggleLanguage()">中文/ENGLISH</button>
+        <button class="button-language language-toggle" onclick="toggleLanguage()" id="lang-toggle">繁體中文</button>
         <button class="button-slateblue" onclick="showApp('app1')" id="btn-gallery">Drone Gallery</button>
         <button class="button-green" onclick="showApp('app2')" id="btn-control">Control Simulator</button>
         <button class="button-brown" onclick="showApp('app3')" id="btn-physics">Physics Explorer</button>
@@ -145,6 +145,7 @@
             en: {
                 mainTitle: 'Drone-Integrated Cross-Disciplinary STEM Curriculum (DCSC)',
                 authorName: 'By Richard C Y YEUNG, The Education University of Hong Kong',
+                languageButton: '繁體中文',
                 buttons: {
                     gallery: 'Drone Gallery',
                     control: 'Control Simulator',
@@ -159,6 +160,7 @@
             zh: {
                 mainTitle: '無 人 機 跨 學 科 STEM 課程 (DCSC)',
                 authorName: '楊 仲 堯，香 港 教 育 大 學 (EdUHK)',
+                languageButton: 'English',
                 buttons: {
                     gallery: '無人機圖庫',
                     control: '操作模擬器',
@@ -185,6 +187,9 @@
             // Update title and author
             document.getElementById('main-title').textContent = lang.mainTitle;
             document.getElementById('author-name').textContent = lang.authorName;
+            
+            // Update language toggle button
+            document.getElementById('lang-toggle').textContent = lang.languageButton;
 
             // Update button texts
             document.getElementById('btn-gallery').textContent = lang.buttons.gallery;
