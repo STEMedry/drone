@@ -31,7 +31,7 @@
         }
         #flightControls {
             position: fixed;
-            top: 10px;
+            top: 80px;
             right: 10px;
             background: rgba(0,0,0,0.7);
             color: white;
@@ -48,6 +48,10 @@
             margin: 5px;
             box-sizing: border-box;
             font-size: 16px;
+            cursor: pointer;
+        }
+        .button.selected {
+            background-color: orange;
         }
         #startButton {
             background-color: #4CAF50;
@@ -73,6 +77,22 @@
             color: #000;
             text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
             z-index: 1000;
+        }
+        #langSwitch {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            z-index: 1001;
         }
     </style>
     <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
@@ -106,12 +126,60 @@
         <div id="flightStatus" style="margin: 5px;"></div>
     </div>
 
+    <button id="langSwitch">繁體中文</button>
+
 <script type="module">
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { FontLoader } from 'three/addons/loaders/FontLoader.js';
     import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
     import { RingGeometry } from 'three';
+
+let currentLang = 'en';
+const translations = {
+    en: {
+        title: "Drone Circumnavigation",
+        instructions: "Left click + drag: Rotate view<br>Middle mouse/scroll: Zoom<br>Middle click + drag: Pan view",
+        sides: "Number of sides (3-25):",
+        polygon: "Polygon",
+        centred: "Centred",
+        orbiting: "Orbiting",
+        start: "START",
+        switchLang: "繁體中文",
+        flightStatusStart: "Press Start to begin.",
+        flightStatusTakeoff: "Taking off",
+        flightStatusInitialYaw: "Initial yaw left",
+        flightStatusFlyingToVertex: "Flying to vertex",
+        flightStatusYawRight: "Yawing right",
+        flightStatusAdditionalYaw: "Additional yaw",
+        flightStatusLanding: "Landing",
+        flightStatusCompleted: "Flight completed",
+        flightStatusPausing: "Pausing",
+        flightStatusYawLeftAgain: "Yawing left 0.5 interior angle",
+        flightStatusOrbiting: "Orbiting"
+    },
+    zh: {
+        title: "無人機環繞飛行",
+        instructions: "左鍵點擊 + 拖動：旋轉視圖<br>中鍵/滾輪：縮放<br>中鍵點擊 + 拖動：平移視圖",
+        sides: "邊數 (3-25)：",
+        polygon: "多邊形",
+        centred: "端點向心",
+        orbiting: "向心環繞",
+        start: "開始",
+        switchLang: "English",
+        flightStatusStart: "按開始按鈕開始。",
+        flightStatusTakeoff: "起飛中",
+        flightStatusInitialYaw: "初始左偏航",
+        flightStatusFlyingToVertex: "飛向頂點",
+        flightStatusYawRight: "右偏航中",
+        flightStatusAdditionalYaw: "額外偏航",
+        flightStatusLanding: "著陸中",
+        flightStatusCompleted: "飛行完成",
+        flightStatusPausing: "暫停中",
+        flightStatusYawLeftAgain: "左偏航 0.5 內角",
+        flightStatusOrbiting: "環繞中"
+    }
+};
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xf0f2f5);
@@ -369,14 +437,24 @@
 
     let lightBlinkTime = 0;
 
-    const polygonNames = {
+const polygonNames = {
+    en: {
         3: "Triangle", 4: "Square", 5: "Pentagon", 6: "Hexagon", 7: "Heptagon",
         8: "Octagon", 9: "Nonagon", 10: "Decagon", 11: "Hendecagon", 
         12: "Dodecagon", 13: "Tridecagon", 14: "Tetradecagon", 15: "Pentadecagon",
         16: "Hexadecagon", 17: "Heptadecagon", 18: "Octadecagon", 19: "Enneadecagon",
         20: "Icosagon", 21: "Icosikai Henagon", 22: "Icosikai Digon",
         23: "Icosikai Trigon", 24: "Icosikai Tetragon", 25: "Icosikai Pentagon"
-    };
+    },
+    zh: {
+        3: "三角形", 4: "正方形", 5: "五邊形", 6: "六邊形", 7: "七邊形",
+        8: "八邊形", 9: "九邊形", 10: "十邊形", 11: "十一邊形", 
+        12: "十二邊形", 13: "十三邊形", 14: "十四邊形", 15: "十五邊形",
+        16: "十六邊形", 17: "十七邊形", 18: "十八邊形", 19: "十九邊形",
+        20: "二十邊形", 21: "二十一邊形", 22: "二十二邊形",
+        23: "二十三邊形", 24: "二十四邊形", 25: "二十五邊形"
+    }
+};
 
     let polygonPath;
     let polygonVertices = [];
@@ -390,12 +468,17 @@
         
         const interiorAngle = ((sides - 2) * 180 / sides).toFixed(2);
         const exteriorAngle = (360 / sides).toFixed(2);
-        
-        nameElement.textContent = `Shape: ${polygonNames[sides]}`;
-        angleElement.innerHTML = `Interior Angle: ${interiorAngle}°<br>Exterior Angle: ${exteriorAngle}°`;
 
-        updatePolygonPath(sides);
+    if (currentLang === 'en') {
+        nameElement.textContent = `Shape: ${polygonNames.en[sides]}`;
+        angleElement.innerHTML = `Interior Angle: ${interiorAngle}°<br>Exterior Angle: ${exteriorAngle}°`;
+    } else {
+        nameElement.textContent = `形狀：${polygonNames.zh[sides]}`;
+        angleElement.innerHTML = `內角：${interiorAngle}°<br>外角：${exteriorAngle}°`;
     }
+
+    updatePolygonPath(sides);
+}
 
     function updatePolygonPath(sides) {
         if (polygonPath) scene.remove(polygonPath);
@@ -420,7 +503,7 @@
                 new THREE.Vector3(x, height, z)
             ]);
             const lineMaterial = new THREE.LineDashedMaterial({
-                color: 0xFFA500,
+                color: 0x9966cc,
                 dashSize: 0.2,
                 gapSize: 0.1,
             });
@@ -433,7 +516,7 @@
 
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
         const material = new THREE.LineDashedMaterial({
-            color: 0x00FF00,
+            color: 0xFF0000,
             dashSize: 0.2,
             gapSize: 0.1,
         });
@@ -452,20 +535,16 @@
 
     let selectedFlightMode = null;
 
-    document.getElementById('polygonalFlightBtn').addEventListener('click', () => {
-        selectedFlightMode = 'polygonal';
-        document.getElementById('flightStatus').textContent = 'Polygonal Flight selected. Press Start to begin.';
-    });
+    function selectFlightMode(mode) {
+        selectedFlightMode = mode;
+        document.querySelectorAll('.button').forEach(btn => btn.classList.remove('selected'));
+        document.getElementById(`${mode}Btn`).classList.add('selected');
+        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusStart;
+    }
 
-    document.getElementById('centredShotsBtn').addEventListener('click', () => {
-        selectedFlightMode = 'centred';
-        document.getElementById('flightStatus').textContent = 'Centred Shots selected. Press Start to begin.';
-    });
-
-    document.getElementById('orbitingBtn').addEventListener('click', () => {
-        selectedFlightMode = 'orbiting';
-        document.getElementById('flightStatus').textContent = 'Orbiting selected. Press Start to begin.';
-    });
+    document.getElementById('polygonalFlightBtn').addEventListener('click', () => selectFlightMode('polygonalFlight'));
+    document.getElementById('centredShotsBtn').addEventListener('click', () => selectFlightMode('centredShots'));
+    document.getElementById('orbitingBtn').addEventListener('click', () => selectFlightMode('orbiting'));
 
     document.getElementById('startButton').addEventListener('click', () => {
         if (!isFlying && selectedFlightMode) {
@@ -473,10 +552,10 @@
             if (sides >= 3 && sides <= 25) {
                 isFlying = true;
                 switch (selectedFlightMode) {
-                    case 'polygonal':
+                    case 'polygonalFlight':
                         startPolygonalFlight(sides);
                         break;
-                    case 'centred':
+                    case 'centredShots':
                         startCentredShots(sides);
                         break;
                     case 'orbiting':
@@ -511,7 +590,7 @@
                     if (currentHeight < startHeight) {
                         currentHeight += FLIGHT_SPEED;
                         quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = 'Taking off';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
                     } else {
                         phase = 'initial-yaw-left';
                     }
@@ -520,7 +599,7 @@
                     if (Math.abs(currentRotation - initialYaw) > 0.01) {
                         currentRotation += ROTATION_SPEED;
                         quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = 'Initial yaw left';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusInitialYaw;
                     } else {
                         phase = 'fly-to-next-vertex';
                         flightProgress = 0;
@@ -534,7 +613,7 @@
                         flightProgress += FLIGHT_SPEED;
                         quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
                         quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
-                        document.getElementById('flightStatus').textContent = `Flying to vertex ${(currentVertexIndex % sides) + 1}`;
+                        document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex % sides) + 1}`;
                     } else {
                         phase = 'yaw-right';
                         flightProgress = 0;
@@ -549,7 +628,7 @@
                             currentRotation += ROTATION_SPEED;
                         }
                         quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = 'Yawing right';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawRight;
                     } else {
                         currentVertexIndex++;
                         if (currentVertexIndex <= sides) {
@@ -564,7 +643,7 @@
                     if (Math.abs(currentRotation - additionalYawTarget) > 0.01) {
                         currentRotation -= ROTATION_SPEED;
                         quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = 'Additional yaw';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusAdditionalYaw;
                     } else {
                         phase = 'landing';
                     }
@@ -573,10 +652,10 @@
                     if (currentHeight > 0) {
                         currentHeight -= FLIGHT_SPEED;
                         quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = 'Landing';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
                     } else {
                         isFlying = false;
-                        document.getElementById('flightStatus').textContent = 'Flight completed';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
                         quadcopter.position.set(4, 0, 0);
                         quadcopter.rotation.y = Math.PI / 2;
                     }
@@ -612,17 +691,17 @@
                     if (currentHeight < startHeight) {
                         currentHeight += FLIGHT_SPEED;
                         quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = 'Taking off';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
                     } else {
                         phase = 'initial-yaw-left';
-                        yawTarget = Math.PI / 2 + interiorAngle * 0.5;
+yawTarget = Math.PI / 2 + interiorAngle * 0.5;
                     }
                     break;
                 case 'initial-yaw-left':
                     if (Math.abs(currentRotation - yawTarget) > 0.01) {
                         currentRotation += ROTATION_SPEED;
                         quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = 'Initial yaw left';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusInitialYaw;
                     } else {
                         phase = 'fly-to-next-vertex';
                         flightProgress = 0;
@@ -636,7 +715,7 @@
                         flightProgress += FLIGHT_SPEED;
                         quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
                         quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
-                        document.getElementById('flightStatus').textContent = `Flying to vertex ${(currentVertexIndex % sides) + 1}`;
+                        document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex % sides) + 1}`;
                     } else {
                         phase = 'yaw-right';
                         yawTarget = Math.PI / 2 - exteriorAngle * currentVertexIndex;
@@ -646,7 +725,7 @@
                     if (Math.abs(currentRotation - yawTarget) > 0.01) {
                         currentRotation -= ROTATION_SPEED;
                         quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = 'Yawing right to face origin';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawRight;
                     } else {
                         if (currentVertexIndex >= sides) {
                             phase = 'landing';
@@ -660,13 +739,13 @@
                     }
                     break;
                 case 'pause':
-                    document.getElementById('flightStatus').textContent = 'Pausing';
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusPausing;
                     break;
                 case 'yaw-left-again':
                     if (Math.abs(currentRotation - yawTarget) > 0.01) {
                         currentRotation += ROTATION_SPEED;
                         quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = 'Yawing left 0.5 interior angle';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawLeftAgain;
                     } else {
                         phase = 'fly-to-next-vertex';
                         flightProgress = 0;
@@ -677,10 +756,10 @@
                     if (currentHeight > 0) {
                         currentHeight -= FLIGHT_SPEED;
                         quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = 'Landing';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
                     } else {
                         isFlying = false;
-                        document.getElementById('flightStatus').textContent = 'Flight completed';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
                         quadcopter.position.set(4, 0, 0);
                         quadcopter.rotation.y = Math.PI / 2;
                     }
@@ -730,7 +809,7 @@ function startOrbiting() {
                     if (currentHeight < startHeight) {
                         currentHeight += FLIGHT_SPEED;
                         quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = 'Taking off';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
                     } else {
                         phase = 'orbit';
                     }
@@ -749,7 +828,7 @@ function startOrbiting() {
                         const dz = quadcopter.position.z;
                         quadcopter.rotation.y = Math.atan2(dx, dz);
                         
-                        document.getElementById('flightStatus').textContent = 'Orbiting';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusOrbiting;
                     } else {
                         currentVertexIndex = (currentVertexIndex + 1) % totalVertices;
                         flightProgress = 0;
@@ -764,10 +843,10 @@ function startOrbiting() {
                     if (currentHeight > 0) {
                         currentHeight -= FLIGHT_SPEED;
                         quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = 'Landing';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
                     } else {
                         isFlying = false;
-                        document.getElementById('flightStatus').textContent = 'Flight completed';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
                         quadcopter.position.set(4, 0, 0);
                         quadcopter.rotation.y = Math.PI / 2;
                     }
@@ -816,6 +895,36 @@ function startOrbiting() {
         ONE: THREE.TOUCH.ROTATE,
         TWO: THREE.TOUCH.DOLLY_PAN
     };
+
+function updateLanguage() {
+    const lang = translations[currentLang];
+    document.getElementById('title').textContent = lang.title;
+    document.getElementById('instructions').innerHTML = lang.instructions;
+    document.querySelector('label[for="sides"]').textContent = lang.sides;
+    document.getElementById('polygonalFlightBtn').textContent = lang.polygon;
+    document.getElementById('centredShotsBtn').textContent = lang.centred;
+    document.getElementById('orbitingBtn').textContent = lang.orbiting;
+    document.getElementById('startButton').textContent = lang.start;
+    document.getElementById('langSwitch').textContent = lang.switchLang;
+    updatePolygonInfo();
+    if (document.getElementById('flightStatus').textContent) {
+        const currentStatus = document.getElementById('flightStatus').textContent;
+        for (let key in translations.en) {
+            if (translations.en[key] === currentStatus) {
+                document.getElementById('flightStatus').textContent = translations[currentLang][key];
+                break;
+            }
+        }
+    }
+}
+
+document.getElementById('langSwitch').addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'zh' : 'en';
+    updateLanguage();
+});
+
+// Call updateLanguage initially to set the correct language
+updateLanguage();
 
 </script>
 </body>
