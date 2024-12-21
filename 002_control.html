@@ -478,9 +478,31 @@
          .scale-yaw-right {
          transform: scale(1.5);
        }
+
+.language-switch {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    padding: 8px 16px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 1000;
+}
+
+.language-switch:hover {
+    background-color: #2980b9;
+}
+
     </style>
 </head>
 <body>
+
+<button id="languageSwitch" class="language-switch">繁體中文</button>
+
     <div class="simulator">
         <div class="header">
             <h1>Quadcopter Controls Simulator</h1>
@@ -1057,6 +1079,92 @@ scaleRollRight();
                 scene.classList.remove('dragging');
             }
         });
+
+// Language translations
+const translations = {
+    en: {
+        title: "Quadcopter Controls Simulator",
+        instructions: "Instructions:",
+        instructionsItems: [
+            "Use the on-screen buttons or keyboard keys to control the quadcopter.",
+            "Observe the status panel to monitor yaw, pitch, roll, and throttle values.",
+            "Experiment with different control combinations to perform piloting techniques.",
+            "Click and drag on the simulation area to change your view perspective.",
+            "Click the Reset button to bring the quadcopter back to its initial state."
+        ],
+        keyboardControls: "Keyboard Controls",
+        pilotingTechniques: "Piloting Techniques",
+        throttleUp: "Throttle Up",
+        throttleDown: "Throttle Down",
+        yawLeft: "Yaw Left",
+        yawRight: "Yaw Right",
+        pitchForward: "Pitch Forward",
+        pitchBackward: "Pitch Backward",
+        rollLeft: "Roll Left",
+        rollRight: "Roll Right",
+        reset: "Reset"
+    },
+    zh: {
+        title: "四旋翼飛行控制模擬器",
+        instructions: "使用說明：",
+        instructionsItems: [
+            "使用螢幕按鈕或鍵盤按鍵控制四旋翼飛行器。",
+            "觀察狀態面板以監控偏航、俯仰、橫滾和升。",
+            "嘗試不同的控制組合來執行飛行技巧。",
+            "點擊並拖動模擬區域以改變視角。",
+            "點擊重置按鈕將四旋翼飛行器恢復到初始狀態。"
+        ],
+        keyboardControls: "鍵盤控制",
+        pilotingTechniques: "飛行技巧",
+        throttleUp: "上升",
+        throttleDown: "下降",
+        yawLeft: "左偏航",
+        yawRight: "右偏航",
+        pitchForward: "前俯仰",
+        pitchBackward: "後俯仰",
+        rollLeft: "左橫滾",
+        rollRight: "右橫滾",
+        reset: "重置"
+    }
+};
+
+let currentLanguage = 'en';
+
+// Function to update all text content
+function updateLanguage() {
+    const t = translations[currentLanguage];
+    
+    // Update title
+    document.querySelector('.header h1').textContent = t.title;
+    
+    // Update instructions
+    document.querySelector('#instructions h3').textContent = t.instructions;
+    const instructionsList = document.querySelector('#instructions ol');
+    instructionsList.innerHTML = t.instructionsItems.map(item => `<li>${item}</li>`).join('');
+    
+    // Update section titles
+    document.querySelectorAll('.info-section h3')[0].textContent = t.keyboardControls;
+    document.querySelectorAll('.info-section h3')[1].textContent = t.pilotingTechniques;
+    
+    // Update buttons
+    document.getElementById('throttle-up').textContent = t.throttleUp;
+    document.getElementById('throttle-down').textContent = t.throttleDown;
+    document.getElementById('yaw-left').textContent = t.yawLeft;
+    document.getElementById('yaw-right').textContent = t.yawRight;
+    document.getElementById('pitch-forward').textContent = t.pitchForward;
+    document.getElementById('pitch-backward').textContent = t.pitchBackward;
+    document.getElementById('roll-left').textContent = t.rollLeft;
+    document.getElementById('roll-right').textContent = t.rollRight;
+    document.getElementById('reset').textContent = t.reset;
+}
+
+// Language switch button event listener
+document.getElementById('languageSwitch').addEventListener('click', () => {
+    currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+    document.getElementById('languageSwitch').textContent = currentLanguage === 'en' ? '繁體中文' : 'English';
+    updateLanguage();
+});
+
     </script>
 </body>
 </html>
