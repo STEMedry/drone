@@ -1093,7 +1093,21 @@ const translations = {
             "Click the Reset button to bring the quadcopter back to its initial state."
         ],
         keyboardControls: "Keyboard Controls",
+        keyboardItems: {
+            throttle: "W / S = Throttle Up / Down",
+            yaw: "A / D = Yaw Left / Right",
+            pitch: "Up / Down Arrow = Pitch Forward / Backward",
+            roll: "Left / Right Arrow = Roll Left / Right",
+            reset: "R = Reset"
+        },
         pilotingTechniques: "Piloting Techniques",
+        pilotingItems: {
+            orbit1: "Yaw Left + Roll Right = Anti-clockwise Orbit",
+            orbit2: "Yaw Right + Roll Left = Clockwise Orbit",
+            circle1: "Yaw Left + Pitch Forward = Anticlockwise Circles",
+            circle2: "Yaw Right + Pitch Forward = Clockwise Circles",
+            figure8: "Pitch Forward + Yaw Left/Right = Figure 8"
+        },
         throttleUp: "Throttle Up",
         throttleDown: "Throttle Down",
         yawLeft: "Yaw Left",
@@ -1109,13 +1123,27 @@ const translations = {
         instructions: "使用說明：",
         instructionsItems: [
             "使用螢幕按鈕或鍵盤按鍵控制四旋翼飛行器。",
-            "觀察狀態面板以監控偏航、俯仰、橫滾和升。",
+            "觀察狀態面板以監控偏航、俯仰、橫滾和升降數值。",
             "嘗試不同的控制組合來執行飛行技巧。",
             "點擊並拖動模擬區域以改變視角。",
             "點擊重置按鈕將四旋翼飛行器恢復到初始狀態。"
         ],
         keyboardControls: "鍵盤控制",
+        keyboardItems: {
+            throttle: "W / S = 上升 / 下降",
+            yaw: "A / D = 左偏航 / 右偏航",
+            pitch: "上 / 下方向鍵 = 前俯仰 / 後俯仰",
+            roll: "左 / 右方向鍵 = 左橫滾 / 右橫滾",
+            reset: "R = 重置"
+        },
         pilotingTechniques: "飛行技巧",
+        pilotingItems: {
+            orbit1: "左偏航 + 右橫滾 = 逆時針軌道飛行",
+            orbit2: "右偏航 + 左橫滾 = 順時針軌道飛行",
+            circle1: "左偏航 + 前俯仰 = 逆時針畫圓",
+            circle2: "右偏航 + 前俯仰 = 順時針畫圓",
+            figure8: "前俯仰 + 左/右偏航 = 8字飛行"
+        },
         throttleUp: "上升",
         throttleDown: "下降",
         yawLeft: "左偏航",
@@ -1145,6 +1173,24 @@ function updateLanguage() {
     // Update section titles
     document.querySelectorAll('.info-section h3')[0].textContent = t.keyboardControls;
     document.querySelectorAll('.info-section h3')[1].textContent = t.pilotingTechniques;
+    
+    // Update keyboard controls
+    const keyboardSection = document.querySelectorAll('.info-section')[0];
+    const keyboardParagraphs = keyboardSection.querySelectorAll('p');
+    keyboardParagraphs[0].innerHTML = `<span class="green"><strong>${t.keyboardItems.throttle}</strong></span>`;
+    keyboardParagraphs[1].innerHTML = `<span class="green"><strong>${t.keyboardItems.yaw}</strong></span>`;
+    keyboardParagraphs[2].innerHTML = `<span class="orange"><strong>${t.keyboardItems.pitch}</strong></span>`;
+    keyboardParagraphs[3].innerHTML = `<span class="orange"><strong>${t.keyboardItems.roll}</strong></span>`;
+    keyboardParagraphs[4].innerHTML = `<span class="red"><strong>${t.keyboardItems.reset}</strong></span>`;
+    
+    // Update piloting techniques
+    const pilotingSection = document.querySelectorAll('.info-section')[1];
+    const pilotingParagraphs = pilotingSection.querySelectorAll('p');
+    pilotingParagraphs[0].innerHTML = `<span class="green"><strong>${t.yawLeft}</strong></span> + <span class="orange"><strong>${t.rollRight}</strong></span> = ${t.pilotingItems.orbit1}`;
+    pilotingParagraphs[1].innerHTML = `<span class="green"><strong>${t.yawRight}</strong></span> + <span class="orange"><strong>${t.rollLeft}</strong></span> = ${t.pilotingItems.orbit2}`;
+    pilotingParagraphs[2].innerHTML = `<span class="green"><strong>${t.yawLeft}</strong></span> + <span class="orange"><strong>${t.pitchForward}</strong></span> = ${t.pilotingItems.circle1}`;
+    pilotingParagraphs[3].innerHTML = `<span class="green"><strong>${t.yawRight}</strong></span> + <span class="orange"><strong>${t.pitchForward}</strong></span> = ${t.pilotingItems.circle2}`;
+    pilotingParagraphs[4].innerHTML = `<span class="orange"><strong>${t.pitchForward}</strong></span> + <span class="green"><strong>${t.yawLeft}/${t.yawRight}</strong></span> = ${t.pilotingItems.figure8}`;
     
     // Update buttons
     document.getElementById('throttle-up').textContent = t.throttleUp;
