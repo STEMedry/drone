@@ -1,139 +1,173 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone Circumnavigation</title>
-    <style>
-        body { 
-            margin: 0; 
-            background-color: #f0f2f5;
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-        }
-        canvas { display: block; }
-        #container {
-            width: 100vw;
-            height: 100vh;
-            touch-action: none;
-        }
-        #instructions {
-            position: fixed;
-            top: 10px;
-            left: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: Arial, sans-serif;
-        }
-        #flightControls {
-            position: fixed;
-            top: 80px;
-            right: 10px;
-            background: rgba(0,0,0,0.7);
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            font-size: 20px;
-            font-family: Arial, sans-serif;
-            width: 17%
-        }
-        .button {
-            background-color: #4CAF50;
-            color: white;
-            padding: 5px;
-            margin: 5px;
-            box-sizing: border-box;
-            font-size: 16px;
-            cursor: pointer;
-        }
-        .button.selected {
-            background-color: orange;
-        }
-        #startButton {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 20px;
-            margin: 5px;
-            cursor: pointer;
-            width: 90%;
-            box-sizing: border-box;
-        }
-        #title {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #000;
-            text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
-            z-index: 1000;
-        }
-        #langSwitch {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 5px;
-            cursor: pointer;
-            z-index: 1001;
-        }
-    </style>
-    <script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
-    <script type="importmap">
-    {
-        "imports": {
-            "three": "https://unpkg.com/three@0.156.1/build/three.module.js",
-            "three/addons/": "https://unpkg.com/three@0.156.1/examples/jsm/"
-        }
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Drone Circumnavigation</title>
+<style>
+body {
+    margin: 0;
+    background-color: #f0f2f5;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+canvas { display: block; }
+#container {
+    width: 100vw;
+    height: 100vh;
+    touch-action: none;
+}
+#instructions {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: Arial, sans-serif;
+}
+#flightControls {
+    position: fixed;
+    top: 80px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 20px;
+    font-family: Arial, sans-serif;
+    width: 17%;
+}
+.button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 5px;
+    margin: 5px;
+    box-sizing: border-box;
+    font-size: 16px;
+    cursor: pointer;
+}
+.button.selected {
+    background-color: orange;
+    color: white !important;
+}
+#startButton:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+#startButton {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 5px;
+    cursor: pointer;
+    width: 90%;
+    box-sizing: border-box;
+}
+#stopButton {
+    background-color: #f44336; /* Red color for Stop */
+    color: white;
+    border: none;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 20px;
+    margin: 5px;
+    cursor: pointer;
+    width: 90%;
+    box-sizing: border-box;
+}
+#title {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    font-weight: bold;
+    color: #000;
+    text-shadow: 2px 2px 4px rgba(255,255,255,0.5);
+    z-index: 1000;
+}
+#langSwitch {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 5px;
+    cursor: pointer;
+    z-index: 1001;
+}
+#stopButton:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+.button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+.button.selected:disabled {
+    background-color: #FF7F50;
+    opacity: 1;
+    cursor: not-allowed;
+}
+</style>
+<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.156.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.156.1/examples/jsm/"
     }
-    </script>
+}
+</script>
 </head>
 <body>
-    <div id="container"></div>
-    <div id="title">Drone Circumnavigation</div>
-    <div id="instructions">
-        Left click + drag: Rotate view<br>
-        Middle mouse/scroll: Zoom<br>
-        Middle click + drag: Pan view
-    </div>
+<div id="container"></div>
+<div id="title">Drone Circumnavigation</div>
+<div id="instructions">
+Left click + drag: Rotate view<br>
+Middle mouse/scroll: Zoom<br>
+Middle click + drag: Pan view
+</div>
 
-    <div id="flightControls">
-        <label for="sides">Number of sides (3-25):</label>
-        <input type="number" id="sides" min="3" max="25" value="3" style="width: 60px; margin: 5px;"><br>
-        <div id="externalAngle" style="margin: 5px;"></div>
-        <div id="polygonName" style="margin: 5px;"></div>
-        <button id="polygonalFlightBtn" class="button">Polygon</button>
-        <button id="centredShotsBtn" class="button">Centred</button>
-        <button id="orbitingBtn" class="button">Orbiting</button>
-        <button id="startButton">START</button>
-        <div id="flightStatus" style="margin: 5px;"></div>
-    </div>
+<div id="flightControls">
+    <label for="sides">Number of sides (3-25):</label>
+    <input type="number" id="sides" min="3" max="25" value="3" style="width: 60px; margin: 5px;"><br>
+    <div id="externalAngle" style="margin: 5px;"></div>
+    <div id="polygonName" style="margin: 5px;"></div>
+    <button id="polygonalFlightBtn" class="button">Polygon</button>
+    <button id="centredShotsBtn" class="button">Centred</button>
+    <button id="orbitingBtn" class="button">Orbiting</button>
+    <button id="birthdaySongBtn" class="button">Birthday Song</button>
+    <button id="startButton" disabled>START</button>
+    <button id="stopButton" class="button" disabled>STOP</button>
+    <div id="flightStatus" style="margin: 5px;"></div>
+</div>
 
-    <button id="langSwitch">繁體中文</button>
+<button id="langSwitch">繁體中文</button>
 
 <script type="module">
-    import * as THREE from 'three';
-    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-    import { FontLoader } from 'three/addons/loaders/FontLoader.js';
-    import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-    import { RingGeometry } from 'three';
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 
 let currentLang = 'en';
 const translations = {
@@ -144,7 +178,9 @@ const translations = {
         polygon: "Polygon",
         centred: "Centred",
         orbiting: "Orbiting",
+        birthdaySong: "Birthday Song",
         start: "START",
+        stop: "STOP",
         switchLang: "繁體中文",
         flightStatusStart: "Press Start to begin.",
         flightStatusTakeoff: "Taking off",
@@ -156,7 +192,8 @@ const translations = {
         flightStatusCompleted: "Flight completed",
         flightStatusPausing: "Pausing",
         flightStatusYawLeftAgain: "Yawing left 0.5 interior angle",
-        flightStatusOrbiting: "Orbiting"
+        flightStatusOrbiting: "Orbiting",
+        flightStatusTouchingBall: "Touching Ball"
     },
     zh: {
         title: "無人機環繞飛行",
@@ -165,7 +202,9 @@ const translations = {
         polygon: "多邊形",
         centred: "端點向心",
         orbiting: "向心環繞",
+        birthdaySong: "生日歌",
         start: "開始",
+        stop: "停止",
         switchLang: "English",
         flightStatusStart: "按開始按鈕開始。",
         flightStatusTakeoff: "起飛中",
@@ -177,270 +216,363 @@ const translations = {
         flightStatusCompleted: "飛行完成",
         flightStatusPausing: "暫停中",
         flightStatusYawLeftAgain: "左偏航 0.5 內角",
-        flightStatusOrbiting: "環繞中"
+        flightStatusOrbiting: "環繞中",
+        flightStatusTouchingBall: "觸碰球體"
     }
 };
 
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f2f5);
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.shadowMap.enabled = true;
-    document.getElementById('container').appendChild(renderer.domElement);
+const birthdaySongNotes = [
+    'G4', 'G4', 'A4', 'G4', 'C5', 'B4',
+    'G4', 'G4', 'A4', 'G4', 'D5', 'C5',
+    'G4', 'G4', 'G5', 'E5', 'C5', 'B4', 'A4',
+    'F5', 'F5', 'E5', 'C5', 'D5', 'C5'
+];
 
-    const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true;
-    controls.dampingFactor = 0.05;
-    controls.screenSpacePanning = false;
-    controls.minDistance = 1;
-    controls.maxDistance = 20;
-    controls.maxPolarAngle = Math.PI / 1.5;
+let audioContext;
 
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-    directionalLight.position.set(5, 10, 5);
-    directionalLight.castShadow = true;
-    scene.add(directionalLight);
+function initAudio() {
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+}
 
-    const pointLight = new THREE.PointLight(0xffffff, 1, 100);
-    pointLight.position.set(-5, 10, -5);
-    pointLight.castShadow = true;
-    scene.add(pointLight);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    scene.add(ambientLight);
-
-    const gridHelper = new THREE.GridHelper(20, 40);
-    gridHelper.material.opacity = 0.3;
-    gridHelper.material.transparent = true;
-    gridHelper.material.linewidth = 0.5;
-    scene.add(gridHelper);
-
-    const axesHelper = new THREE.AxesHelper(10);
-    scene.add(axesHelper);
-
-    const loader = new FontLoader();
-    loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
-        const rightText = createText(font, 'RIGHT', 10.2, 0, 0);
-        const leftText = createText(font, 'LEFT', -10.2, 0, 0);
-        scene.add(rightText);
-        scene.add(leftText);
-
-        const rearText = createText(font, 'REAR', 0, 0, 10.2);
-        const frontText = createText(font, 'FRONT', 0, 0, -10.2);
-        frontText.rotation.y = Math.PI / 2;
-        rearText.rotation.y = Math.PI / 2;
-        scene.add(frontText);
-        scene.add(rearText);
-
-        const originText = createText(font, '(0,0)', 0.2, 0.2, 0.2);
-        originText.scale.set(0.7, 0.7, 0.7);
-        scene.add(originText);
-
-        for(let i = 1; i <= 10; i++) {
-            const posX = createText(font, i.toString(), i, 0.2, -0.3);
-            posX.scale.set(0.5, 0.5, 0.5);
-            scene.add(posX);
-
-            const negX = createText(font, (-i).toString(), -i, 0.2, -0.3);
-            negX.scale.set(0.5, 0.5, 0.5);
-            scene.add(negX);
-
-            const posZ = createText(font, (-i).toString(), -0.3, 0.2, i);
-            posZ.scale.set(0.5, 0.5, 0.5);
-            posZ.rotation.y = Math.PI / 2;
-            scene.add(posZ);
-
-            const negZ = createText(font, i.toString(), -0.3, 0.2, -i);
-            negZ.scale.set(0.5, 0.5, 0.5);
-            negZ.rotation.y = Math.PI / 2;
-            scene.add(negZ);
-        }
-    });
-
-    function createText(font, text, x, y, z) {
-        const geometry = new TextGeometry(text, {
-            font: font,
-            size: 0.3,
-            height: 0.05
-        });
-        const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-        const textMesh = new THREE.Mesh(geometry, material);
-        textMesh.position.set(x, y, z);
-        return textMesh;
-    }
-
-    function createHuman() {
-        const human = new THREE.Group();
-
-        const headMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0xf4d03f,
-            transparent: false,
-            opacity: 1,
-            side: THREE.DoubleSide
-        });
-
-        const armMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0xB3B6B7,
-            transparent: false,
-            opacity: 1,
-            side: THREE.DoubleSide
-        });
-
-        const legMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x2c3e50,
-            transparent: false,
-            opacity: 1,
-            side: THREE.DoubleSide
-        });
-
-        const bodyMaterial = new THREE.MeshPhongMaterial({ 
-            color: 0x3498db,
-            transparent: false,
-            opacity: 1,
-            side: THREE.DoubleSide
-        });
-
-        const headGeometry = new THREE.SphereGeometry(0.25, 32, 32);
-        const head = new THREE.Mesh(headGeometry, headMaterial);
-        head.position.y = 1.6;
-        human.add(head);
-
-        const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1, 32);
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        body.position.y = 0.9;
-        human.add(body);
-
-        const armGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 32);
-        
-        const leftArm = new THREE.Mesh(armGeometry, armMaterial);
-        leftArm.position.set(-0.4, 1.2, 0);
-        leftArm.rotation.z = Math.PI / 3;
-        human.add(leftArm);
-
-        const rightArm = new THREE.Mesh(armGeometry, armMaterial);
-        rightArm.position.set(0.4, 1.2, 0);
-        rightArm.rotation.z = -Math.PI / 3;
-        human.add(rightArm);
-
-        const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.9, 32);
-        
-        const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
-        leftLeg.position.set(-0.2, 0.45, 0);
-        human.add(leftLeg);
-
-        const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
-        rightLeg.position.set(0.2, 0.45, 0);
-        human.add(rightLeg);
-
-        return human;
-    }
-
-    function createQuadcopter() {
-        const quadcopter = new THREE.Group();
-
-        const bodyGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.4);
-        const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
-        const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-        quadcopter.add(body);
-
-        const armGeometry = new THREE.BoxGeometry(1, 0.05, 0.05);
-        const armMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
-        
-        const frontArm = new THREE.Mesh(armGeometry, armMaterial);
-        frontArm.position.set(0, 0.1, -0.15);
-        quadcopter.add(frontArm);
-        
-        const cameraBody = new THREE.Group();
-
-        const cameraCubeGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.15);
-        const cameraCubeMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
-        const cameraCube = new THREE.Mesh(cameraCubeGeometry, cameraCubeMaterial);
-        
-        const lensGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.05, 16);
-        const lensMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
-        const lens = new THREE.Mesh(lensGeometry, lensMaterial);
-        lens.rotation.x = Math.PI / 2;
-        lens.position.z = -0.08;
-        
-        cameraBody.add(cameraCube);
-        cameraBody.add(lens);
-        cameraBody.position.set(0, -0.05, -0.2);
-        quadcopter.add(cameraBody);
-
-        function createPropeller(color, position, clockwise) {
-            const propGroup = new THREE.Group();
-
-            const bladeGeometry = new THREE.BoxGeometry(0.4, 0.02, 0.05);
-            const bladeMaterial = new THREE.MeshPhongMaterial({ color: color });
-            
-            const blade1 = new THREE.Mesh(bladeGeometry, bladeMaterial);
-            const blade2 = new THREE.Mesh(bladeGeometry, bladeMaterial);
-            blade2.rotation.y = Math.PI;
-
-            propGroup.add(blade1);
-            propGroup.add(blade2);
-
-            const lightGeometry = new THREE.SphereGeometry(0.03, 16, 16);
-            const lightMaterial = new THREE.MeshPhongMaterial({ 
-                color: 0xffff00,
-                emissive: 0xffff00,
-                emissiveIntensity: 0.5
-            });
-            const light = new THREE.Mesh(lightGeometry, lightMaterial);
-            propGroup.add(light);
-
-            propGroup.userData.clockwise = clockwise;
-            propGroup.userData.light = light;
-
-            propGroup.position.set(position.x, position.y, position.z);
-            return propGroup;
-        }
-
-        const propellerA = createPropeller(0xff0000, new THREE.Vector3(-0.5, 0.15, -0.15), false);
-        const propellerB = createPropeller(0xff0000, new THREE.Vector3(0.5, 0.15, -0.15), true);
-        const propellerC = createPropeller(0x00ff00, new THREE.Vector3(-0.22, 0.1, 0.2), true);
-        const propellerD = createPropeller(0x00ff00, new THREE.Vector3(0.22, 0.1, 0.2), false);
-
-        quadcopter.add(propellerA);
-        quadcopter.add(propellerB);
-        quadcopter.add(propellerC);
-        quadcopter.add(propellerD);
-
-        quadcopter.userData.propellers = [propellerA, propellerB, propellerC, propellerD];
-
-        return quadcopter;
-    }
-
-    const human = createHuman();
-    const quadcopter = createQuadcopter();
-    quadcopter.position.set(4, 0, 0);
-    quadcopter.rotation.y = Math.PI / 2;
+function playNote(frequency, duration = 0.3) {
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
     
-    scene.add(human);
-    scene.add(quadcopter);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.type = 'sine';
+    oscillator.frequency.value = frequency;
+    
+    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + duration);
+    
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + duration);
+}
 
-    camera.position.set(5, 5, 5);
-    camera.lookAt(0, 0, 0);
+function getNoteFrequency(note) {
+    const noteToFreq = {
+        'G4': 392.00,
+        'A4': 440.00,
+        'B4': 493.88,
+        'C5': 523.25,
+        'D5': 587.33,
+        'E5': 659.25,
+        'F5': 698.46,
+        'G5': 783.99
+    };
+    return noteToFreq[note];
+}
 
-    document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-    });
-
-    window.addEventListener('resize', onWindowResize, false);
-
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+function createTextSprite(text, color, includeMusicalSymbol = false) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    context.font = '48px Arial';
+    
+    let totalWidth = context.measureText(text).width;
+    let totalHeight = 48;
+    
+    if (includeMusicalSymbol) {
+        context.font = '36px Arial';
+        const musicalSymbol = '♪';
+        const symbolWidth = context.measureText(musicalSymbol).width;
+        totalWidth = Math.max(totalWidth, symbolWidth);
+        totalHeight += 36;
     }
+    
+    canvas.width = totalWidth;
+    canvas.height = totalHeight;
+    
+    context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+    
+    if (includeMusicalSymbol) {
+        context.font = '36px Arial';
+        context.fillText('♪', (totalWidth - context.measureText('♪').width) / 2, 36);
+    }
+    
+    context.font = '48px Arial';
+    context.fillText(text, (totalWidth - context.measureText(text).width) / 2, totalHeight);
+    
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.scale.set(0.5, 0.5, 1);
+    return sprite;
+}
 
-    let lightBlinkTime = 0;
+function clearBirthdaySongElements() {
+    scene.children = scene.children.filter(child => {
+        const isBirthdayElement = child.userData.isBirthdaySongElement;
+        if (isBirthdayElement) {
+            scene.remove(child);
+        }
+        return !isBirthdayElement;
+    });
+    birthdayBalls = []; // Reset birthdayBalls array
+}
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf0f2f5);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.getElementById('container').appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.05;
+controls.screenSpacePanning = false;
+controls.minDistance = 1;
+controls.maxDistance = 20;
+controls.maxPolarAngle = Math.PI / 1.5;
+
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 1, 100);
+pointLight.position.set(-5, 10, -5);
+pointLight.castShadow = true;
+scene.add(pointLight);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const gridHelper = new THREE.GridHelper(20, 40);
+gridHelper.material.opacity = 0.3;
+gridHelper.material.transparent = true;
+gridHelper.material.linewidth = 0.5;
+scene.add(gridHelper);
+
+const axesHelper = new THREE.AxesHelper(10);
+scene.add(axesHelper);
+
+const loader = new FontLoader();
+loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+    const rightText = createText(font, 'RIGHT', 10.2, 0, 0);
+    const leftText = createText(font, 'LEFT', -10.2, 0, 0);
+    scene.add(rightText);
+    scene.add(leftText);
+    
+    const rearText = createText(font, 'REAR', 0, 0, 10.2);
+    const frontText = createText(font, 'FRONT', 0, 0, -10.2);
+    frontText.rotation.y = Math.PI / 2;
+    rearText.rotation.y = Math.PI / 2;
+    scene.add(frontText);
+    scene.add(rearText);
+    
+    const originText = createText(font, '(0,0)', 0.2, 0.2, 0.2);
+    originText.scale.set(0.7, 0.7, 0.7);
+    scene.add(originText);
+    
+    for(let i = 1; i <= 10; i++) {
+        const posX = createText(font, i.toString(), i, 0.2, -0.3);
+        posX.scale.set(0.5, 0.5, 0.5);
+        scene.add(posX);
+        
+        const negX = createText(font, (-i).toString(), -i, 0.2, -0.3);
+        negX.scale.set(0.5, 0.5, 0.5);
+        scene.add(negX);
+        
+        const posZ = createText(font, (-i).toString(), -0.3, 0.2, i);
+        posZ.scale.set(0.5, 0.5, 0.5);
+        posZ.rotation.y = Math.PI / 2;
+        scene.add(posZ);
+        
+        const negZ = createText(font, i.toString(), -0.3, 0.2, -i);
+        negZ.scale.set(0.5, 0.5, 0.5);
+        negZ.rotation.y = Math.PI / 2;
+        scene.add(negZ);
+    }
+});
+
+function createText(font, text, x, y, z) {
+    const geometry = new TextGeometry(text, {
+        font: font,
+        size: 0.3,
+        height: 0.05
+    });
+    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const textMesh = new THREE.Mesh(geometry, material);
+    textMesh.position.set(x, y, z);
+    return textMesh;
+}
+
+function createHuman() {
+    const human = new THREE.Group();
+    
+    const headMaterial = new THREE.MeshPhongMaterial({
+        color: 0xf4d03f,
+        transparent: false,
+        opacity: 1,
+        side: THREE.DoubleSide
+    });
+    
+    const armMaterial = new THREE.MeshPhongMaterial({
+        color: 0xB3B6B7,
+        transparent: false,
+        opacity: 1,
+        side: THREE.DoubleSide
+    });
+    
+    const legMaterial = new THREE.MeshPhongMaterial({
+        color: 0x2c3e50,
+        transparent: false,
+        opacity: 1,
+        side: THREE.DoubleSide
+    });
+    
+    const bodyMaterial = new THREE.MeshPhongMaterial({
+        color: 0x3498db,
+        transparent: false,
+        opacity: 1,
+        side: THREE.DoubleSide
+    });
+    
+    const headGeometry = new THREE.SphereGeometry(0.25, 32, 32);
+    const head = new THREE.Mesh(headGeometry, headMaterial);
+    head.position.y = 1.6;
+    human.add(head);
+    
+    const bodyGeometry = new THREE.CylinderGeometry(0.3, 0.3, 1, 32);
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.position.y = 0.9;
+    human.add(body);
+    
+    const armGeometry = new THREE.CylinderGeometry(0.08, 0.08, 0.8, 32);
+    
+    const leftArm = new THREE.Mesh(armGeometry, armMaterial);
+    leftArm.position.set(-0.4, 1.2, 0);
+    leftArm.rotation.z = Math.PI / 3;
+    human.add(leftArm);
+    
+    const rightArm = new THREE.Mesh(armGeometry, armMaterial);
+    rightArm.position.set(0.4, 1.2, 0);
+    rightArm.rotation.z = -Math.PI / 3;
+    human.add(rightArm);
+    
+    const legGeometry = new THREE.CylinderGeometry(0.1, 0.1, 0.9, 32);
+    
+    const leftLeg = new THREE.Mesh(legGeometry, legMaterial);
+    leftLeg.position.set(-0.2, 0.45, 0);
+    human.add(leftLeg);
+    
+    const rightLeg = new THREE.Mesh(legGeometry, legMaterial);
+    rightLeg.position.set(0.2, 0.45, 0);
+    human.add(rightLeg);
+    
+    return human;
+}
+
+function createQuadcopter() {
+    const quadcopter = new THREE.Group();
+    
+    const bodyGeometry = new THREE.BoxGeometry(0.4, 0.2, 0.4);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    quadcopter.add(body);
+    
+    const armGeometry = new THREE.BoxGeometry(1, 0.05, 0.05);
+    const armMaterial = new THREE.MeshPhongMaterial({ color: 0x808080 });
+    
+    const frontArm = new THREE.Mesh(armGeometry, armMaterial);
+    frontArm.position.set(0, 0.1, -0.15);
+    quadcopter.add(frontArm);
+    
+    const cameraBody = new THREE.Group();
+    
+    const cameraCubeGeometry = new THREE.BoxGeometry(0.15, 0.15, 0.15);
+    const cameraCubeMaterial = new THREE.MeshPhongMaterial({ color: 0x333333 });
+    const cameraCube = new THREE.Mesh(cameraCubeGeometry, cameraCubeMaterial);
+    
+    const lensGeometry = new THREE.CylinderGeometry(0.04, 0.04, 0.05, 16);
+    const lensMaterial = new THREE.MeshPhongMaterial({ color: 0xFFFF00 });
+    const lens = new THREE.Mesh(lensGeometry, lensMaterial);
+    lens.rotation.x = Math.PI / 2;
+    lens.position.z = -0.08;
+    
+    cameraBody.add(cameraCube);
+    cameraBody.add(lens);
+    cameraBody.position.set(0, -0.05, -0.2);
+    quadcopter.add(cameraBody);
+    
+    function createPropeller(color, position, clockwise) {
+        const propGroup = new THREE.Group();
+        
+        const bladeGeometry = new THREE.BoxGeometry(0.4, 0.02, 0.05);
+        const bladeMaterial = new THREE.MeshPhongMaterial({ color: color });
+        
+        const blade1 = new THREE.Mesh(bladeGeometry, bladeMaterial);
+        const blade2 = new THREE.Mesh(bladeGeometry, bladeMaterial);
+        blade2.rotation.y = Math.PI;
+        
+        propGroup.add(blade1);
+        propGroup.add(blade2);
+        
+        const lightGeometry = new THREE.SphereGeometry(0.03, 16, 16);
+        const lightMaterial = new THREE.MeshPhongMaterial({
+            color: 0xffff00,
+            emissive: 0xffff00,
+            emissiveIntensity: 0.5
+        });
+        const light = new THREE.Mesh(lightGeometry, lightMaterial);
+        propGroup.add(light);
+        
+        propGroup.userData.clockwise = clockwise;
+        propGroup.userData.light = light;
+        
+        propGroup.position.set(position.x, position.y, position.z);
+        return propGroup;
+    }
+    
+    const propellerA = createPropeller(0xff0000, new THREE.Vector3(-0.5, 0.15, -0.15), false);
+    const propellerB = createPropeller(0xff0000, new THREE.Vector3(0.5, 0.15, -0.15), true);
+    const propellerC = createPropeller(0x00ff00, new THREE.Vector3(-0.22, 0.1, 0.2), true);
+    const propellerD = createPropeller(0x00ff00, new THREE.Vector3(0.22, 0.1, 0.2), false);
+    
+    quadcopter.add(propellerA);
+    quadcopter.add(propellerB);
+    quadcopter.add(propellerC);
+    quadcopter.add(propellerD);
+    
+    quadcopter.userData.propellers = [propellerA, propellerB, propellerC, propellerD];
+    quadcopter.userData.previousTouchedBallIndex = -1; // To track the first ball touch
+    
+    return quadcopter;
+}
+
+const human = createHuman();
+const quadcopter = createQuadcopter();
+quadcopter.position.set(4, 0, 0);
+quadcopter.rotation.y = Math.PI / 2;
+
+scene.add(human);
+scene.add(quadcopter);
+
+camera.position.set(5, 5, 5);
+camera.lookAt(0, 0, 0);
+
+document.addEventListener('contextmenu', (e) => {
+    e.preventDefault();
+});
+
+window.addEventListener('resize', onWindowResize, false);
+
+function onWindowResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+let lightBlinkTime = 0;
 
 const polygonNames = {
     en: {
         3: "Triangle", 4: "Square", 5: "Pentagon", 6: "Hexagon", 7: "Heptagon",
-        8: "Octagon", 9: "Nonagon", 10: "Decagon", 11: "Hendecagon", 
+        8: "Octagon", 9: "Nonagon", 10: "Decagon", 11: "Hendecagon",
         12: "Dodecagon", 13: "Tridecagon", 14: "Tetradecagon", 15: "Pentadecagon",
         16: "Hexadecagon", 17: "Heptadecagon", 18: "Octadecagon", 19: "Enneadecagon",
         20: "Icosagon", 21: "Icosikai Henagon", 22: "Icosikai Digon",
@@ -448,7 +580,7 @@ const polygonNames = {
     },
     zh: {
         3: "三角形", 4: "正方形", 5: "五邊形", 6: "六邊形", 7: "七邊形",
-        8: "八邊形", 9: "九邊形", 10: "十邊形", 11: "十一邊形", 
+        8: "八邊形", 9: "九邊形", 10: "十邊形", 11: "十一邊形",
         12: "十二邊形", 13: "十三邊形", 14: "十四邊形", 15: "十五邊形",
         16: "十六邊形", 17: "十七邊形", 18: "十八邊形", 19: "十九邊形",
         20: "二十邊形", 21: "二十一邊形", 22: "二十二邊形",
@@ -456,19 +588,20 @@ const polygonNames = {
     }
 };
 
-    let polygonPath;
-    let polygonVertices = [];
-    let centredLines = [];
-    let orbitingLine;
+let polygonPath;
+let polygonVertices = [];
+let centredLines = [];
+let orbitingLine;
+let birthdayBalls = []; // Array to store birthday balls
 
-    function updatePolygonInfo() {
-        const sides = parseInt(document.getElementById('sides').value);
-        const nameElement = document.getElementById('polygonName');
-        const angleElement = document.getElementById('externalAngle');
-        
-        const interiorAngle = ((sides - 2) * 180 / sides).toFixed(2);
-        const exteriorAngle = (360 / sides).toFixed(2);
-
+function updatePolygonInfo() {
+    const sides = parseInt(document.getElementById('sides').value);
+    const nameElement = document.getElementById('polygonName');
+    const angleElement = document.getElementById('externalAngle');
+    
+    const interiorAngle = ((sides - 2) * 180 / sides).toFixed(2);
+    const exteriorAngle = (360 / sides).toFixed(2);
+    
     if (currentLang === 'en') {
         nameElement.textContent = `Shape: ${polygonNames.en[sides]}`;
         angleElement.innerHTML = `Interior Angle: ${interiorAngle}°<br>Exterior Angle: ${exteriorAngle}°`;
@@ -476,425 +609,611 @@ const polygonNames = {
         nameElement.textContent = `形狀：${polygonNames.zh[sides]}`;
         angleElement.innerHTML = `內角：${interiorAngle}°<br>外角：${exteriorAngle}°`;
     }
-
+    
     updatePolygonPath(sides);
 }
 
-    function updatePolygonPath(sides) {
-        if (polygonPath) scene.remove(polygonPath);
-        centredLines.forEach(line => scene.remove(line));
-        if (orbitingLine) scene.remove(orbitingLine);
+function updatePolygonPath(sides) {
+    if (polygonPath) scene.remove(polygonPath);
+    centredLines.forEach(line => scene.remove(line));
+    if (orbitingLine) scene.remove(orbitingLine);
+    birthdayBalls.forEach(ball => scene.remove(ball));
+    birthdayBalls = []; // Clear birthdayBalls array
+    
+    centredLines = [];
+    
+    const radius = 4;
+    const height = 0.9;
+    polygonVertices = [];
+    const points = [];
+    for (let i = 0; i < sides; i++) {
+        const angle = (i / sides) * Math.PI * 2;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        points.push(new THREE.Vector3(x, height, z));
+        polygonVertices.push(new THREE.Vector3(x, height, z));
         
-        centredLines = [];
-
-        const radius = 4;
-        const height = 0.9;
-        polygonVertices = [];
-        const points = [];
-        for (let i = 0; i < sides; i++) {
-            const angle = (i / sides) * Math.PI * 2;
-            const x = Math.cos(angle) * radius;
-            const z = Math.sin(angle) * radius;
-            points.push(new THREE.Vector3(x, height, z));
-            polygonVertices.push(new THREE.Vector3(x, height, z));
-
-            const lineGeometry = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(0, height, 0),
-                new THREE.Vector3(x, height, z)
-            ]);
-            const lineMaterial = new THREE.LineDashedMaterial({
-                color: 0x9966cc,
-                dashSize: 0.2,
-                gapSize: 0.1,
-            });
-            const centredLine = new THREE.Line(lineGeometry, lineMaterial);
-            centredLine.computeLineDistances();
-            centredLines.push(centredLine);
-            scene.add(centredLine);
-        }
-        points.push(points[0]);
-
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineDashedMaterial({
-            color: 0xFF0000,
+        const lineGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(0, height, 0),
+            new THREE.Vector3(x, height, z)
+        ]);
+        const lineMaterial = new THREE.LineDashedMaterial({
+            color: 0x9966cc,
             dashSize: 0.2,
             gapSize: 0.1,
         });
-
-        polygonPath = new THREE.Line(geometry, material);
-        polygonPath.computeLineDistances();
-        scene.add(polygonPath);
+        const centredLine = new THREE.Line(lineGeometry, lineMaterial);
+        centredLine.computeLineDistances();
+        centredLines.push(centredLine);
+        scene.add(centredLine);
     }
-
-    document.getElementById('sides').addEventListener('input', updatePolygonInfo);
-    updatePolygonInfo();
-
-    let isFlying = false;
-    const FLIGHT_SPEED = 0.01;
-    const ROTATION_SPEED = 0.015; // Increased by 3x
-
-    let selectedFlightMode = null;
-
-    function selectFlightMode(mode) {
-        selectedFlightMode = mode;
-        document.querySelectorAll('.button').forEach(btn => btn.classList.remove('selected'));
-        document.getElementById(`${mode}Btn`).classList.add('selected');
-        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusStart;
-    }
-
-    document.getElementById('polygonalFlightBtn').addEventListener('click', () => selectFlightMode('polygonalFlight'));
-    document.getElementById('centredShotsBtn').addEventListener('click', () => selectFlightMode('centredShots'));
-    document.getElementById('orbitingBtn').addEventListener('click', () => selectFlightMode('orbiting'));
-
-    document.getElementById('startButton').addEventListener('click', () => {
-        if (!isFlying && selectedFlightMode) {
-            const sides = parseInt(document.getElementById('sides').value);
-            if (sides >= 3 && sides <= 25) {
-                isFlying = true;
-                switch (selectedFlightMode) {
-                    case 'polygonalFlight':
-                        startPolygonalFlight(sides);
-                        break;
-                    case 'centredShots':
-                        startCentredShots(sides);
-                        break;
-                    case 'orbiting':
-                        startOrbiting();
-                        break;
-                }
-            }
-        }
+    points.push(points[0]);
+    
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineDashedMaterial({
+        color: 0xFF0000,
+        dashSize: 0.2,
+        gapSize: 0.1,
     });
+    
+    polygonPath = new THREE.Line(geometry, material);
+    polygonPath.computeLineDistances();
+    scene.add(polygonPath);
+}
 
-    function startPolygonalFlight(sides) {
-        const startHeight = 0.9;
-        const interiorAngle = ((sides - 2) * Math.PI) / sides;
-        const exteriorAngle = (2 * Math.PI) / sides;
-        let currentHeight = 0;
-        let currentRotation = Math.PI / 2;
-        let phase = 'takeoff';
-        let flightProgress = 0;
-        let currentVertexIndex = 0;
-        let initialYaw = Math.PI / 2 + interiorAngle * 0.5;
-        let yawTarget = initialYaw;
+document.getElementById('sides').addEventListener('input', updatePolygonInfo);
+updatePolygonInfo();
 
-        scene.add(polygonPath);
-        centredLines.forEach(line => scene.remove(line));
-        if (orbitingLine) scene.remove(orbitingLine);
+let isFlying = false;
+const FLIGHT_SPEED_BASE = 0.01; // Base flight speed
+const ROTATION_SPEED = 0.015; // Adjusted speed
 
-        function animate() {
-            if (!isFlying) return;
+let selectedFlightMode = null;
 
-            switch(phase) {
-                case 'takeoff':
-                    if (currentHeight < startHeight) {
-                        currentHeight += FLIGHT_SPEED;
-                        quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
-                    } else {
-                        phase = 'initial-yaw-left';
-                    }
+// Cache buttons for easy access
+const modeButtons = [
+    document.getElementById('polygonalFlightBtn'),
+    document.getElementById('centredShotsBtn'),
+    document.getElementById('orbitingBtn'),
+    document.getElementById('birthdaySongBtn')
+];
+const stopButton = document.getElementById('stopButton');
+
+function selectFlightMode(mode) {
+    selectedFlightMode = mode;
+    document.querySelectorAll('.button').forEach(btn => {
+        btn.classList.remove('selected');
+        btn.removeAttribute('data-selected');
+    });
+    const selectedBtn = document.getElementById(`${mode}Btn`);
+    selectedBtn.classList.add('selected');
+    selectedBtn.setAttribute('data-selected', 'true');
+    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusStart;
+    
+    // Enable the START button
+    document.getElementById('startButton').disabled = false;
+}
+
+function resetModeButtons() {
+    modeButtons.forEach(btn => {
+        btn.classList.remove('selected');
+        btn.removeAttribute('data-selected');
+    });
+    // Disable the START button
+    document.getElementById('startButton').disabled = true;
+}
+
+document.getElementById('polygonalFlightBtn').addEventListener('click', () => {
+    if (isFlying) return;
+    clearBirthdaySongElements();
+    selectFlightMode('polygonalFlight');
+});
+
+document.getElementById('centredShotsBtn').addEventListener('click', () => {
+    if (isFlying) return;
+    clearBirthdaySongElements();
+    selectFlightMode('centredShots');
+});
+
+document.getElementById('orbitingBtn').addEventListener('click', () => {
+    if (isFlying) return;
+    clearBirthdaySongElements();
+    selectFlightMode('orbiting');
+});
+
+document.getElementById('birthdaySongBtn').addEventListener('click', () => {
+    if (isFlying) return;
+    clearBirthdaySongElements();
+    selectFlightMode('birthdaySong');
+    document.getElementById('sides').value = 25;
+    updatePolygonInfo();
+    
+    // Add pink balls at vertices
+    polygonVertices.forEach((vertex, index) => {
+        const ballGeometry = new THREE.SphereGeometry(0.15, 32, 32); // Smaller balls
+        const ballMaterial = new THREE.MeshPhongMaterial({ color: 0xFF69B4 });
+        const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+        ball.position.copy(vertex);
+        ball.userData.isBirthdaySongElement = true;
+        ball.userData.vertexIndex = index;
+        ball.userData.notePlayed = false; // To track if note has been played
+        
+        // Add note text
+const noteText = birthdaySongNotes[index % birthdaySongNotes.length];
+const textSprite = createTextSprite(noteText, 0xFF0000, true);
+textSprite.position.set(vertex.x, vertex.y + 0.6, vertex.z);
+textSprite.userData.isBirthdaySongElement = true;
+
+scene.add(ball);
+scene.add(textSprite);
+birthdayBalls.push(ball);
+    });
+});
+
+document.getElementById('startButton').addEventListener('click', () => {
+    if (!isFlying && selectedFlightMode) {
+        const sides = parseInt(document.getElementById('sides').value);
+        if (sides >= 3 && sides <= 25) {
+            isFlying = true;
+            disableControls();
+            switch (selectedFlightMode) {
+                case 'polygonalFlight':
+                    startPolygonalFlight(sides);
                     break;
-                case 'initial-yaw-left':
-                    if (Math.abs(currentRotation - initialYaw) > 0.01) {
-                        currentRotation += ROTATION_SPEED;
-                        quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusInitialYaw;
-                    } else {
-                        phase = 'fly-to-next-vertex';
-                        flightProgress = 0;
-                        currentVertexIndex = 1;
-                    }
+                case 'centredShots':
+                    startCentredShots(sides);
                     break;
-                case 'fly-to-next-vertex':
-                    const start = currentVertexIndex === 1 ? new THREE.Vector3(4, startHeight, 0) : polygonVertices[(currentVertexIndex - 1) % sides];
-                    const end = polygonVertices[currentVertexIndex % sides];
-                    if (flightProgress < 1) {
-                        flightProgress += FLIGHT_SPEED;
-                        quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
-                        quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
-                        document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex % sides) + 1}`;
-                    } else {
-                        phase = 'yaw-right';
-                        flightProgress = 0;
-                    }
+                case 'orbiting':
+                    startOrbiting(sides);
                     break;
-                case 'yaw-right':
-                    yawTarget = initialYaw - exteriorAngle * currentVertexIndex;
-                    if (Math.abs(currentRotation - yawTarget) > 0.01) {
-                        if (currentRotation > yawTarget) {
-                            currentRotation -= ROTATION_SPEED;
-                        } else {
-                            currentRotation += ROTATION_SPEED;
-                        }
-                        quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawRight;
-                    } else {
-                        currentVertexIndex++;
-                        if (currentVertexIndex <= sides) {
-                            phase = 'fly-to-next-vertex';
-                        } else {
-                            phase = 'additional-yaw';
-                        }
-                    }
+                case 'birthdaySong':
+                    startBirthdaySong();
                     break;
-                case 'additional-yaw':
-                    const additionalYawTarget = yawTarget - interiorAngle * 0.5;
-                    if (Math.abs(currentRotation - additionalYawTarget) > 0.01) {
+            }
+            stopButton.disabled = false; // Enable Stop button
+        }
+    }
+});
+
+// -------------------------- Revised Function for Birthday Song --------------------------
+function startBirthdaySong() {
+    // Reset notePlayed flags
+    birthdayBalls.forEach(ball => {
+        ball.userData.notePlayed = false;
+        ball.material.color.setHex(0xFF69B4); // Reset color
+    });
+    
+    const startHeight = 0.9;
+    let currentHeight = 0;
+    let currentVertexIndex = 0;
+    let flightProgress = 0;
+    const totalVertices = polygonVertices.length;
+    let phase = 'takeoff';
+    
+    // Increased flight speed for Birthday Song Mode
+    const flightSpeed = FLIGHT_SPEED_BASE * 3; // Speed up
+    
+    scene.add(polygonPath);
+    centredLines.forEach(line => scene.remove(line));
+    
+    // Initialize quadcopter position at starting vertex
+    quadcopter.position.copy(polygonVertices[0]);
+    quadcopter.position.y = 0; // Ensure it's on the ground initially
+    quadcopter.rotation.y = polygonVertices.length > 0 ? Math.atan2(polygonVertices[0].x, polygonVertices[0].z) : 0;
+    
+    function animate() {
+        if (!isFlying) return;
+        
+        switch(phase) {
+            case 'takeoff':
+                if (currentHeight < startHeight) {
+                    currentHeight += flightSpeed;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
+                } else {
+                    phase = 'touch-ball';
+                    currentVertexIndex = 0; // Start with the first ball
+                }
+                break;
+            case 'touch-ball':
+                const touchedBall = birthdayBalls[currentVertexIndex % totalVertices];
+                if (touchedBall && !touchedBall.userData.notePlayed) {
+                    // Change ball color to yellow
+                    touchedBall.material.color.setHex(0xFFFF00);
+                    // Play note
+                    const note = birthdaySongNotes[touchedBall.userData.vertexIndex % birthdaySongNotes.length];
+                    if (!audioContext) initAudio();
+                    playNote(getNoteFrequency(note));
+                    touchedBall.userData.notePlayed = true;
+                    
+                    // Update flight status
+                    document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusTouchingBall} (${note})`;
+                }
+                phase = 'fly-to-next-vertex';
+                flightProgress = 0;
+                currentVertexIndex = (currentVertexIndex + 1) % totalVertices;
+                break;
+            case 'fly-to-next-vertex':
+                const start = birthdayBalls[(currentVertexIndex - 1 + totalVertices) % totalVertices].position;
+                const end = birthdayBalls[currentVertexIndex].position;
+                if (flightProgress < 1) {
+                    flightProgress += flightSpeed;
+                    quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
+                    quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
+                    quadcopter.position.y = startHeight; // Maintain height
+                    document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex + 1)}`;
+                } else {
+                    quadcopter.rotation.y = Math.atan2(end.x, end.z);
+                    phase = (currentVertexIndex === 0) ? 'touch-ball-again' : 'touch-ball';
+                }
+                break;
+            case 'touch-ball-again':
+                const revisitBall = birthdayBalls[0];
+                if (revisitBall && !revisitBall.userData.notePlayed) {
+                    // Change ball color to yellow
+                    revisitBall.material.color.setHex(0xFFFF00);
+                    // Play note
+                    const revisitNote = birthdaySongNotes[revisitBall.userData.vertexIndex % birthdaySongNotes.length];
+                    playNote(getNoteFrequency(revisitNote));
+                    revisitBall.userData.notePlayed = true;
+                    
+                    // Update flight status
+                    document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusTouchingBall} (${revisitNote})`;
+                }
+                phase = 'landing';
+                break;
+            case 'landing':
+                if (currentHeight > 0) {
+                    currentHeight -= flightSpeed;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
+    } else {
+        isFlying = false;
+        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
+        quadcopter.position.set(4, 0, 0);
+        quadcopter.rotation.y = Math.PI / 2;
+        enableControls();
+        stopButton.disabled = true; // Disable Stop button
+        resetModeButtons(); // Add this line
+    }
+    break;
+        }
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+}
+// --------------------------------------------------------------------------------------------
+
+function startPolygonalFlight(sides) {
+    const startHeight = 0.9;
+    const interiorAngle = ((sides - 2) * Math.PI) / sides;
+    const exteriorAngle = (2 * Math.PI) / sides;
+    let currentHeight = 0;
+    let currentRotation = Math.PI / 2;
+    let phase = 'takeoff';
+    let flightProgress = 0;
+    let currentVertexIndex = 0;
+    let initialYaw = Math.PI / 2 + interiorAngle * 0.5;
+    let yawTarget = initialYaw;
+    
+    scene.add(polygonPath);
+    centredLines.forEach(line => scene.remove(line));
+    if (orbitingLine) scene.remove(orbitingLine);
+    
+    function animate() {
+        if (!isFlying) return;
+        
+        switch(phase) {
+            case 'takeoff':
+                if (currentHeight < startHeight) {
+                    currentHeight += FLIGHT_SPEED_BASE;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
+                } else {
+                    phase = 'initial-yaw-left';
+                }
+                break;
+            case 'initial-yaw-left':
+                if (Math.abs(currentRotation - initialYaw) > 0.01) {
+                    currentRotation += ROTATION_SPEED;
+                    quadcopter.rotation.y = currentRotation;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusInitialYaw;
+                } else {
+                    phase = 'fly-to-next-vertex';
+                    flightProgress = 0;
+                    currentVertexIndex = 1;
+                }
+                break;
+            case 'fly-to-next-vertex':
+                const start = currentVertexIndex === 1 ? new THREE.Vector3(4, startHeight, 0) : polygonVertices[(currentVertexIndex - 1) % sides];
+                const end = polygonVertices[currentVertexIndex % sides];
+                if (flightProgress < 1) {
+                    flightProgress += FLIGHT_SPEED_BASE;
+                    quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
+                    quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
+                    document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex % sides) + 1}`;
+                } else {
+                    phase = 'yaw-right';
+                    flightProgress = 0;
+                }
+                break;
+            case 'yaw-right':
+                yawTarget = initialYaw - exteriorAngle * currentVertexIndex;
+                if (Math.abs(currentRotation - yawTarget) > 0.01) {
+                    if (currentRotation > yawTarget) {
                         currentRotation -= ROTATION_SPEED;
-                        quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusAdditionalYaw;
                     } else {
+                        currentRotation += ROTATION_SPEED;
+                    }
+                    quadcopter.rotation.y = currentRotation;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawRight;
+                } else {
+                    currentVertexIndex++;
+                    if (currentVertexIndex <= sides) {
+                        phase = 'fly-to-next-vertex';
+                    } else {
+                        phase = 'additional-yaw';
+                    }
+                }
+                break;
+            case 'additional-yaw':
+                const additionalYawTarget = yawTarget - interiorAngle * 0.5;
+                if (Math.abs(currentRotation - additionalYawTarget) > 0.01) {
+                    currentRotation -= ROTATION_SPEED;
+                    quadcopter.rotation.y = currentRotation;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusAdditionalYaw;
+                } else {
+                    phase = 'landing';
+                }
+                break;
+            case 'landing':
+                if (currentHeight > 0) {
+                    currentHeight -= FLIGHT_SPEED_BASE;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
+                } else {
+                    isFlying = false;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
+                    quadcopter.position.set(4, 0, 0);
+                    quadcopter.rotation.y = Math.PI / 2;
+                    enableControls();
+                    stopButton.disabled = true; // Disable Stop button
+                }
+                break;
+        }
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+}
+
+function startCentredShots(sides) {
+    const startHeight = 0.9;
+    const interiorAngle = ((sides - 2) * Math.PI) / sides;
+    const exteriorAngle = (2 * Math.PI) / sides;
+    let currentHeight = 0;
+    let currentRotation = Math.PI / 2;
+    let phase = 'takeoff';
+    let flightProgress = 0;
+    let currentVertexIndex = 0;
+    let yawTarget = Math.PI / 2;
+    
+    scene.add(polygonPath);
+    centredLines.forEach(line => scene.add(line));
+    if (orbitingLine) scene.remove(orbitingLine);
+    
+    function animate() {
+        if (!isFlying) return;
+        
+        switch(phase) {
+            case 'takeoff':
+                if (currentHeight < startHeight) {
+                    currentHeight += FLIGHT_SPEED_BASE;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
+                } else {
+                    phase = 'initial-yaw-left';
+                    yawTarget = Math.PI / 2 + interiorAngle * 0.5;
+                }
+                break;
+            case 'initial-yaw-left':
+                if (Math.abs(currentRotation - yawTarget) > 0.01) {
+                    currentRotation += ROTATION_SPEED;
+                    quadcopter.rotation.y = currentRotation;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusInitialYaw;
+                } else {
+                    phase = 'fly-to-next-vertex';
+                    flightProgress = 0;
+                    currentVertexIndex = 1;
+                }
+                break;
+            case 'fly-to-next-vertex':
+                const start = currentVertexIndex === 1 ? new THREE.Vector3(4, startHeight, 0) : polygonVertices[(currentVertexIndex - 1) % sides];
+                const end = polygonVertices[currentVertexIndex % sides];
+                if (flightProgress < 1) {
+                    flightProgress += FLIGHT_SPEED_BASE;
+                    quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
+                    quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
+                    document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex % sides) + 1}`;
+                } else {
+                    phase = 'yaw-right';
+                    yawTarget = Math.PI / 2 - exteriorAngle * currentVertexIndex;
+                }
+                break;
+            case 'yaw-right':
+                if (Math.abs(currentRotation - yawTarget) > 0.01) {
+                    currentRotation -= ROTATION_SPEED;
+                    quadcopter.rotation.y = currentRotation;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawRight;
+                } else {
+                    if (currentVertexIndex >= sides) {
+                        phase = 'landing';
+                    } else {
+                        phase = 'pause';
+                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusPausing;
+                        setTimeout(() => {
+                            if (!isFlying) return; // If stopped during pause
+                            phase = 'yaw-left-again';
+                            yawTarget = currentRotation + interiorAngle * 0.5;
+                        }, 500);
+                    }
+                }
+                break;
+            case 'yaw-left-again':
+                if (Math.abs(currentRotation - yawTarget) > 0.01) {
+                    currentRotation += ROTATION_SPEED;
+                    quadcopter.rotation.y = currentRotation;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawLeftAgain;
+                } else {
+                    phase = 'fly-to-next-vertex';
+                    flightProgress = 0;
+                    currentVertexIndex++;
+                }
+                break;
+            case 'landing':
+                if (currentHeight > 0) {
+                    currentHeight -= FLIGHT_SPEED_BASE;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
+                } else {
+                    isFlying = false;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
+                    quadcopter.position.set(4, 0, 0);
+                    quadcopter.rotation.y = Math.PI / 2;
+                    enableControls();
+                    stopButton.disabled = true; // Disable Stop button
+                }
+                break;
+        }
+        
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+}
+
+function startOrbiting(sides) {
+    const startHeight = 0.9;
+    let currentHeight = 0;
+    let currentVertexIndex = 0;
+    let flightProgress = 0;
+    const totalVertices = polygonVertices.length;
+    let phase = 'takeoff';
+    
+    // Slowed flight speed for Orbiting Mode
+    const flightSpeed = FLIGHT_SPEED_BASE * 0.3; // Slow down
+    
+    scene.add(polygonPath);
+    centredLines.forEach(line => scene.remove(line));
+    
+    function animate() {
+        if (!isFlying) return;
+        
+        switch(phase) {
+            case 'takeoff':
+                if (currentHeight < startHeight) {
+                    currentHeight += flightSpeed;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
+                } else {
+                    phase = 'orbit';
+                }
+                break;
+            case 'orbit':
+                const start = polygonVertices[currentVertexIndex];
+                const end = polygonVertices[(currentVertexIndex + 1) % totalVertices];
+                if (flightProgress < 1) {
+                    flightProgress += flightSpeed * 2; // Adjust speed multiplier as needed
+                    quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
+                    quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
+                    
+                    const dx = quadcopter.position.x;
+                    const dz = quadcopter.position.z;
+                    quadcopter.rotation.y = Math.atan2(dx, dz);
+                    
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusOrbiting;
+                    
+                    // Collision Detection with Birthday Balls
+                    birthdayBalls.forEach(ball => {
+                        const distance = quadcopter.position.distanceTo(ball.position);
+                        if (distance < 0.3 && !ball.userData.notePlayed) { // Threshold distance
+                            // Change color to yellow
+                            ball.material.color.setHex(0xFFFF00);
+                            // Play the corresponding note
+                            const note = birthdaySongNotes[ball.userData.vertexIndex % birthdaySongNotes.length];
+                            if (!audioContext) initAudio();
+                            playNote(getNoteFrequency(note));
+                            ball.userData.notePlayed = true;
+                            document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTouchingBall;
+                        }
+                    });
+                } else {
+                    currentVertexIndex = (currentVertexIndex + 1) % totalVertices;
+                    flightProgress = 0;
+                    
+                    if (currentVertexIndex === 0) {
                         phase = 'landing';
                     }
-                    break;
-                case 'landing':
-                    if (currentHeight > 0) {
-                        currentHeight -= FLIGHT_SPEED;
-                        quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
-                    } else {
-                        isFlying = false;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
-                        quadcopter.position.set(4, 0, 0);
-                        quadcopter.rotation.y = Math.PI / 2;
-                    }
-                    break;
-            }
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-    }
-
-    function startCentredShots(sides) {
-        const startHeight = 0.9;
-        const interiorAngle = ((sides - 2) * Math.PI) / sides;
-        const exteriorAngle = (2 * Math.PI) / sides;
-        let currentHeight = 0;
-        let currentRotation = Math.PI / 2;
-        let phase = 'takeoff';
-        let flightProgress = 0;
-        let currentVertexIndex = 0;
-        let yawTarget = Math.PI / 2;
-
-        scene.add(polygonPath);
-        centredLines.forEach(line => scene.add(line));
-        if (orbitingLine) scene.remove(orbitingLine);
-
-        function animate() {
-            if (!isFlying) return;
-
-            switch(phase) {
-                case 'takeoff':
-                    if (currentHeight < startHeight) {
-                        currentHeight += FLIGHT_SPEED;
-                        quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
-                    } else {
-                        phase = 'initial-yaw-left';
-yawTarget = Math.PI / 2 + interiorAngle * 0.5;
-                    }
-                    break;
-                case 'initial-yaw-left':
-                    if (Math.abs(currentRotation - yawTarget) > 0.01) {
-                        currentRotation += ROTATION_SPEED;
-                        quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusInitialYaw;
-                    } else {
-                        phase = 'fly-to-next-vertex';
-                        flightProgress = 0;
-                        currentVertexIndex = 1;
-                    }
-                    break;
-                case 'fly-to-next-vertex':
-                    const start = currentVertexIndex === 1 ? new THREE.Vector3(4, startHeight, 0) : polygonVertices[(currentVertexIndex - 1) % sides];
-                    const end = polygonVertices[currentVertexIndex % sides];
-                    if (flightProgress < 1) {
-                        flightProgress += FLIGHT_SPEED;
-                        quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
-                        quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
-                        document.getElementById('flightStatus').textContent = `${translations[currentLang].flightStatusFlyingToVertex} ${(currentVertexIndex % sides) + 1}`;
-                    } else {
-                        phase = 'yaw-right';
-                        yawTarget = Math.PI / 2 - exteriorAngle * currentVertexIndex;
-                    }
-                    break;
-                case 'yaw-right':
-                    if (Math.abs(currentRotation - yawTarget) > 0.01) {
-                        currentRotation -= ROTATION_SPEED;
-                        quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawRight;
-                    } else {
-                        if (currentVertexIndex >= sides) {
-                            phase = 'landing';
-                        } else {
-                            phase = 'pause';
-                            setTimeout(() => {
-                                phase = 'yaw-left-again';
-                                yawTarget = currentRotation + interiorAngle * 0.5;
-                            }, 500);
-                        }
-                    }
-                    break;
-                case 'pause':
-                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusPausing;
-                    break;
-                case 'yaw-left-again':
-                    if (Math.abs(currentRotation - yawTarget) > 0.01) {
-                        currentRotation += ROTATION_SPEED;
-                        quadcopter.rotation.y = currentRotation;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusYawLeftAgain;
-                    } else {
-                        phase = 'fly-to-next-vertex';
-                        flightProgress = 0;
-                        currentVertexIndex++;
-                    }
-                    break;
-                case 'landing':
-                    if (currentHeight > 0) {
-                        currentHeight -= FLIGHT_SPEED;
-                        quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
-                    } else {
-                        isFlying = false;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
-                        quadcopter.position.set(4, 0, 0);
-                        quadcopter.rotation.y = Math.PI / 2;
-                    }
-                    break;
-            }
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-    }
-
-function startOrbiting() {
-        const startHeight = 0.9;
-        let currentHeight = 0;
-        let currentVertexIndex = 0;
-        let flightProgress = 0;
-        const totalVertices = polygonVertices.length;
-        let phase = 'takeoff';
-
-        scene.add(polygonPath);
-        centredLines.forEach(line => scene.remove(line));
-
-        const orbitingGeometry = new THREE.BufferGeometry();
-        const orbitingMaterial = new THREE.LineDashedMaterial({
-            color: 0x0000FF,
-            dashSize: 0.2,
-            gapSize: 0.1,
-        });
-        orbitingLine = new THREE.Line(orbitingGeometry, orbitingMaterial);
-        scene.add(orbitingLine);
-
-        function updateOrbitingLine() {
-            const points = [
-                new THREE.Vector3(0, startHeight, 0),
-                new THREE.Vector3(quadcopter.position.x, quadcopter.position.y, quadcopter.position.z)
-            ];
-            orbitingGeometry.setFromPoints(points);
-            orbitingLine.computeLineDistances();
-        }
-
-        function animate() {
-            if (!isFlying) return;
-
-            switch(phase) {
-                case 'takeoff':
-                    if (currentHeight < startHeight) {
-                        currentHeight += FLIGHT_SPEED;
-                        quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusTakeoff;
-                    } else {
-                        phase = 'orbit';
-                    }
-                    break;
-
-                case 'orbit':
-                    const start = polygonVertices[currentVertexIndex];
-                    const end = polygonVertices[(currentVertexIndex + 1) % totalVertices];
-                    
-                    if (flightProgress < 1) {
-                        flightProgress += FLIGHT_SPEED;
-                        quadcopter.position.x = start.x + (end.x - start.x) * flightProgress;
-                        quadcopter.position.z = start.z + (end.z - start.z) * flightProgress;
-                        
-                        const dx = quadcopter.position.x;
-                        const dz = quadcopter.position.z;
-                        quadcopter.rotation.y = Math.atan2(dx, dz);
-                        
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusOrbiting;
-                    } else {
-                        currentVertexIndex = (currentVertexIndex + 1) % totalVertices;
-                        flightProgress = 0;
-                        
-                        if (currentVertexIndex === 0) {
-                            phase = 'landing';
-                        }
-                    }
-                    break;
-
-                case 'landing':
-                    if (currentHeight > 0) {
-                        currentHeight -= FLIGHT_SPEED;
-                        quadcopter.position.y = currentHeight;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
-                    } else {
-                        isFlying = false;
-                        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
-                        quadcopter.position.set(4, 0, 0);
-                        quadcopter.rotation.y = Math.PI / 2;
-                    }
-                    break;
-            }
-
-            updateOrbitingLine();
-            orbitingLine.visible = Math.sin(Date.now() * 0.01) > 0; // Blink effect
-
-            requestAnimationFrame(animate);
-        }
-
-        animate();
-    }
-
-    function animate() {
-        requestAnimationFrame(animate);
-
-        if (isFlying) {
-            quadcopter.userData.propellers.forEach(propeller => {
-                if (propeller.userData.clockwise) {
-                    propeller.rotation.y += 0.1;
-                } else {
-                    propeller.rotation.y -= 0.1;
                 }
-            });
+                break;
+            case 'landing':
+                if (currentHeight > 0) {
+                    currentHeight -= flightSpeed;
+                    quadcopter.position.y = currentHeight;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusLanding;
+                } else {
+                    isFlying = false;
+                    document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
+                    quadcopter.position.set(4, 0, 0);
+                    quadcopter.rotation.y = Math.PI / 2;
+                    enableControls();
+                    stopButton.disabled = true; // Disable Stop button
+                }
+                break;
         }
-
-        if (orbitingLine) {
-            orbitingLine.visible = Math.sin(Date.now() * 0.01) > 0; // Blink effect
-        }
-
-        lightBlinkTime += 0.05;
-        const blinkIntensity = (Math.sin(lightBlinkTime) + 1) / 2;
-        quadcopter.userData.propellers.forEach(propeller => {
-            propeller.userData.light.material.emissiveIntensity = blinkIntensity;
-        });
-
-        controls.update();
-        renderer.render(scene, camera);
+        
+        requestAnimationFrame(animate);
     }
+    
     animate();
+}
 
-    // Enable touch events for iPad
-    controls.touches = {
-        ONE: THREE.TOUCH.ROTATE,
-        TWO: THREE.TOUCH.DOLLY_PAN
-    };
+function animateScene() {
+    requestAnimationFrame(animateScene);
+    
+    if (isFlying) {
+        quadcopter.userData.propellers.forEach(propeller => {
+            if (propeller.userData.clockwise) {
+                propeller.rotation.y += 0.1;
+            } else {
+                propeller.rotation.y -= 0.1;
+            }
+        });
+    }
+    
+    if (orbitingLine) {
+        orbitingLine.visible = Math.sin(Date.now() * 0.01) > 0; // Blink effect
+    }
+    
+    lightBlinkTime += 0.05;
+    const blinkIntensity = (Math.sin(lightBlinkTime) + 1) / 2;
+    quadcopter.userData.propellers.forEach(propeller => {
+        propeller.userData.light.material.emissiveIntensity = blinkIntensity;
+    });
+    
+    controls.update();
+    renderer.render(scene, camera);
+}
+animateScene();
+
+// Enable touch events for iPad
+controls.touches = {
+    ONE: THREE.TOUCH.ROTATE,
+    TWO: THREE.TOUCH.DOLLY_PAN
+};
 
 function updateLanguage() {
     const lang = translations[currentLang];
@@ -904,13 +1223,15 @@ function updateLanguage() {
     document.getElementById('polygonalFlightBtn').textContent = lang.polygon;
     document.getElementById('centredShotsBtn').textContent = lang.centred;
     document.getElementById('orbitingBtn').textContent = lang.orbiting;
+    document.getElementById('birthdaySongBtn').textContent = lang.birthdaySong;
     document.getElementById('startButton').textContent = lang.start;
+    document.getElementById('stopButton').textContent = lang.stop;
     document.getElementById('langSwitch').textContent = lang.switchLang;
     updatePolygonInfo();
     if (document.getElementById('flightStatus').textContent) {
         const currentStatus = document.getElementById('flightStatus').textContent;
         for (let key in translations.en) {
-            if (translations.en[key] === currentStatus) {
+            if (translations.en[key] === currentStatus || translations.en[key] === currentStatus.split(' ')[0]) {
                 document.getElementById('flightStatus').textContent = translations[currentLang][key];
                 break;
             }
@@ -926,6 +1247,43 @@ document.getElementById('langSwitch').addEventListener('click', () => {
 // Call updateLanguage initially to set the correct language
 updateLanguage();
 
+// -------------------------- Stop Button Functionality --------------------------
+stopButton.addEventListener('click', () => {
+    if (isFlying) {
+        isFlying = false;
+        document.getElementById('flightStatus').textContent = translations[currentLang].flightStatusCompleted;
+        quadcopter.position.set(4, 0, 0);
+        quadcopter.rotation.y = Math.PI / 2;
+        enableControls();
+        stopButton.disabled = true; // Disable Stop button
+        resetModeButtons(); // Add this line
+    }
+});
+// --------------------------------------------------------------------------------------
+
+// -------------------------- Disable/Enable Controls --------------------------
+function disableControls() {
+    modeButtons.forEach(btn => {
+        btn.disabled = true;
+        if (btn.getAttribute('data-selected') === 'true') {
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    document.getElementById('sides').disabled = true;
+    document.getElementById('startButton').disabled = true;
+}
+
+function enableControls() {
+    modeButtons.forEach(btn => btn.disabled = false);
+    document.getElementById('sides').disabled = false;
+    document.getElementById('startButton').disabled = false;
+}
+// Disable START button on page load
+document.getElementById('startButton').disabled = true;
+
+// --------------------------------------------------------------------------------------
 </script>
 </body>
 </html>
