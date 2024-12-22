@@ -101,10 +101,10 @@
         <button class="button-green" onclick="showApp('app2')" id="btn-control">Control Simulator</button>
         <button class="button-brown" onclick="showApp('app3')" id="btn-physics">Physics Explorer</button>
         <button class="button-blue" onclick="showApp('app4')" id="btn-horizontal">Horizontal Speed</button>
-        <button class="button-tomato" onclick="showApp('app5')" id="btn-speedtest">Speed Test</button>
-        <button class="button-teal" onclick="showApp('app6')" id="btn-aov">AOV Simulation</button>
-        <button class="button-red" onclick="showApp('app7')" id="btn-circumnavigation">Circumnavigation</button>
-        <button class="button-chocolate" onclick="showApp('app8')" id="btn-obstacle">Obstacle Course</button>
+        <button class="button-tomato" onclick="showApp('app5')" id="btn-aov">AOV Simulation</button>
+        <button class="button-teal" onclick="showApp('app6')" id="btn-circumnavigation">Circumnavigation</button>
+        <button class="button-red" onclick="showApp('app7')" id="btn-obstacle">Obstacle Course</button>
+	<button class="button-chocolate" onclick="showApp('app8')" id="btn-obstacle">Engineering</button>
     </div>
 
     <div id="app1" class="app">
@@ -124,21 +124,22 @@
     </div>
 
     <div id="app5" class="app">
-        <iframe src="005_Speed_Test.html" width="100%" height="600px" frameborder="0"></iframe>
+        <iframe src="005_AOV.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app6" class="app">
-        <iframe src="006_AOV.html" width="100%" height="600px" frameborder="0"></iframe>
+        <iframe src="006_Polygon.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app7" class="app">
-        <iframe src="007_Polygon.html" width="100%" height="600px" frameborder="0"></iframe>
+        <iframe src="007_Obstacle.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
     <div id="app8" class="app">
-        <iframe src="008_Obstacle.html" width="100%" height="600px" frameborder="0"></iframe>
+        <iframe src="008_Engineering.html" width="100%" height="600px" frameborder="0"></iframe>
     </div>
 
+	
     <script>
         // Language data
         const translations = {
@@ -151,10 +152,10 @@
                     control: 'Control Simulator',
                     physics: 'Physics Explorer',
                     horizontal: 'Horizontal Speed',
-                    speedTest: 'Speed Test',
                     aov: 'AOV Simulation',
                     circumnavigation: 'Circumnavigation',
-                    obstacle: 'Obstacle Course'
+                    obstacle: 'Obstacle Course',
+		    engineering: 'Engineering Design'	
                 }
             },
             zh: {
@@ -169,7 +170,8 @@
                     speedTest: '速度測試實驗',
                     aov: '航拍視角模擬',
                     circumnavigation: '環繞軌跡飛行',
-                    obstacle: '越礙編程設計'
+                    obstacle: '越礙編程設計',
+		    engineering: '工程設計'			
                 }
             }
         };
