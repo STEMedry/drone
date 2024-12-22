@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone-assisted Water Sampling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+        .page-wrapper {
+            width: 90%;
+            max-width: 1200px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 10px;
+            margin: 20px 0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+		margin-bottom: 2px;
+        }
+        .content {
+            flex: 2;
+            padding-right: 20px;
+            min-width: 300px;
+        }
+        .video-section {
+            flex: 3.5;
+            min-width: 300px;
+        }
+        .language-toggle {
+            position: absolute;
+            top: 50px;
+            right: 180px;
+            cursor: pointer;
+            color: black;
+            font-weight: bold;
+        }
+        .hidden {
+            display: none;
+        }
+        h1 {
+            text-align: center;
+		margin-bottom: 5px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .content, .video-section {
+                flex: none;
+                padding-right: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrapper">
+        <div class="language-toggle" onclick="toggleLanguage()">繁體中文</div>
+
+        <div id="english-content">
+            <h1>Drone-assisted Water Sampling System</h1>
+            
+            <div class="container">
+                <div class="content">
+                    <h2>System Components</h2>
+                    <ul>
+                        <li>Quadcopter drone</li>
+                        <li>2-meter-long string</li>
+                        <li>Inverted plastic bottle</li>
+                        <li>Iron ball</li>
+                    </ul>
+
+                    <h2>Water Sampling Process</h2>
+                    <ul>
+                        <li>Drone carries bottle sealed by iron ball</li>
+                        <li>Descends to water surface</li>
+                        <li>Iron ball sinks, opening bottle to collect water</li>
+                        <li>Ascends, pulling string to reseal bottle</li>
+                        <li>Flies to collection bucket</li>
+                        <li>Descends to bucket with "O" ring</li>
+                        <li>Releases iron ball to discharge water</li>
+                    </ul>
+                </div>
+                
+                <div class="video-section">
+                    <h2>Water Sampling Principle</h2>
+                    <video width="100%" controls>
+                        <source src="watersampling.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+
+        <div id="chinese-content" class="hidden">
+            <h1>無人機輔助水樣採集系統</h1>
+            
+            <div class="container">
+                <div class="content">
+                    <h2>系統組件</h2>
+                    <ul>
+                        <li>四旋翼無人機</li>
+                        <li>2米長繩索</li>
+                        <li>倒置塑料瓶</li>
+                        <li>鐵球</li>
+                    </ul>
+
+                    <h2>水樣採集過程</h2>
+                    <ul>
+                        <li>無人機攜帶被鐵球密封的瓶子</li>
+                        <li>下降至水面</li>
+                        <li>鐵球下沉，開啟瓶口收集水樣</li>
+                        <li>上升，拉動繩索重新關閉瓶口</li>
+                        <li>飛往收集桶</li>
+                        <li>下降至帶有"O"型環的收集桶</li>
+                        <li>垂下鐵球排出水樣</li>
+                    </ul>
+                </div>
+                
+                <div class="video-section">
+                    <h2>水樣採集原理</h2>
+                    <video width="100%" controls>
+                        <source src="watersampling.mp4" type="video/mp4">
+                        您的瀏覽器不支持視頻標籤。
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isEnglish = true;
+
+        function toggleLanguage() {
+            const englishContent = document.getElementById('english-content');
+            const chineseContent = document.getElementById('chinese-content');
+            const languageToggle = document.querySelector('.language-toggle');
+
+            if (isEnglish) {
+                englishContent.classList.add('hidden');
+                chineseContent.classList.remove('hidden');
+                languageToggle.textContent = 'English';
+            } else {
+                englishContent.classList.remove('hidden');
+                chineseContent.classList.add('hidden');
+                languageToggle.textContent = '繁體中文';
+            }
+
+            isEnglish = !isEnglish;
+        }
+    </script>
+</body>
+</html>
