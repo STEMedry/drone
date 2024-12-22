@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drone Physics Interactive Table</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 10px;
+        }
+        .lang-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .lang-button:hover {
+            background-color: #45a049;
+        }
+        .navigation-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 15px 0;
+        }
+        .nav-button {
+            padding: 5px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .nav-button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .nav-button:not(:disabled):hover {
+            background-color: #45a049;
+        }
+        .question-number {
+            display: flex;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            table-layout: fixed;
+        }
+        th, td {
+            border: 1px solid #dddddd;
+            text-align: center;
+            padding: 6px;
+            word-wrap: break-word;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        th.sub-header {
+            font-size: 0.9em;
+        }
+        td:first-child {
+            text-align: left;
+        }
+        .f1-column, .f2-column {
+            border: 3px solid;
+        }
+        .f1-column {
+            border-color: orange;
+        }
+        .f2-column {
+            border-color: blue;
+        }
+        th.action, th.action-subcol, td.action-subcol {
+            width: 60px;
+            font-size: 0.9em;
+        }
+        th.dimension, th.dimension-subcol, td.dimension-subcol {
+            width: 100px;
+            font-size: 0.9em;
+        }
+        select {
+            width: 100%;
+            padding: 4px;
+            font-size: 14px;
+            transition: border 0.3s ease, box-shadow 0.3s ease;
+        }
+        select:focus {
+            border: 2px solid #4CAF50;
+            box-shadow: 0 0 5px rgba(76, 175, 80, 0.5);
+        }
+        .correct {
+            background-color: #d4edda !important;
+            animation: pulse 1s;
+            transition: background-color 0.5s ease;
+        }
+        .incorrect {
+            background-color: #f8d7da !important;
+            animation: shake 0.5s;
+            transition: background-color 0.5s ease;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .grade-icon {
+            opacity: 0;
+            display: inline-block;
+            animation: fadeIn 0.5s forwards;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .tooltip .tooltiptext::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #555 transparent transparent transparent;
+        }
+        #progressContainer {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 25px;
+            margin-bottom: 10px;
+            position: relative;
+        }
+        #progressBar {
+            width: 0%;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            transition: width 0.5s ease;
+        }
+        .question-row {
+            display: none;
+        }
+        .question-row.active {
+            display: table-row !important;
+        }
+#directionImage {
+    max-width: 50%;
+    height: auto;
+    transition: width 0.3s ease;
+}
+h2 {
+    margin-top: 0px;  /* Reduce this value to decrease the top spacing */
+    margin-bottom: 5px;  /* Adjust this value for bottom spacing */
+}
+
+.next-page-button {
+    position: fixed;
+    top: 70px;  /* Positioned below the language button */
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+}
+.next-page-button:hover {
+    background-color: #45a049;
+}
+
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<button id="langButton" class="lang-button">繁體中文</button>
+<button id="backButton" onclick="window.location.href='003_force.html'" class="next-page-button">Back</button>
+
+<h2>Conceptual Challenge: Drone Dynamics</h2>
+<p>Select the appropriate forces and motion concepts for each drone status.</p>
+<p><strong>(<font color=red>x-axis:right +ve, left -ve;</font> <font color=blue>y-axis: forward +ve, backward -ve;</font> <font color=green>z-axis: up +ve, down -ve.</font>)</strong></p>
+
+<div style="text-align: center; margin: 10px 0;">
+    <img id="directionImage" src="direction.jpg" alt="Direction Diagram" style="width: 35%; cursor: pointer;">
+</div>
+
+<div id="progressContainer">
+    <div id="progressBar">0%</div>
+</div>
+
+<div class="navigation-buttons">
+    <button id="prevButton" class="nav-button" disabled>Previous</button>
+    <div class="question-number">Question <span id="currentQuestion"> 1 </span> of <span id="totalQuestions"> 6 </span></div>
+    <button id="nextButton" class="nav-button" disabled>Next</button>
+</div>
+
+<table id="physicsTable">
+    <thead>
+        <tr>
+            <th rowspan="2" style="width: 17%;">Status</th>
+            <th colspan="4" class="f1-column">Force 1</th>
+            <th rowspan="2" style="width: 5%;">vs</th>
+            <th colspan="4" class="f2-column">Force 2</th>
+            <th rowspan="2" style="width: 13%;">Action-Reaction Pair?
+                <span class="tooltip">ℹ️
+                    <span class="tooltiptext">
+                        Indicates if the selected forces form an action-reaction pair as per Newton's Third Law.
+                    </span>
+                </span>
+            </th>
+        </tr>
+        <tr>
+            <th class="action-subcol sub-header">Obj 1</th>
+            <th class="action-subcol sub-header">Action</th>
+            <th class="action-subcol sub-header">Obj 2</th>
+            <th class="dimension-subcol sub-header">Dimension</th>
+            <th class="action-subcol sub-header">Obj 1</th>
+            <th class="action-subcol sub-header">Action</th>
+            <th class="action-subcol sub-header">Obj 2</th>
+            <th class="dimension-subcol sub-header">Dimension</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<audio id="bonusSound" src="bonus.mp3"></audio>
+<audio id="sweetSound" src="sweet.mp3"></audio>
+
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+<script>
+let currentQuestionIndex = 0;
+let questionStates = new Array(6).fill(null); // To store the state of each question
+
+// Language translations
+const translations = {
+    en: {
+        back: "Back",
+        title: "Conceptual Challenge:Drone Dynamics",
+        instruction: "Select the appropriate forces and motion concepts for each drone status.",
+        axes: "(<font color=red>x-axis:right +ve, left -ve;</font> <font color=blue>y-axis: forward +ve, backward -ve;</font> <font color=green>z-axis: up +ve, down -ve.</font>)",
+	  status: "Status",
+        force1: "Force 1",
+        force2: "Force 2",
+        obj1: "Obj 1",
+        action: "Action",
+        obj2: "Obj 2",
+        dimension: "Dimension",
+        actionReaction: "Action-Reaction Pair?",
+        tooltip: "Indicates if the selected forces form an action-reaction pair as per Newton's Third Law.",
+        select: "--Select--",
+        actedOn: "acted on",
+        previous: "Previous",
+        next: "Next",
+        questionOf: "Question {current} of {total}",
+        statuses: [
+            "Q1. Stay on ground with rotors off.",
+            "Q2. Hover in air at an altitude.",
+            "Q3. Pitch forward in air.",
+            "Q4. Roll right in air.",
+            "Q5. Yaw left in air.",
+            "Q6. Throttling up"
+        ],
+        objects: [
+            "drone",
+            "Earth",
+            "air",
+            "A",
+            "B",
+            "C",
+            "D",
+            "A, B",
+            "A, C",
+            "A, D",
+            "B, C",
+            "B, D",
+            "C, D"
+        ],
+        dimensions: [
+            "x (+ve) right",
+            "x (-ve) left",
+            "y (+ve) forward",
+            "y (-ve) backward",
+            "z (+ve) up",
+            "z (-ve) down",
+            "xy (CW)",
+            "xy (CCW)"
+        ],
+        vs: ["<", "=", ">"],
+        actionReactionOptions: [
+            "YES (X on Y, Y on X)",
+            "NO (acted on same body)"
+        ]
+    },
+    zh: {
+        back: "返回",
+        title: "無人機動力學",
+        instruction: "請為每個無人機狀態選擇適當的力和運動概念。",
+        axes: "(<font color=red>x軸：右+，左-；</font> <font color=blue>y軸：前+，後-；</font> <font color=green>z軸：上+，下-。</font>)",
+	  status: "狀態",
+        force1: "力1",
+        force2: "力2",
+        obj1: "物體1",
+        action: "作用",
+        obj2: "物體2",
+        dimension: "維度",
+        actionReaction: "作用-反作用力對？",
+        tooltip: "表示所選的力是否符合牛頓第三定律定義的作用-反作用力對。",
+        select: "--選擇--",
+        actedOn: "作用於",
+        previous: "上一題",
+        next: "下一題",
+        questionOf: "第 {current} 題，共 {total} 題",
+        statuses: [
+            "Q1. 靜止在地面上(旋翼靜止)",
+            "Q2. 在空中定高懸停",
+            "Q3. 在空中往前飛行",
+            "Q4. 在空中向右側滾飛行",
+            "Q5. 在空中向左偏航轉向",
+            "Q6. 爬升"
+        ],
+        objects: [
+            "無人機",
+            "地球",
+            "空氣",
+            "A",
+            "B",
+            "C",
+            "D",
+            "A, B",
+            "A, C",
+            "A, D",
+            "B, C",
+            "B, D",
+            "C, D"
+        ],
+        dimensions: [
+            "x (+) 向右",
+            "x (-) 向左",
+            "y (+) 向前",
+            "y (-) 向後",
+            "z (+) 往上",
+            "z (-) 往下",
+            "xy (順時針)",
+            "xy (逆時針)"
+        ],
+        vs: ["<", "=", ">"],
+        actionReactionOptions: [
+            "是 (X作用於Y，Y作用於X)",
+            "否 (作用於同一物體)"
+        ]
+    }
+};
+
+let currentLang = 'en';
+// Function to update all text content
+function updateLanguage() {
+    const t = translations[currentLang];
+    
+	document.getElementById('backButton').textContent = t.back;
+
+    document.title = t.title;
+    document.querySelector('h2').textContent = t.title;
+    document.querySelector('p').textContent = t.instruction;
+    document.querySelector('p strong').innerHTML = t.axes;
+
+    // Update status header
+    document.querySelector('th[rowspan="2"]:first-child').textContent = t.status;
+    
+    // Update table headers
+    const headerRow = document.querySelectorAll('thead tr')[0];
+    headerRow.querySelector('th[colspan="4"].f1-column').textContent = t.force1;
+    headerRow.querySelector('th[colspan="4"].f2-column').textContent = t.force2;
+    
+    // Update sub-headers
+    const subHeaders = document.querySelectorAll('thead tr:nth-child(2) th');
+    subHeaders.forEach(header => {
+        const currentText = header.textContent.trim();
+        if(currentText === 'Obj 1' || currentText === '物體1') header.textContent = t.obj1;
+        if(currentText === 'Action' || currentText === '作用') header.textContent = t.action;
+        if(currentText === 'Obj 2' || currentText === '物體2') header.textContent = t.obj2;
+        if(currentText === 'Dimension' || currentText === '維度') header.textContent = t.dimension;
+    });
+    
+    // Update action-reaction header and tooltip
+    const arHeader = document.querySelector('th[rowspan="2"]:last-child');
+    arHeader.firstChild.textContent = t.actionReaction;
+    arHeader.querySelector('.tooltiptext').textContent = t.tooltip;
+    
+    // Update navigation buttons
+    document.getElementById('prevButton').textContent = t.previous;
+    document.getElementById('nextButton').textContent = t.next;
+    updateQuestionNumber();
+    
+    // Update button text
+    document.getElementById('langButton').textContent = currentLang === 'en' ? '繁體中文' : 'English';
+    
+    // Reinitialize the table with new translations
+    document.querySelector('#physicsTable tbody').innerHTML = '';
+    initializeTable();
+}
+
+// Function to update question number display
+function updateQuestionNumber() {
+    const t = translations[currentLang];
+    const current = currentQuestionIndex + 1;
+    const total = t.statuses.length;
+    document.getElementById('currentQuestion').textContent = current;
+    document.getElementById('totalQuestions').textContent = total;
+}
+
+// Function to show current question
+
+function hideAllQuestions() {
+    const rows = document.querySelectorAll('#physicsTable tbody tr');
+    rows.forEach(row => {
+        row.classList.remove('active');
+        row.style.display = 'none';
+    });
+}
+
+function showCurrentQuestion() {
+    hideAllQuestions();
+    const rows = document.querySelectorAll('#physicsTable tbody tr');
+    if (rows[currentQuestionIndex]) {
+        rows[currentQuestionIndex].classList.add('active');
+        rows[currentQuestionIndex].style.display = 'table-row';
+    }
+    updateQuestionNumber();
+    updateNavigationButtons();
+}
+
+// Function to update navigation buttons
+function updateNavigationButtons() {
+    const prevButton = document.getElementById('prevButton');
+    const nextButton = document.getElementById('nextButton');
+    
+    prevButton.disabled = currentQuestionIndex === 0;
+    
+    const currentRow = document.querySelector('#physicsTable tbody tr.active');
+    const isCurrentQuestionCorrect = currentRow && currentRow.classList.contains('correct');
+    
+    nextButton.disabled = !isCurrentQuestionCorrect || 
+                         currentQuestionIndex === translations[currentLang].statuses.length - 1;
+}
+
+// Add click event listeners to navigation buttons
+document.getElementById('prevButton').addEventListener('click', () => {
+    if (currentQuestionIndex > 0) {
+        currentQuestionIndex--;
+        showCurrentQuestion();
+    }
+});
+
+document.getElementById('nextButton').addEventListener('click', () => {
+    const totalQuestions = translations[currentLang].statuses.length;
+    if (currentQuestionIndex < totalQuestions - 1) {
+        currentQuestionIndex++;
+        showCurrentQuestion();
+    }
+});
+
+// Add click event listener to language button
+document.getElementById('langButton').addEventListener('click', () => {
+    currentLang = currentLang === 'en' ? 'zh' : 'en';
+    updateLanguage();
+});
+
+// Function to create a select element with options
+function createSelect(options) {
+    const select = document.createElement('select');
+    const defaultOption = document.createElement('option');
+    defaultOption.value = "";
+    defaultOption.textContent = translations[currentLang].select;
+    select.appendChild(defaultOption);
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.textContent = opt;
+        select.appendChild(option);
+    });
+    select.addEventListener('change', checkRow);
+    return select;
+}
+// Initialize table function
+function initializeTable() {
+    const t = translations[currentLang];
+    const tbody = document.querySelector('#physicsTable tbody');
+
+    t.statuses.forEach((status, index) => {
+        const tr = document.createElement('tr');
+        tr.style.setProperty('--i', index);
+        tr.classList.add('question-row');
+        if (index === currentQuestionIndex) {
+            tr.classList.add('active');
+        }
+
+        // Status cell
+        const tdStatus = document.createElement('td');
+        tdStatus.textContent = status;
+        tr.appendChild(tdStatus);
+
+        // F1 Obj1
+        const tdF1Obj1 = document.createElement('td');
+        const selectF1Obj1 = createSelect(t.objects);
+        selectF1Obj1.dataset.status = status;
+        tdF1Obj1.classList.add('f1-column', 'action-subcol');
+        tr.appendChild(tdF1Obj1);
+        tdF1Obj1.appendChild(selectF1Obj1);
+
+        // F1 Action
+        const tdF1Action = document.createElement('td');
+        tdF1Action.textContent = t.actedOn;
+        tdF1Action.classList.add('f1-column', 'action-subcol');
+        tr.appendChild(tdF1Action);
+
+        // F1 Obj2
+        const tdF1Obj2 = document.createElement('td');
+        const selectF1Obj2 = createSelect(t.objects);
+        selectF1Obj2.dataset.status = status;
+        tdF1Obj2.classList.add('f1-column', 'action-subcol');
+        tr.appendChild(tdF1Obj2);
+        tdF1Obj2.appendChild(selectF1Obj2);
+
+        // F1 Dimension
+        const tdF1Dim = document.createElement('td');
+        const selectF1Dim = createSelect(t.dimensions);
+        selectF1Dim.dataset.status = status;
+        tdF1Dim.classList.add('f1-column', 'dimension-subcol');
+        tr.appendChild(tdF1Dim);
+        tdF1Dim.appendChild(selectF1Dim);
+
+        // vs
+        const tdVs = document.createElement('td');
+        const selectVs = createSelect(t.vs);
+        selectVs.dataset.status = status;
+        tr.appendChild(tdVs);
+        tdVs.appendChild(selectVs);
+
+        // F2 Obj1
+        const tdF2Obj1 = document.createElement('td');
+        const selectF2Obj1 = createSelect(t.objects);
+        selectF2Obj1.dataset.status = status;
+        tdF2Obj1.classList.add('f2-column', 'action-subcol');
+        tr.appendChild(tdF2Obj1);
+        tdF2Obj1.appendChild(selectF2Obj1);
+
+        // F2 Action
+        const tdF2Action = document.createElement('td');
+        tdF2Action.textContent = t.actedOn;
+        tdF2Action.classList.add('f2-column', 'action-subcol');
+        tr.appendChild(tdF2Action);
+
+        // F2 Obj2
+        const tdF2Obj2 = document.createElement('td');
+        const selectF2Obj2 = createSelect(t.objects);
+        selectF2Obj2.dataset.status = status;
+        tdF2Obj2.classList.add('f2-column', 'action-subcol');
+        tr.appendChild(tdF2Obj2);
+        tdF2Obj2.appendChild(selectF2Obj2);
+
+        // F2 Dimension
+        const tdF2Dim = document.createElement('td');
+        const selectF2Dim = createSelect(t.dimensions);
+        selectF2Dim.dataset.status = status;
+        tdF2Dim.classList.add('f2-column', 'dimension-subcol');
+        tr.appendChild(tdF2Dim);
+        tdF2Dim.appendChild(selectF2Dim);
+
+        // Action-Reaction Pair
+        const tdAR = document.createElement('td');
+        const selectAR = createSelect(t.actionReactionOptions);
+        selectAR.dataset.status = status;
+        tr.appendChild(tdAR);
+        tdAR.appendChild(selectAR);
+
+        tbody.appendChild(tr);
+
+        // Restore previous state if exists
+        if (questionStates[index]) {
+            const selects = tr.querySelectorAll('select');
+            selects.forEach((select, selectIndex) => {
+                select.value = questionStates[index][selectIndex];
+            });
+            if (questionStates[index].isCorrect) {
+                tr.classList.add('correct');
+                const gradeIcon = document.createElement('i');
+                gradeIcon.classList.add('fas', 'fa-check-circle', 'grade-icon');
+                gradeIcon.style.color = 'green';
+                gradeIcon.style.marginLeft = '8px';
+                tr.querySelector('td:last-child').appendChild(gradeIcon);
+            }
+        }
+    });
+    updateNavigationButtons();
+
+    // Add this at the end:
+    hideAllQuestions();
+    showCurrentQuestion();
+}
+
+// Function to get correct answers
+function getCorrectAnswers() {
+    const t = translations[currentLang];
+    return {
+        [t.statuses[0]]: [ // Q1
+            [
+                {obj1: t.objects[1], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[5]},
+                {obj1: t.objects[0], action: t.actedOn, obj2: t.objects[1], dimension: t.dimensions[4]},
+                "=",
+                t.actionReactionOptions[0]
+            ],
+            [
+                {obj1: t.objects[0], action: t.actedOn, obj2: t.objects[1], dimension: t.dimensions[4]},
+                {obj1: t.objects[1], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[5]},
+                "=",
+                t.actionReactionOptions[0]
+            ]
+        ],
+        [t.statuses[1]]: [ // Q2
+            [
+                {obj1: t.objects[2], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[4]},
+                {obj1: t.objects[1], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[5]},
+                "=",
+                t.actionReactionOptions[1]
+            ],
+            [
+                {obj1: t.objects[1], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[5]},
+                {obj1: t.objects[2], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[4]},
+                "=",
+                t.actionReactionOptions[1]
+            ]
+        ],
+        [t.statuses[2]]: [ // Q3
+            [
+                {obj1: t.objects[7], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[3]},
+                {obj1: t.objects[12], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[2]},
+                "<",
+                t.actionReactionOptions[1]
+            ],
+            [
+                {obj1: t.objects[12], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[2]},
+                {obj1: t.objects[7], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[3]},
+                ">",
+                t.actionReactionOptions[1]
+            ]
+        ],
+        [t.statuses[3]]: [ // Q4
+            [
+                {obj1: t.objects[8], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[0]},
+                {obj1: t.objects[11], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[1]},
+                ">",
+                t.actionReactionOptions[1]
+            ],
+            [
+                {obj1: t.objects[11], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[1]},
+                {obj1: t.objects[8], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[0]},
+                "<",
+                t.actionReactionOptions[1]
+            ]
+        ],
+        [t.statuses[4]]: [ // Q5
+            [
+                {obj1: t.objects[9], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[6]},
+                {obj1: t.objects[10], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[7]},
+                ">",
+                t.actionReactionOptions[1]
+            ],
+            [
+                {obj1: t.objects[10], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[7]},
+                {obj1: t.objects[9], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[6]},
+                "<",
+                t.actionReactionOptions[1]
+            ]
+        ],
+        [t.statuses[5]]: [ // Q6
+            [
+                {obj1: t.objects[2], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[4]},
+                {obj1: t.objects[1], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[5]},
+                ">",
+                t.actionReactionOptions[1]
+            ],
+            [
+                {obj1: t.objects[1], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[5]},
+                {obj1: t.objects[2], action: t.actedOn, obj2: t.objects[0], dimension: t.dimensions[4]},
+                "<",
+                t.actionReactionOptions[1]
+            ]
+        ]
+    };
+}
+
+// Function to check the row validity
+function checkRow(event) {
+    const select = event.target;
+    const status = select.dataset.status;
+    const tr = select.closest('tr');
+    const correctAnswers = getCorrectAnswers();
+
+    // Get all select elements in the row
+    const selects = tr.querySelectorAll('select');
+    const selectValues = Array.from(selects).map(s => s.value);
+
+    // Save current state
+    const rowIndex = Array.from(tr.parentNode.children).indexOf(tr);
+    questionStates[rowIndex] = selectValues;
+
+    for(let s of selects) {
+        if(s.value === "") {
+            tr.classList.remove('correct', 'incorrect');
+            const existingIcon = tr.querySelector('.grade-icon');
+            if(existingIcon) {
+                existingIcon.remove();
+            }
+            updateNavigationButtons();
+            return;
+        }
+    }
+
+    // Get user's selections
+    const userF1Obj1 = tr.querySelectorAll('select')[0].value;
+    const userF1Obj2 = tr.querySelectorAll('select')[1].value;
+    const userF1Dim = tr.querySelectorAll('select')[2].value;
+    const userV = tr.querySelectorAll('select')[3].value;
+    const userF2Obj1 = tr.querySelectorAll('select')[4].value;
+    const userF2Obj2 = tr.querySelectorAll('select')[5].value;
+    const userF2Dim = tr.querySelectorAll('select')[6].value;
+    const userAR = tr.querySelectorAll('select')[7].value;
+
+    // Check against correct answers
+    const correctPairs = correctAnswers[status];
+    let isCorrect = false;
+
+    for(let pair of correctPairs) {
+        const [correctF1, correctF2, correctVs, correctAR] = pair;
+        if(
+            userF1Obj1 === correctF1.obj1 &&
+            userF1Obj2 === correctF1.obj2 &&
+            userF1Dim === correctF1.dimension &&
+            userV === correctVs &&
+            userF2Obj1 === correctF2.obj1 &&
+            userF2Obj2 === correctF2.obj2 &&
+            userF2Dim === correctF2.dimension &&
+            userAR === correctAR
+        ) {
+            isCorrect = true;
+            break;
+        }
+    }
+
+    // Update state with correctness
+    questionStates[rowIndex].isCorrect = isCorrect;
+
+    // Update row status and icons
+    if(isCorrect) {
+        if(!tr.classList.contains('correct')) {
+            document.getElementById('bonusSound').currentTime = 0;
+            document.getElementById('bonusSound').play();
+            const existingIcon = tr.querySelector('.grade-icon');
+            if(existingIcon) {
+                existingIcon.remove();
+            }
+            const gradeIcon = document.createElement('i');
+            gradeIcon.classList.add('fas', 'fa-check-circle', 'grade-icon');
+            gradeIcon.style.color = 'green';
+            gradeIcon.style.marginLeft = '8px';
+            tr.querySelector('td:last-child').appendChild(gradeIcon);
+        }
+        tr.classList.add('correct');
+        tr.classList.remove('incorrect');
+    } else {
+        tr.classList.add('incorrect');
+        tr.classList.remove('correct');
+        const existingIcon = tr.querySelector('.grade-icon');
+        if(existingIcon) {
+            existingIcon.remove();
+        }
+        const gradeIcon = document.createElement('i');
+        gradeIcon.classList.add('fas', 'fa-times-circle', 'grade-icon');
+        gradeIcon.style.color = 'red';
+        gradeIcon.style.marginLeft = '8px';
+        tr.querySelector('td:last-child').appendChild(gradeIcon);
+    }
+
+    updateNavigationButtons();
+
+    // Check if all rows are correct
+    const allRows = document.querySelectorAll('#physicsTable tbody tr');
+    let allCorrect = true;
+    allRows.forEach(row => {
+        if(!row.classList.contains('correct')) {
+            allCorrect = false;
+        }
+    });
+
+    if(allCorrect) {
+        document.getElementById('sweetSound').currentTime = 0;
+        document.getElementById('sweetSound').play();
+        confetti({
+            particleCount: 200,
+            spread: 70,
+            origin: { y: 0.6 }
+        });
+    }
+
+    // Update progress bar
+    const correctRows = document.querySelectorAll('#physicsTable tbody tr.correct').length;
+    const totalRows = translations[currentLang].statuses.length;
+    const progressPercent = (correctRows / totalRows) * 100;
+    const progressBar = document.getElementById('progressBar');
+    progressBar.style.width = progressPercent + '%';
+    progressBar.textContent = Math.round(progressPercent) + '%';
+}
+
+// Initialize the table when the page loads
+initializeTable();
+showCurrentQuestion();
+
+// Image resize functionality
+const directionImage = document.getElementById('directionImage');
+let isEnlarged = false;
+
+directionImage.addEventListener('click', function() {
+    if (isEnlarged) {
+        this.style.width = '35%';
+        isEnlarged = false;
+    } else {
+        this.style.width = '50%';
+        isEnlarged = true;
+    }
+});
+
+
+</script>
+</body>
+</html>
