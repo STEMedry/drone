@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Speed Test Experiment</title>
+    <title>Experimental Data Treatment & Analysis</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,7 +12,7 @@
             display: flex;
             flex-direction: column;
         }
-        h1 {
+        h2 {
             text-align: center;
             margin-bottom: 10px; /* Reduced margin for better spacing */
             color: #333;
@@ -42,11 +42,29 @@
             background-color: #fdfdfd;
             position: relative;
         }
+.back-button {
+    width: 100%;
+    padding: 5px 15px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 0px;
+    display: inline-block;  /* Makes it behave like a button */
+    text-decoration: none;  /* Removes underline from link */}
+
+.back-button:hover {
+    background-color: #5a6268;
+    color: white;
+}
+
         .language-switcher {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-        }
+	    position: absolute;
+	    top: 10px;
+	    right: 200px;
+	    z-index: 1000;        }
         .section {
             padding: 5px;
             border-radius: 5px;
@@ -124,9 +142,9 @@
             padding: 3px 5px;
             border: 1px solid #ccc;
             border-radius: 3px;
-            transform: translate(-50%, -100%);
+            transform: translate(-40%, -80%);
             pointer-events: none;
-            font-size: 1.8em; /* Adjusted for better visibility */
+            font-size: 1.6em; /* Adjusted for better visibility */
         }
         .r-squared {
             position: absolute;
@@ -138,18 +156,18 @@
             border-radius: 3px;
             transform: translate(-50%, 0);
             pointer-events: none;
-            font-size: 1.2em; /* Adjusted for better visibility */
+            font-size: 1.0em; /* Adjusted for better visibility */
         }
         .annotation {
             position: absolute;
             /* Moved inside the grid area by adjusting top and left */
-            top: 120px; /* Increased top spacing */
-            left: 120px; /* Increased left spacing */
+            top: 60px; /* Increased top spacing */
+            left: 80px; /* Increased left spacing */
             background-color: rgba(255, 255, 255, 0.8);
             padding: 5px 10px;
             border: 1px solid #ccc;
             border-radius: 3px;
-            font-size: 1.8em; /* Adjusted for better visibility */
+            font-size: 1.6em; /* Adjusted for better visibility */
             color: #FF3333;
         }
         /* Responsive Design */
@@ -246,7 +264,7 @@
         /* Language Switcher Button Styles */
         #languageSwitcher {
             padding: 5px 10px;
-            background-color: #007BFF;
+            background-color: #4CAF50;
             color: white;
             border: none;
             border-radius: 4px;
@@ -255,18 +273,16 @@
         }
 
         #languageSwitcher:hover {
-            background-color: #0056b3;
+            background-color: #1cc723;
         }
     </style>
 </head>
 <body>
-    <h1 id="title">Speed Test Experiment</h1>
+    <h2 id="title">Experimental Data Treatment & Analysis</h2>
 
     <div class="container">
         <!-- Left Side: Input Sections -->
         <div class="left-side">
-            <!-- Language Switcher Button -->
-            <button id="languageSwitcher" class="language-switcher">繁體中文</button>
 
             <!-- Independent Variable Section -->
             <div class="section independent-section">
@@ -284,11 +300,11 @@
                 <table id="indepVarTable">
                     <thead>
                         <tr>
-                            <th>Experiment</th>
-                            <th class="red-text">A (Red)</th>
-                            <th class="blue-text">B (Blue)</th>
-                            <th class="green-text">C (Green)</th>
-                            <th class="orange-text">D (Orange)</th>
+		            <th id="expHeader">Experiment</th>
+		            <th class="red-text" id="redHeader">A (Red)</th>
+		            <th class="blue-text" id="blueHeader">B (Blue)</th>
+		            <th class="green-text" id="greenHeader">C (Green)</th>
+		            <th class="orange-text" id="orangeHeader">D (Orange)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -319,11 +335,11 @@
                 <table id="depVarTable">
                     <thead>
                         <tr>
-                            <th>Experiment</th>
-                            <th>Trial 1</th>
-                            <th>Trial 2</th>
-                            <th>Trial 3</th>
-                            <th>Trial 4</th>
+		            <th id="expHeader2">Experiment</th>
+		            <th id="trial1">Trial 1</th>
+		            <th id="trial2">Trial 2</th>
+		            <th id="trial3">Trial 3</th>
+		            <th id="trial4">Trial 4</th>
                             <th>
                                 <span class="tooltip" id="avgSpeedTooltip">Speed (m/s):
                                     <span class="tooltiptext" id="avgSpeedTooltipText">Speed is calculated as the total distance divided by total time.</span>
@@ -333,7 +349,7 @@
                     </thead>
                     <tbody>
                         <tr class="red-bg">
-                            <td>A (Red)</td>
+		            <td id="redExp">A (Red)</td>
                             <td><input type="number" id="depA1" min="0" step="0.1"></td>
                             <td><input type="number" id="depA2" min="0" step="0.1"></td>
                             <td><input type="number" id="depA3" min="0" step="0.1"></td>
@@ -341,7 +357,7 @@
                             <td><span id="avgA">0.00</span></td>
                         </tr>
                         <tr class="blue-bg">
-                            <td>B (Blue)</td>
+			      <td id="blueExp">B (Blue)</td>
                             <td><input type="number" id="depB1" min="0" step="0.1"></td>
                             <td><input type="number" id="depB2" min="0" step="0.1"></td>
                             <td><input type="number" id="depB3" min="0" step="0.1"></td>
@@ -349,7 +365,7 @@
                             <td><span id="avgB">0.00</span></td>
                         </tr>
                         <tr class="green-bg">
-                            <td>C (Green)</td>
+				<td id="greenExp">C (Green)</td>
                             <td><input type="number" id="depC1" min="0" step="0.1"></td>
                             <td><input type="number" id="depC2" min="0" step="0.1"></td>
                             <td><input type="number" id="depC3" min="0" step="0.1"></td>
@@ -357,7 +373,7 @@
                             <td><span id="avgC">0.00</span></td>
                         </tr>
                         <tr class="orange-bg">
-                            <td>D (Orange)</td>
+				<td id="orangeExp">D (Orange)</td>
                             <td><input type="number" id="depD1" min="0" step="0.1"></td>
                             <td><input type="number" id="depD2" min="0" step="0.1"></td>
                             <td><input type="number" id="depD3" min="0" step="0.1"></td>
@@ -377,10 +393,19 @@
                 <!-- Export CSV Button -->
                 <button id="exportButton">Export CSV</button>
             </div>
+
+<div style="text-align: center;">
+    <a href="004_Hor_Speed.html" class="back-button" id="backButton">Back</a>
+</div>
+
         </div>
 
         <!-- Right Side: Graphical Representation -->
         <div class="right-side" style="position: relative;">
+
+            <!-- Language Switcher Button -->
+            <button id="languageSwitcher" class="language-switcher">繁體中文</button>
+
             <canvas id="graph" width="500" height="500"></canvas>
             <div class="trendline-equation" id="trendlineEquation"></div>
             <div class="r-squared" id="rSquaredDisplay"></div>
@@ -392,7 +417,7 @@
         // ----------------------- Language Support -----------------------
         const translations = {
             'en': {
-                'title': 'Speed Test Experiment',
+                'title': 'Experimental Data Treatment & Analysis',
                 // 'subtitle': 'Discover How Distance, Time, and Speed Relate!', // Removed subtitle
                 'indepVarTooltip': 'Select Independent Variable:',
                 'indepVarTooltipText': 'The independent variable is the variable you change or control in an experiment to test its effects on the dependent variable.',
@@ -404,14 +429,17 @@
                 'avgSpeedTooltipText': 'Speed is calculated as the total distance divided by total time.',
                 'overallAverageLabel': 'Overall Average Speed:',
                 'exportButton': 'Export CSV',
-                // 'shareButton': 'Share via Email', // Removed share button
-                // 'emailLabel': 'Email:', // Removed email label
-                // 'emailPlaceholder': 'Enter email address', // Removed email input
-                'languageSwitcher': '繁體中文'
+                'languageSwitcher': '繁體中文',
+	        'experiment': 'Experiment',
+	        'red': 'Red',
+      	  'blue': 'Blue',
+	        'green': 'Green',
+	        'orange': 'Orange',
+	        'trial': 'Trial',
+	        'backButton': 'Back'
             },
             'zh-TW': {
-                'title': '速度測試實驗',
-                // 'subtitle': '發現距離、時間和速度之間的關係！', // Removed subtitle
+                'title': '實驗數據處理及分析',
                 'indepVarTooltip': '選擇自變量：',
                 'indepVarTooltipText': '自變量是您在實驗中更改或控制的變量，以測試其對因變量的影響。',
                 'indepLabelTooltip': '距離 (m)：',
@@ -422,10 +450,14 @@
                 'avgSpeedTooltipText': '速度計算為總距離除以總時間。',
                 'overallAverageLabel': '總平均速度：',
                 'exportButton': '匯出 CSV',
-                // 'shareButton': '通過電子郵件分享', // Removed share button
-                // 'emailLabel': '電子郵件：', // Removed email label
-                // 'emailPlaceholder': '輸入電子郵件地址', // Removed email input
-                'languageSwitcher': 'English'
+                'languageSwitcher': 'English',
+        'experiment': '實驗',
+        'red': '紅色',
+        'blue': '藍色',
+        'green': '綠色',
+        'orange': '橙色',
+        'trial': '試驗',
+        'backButton': '返回'
             }
         };
 
@@ -440,6 +472,27 @@
         function updateLanguage() {
             const lang = translations[currentLanguage];
 
+    // Update table headers
+    document.getElementById('expHeader').textContent = lang.experiment;
+    document.getElementById('expHeader2').textContent = lang.experiment;
+    
+    // Update color headers
+    document.getElementById('redHeader').textContent = `A (${lang.red})`;
+    document.getElementById('blueHeader').textContent = `B (${lang.blue})`;
+    document.getElementById('greenHeader').textContent = `C (${lang.green})`;
+    document.getElementById('orangeHeader').textContent = `D (${lang.orange})`;
+    
+    // Update experiment rows
+    document.getElementById('redExp').textContent = `A (${lang.red})`;
+    document.getElementById('blueExp').textContent = `B (${lang.blue})`;
+    document.getElementById('greenExp').textContent = `C (${lang.green})`;
+    document.getElementById('orangeExp').textContent = `D (${lang.orange})`;
+    
+    // Update trial headers
+    for(let i = 1; i <= 4; i++) {
+        document.getElementById(`trial${i}`).textContent = `${lang.trial} ${i}`;
+    }
+
             // Update textual content
             document.getElementById('title').textContent = lang.title;
             // document.getElementById('subtitle').textContent = lang.subtitle; // Removed subtitle
@@ -453,9 +506,7 @@
             document.getElementById('avgSpeedTooltipText').textContent = lang.avgSpeedTooltipText;
             document.getElementById('overallAverageLabel').textContent = lang.overallAverageLabel;
             document.getElementById('exportButton').textContent = lang.exportButton;
-            // document.getElementById('shareButton').textContent = lang.shareButton; // Removed share button
-            // document.getElementById('emailLabel').textContent = lang.emailLabel; // Removed email label
-            // document.getElementById('emailInput').placeholder = lang.emailPlaceholder; // Removed email input
+		document.getElementById('backButton').textContent = lang.backButton;
             languageSwitcher.textContent = lang.languageSwitcher;
 
             // Update option texts if needed
