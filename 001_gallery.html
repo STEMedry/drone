@@ -83,7 +83,13 @@
             height: 30px;
             animation: shape-flight linear infinite;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+		opacity: 0;
         }
+
+    .shape.animate {
+        opacity: 1;
+        animation: shape-flight linear infinite;
+    }
 
         .shape:nth-child(1) {
             background-color: #3498db;
@@ -501,6 +507,32 @@
             droneModels[4].textContent = t.drone5;
             droneModels[5].textContent = t.drone6;
         }
+
+document.addEventListener('DOMContentLoaded', startAnimation);
+window.addEventListener('pageshow', function(event) {
+    // When navigating back via back/forward buttons
+    if (event.persisted) {
+        resetAnimation();
+    }
+});
+
+function resetAnimation() {
+    const shapes = document.querySelectorAll('.shape');
+    shapes.forEach(shape => {
+        shape.classList.remove('animate');
+        // Trigger reflow
+        void shape.offsetWidth;
+        shape.classList.add('animate');
+    });
+}
+
+function startAnimation() {
+    const shapes = document.querySelectorAll('.shape');
+    shapes.forEach(shape => {
+        shape.classList.add('animate');
+    });
+}
+
     </script>
 
 </body>
