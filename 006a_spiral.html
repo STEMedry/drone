@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>3D Drone Spiral Navigation</title>
+<style>
+body {
+    margin: 0;
+    background-color: #f0f2f5;
+    user-select: none;
+    display: flex;
+    font-family: Arial, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+}
+.left-side {
+    width: 30%;
+    padding: 20px;
+    background: rgba(255,255,255,0.9);
+    height: 100vh;
+    overflow-y: auto;
+}
+.right-side {
+    width: 70%;
+    position: relative;
+    height: 100vh;
+}
+#container {
+    width: 100%;
+    height: 100vh;
+    touch-action: none;
+}
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+th, td {
+    border: 1px solid #ddd;
+    padding: 4px 8px; /* Reduced padding */
+    text-align: left;
+    height: 30px; /* Fixed height for rows */
+}
+input[type="number"] {
+    width: 70%;
+    padding: 5px;
+}
+.range-info {
+    font-size: 0.8em;
+    color: #666;
+}
+
+.controls {
+    display: flex;
+    gap: 5px;
+    margin: 10px 0;
+}
+button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 5px; /* Reduced padding */
+    margin: 0; /* Remove margin */
+    cursor: pointer;
+    flex: 1; /* Make buttons equal width */
+    white-space: nowrap; /* Prevent text wrapping */
+    font-size: 0.9em; /* Slightly smaller font */
+}
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+#speedControl {
+    width: 100%;
+    margin: 10px 0;
+}
+.top-buttons {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 1000;
+}
+.top-buttons button {
+    padding: 8px 16px;
+    background-color: #eb7734;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+.top-buttons button:hover {
+    background-color: #ebab34;
+}
+</style>
+<script async src="https://unpkg.com/es-module-shims@1.8.0/dist/es-module-shims.js"></script>
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.156.1/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.156.1/examples/jsm/"
+    }
+}
+</script>
+</head>
+<body>
+<div class="left-side">
+    <h1>2D / 3D Spiral Navigation</h1>
+    <table>
+        <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><strong>Number of sides (n)</strong></td>
+            <td>
+                <input type="number" id="sides" min="3" max="8" value="5">
+                <div class="range-info">Range: 3-8</div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Initial distance (d)</strong></td>
+            <td>
+                <input type="number" id="distance" min="10" max="20" value="10">
+                <div class="range-info">Range: 10-20</div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Horizontal increment</strong></td>
+            <td>
+                <input type="number" id="increment" min="2" max="10" value="2">
+                <div class="range-info">Range: 2-10</div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Vertical increment</strong></td>
+            <td>
+                <input type="number" id="verticalIncrement" min="0" max="10" value="2">
+                <div class="range-info">Range: 0-10</div>
+            </td>
+        </tr>
+        <tr>
+            <td><strong>Number of turns (t)</strong></td>
+            <td>
+                <input type="number" id="turns" min="2" max="10" value="2">
+                <div class="range-info">Range: 2-10</div>
+            </td>
+        </tr>
+    </table>
+    <div id="pathInfo" style="margin: 10px 0; padding: 10px; background: #f5f5f5;">
+        Return path length: <span id="returnPathLength">0</span> units
+    </div>
+<div class="controls">
+    <button id="generatePath">Generate Path</button>
+    <button id="startButton" disabled>Start</button>
+    <button id="pauseButton" disabled>Pause</button>
+    <button id="resetButton">Reset</button>
+</div>
+    <div class="speed-control">
+        <label for="speedControl">Speed: <span id="speedValue">3</span></label>
+        <input type="range" id="speedControl" min="1" max="10" value="3">
+    </div>
+</div>
+
+<div class="right-side">
+<div class="top-buttons">
+    <button id="languageButton" class="lang-en">繁體中文</button>
+    <button id="backButton" class="lang-en" onclick="window.location.href='006_Polygon.html'">Back</button>
+</div>
+    <div id="container"></div>
+</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+// Global variables
+let scene, camera, renderer, controls;
+let quadcopter, propellers;
+let pathPoints = [];
+let currentPathIndex = 0;
+let isFlying = false;
+let animationFrameId = null;
+let spiralPath;
+let pathSpheres = [];
+let lastRotation = new THREE.Euler();
+let isPaused = false;
+
+function init() {
+    // Create OrbitControls
+    controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.screenSpacePanning = false;
+    controls.minDistance = 5;
+    controls.maxDistance = 1000;
+    controls.maxPolarAngle = Math.PI / 2;
+
+    // Initialize drone
+    initDrone();
+}
+
+// Setup scene
+scene = new THREE.Scene();
+scene.background = new THREE.Color(0xf0f2f5);
+camera = new THREE.PerspectiveCamera(75, window.innerWidth * 0.7 / window.innerHeight, 0.1, 2000);
+renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth * 0.7, window.innerHeight);
+renderer.shadowMap.enabled = true;
+document.getElementById('container').appendChild(renderer.domElement);
+
+// Lighting
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 5);
+directionalLight.castShadow = true;
+scene.add(directionalLight);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+// Grid and axes helpers
+const gridSize = 200; // Total size of the grid
+const gridDivisions = 30; // Number of divisions (will create 20x20 grid)
+const gridHelper = new THREE.GridHelper(gridSize, gridDivisions);
+scene.add(gridHelper);
+
+// Also increase the axes helper size
+const axesHelper = new THREE.AxesHelper(50); // Increased from 20 to 50
+scene.add(axesHelper);
+
+function createDrone() {
+    const droneGroup = new THREE.Group();
+
+    // Main body
+    const bodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x2196F3 });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    droneGroup.add(body);
+
+    // Arms
+    const armGeometry = new THREE.BoxGeometry(0.2, 0.2, 3);
+    const armMaterial = new THREE.MeshPhongMaterial({ color: 0x666666 });
+    
+    const arm1 = new THREE.Mesh(armGeometry, armMaterial);
+    const arm2 = new THREE.Mesh(armGeometry, armMaterial);
+    arm1.rotation.y = Math.PI / 4 + Math.PI/2;  // Rotated 90 degrees
+    arm2.rotation.y = -Math.PI / 4 + Math.PI/2; // Rotated 90 degrees
+    droneGroup.add(arm1);
+    droneGroup.add(arm2);
+
+    // Propellers
+    const propGeometry = new THREE.BoxGeometry(0.8, 0.05, 0.1);
+    const propellers = [];
+
+    const propellerConfigs = [
+        { pos: { x: 1, y: 0.2, z: 1 }, color: 0xff0000 },
+        { pos: { x: -1, y: 0.2, z: 1 }, color: 0xff0000 },
+        { pos: { x: -1, y: 0.2, z: -1 }, color: 0x00ff00 },
+        { pos: { x: 1, y: 0.2, z: -1 }, color: 0x00ff00 }
+    ];
+
+    propellerConfigs.forEach(config => {
+        const propMaterial = new THREE.MeshPhongMaterial({ color: config.color });
+        const prop = new THREE.Mesh(propGeometry, propMaterial);
+        prop.position.set(config.pos.x, config.pos.y, config.pos.z);
+        droneGroup.add(prop);
+        propellers.push(prop);
+    });
+
+    // Rotate entire drone group 90 degrees
+    droneGroup.rotation.y = Math.PI / 2;
+
+    return { droneGroup, propellers };
+}
+function animate() {
+    requestAnimationFrame(animate);
+    controls.update();
+    
+    if (propellers) {
+        propellers.forEach(prop => {
+            prop.rotation.y += 0.3;
+        });
+    }
+    
+    renderer.render(scene, camera);
+}
+
+function generateSpiralPath() {
+    const sides = parseInt(document.getElementById('sides').value);
+    const initialDistance = parseInt(document.getElementById('distance').value);
+    const horizontalIncrement = parseInt(document.getElementById('increment').value);
+    const verticalIncrement = parseInt(document.getElementById('verticalIncrement').value);
+    const turns = parseInt(document.getElementById('turns').value);
+
+    pathPoints = [];
+    const angleStep = (2 * Math.PI) / sides;
+    let currentDistance = initialDistance;
+    let currentHeight = 5;
+
+    // Add takeoff point
+    pathPoints.push(new THREE.Vector3(0, 0, 0));
+    pathPoints.push(new THREE.Vector3(0, currentHeight, 0));
+
+    // Generate spiral points
+    for (let turn = 0; turn < turns; turn++) {
+        for (let side = 0; side < sides; side++) {
+            const angle = side * angleStep;
+            const x = currentDistance * Math.cos(angle);
+            const z = currentDistance * Math.sin(angle);
+            const y = currentHeight;
+            pathPoints.push(new THREE.Vector3(x, y, z));
+        }
+        currentDistance += horizontalIncrement;
+        currentHeight += verticalIncrement;
+    }
+
+    // Add return path points
+    pathPoints.push(new THREE.Vector3(0, currentHeight, 0));
+    pathPoints.push(new THREE.Vector3(0, 0, 0));
+
+    // Calculate return path length
+    const lastPoint = pathPoints[pathPoints.length - 3];
+    const returnPathLength = Math.sqrt(
+        Math.pow(lastPoint.x, 2) + 
+        Math.pow(lastPoint.y, 2) + 
+        Math.pow(lastPoint.z, 2)
+    );
+document.getElementById('returnPathLength').textContent = Math.round(returnPathLength).toString();
+
+    updatePathVisualization();
+    return pathPoints;
+}
+
+function updatePathVisualization() {
+    if (spiralPath) {
+        scene.remove(spiralPath);
+    }
+    pathSpheres.forEach(sphere => scene.remove(sphere));
+    pathSpheres = [];
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(pathPoints);
+    const material = new THREE.LineBasicMaterial({ 
+        color: 0xff0000, 
+        linewidth: 2,
+        transparent: true,
+        opacity: 0.8 // Makes the path slightly transparent
+ });
+    spiralPath = new THREE.Line(geometry, material);
+    scene.add(spiralPath);
+
+    // Add vertex spheres
+    const sides = parseInt(document.getElementById('sides').value);
+    
+    // Start point (green)
+    pathSpheres.push(createSphere(pathPoints[0], 0x00ff00));
+
+    // Vertex points (only at actual vertices)
+    for (let i = 2; i < pathPoints.length - 2; i++) {
+        if ((i - 2) % sides === 0) {
+            pathSpheres.push(createSphere(pathPoints[i], 0xffff00));
+        }
+    }
+
+    // End point (red)
+    pathSpheres.push(createSphere(pathPoints[pathPoints.length - 1], 0xff0000));
+}
+
+function createSphere(position, color) {
+    let radius = 0.2; // Default size
+    
+    // Larger size for yellow vertex markers
+    if (color === 0xffff00) {
+        radius = 1.2; // Increase this value to make yellow balls larger
+    }
+    // Smaller size for start/end points
+    else if (color === 0x00ff00 || color === 0xff0000) {
+        radius = 0.6;
+    }
+    
+    const sphereGeometry = new THREE.SphereGeometry(radius);
+    const sphereMaterial = new THREE.MeshBasicMaterial({ 
+        color: color,
+        transparent: true,
+        opacity: 0.8
+    });
+    const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+    sphere.position.copy(position);
+    scene.add(sphere);
+    return sphere;
+}
+
+function flyDrone() {
+    if (!isFlying) {
+        return;
+    }
+
+    if (isPaused) {
+        requestAnimationFrame(flyDrone);
+        return;
+    }
+
+    const speed = parseFloat(document.getElementById('speedControl').value) * 0.1;
+    const targetPoint = pathPoints[currentPathIndex];
+    const currentPos = quadcopter.position;
+    
+    const direction = new THREE.Vector3().subVectors(targetPoint, currentPos);
+    const distance = direction.length();
+
+    // Make threshold larger to prevent vibration
+    if (distance < 0.5) {  // Changed from 0.05 to 0.5
+        currentPathIndex++;
+        
+        if (currentPathIndex >= pathPoints.length) {
+            stopFlight();
+            return;
+        }
+    } else {
+        direction.normalize();
+        const moveAmount = direction.multiplyScalar(speed);
+        currentPos.add(moveAmount);
+        
+        // Handle drone orientation
+        if (currentPathIndex >= pathPoints.length - 2) {
+            // Landing
+            quadcopter.rotation.x = 0;
+            quadcopter.rotation.z = 0;
+        } else if (currentPathIndex <= 1) {
+            // Takeoff
+            quadcopter.rotation.set(0, 0, 0);
+        } else {
+            // Normal flight
+            const lookAtPoint = targetPoint;  // Changed to look at target point directly
+            quadcopter.lookAt(lookAtPoint);
+            quadcopter.rotation.x = 0;
+            quadcopter.rotation.z = 0;
+            quadcopter.rotation.y += Math.PI / 2;
+        }
+
+        // Update vertex colors
+        const sides = parseInt(document.getElementById('sides').value);
+        if (currentPathIndex >= 2 && currentPathIndex < pathPoints.length - 2) {
+            const sphereIndex = Math.floor((currentPathIndex - 2) / sides) + 1;
+            if (sphereIndex < pathSpheres.length - 1) {
+                pathSpheres[sphereIndex].material.color.setHex(0x00ff00);
+            }
+        }
+    }
+
+    requestAnimationFrame(flyDrone);
+}
+
+function initDrone() {
+    const droneObjects = createDrone();
+    quadcopter = droneObjects.droneGroup;
+    propellers = droneObjects.propellers;
+    quadcopter.position.set(0, 0, 0);
+    scene.add(quadcopter);
+}
+
+function startFlight() {
+    if (!pathPoints.length) return;
+    
+    // Reset position to start
+    quadcopter.position.set(0, 0, 0);
+    quadcopter.rotation.set(0, 0, 0);
+    
+    isFlying = true;
+    isPaused = false;
+    currentPathIndex = 0;
+    
+    document.getElementById('startButton').disabled = true;
+    document.getElementById('pauseButton').disabled = false;
+    document.getElementById('generatePath').disabled = true;
+    document.getElementById('pauseButton').textContent = 'Pause';
+    
+    // Start the flight animation
+    flyDrone();
+}
+
+function stopFlight() {
+    isFlying = false;
+    isPaused = false;
+    if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+    }
+    document.getElementById('startButton').disabled = false;
+    document.getElementById('pauseButton').disabled = true;
+    document.getElementById('generatePath').disabled = false;
+    document.getElementById('pauseButton').textContent = 'Pause';
+}
+
+function resetSimulation() {
+    stopFlight();
+    if (spiralPath) scene.remove(spiralPath);
+    pathSpheres.forEach(sphere => scene.remove(sphere));
+    pathSpheres = [];
+    pathPoints = [];
+    isPaused = false;
+    if (quadcopter) {
+        quadcopter.position.set(0, 0, 0);
+        quadcopter.rotation.set(0, 0, 0);
+    }
+    
+    document.getElementById('sides').value = 5;
+    document.getElementById('distance').value = 10;
+    document.getElementById('increment').value = 2;
+    document.getElementById('verticalIncrement').value = 2;
+    document.getElementById('turns').value = 2;
+    document.getElementById('speedControl').value = 3;
+    document.getElementById('speedValue').textContent = 3;
+    document.getElementById('returnPathLength').textContent = "0";
+    document.getElementById('pauseButton').textContent = 'Pause';
+}
+
+function createHomePositionMarker() {
+    const geometry = new THREE.RingGeometry(0.3, 0.4, 32);
+    const material = new THREE.MeshBasicMaterial({ 
+        color: 0x00ff00,
+        side: THREE.DoubleSide
+    });
+    const ring = new THREE.Mesh(geometry, material);
+    ring.rotation.x = -Math.PI / 2;
+    ring.position.y = 0.11;
+    scene.add(ring);
+}
+
+function createScaleMarkers() {
+    const markerMaterial = new THREE.LineBasicMaterial({ color: 0x888888 });
+    const textMaterial = new THREE.MeshBasicMaterial({ color: 0x888888 });
+    
+    // Create markers every 20 units
+    for (let i = -200; i <= 200; i += 20) {
+        if (i === 0) continue; // Skip 0 as it's the center
+
+        // X-axis markers
+        const xGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(i, 0, -0.5),
+            new THREE.Vector3(i, 0, 0.5)
+        ]);
+        const xLine = new THREE.Line(xGeometry, markerMaterial);
+        scene.add(xLine);
+
+        // Z-axis markers
+        const zGeometry = new THREE.BufferGeometry().setFromPoints([
+            new THREE.Vector3(-0.5, 0, i),
+            new THREE.Vector3(0.5, 0, i)
+        ]);
+        const zLine = new THREE.Line(zGeometry, markerMaterial);
+        scene.add(zLine);
+    }
+}
+
+function createScaleText() {
+    const div = document.createElement('div');
+    div.id = 'gridText';  // Add this line
+    div.style.position = 'absolute';
+    div.style.bottom = '10px';
+    div.style.right = '10px';
+    div.style.background = 'rgba(0,0,0,0.7)';
+    div.style.color = 'white';
+    div.style.padding = '5px';
+    div.style.borderRadius = '3px';
+    document.getElementById('container').appendChild(div);
+}
+
+function validateInputs() {
+    const inputs = [
+        { id: 'sides', min: 3, max: 8 },
+        { id: 'distance', min: 10, max: 20 },
+        { id: 'increment', min: 2, max: 10 },
+        { id: 'verticalIncrement', min: 0, max: 10 },
+        { id: 'turns', min: 2, max: 10 }
+    ];
+
+    for (const input of inputs) {
+        const element = document.getElementById(input.id);
+        const value = parseInt(element.value);
+        if (isNaN(value) || value < input.min || value > input.max) {
+            alert(`${input.id} must be between ${input.min} and ${input.max}`);
+            return false;
+        }
+    }
+    return true;
+}
+
+// Event listeners
+document.getElementById('generatePath').addEventListener('click', () => {
+    if (validateInputs()) {
+        generateSpiralPath();
+        document.getElementById('startButton').disabled = false;
+    }
+});
+
+document.getElementById('startButton').addEventListener('click', startFlight);
+document.getElementById('pauseButton').addEventListener('click', function() {
+    isPaused = !isPaused;
+    this.textContent = isPaused ? 'Resume' : 'Pause';
+    if (!isPaused) {
+        flyDrone(); // Resume flight
+    }
+});
+document.getElementById('resetButton').addEventListener('click', resetSimulation);
+
+document.getElementById('speedControl').addEventListener('input', function() {
+    document.getElementById('speedValue').textContent = this.value;
+});
+
+window.addEventListener('resize', () => {
+    camera.aspect = (window.innerWidth * 0.7) / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth * 0.7, window.innerHeight);
+});
+
+// Initialize
+init();
+createHomePositionMarker();
+createScaleMarkers();
+createScaleText();   
+
+// Set initial camera position
+camera.position.set(30, 30, 30);
+camera.lookAt(10, 10, 10);
+controls.update();
+
+// Start animation
+animate();
+
+const translations = {
+    en: {
+	  back: "Back",
+        title: "2D / 3D Spiral Navigation",
+        parameter: "Parameter",
+        value: "Value",
+        sides: "Number of sides (n)",
+        initialDistance: "Initial distance (d)",
+        horizontalIncrement: "Horizontal increment",
+        verticalIncrement: "Vertical increment",
+        turns: "Number of turns (t)",
+        range: "Range",
+        returnPath: "Return path length",
+        units: "units",
+        generatePath: "Generate Path",
+        start: "Start",
+        pause: "Pause",
+        resume: "Resume",
+        reset: "Reset",
+        speed: "Speed",
+        instructions: "Left click + drag: Rotate view<br>Middle mouse/scroll: Zoom<br>Middle click + drag: Pan view",
+        grid: "Grid: 20 units per division"
+    },
+    zh: {
+	  back: "返回",
+        title: "2D / 3D 螺旋導航",
+        parameter: "參數",
+        value: "數值",
+        sides: "邊數 (n)",
+        initialDistance: "初始距離 (d)",
+        horizontalIncrement: "水平增量",
+        verticalIncrement: "垂直增量",
+        turns: "圈數 (t)",
+        range: "範圍",
+        returnPath: "返回路徑長度",
+        units: "單位",
+        generatePath: "生成路徑",
+        start: "開始",
+        pause: "暫停",
+        resume: "繼續",
+        reset: "重置",
+        speed: "速度",
+        instructions: "左鍵 + 拖動：旋轉視角<br>中鍵/滾輪：縮放<br>中鍵 + 拖動：平移視角",
+        grid: "網格：每格20單位"
+    }
+};
+
+let currentLanguage = 'en';
+
+function toggleLanguage() {
+    // Toggle language state first
+    currentLanguage = (currentLanguage === 'en') ? 'zh' : 'en';
+    const t = translations[currentLanguage];
+    
+    // Update language button and back button
+    document.getElementById('languageButton').textContent = (currentLanguage === 'en') ? '繁體中文' : 'English';
+    document.getElementById('backButton').textContent = (currentLanguage === 'en') ? 'Back' : '返回';
+    
+    // Update all text elements
+    document.querySelector('h1').textContent = t.title;
+    document.querySelector('th:first-child').textContent = t.parameter;
+    document.querySelector('th:last-child').textContent = t.value;
+    
+    document.querySelector('tr:nth-child(2) td:first-child strong').textContent = t.sides;
+    document.querySelector('tr:nth-child(3) td:first-child strong').textContent = t.initialDistance;
+    document.querySelector('tr:nth-child(4) td:first-child strong').textContent = t.horizontalIncrement;
+    document.querySelector('tr:nth-child(5) td:first-child strong').textContent = t.verticalIncrement;
+    document.querySelector('tr:nth-child(6) td:first-child strong').textContent = t.turns;
+    
+    document.querySelectorAll('.range-info').forEach(el => {
+        el.textContent = t.range + ': ' + el.textContent.split(': ')[1];
+    });
+    
+    document.getElementById('pathInfo').innerHTML = 
+        `${t.returnPath}: <span id="returnPathLength">${document.getElementById('returnPathLength').textContent}</span> ${t.units}`;
+    
+    document.getElementById('generatePath').textContent = t.generatePath;
+    document.getElementById('startButton').textContent = t.start;
+    document.getElementById('pauseButton').textContent = isPaused ? t.resume : t.pause;
+    document.getElementById('resetButton').textContent = t.reset;
+    
+    document.querySelector('label[for="speedControl"]').textContent = 
+        t.speed + ': ' + document.getElementById('speedValue').textContent;
+
+    // Force update instructions and grid text regardless of current content
+    const gridTextElement = document.querySelector('#container div:last-child');
+    
+
+    // Recreate grid text if it doesn't exist
+    if (!gridTextElement) {
+        createScaleText();
+    }
+}
+
+document.getElementById('languageButton').addEventListener('click', toggleLanguage);
+
+</script>
+</body>
+</html>
