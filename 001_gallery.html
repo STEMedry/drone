@@ -69,71 +69,66 @@
             z-index: 0;
         }
 
-        .shape-animation {
-            position: relative;
-            height: 80px;
-            overflow: hidden;
-            margin-bottom: 5px;
-            z-index: 1;
-        }
+.shape-animation {
+    position: relative;
+    height: 80px;
+    overflow: hidden;
+    margin-bottom: 5px;
+    z-index: 1;
+}
 
-        .shape {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            animation: shape-flight linear infinite;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-		opacity: 0;
-        }
+.shape {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    left: -30px;
+}
 
-    .shape.animate {
-        opacity: 1;
-        animation: shape-flight linear infinite;
+.shape:nth-child(1) {
+    background-color: #3498db;
+    border-radius: 50%;
+    top: 15px;
+    animation: moveRight 6s linear infinite;
+}
+
+.shape:nth-child(2) {
+    background-color: #e74c3c;
+    top: 50px;
+    animation: moveRight 7s linear infinite;
+}
+
+.shape:nth-child(3) {
+    background-color: #27ae60;
+    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
+    top: 15px;
+    animation: moveRight 5s linear infinite;
+}
+
+.shape:nth-child(4) {
+    background-color: #f1c40f;
+    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+    top: 50px;
+    animation: moveRight 8s linear infinite;
+}
+
+.shape:nth-child(5) {
+    background-color: #9b59b6;
+    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
+    top: 30px;
+    animation: moveRight 9s linear infinite;
+}
+
+@keyframes moveRight {
+    0% {
+        transform: translateX(0);
+        left: -30px;
     }
-
-        .shape:nth-child(1) {
-            background-color: #3498db;
-            border-radius: 50%;
-            animation-duration: 6s;
-            top: 15px;
-            left: -80px;
-        }
-        .shape:nth-child(2) {
-            background-color: #e74c3c;
-            animation-duration: 7s;
-            top: 50px;
-            left: -100px;
-        }
-        .shape:nth-child(3) {
-            background-color: #27ae60;
-            clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-            animation-duration: 5s;
-            top: 15px;
-            left: -120px;
-        }
-        .shape:nth-child(4) {
-            background-color: #f1c40f;
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-            animation-duration: 8s;
-            top: 50px;
-            left: -140px;
-        }
-        .shape:nth-child(5) {
-            background-color: #9b59b6;
-            clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-            animation-duration: 9s;
-            top: 30px;
-            left: -160px;
-        }
-
-        @keyframes shape-flight {
-            0% {
-                transform: translateX(0px);
-            }
-            100% {
-                transform: translateX(calc(100vw + 80px));
-            }
-        }
+    100% {
+        transform: translateX(calc(100vw + 30px));
+        left: -30px;
+    }
+}
 
         .text-content h1 {
             font-size: 1.6em;
