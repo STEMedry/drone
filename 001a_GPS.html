@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Satellite Positioning of Drone</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+	    	align-items: center;  /* Center horizontally */
+    		min-height: 100vh;  /* Full viewport height */
+        }
+	h1 {
+    		text-align: center;
+	    margin: 0 0 20px 0;
+	    width: 100%;
+	}
+        .container {
+	    display: flex;
+	    gap: 5px;
+	    align-items: flex-start;
+	    width: 100%;  /* Add this */
+	    max-width: 1100px;  /* Add this to limit width */
+	    margin: 0 auto;  /* Add this to center container */
+        }
+        .visualization {
+            flex: 3;
+            position: relative;
+		height: 600px; 
+        }
+        canvas {
+	    border: 1px solid #000;
+	    cursor: grab;
+	    touch-action: none;
+	    height: 100%;  /* Add this line */
+	    width: 100%;  /* Add this line */
+        }
+        canvas:active {
+            cursor: grabbing;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+	    border: 1px solid #ddd;
+	    padding: 2px;  /* Reduce from 5px to 2px */
+	    text-align: center;
+	    height: 24px;  /* Add fixed height */
+	    line-height: 24px;  /* Add line height */
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .sat-x, .sat-y {
+            width: 50px;
+            text-align: center;
+        }
+        .distance-display {
+            background-color: #f8f8f8;
+            padding: 5px;
+            width: 60px;
+            text-align: center;
+        }
+        .right-panel {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        button {
+            padding: 5px 10px;
+            cursor: pointer;
+            width: 120px;
+        }
+        .triangleButton {
+	    width: 80px;
+	    padding: 1px;  /* Reduce from 5px to 1px */
+	    margin: 1px 0;  /* Reduce from 2px to 1px */
+	    height: 20px;  /* Add fixed height */
+        }
+        .button-row {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-start;
+            margin-bottom: 0px;
+        }
+        .satellite-table {
+            max-height: none;
+            overflow-y: visible;
+        }
+        .signal-counter {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        @media (max-width: 1200px) {
+            .container {
+                flex-direction: column;
+            }
+            .right-panel {
+                width: 100%;
+            }
+        }
+.satellite-detected {
+    background-color: yellow;
+}
+.triangle-detected {
+    background-color: lightgreen
+}
+.triangle-detected.clicked {
+    background-color: orange !important;
+}
+.langButton {
+    background-color: #4CAF50;
+    font-weight: bold;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 120px;
+}
+
+.langButton:hover {
+    background-color: #90EE90;
+}
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 20px auto;
+}
+
+.back-button {
+    background-color: #0750ed;
+    font-weight: bold;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 16px;
+    min-width: 60px;  /* Add this line */
+    text-align: center;  /* Add this line */
+    display: inline-block;  /* Add this line */
+    white-space: nowrap;  /* Add this line */
+}
+
+.back-button:hover {
+    background-color: #0f28b8;
+}
+    </style>
+</head>
+<body>
+
+<div class="header-container">
+    <h1 style="font-size: 24px;">GPS Satellite Positioning of Drone <span style="font-size: 16px; font-weight: normal;">(simplified 2D simulation)</span></h1>
+    <a href="001_gallery.html" class="back-button" id="backButton">Back</a>
+</div>
+
+    <div class="container">
+        <div class="visualization">
+            <canvas id="trilaterationCanvas" width="800" height="800"></canvas>
+        </div>
+        <div class="right-panel">
+            <div class="button-row">
+                <button id="resetButton">Reset</button>
+                <button id="toggleRadiusButton">Effective Range</button>
+                <button id="simulationButton">Simulation</button>
+		    <button id="langButton" class="langButton">繁體中文</button>
+            </div>
+            <div class="satellite-table">
+                <table>
+                    <tr>
+                        <th>Satellite</th>
+                        <th>Distance</th>
+                        <th>Triangle</th>
+                    </tr>
+                    <tr>
+                        <td>1 (Red)</td>
+                        <td><span class="distance-display" id="sat1r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="1">Sat 1</button></td>
+                    </tr>
+                    <tr>
+                        <td>2 (Green)</td>
+                        <td><span class="distance-display" id="sat2r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="2">Sat 2</button></td>
+                    </tr>
+                    <tr>
+                        <td>3 (Blue)</td>
+                        <td><span class="distance-display" id="sat3r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="3">Sat 3</button></td>
+                    </tr>
+                    <tr>
+                        <td>4 (Purple)</td>
+                        <td><span class="distance-display" id="sat4r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="4">Sat 4</button></td>
+                    </tr>
+                    <tr>
+                        <td>5 (Orange)</td>
+                        <td><span class="distance-display" id="sat5r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="5">Sat 5</button></td>
+                    </tr>
+                    <tr>
+                        <td>6 (Brown)</td>
+                        <td><span class="distance-display" id="sat6r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="6">Sat 6</button></td>
+                    </tr>
+                    <tr>
+                        <td>7 (Pink)</td>
+                        <td><span class="distance-display" id="sat7r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="7">Sat 7</button></td>
+                    </tr>
+                    <tr>
+                        <td>8 (Gray)</td>
+                        <td><span class="distance-display" id="sat8r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="8">Sat 8</button></td>
+                    </tr>
+                    <tr>
+                        <td>9 (Cyan)</td>
+                        <td><span class="distance-display" id="sat9r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="9">Sat 9</button></td>
+                    </tr>
+                    <tr>
+                        <td>10 (DarkGreen)</td>
+                        <td><span class="distance-display" id="sat10r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="10">Sat 10</button></td>
+                    </tr>
+                    <tr>
+                        <td>11 (Magenta)</td>
+                        <td><span class="distance-display" id="sat11r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="11">Sat 11</button></td>
+                    </tr>
+                    <tr>
+                        <td>12 (Teal)</td>
+                        <td><span class="distance-display" id="sat12r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="12">Sat 12</button></td>
+                    </tr>
+                    <tr>
+                        <td>13 (Gold)</td>
+                        <td><span class="distance-display" id="sat13r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="13">Sat 13</button></td>
+                    </tr>
+                    <tr>
+                        <td>14 (Indigo)</td>
+                        <td><span class="distance-display" id="sat14r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="14">Sat 14</button></td>
+                    </tr>
+                    <tr>
+                        <td>15 (Coral)</td>
+                        <td><span class="distance-display" id="sat15r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="15">Sat 15</button></td>
+                    </tr>
+                    <tr>
+                        <td>16 (SkyBlue)</td>
+                        <td><span class="distance-display" id="sat16r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="16">Sat 16</button></td>
+                    </tr>
+                    <tr>
+                        <td>17 (Maroon)</td>
+                        <td><span class="distance-display" id="sat17r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="17">Sat 17</button></td>
+                    </tr>
+                    <tr>
+                        <td>18 (Olive)</td>
+                        <td><span class="distance-display" id="sat18r">30.00</span></td>
+                        <td><button class="triangleButton" data-sat="18">Sat 18</button></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+<script>
+    const canvas = document.getElementById('trilaterationCanvas');
+    const ctx = canvas.getContext('2d');
+    let droneX = 0, droneY = 0;
+    let isDragging = false;
+    let scale = 800 / 100;
+    let offsetX = canvas.width / 2;
+    let offsetY = canvas.height / 2;
+
+const DEFAULT_STATES = {
+    dronePosition: {
+        x: 0,
+        y: 0
+    },
+    triangles: new Array(18).fill(false)
+};
+
+    const satellites = [
+        { id: 1, x: -40, y: 36, r: 30, color: 'red' },
+        { id: 2, x: 0, y: 45, r: 30, color: 'green' },
+        { id: 3, x: 45, y: 42, r: 30, color: 'blue' },
+        { id: 4, x: -44, y: 3, r: 30, color: 'purple' },
+        { id: 5, x: -5, y: -3, r: 30, color: 'orange' },
+        { id: 6, x: 45, y: 0, r: 30, color: 'brown' },
+        { id: 7, x: -45, y: -45, r: 30, color: 'pink' },
+        { id: 8, x: 0, y: -45, r: 30, color: 'gray' },
+        { id: 9, x: 38, y: -42, r: 30, color: 'cyan' },
+        { id: 10, x: -30, y: 22, r: 30, color: 'darkgreen' },
+        { id: 11, x: 28, y: 32, r: 30, color: 'magenta' },
+        { id: 12, x: -28, y: -32, r: 30, color: 'teal' },
+        { id: 13, x: 32, y: -21, r: 30, color: 'gold' },
+        { id: 14, x: -15, y: 15, r: 30, color: 'indigo' },
+        { id: 15, x: 21, y: 12, r: 30, color: 'coral' },
+        { id: 16, x: -15, y: -15, r: 30, color: 'skyblue' },
+        { id: 17, x: 18, y: -8, r: 30, color: 'maroon' },
+        { id: 18, x: 0, y: 25, r: 30, color: 'olive' }
+    ];
+
+    let showTriangles = new Array(18).fill(false);
+    let showRadius = false;
+
+    const droneImage = new Image();
+    droneImage.src = 'drone.png';
+    const satelliteImage = new Image();
+    satelliteImage.src = 'satellite.png';
+
+    let droneImageLoaded = false;
+    let satelliteImageLoaded = false;
+
+    droneImage.onload = () => {
+        droneImageLoaded = true;
+        updateVisualization();
+    };
+
+    satelliteImage.onload = () => {
+        satelliteImageLoaded = true;
+        updateVisualization();
+    };
+
+    function updateCanvasDimensions() {
+    const visualizationDiv = document.querySelector('.visualization');
+    const height = visualizationDiv.clientHeight;
+    canvas.width = height;  // Make it square
+    canvas.height = height;
+    offsetX = canvas.width / 2;
+    offsetY = canvas.height / 2;
+    scale = canvas.width / 100;
+    }
+
+    function drawGridAndAxes() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.beginPath();
+        ctx.strokeStyle = '#eee';
+        ctx.lineWidth = 1;
+        for(let x=-50; x<=50; x++) {
+            ctx.moveTo(offsetX + x * scale, 0);
+            ctx.lineTo(offsetX + x * scale, canvas.height);
+        }
+        for(let y=-50; y<=50; y++) {
+            ctx.moveTo(0, offsetY - y * scale);
+            ctx.lineTo(canvas.width, offsetY - y * scale);
+        }
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.moveTo(0, offsetY);
+        ctx.lineTo(canvas.width, offsetY);
+        ctx.moveTo(offsetX, 0);
+        ctx.lineTo(offsetX, canvas.height);
+        ctx.stroke();
+
+        ctx.fillStyle = '#e8e1e1';
+        ctx.font = '14px Arial';
+        for(let x=-50; x<=50; x+=10) {
+            if(x !== 0) {
+                ctx.fillText(x, offsetX + x * scale - 10, offsetY + 20);
+            }
+        }
+        for(let y=-50; y<=50; y+=10) {
+            if(y !== 0) {
+                ctx.fillText(y, offsetX + 10, offsetY - y * scale + 5);
+            }
+        }
+        ctx.fillText('X', canvas.width - 15, offsetY + 15);
+        ctx.fillText('Y', offsetX + 15, 15);
+    }
+
+    function drawSignalCounter(signalsReceived) {
+        ctx.save();
+
+    // Increase background size
+    const padding = 15;
+    const fontSize = 24;
+    const boxWidth = 250;
+    const boxHeight = 50;
+
+   // Change background color (light yellow)
+    ctx.fillStyle = 'rgba(255, 255, 240, 0.9)';  // More opaque background
+    ctx.fillRect(
+        canvas.width - boxWidth - padding, 
+        padding, 
+        boxWidth, 
+        boxHeight
+    );
+    
+    // Add border
+    ctx.strokeStyle = '#666';  // Gray border
+    ctx.lineWidth = 1;
+    ctx.strokeRect(
+        canvas.width - boxWidth - padding, 
+        padding, 
+        boxWidth, 
+        boxHeight
+    );
+    
+    // Text color based on number of satellites
+    // You can customize these colors
+    const textColor = signalsReceived >= 3 ? '#006400' : '#8B0000';  // Darker green/red
+    
+    ctx.fillStyle = textColor;
+    ctx.font = `bold ${fontSize}px Arial`;
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';  // Center text vertically
+    
+    // Position text in the middle of the box
+    ctx.fillText(
+        `${translations.satellitesInRange[isEnglish ? 'en' : 'zh']}${signalsReceived}`, 
+        canvas.width - padding - 10,  // Move text slightly left from the edge
+        padding + boxHeight/2  // Vertically center
+    );
+    
+    ctx.restore();
+}
+
+    function drawCircles() {
+        satellites.forEach(sat => {
+            if (satelliteImageLoaded) {
+		    ctx.globalAlpha = 0.5;  // Add this line for 50% transparency
+                const imgWidth = 30;
+                const imgHeight = 30;
+                ctx.drawImage(satelliteImage, 
+                    sat.x * scale + offsetX - imgWidth / 2, 
+                    offsetY - sat.y * scale - imgHeight / 2, 
+                    imgWidth, imgHeight);
+		    ctx.globalAlpha = 1.0;  // Reset transparency
+            } else {
+                ctx.beginPath();
+                ctx.arc(sat.x * scale + offsetX, offsetY - sat.y * scale, 5, 0, 2 * Math.PI);
+                ctx.fillStyle = sat.color;
+                ctx.fill();
+            }
+
+            if (showRadius) {
+                ctx.beginPath();
+                ctx.arc(sat.x * scale + offsetX, offsetY - sat.y * scale, sat.r * scale, 0, 2 * Math.PI);
+                ctx.strokeStyle = sat.color;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            if (sat.inRange) {
+                ctx.beginPath();
+                ctx.arc(sat.x * scale + offsetX, offsetY - sat.y * scale, sat.actualDistance * scale, 0, 2 * Math.PI);
+                ctx.strokeStyle = sat.color;
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = sat.color;
+            ctx.font = '12px Arial';
+            const label = `Sat ${sat.id} (${sat.x}, ${sat.y})`;
+            ctx.fillText(label, sat.x * scale + offsetX + 10, offsetY - sat.y * scale - 10);
+            
+            if (sat.inRange) {
+                ctx.fillText(`d=${sat.actualDistance.toFixed(2)}`, 
+                    sat.x * scale + offsetX + 10, 
+                    offsetY - sat.y * scale + 5);
+            }
+        });
+
+        if (droneImageLoaded) {
+            const imgWidth = 50;
+            const imgHeight = 50;
+            ctx.drawImage(droneImage, 
+                droneX * scale + offsetX - imgWidth / 2, 
+                offsetY - droneY * scale - imgHeight / 2, 
+                imgWidth, imgHeight);
+        } else {
+            ctx.beginPath();
+            ctx.arc(droneX * scale + offsetX, offsetY - droneY * scale, 7, 0, 2 * Math.PI);
+            ctx.fillStyle = 'black';
+            ctx.fill();
+        }
+
+        const label = `D (${droneX.toFixed(2)}, ${droneY.toFixed(2)})`;
+        ctx.font = 'bold 14px Arial';
+        const textWidth = ctx.measureText(label).width;
+        const padding = 4;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(
+            droneX * scale + offsetX + 10 - padding, 
+            offsetY - droneY * scale - 25 - padding, 
+            textWidth + padding*2, 
+            20 + padding*2
+        );
+
+        ctx.fillStyle = 'black';
+        ctx.fillText(label, droneX * scale + offsetX + 10, offsetY - droneY * scale - 10);
+    }
+
+    function updateSatelliteRadii() {
+        let signalsReceived = 0;
+        satellites.forEach(sat => {
+            const dx = sat.x - droneX;
+            const dy = sat.y - droneY;
+            const actualDistance = Math.sqrt(dx * dx + dy * dy);
+            
+            sat.actualDistance = actualDistance;
+            sat.inRange = actualDistance <= sat.r;
+            
+        // Get the table row and triangle button for this satellite
+        const row = document.querySelector(`tr:nth-child(${sat.id + 1})`);
+        const satCell = row.querySelector('td:first-child');
+        const triangleButton = row.querySelector('.triangleButton');
+
+            if (sat.inRange) {
+                signalsReceived++;
+            satCell.classList.add('satellite-detected');
+            triangleButton.classList.add('triangle-detected');
+            } else {
+            satCell.classList.remove('satellite-detected');
+            triangleButton.classList.remove('triangle-detected');
+        }
+            
+            document.getElementById(`sat${sat.id}r`).textContent = actualDistance.toFixed(2);
+        });
+        
+        return signalsReceived;
+    }
+
+    function drawTrianglesOnCanvas() {
+        satellites.forEach(sat => {
+            if (showTriangles[sat.id - 1] && sat.inRange) {
+                ctx.beginPath();
+                ctx.strokeStyle = sat.color;
+                
+                const colorMatch = sat.color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+                let fillStyle;
+                if (colorMatch) {
+                    fillStyle = `rgba(${colorMatch[1]}, ${colorMatch[2]}, ${colorMatch[3]}, 0.2)`;
+                } else {
+                    fillStyle = `${sat.color}33`;
+                }
+                ctx.fillStyle = fillStyle;
+                
+                ctx.lineWidth = 2;
+                
+                ctx.moveTo(sat.x * scale + offsetX, offsetY - sat.y * scale);
+                ctx.lineTo(droneX * scale + offsetX, offsetY - sat.y * scale);
+                ctx.lineTo(droneX * scale + offsetX, offsetY - droneY * scale);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            }
+        });
+    }
+
+    function updateVisualization() {
+        drawGridAndAxes();
+        const signalsReceived = updateSatelliteRadii();
+        drawTrianglesOnCanvas();
+        drawCircles();
+        drawSignalCounter(signalsReceived);
+    }
+
+    function getEventPosition(e) {
+        const rect = canvas.getBoundingClientRect();
+        return e.touches ? {
+            x: e.touches[0].clientX - rect.left,
+            y: e.touches[0].clientY - rect.top
+        } : {
+            x: e.clientX - rect.left,
+            y: e.clientY - rect.top
+        };
+    }
+
+    function isDroneClicked(x, y) {
+        const distance = Math.sqrt(
+            Math.pow(x - (droneX * scale + offsetX), 2) + 
+            Math.pow(y - (offsetY - droneY * scale), 2)
+        );
+        return distance <= 15;
+    }
+
+    canvas.addEventListener('mousedown', (e) => {
+        const pos = getEventPosition(e);
+        if (isDroneClicked(pos.x, pos.y)) {
+            isDragging = true;
+            canvas.style.cursor = 'grabbing';
+        }
+    });
+
+    canvas.addEventListener('touchstart', (e) => {
+        const pos = getEventPosition(e);
+        if (isDroneClicked(pos.x, pos.y)) {
+            isDragging = true;
+            canvas.style.cursor = 'grabbing';
+        }
+    });
+
+    function handleMove(e) {
+        if (isDragging) {
+            const pos = getEventPosition(e);
+            droneX = Math.max(-50, Math.min(50, (pos.x - offsetX) / scale));
+            droneY = Math.max(-50, Math.min(50, (offsetY - pos.y) / scale));
+            updateVisualization();
+        }
+    }
+
+    canvas.addEventListener('mousemove', handleMove);
+    canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        handleMove(e);
+    }, { passive: false });
+
+    function endDrag() {
+        isDragging = false;
+        canvas.style.cursor = 'grab';
+    }
+
+    canvas.addEventListener('mouseup', endDrag);
+    canvas.addEventListener('mouseleave', endDrag);
+    canvas.addEventListener('touchend', endDrag);
+
+    let simulationActive = false;
+    let simulationTime = 0;
+    const SIMULATION_DURATION = 20000; // 20 seconds
+
+function runSimulation() {
+    if(simulationActive) return;
+    
+    simulationActive = true;
+    simulationTime = 0;
+    
+    const animate = (timestamp) => {
+        if(!simulationActive) return;
+        
+        simulationTime += 16.7;
+        
+        if(simulationTime >= SIMULATION_DURATION) {
+            simulationActive = false;
+            droneX = 0;  // Reset to origin
+            droneY = 0;
+            updateVisualization();
+            return;
+        }
+        
+        const progress = (simulationTime / SIMULATION_DURATION) * Math.PI * 2;
+        droneX = 30 * Math.sin(progress);
+        droneY = 20 * Math.sin(progress * 2);
+        
+        updateVisualization();
+        requestAnimationFrame(animate);
+    };
+    
+    requestAnimationFrame(animate);
+}
+
+let isEnglish = true;
+
+const translations = {
+    back: {
+        en: 'Back',
+        zh: '返回'
+    },
+    colors: {
+        en: {
+            red: 'Red',
+            green: 'Green',
+            blue: 'Blue',
+            purple: 'Purple',
+            orange: 'Orange',
+            brown: 'Brown',
+            pink: 'Pink',
+            gray: 'Gray',
+            cyan: 'Cyan',
+            darkgreen: 'DarkGreen',
+            magenta: 'Magenta',
+            teal: 'Teal',
+            gold: 'Gold',
+            indigo: 'Indigo',
+            coral: 'Coral',
+            skyblue: 'SkyBlue',
+            maroon: 'Maroon',
+            olive: 'Olive'
+        },
+        zh: {
+            red: '紅',
+            green: '綠',
+            blue: '藍',
+            purple: '紫',
+            orange: '橙',
+            brown: '棕',
+            pink: '粉',
+            gray: '灰',
+            cyan: '青',
+            darkgreen: '深綠',
+            magenta: '洋紅',
+            teal: '藍綠',
+            gold: '金',
+            indigo: '靛藍',
+            coral: '珊瑚',
+            skyblue: '天藍',
+            maroon: '栗',
+            olive: '橄欖'
+        }
+    },
+    pageTitle: {
+        en: 'GPS Satellite Positioning of Drone',
+        zh: '無人機 GPS 衛星定位'
+    },
+    subtitle: {
+        en: '(simplified 2D simulation)',
+        zh: '(簡化二維模擬)'
+    },
+    effectiveRange: {
+        en: 'Effective Range',
+        zh: '有效範圍'
+    }, 
+   reset: {
+        en: 'Reset',
+        zh: '重設'
+    },
+    showRadius: {
+        en: 'Show Radius',
+        zh: '顯示半徑'
+    },
+    hideRadius: {
+        en: 'Hide Radius',
+        zh: '隱藏半徑'
+    },
+    simulation: {
+        en: 'Simulation',
+        zh: '模擬'
+    },
+    satellite: {
+        en: 'Satellite',
+        zh: '衛星'
+    },
+    distance: {
+        en: 'Distance',
+        zh: '距離'
+    },
+    triangle: {
+        en: 'Triangle',
+        zh: '三角形'
+    },
+    sat: {
+        en: 'Sat',
+        zh: '衛星'
+    },
+    satellitesInRange: {
+        en: 'Satellites in range: ',
+        zh: '範圍內的衛星： '
+    }
+};
+
+// Add this to the initialize() function
+document.getElementById('langButton').addEventListener('click', () => {
+    isEnglish = !isEnglish;
+    
+    // Update language button text
+    document.getElementById('langButton').textContent = isEnglish ? '繁體中文' : 'English';
+    
+    // Update title and subtitle
+	document.querySelector('h1').innerHTML = `${translations.pageTitle[isEnglish ? 'en' : 'zh']} <span style="font-size: 16px; font-weight: normal;">${translations.subtitle[isEnglish ? 'en' : 'zh']}</span>`;
+    document.title = translations.pageTitle[isEnglish ? 'en' : 'zh'];
+
+document.getElementById('backButton').textContent = translations.back[isEnglish ? 'en' : 'zh'];
+    
+    // Update buttons
+    document.getElementById('resetButton').textContent = translations.reset[isEnglish ? 'en' : 'zh'];
+    document.getElementById('toggleRadiusButton').textContent = translations.effectiveRange[isEnglish ? 'en' : 'zh'];
+    document.getElementById('simulationButton').textContent = translations.simulation[isEnglish ? 'en' : 'zh'];
+
+    // Update satellite names
+    const rows = document.querySelectorAll('table tr');
+    rows.forEach((row, index) => {
+        if (index > 0) { // Skip header row
+            const colorCell = row.querySelector('td:first-child');
+            const satNum = index;
+            const colorName = satellites[satNum - 1].color;
+            colorCell.textContent = `${satNum} (${translations.colors[isEnglish ? 'en' : 'zh'][colorName.toLowerCase()]})`;
+        }
+});
+
+    // Update table headers
+    const headers = document.querySelectorAll('th');
+    headers[0].textContent = translations.satellite[isEnglish ? 'en' : 'zh'];
+    headers[1].textContent = translations.distance[isEnglish ? 'en' : 'zh'];
+    headers[2].textContent = translations.triangle[isEnglish ? 'en' : 'zh'];
+
+    // Update triangle buttons
+    const triangleButtons = document.querySelectorAll('.triangleButton');
+    triangleButtons.forEach((button, index) => {
+        button.textContent = `${translations.sat[isEnglish ? 'en' : 'zh']} ${index + 1}`;
+    });
+    
+    updateVisualization();
+});
+
+// Modify the drawSignalCounter function to use translations
+function drawSignalCounter(signalsReceived) {
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.fillRect(canvas.width - 160, 10, 150, 30);
+    ctx.fillStyle = signalsReceived >= 3 ? '#008000' : '#ff0000';
+    ctx.font = 'bold 20px Arial';
+    ctx.textAlign = 'right';
+    ctx.fillText(`${translations.satellitesInRange[isEnglish ? 'en' : 'zh']}${signalsReceived}`, 
+        canvas.width - 20, 30);
+    ctx.restore();
+}
+
+
+    function initialize() {
+        updateCanvasDimensions();
+
+        const triangleButtons = document.querySelectorAll('.triangleButton');
+        triangleButtons.forEach(button => {
+            const satId = parseInt(button.getAttribute('data-sat'));
+            button.style.backgroundColor = '';
+            button.addEventListener('click', () => {
+                showTriangles[satId - 1] = !showTriangles[satId - 1];
+                button.classList.toggle('clicked');
+                updateVisualization();
+            });
+        });
+
+document.getElementById('resetButton').addEventListener('click', () => {
+    droneX = DEFAULT_STATES.dronePosition.x;
+    droneY = DEFAULT_STATES.dronePosition.y;
+    simulationActive = false;
+    showTriangles = [...DEFAULT_STATES.triangles];
+    
+    // Reset all triangle buttons
+    const triangleButtons = document.querySelectorAll('.triangleButton');
+    triangleButtons.forEach(button => {
+        button.classList.remove('clicked');
+    });
+    
+    updateVisualization();
+});
+
+        document.getElementById('toggleRadiusButton').addEventListener('click', () => {
+            showRadius = !showRadius;
+            updateVisualization();
+        });
+
+        document.getElementById('simulationButton').addEventListener('click', runSimulation);
+
+        updateVisualization();
+    }
+
+    initialize();
+
+    window.addEventListener('resize', () => {
+        updateCanvasDimensions();
+        updateVisualization();
+    });
+</script>
+</body>
+</html>
