@@ -2116,13 +2116,13 @@ function resetView() {
     document.getElementById('aov').dispatchEvent(new Event('input'));}
 
 function moveUp() {
-    drone.position.y = Math.min(500, drone.position.y + 1);
+    drone.position.y = Math.min(500, drone.position.y + 0.5);
     updateFOV();
     updateCamera();
 }
 
 function moveDown() {
-    drone.position.y = Math.max(0, drone.position.y - 1);
+    drone.position.y = Math.max(0, drone.position.y - 0.5);
     updateFOV();
     updateCamera();
 }
