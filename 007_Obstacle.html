@@ -155,14 +155,25 @@ font-weight: bold;
 #language-switch {
 position: fixed;
 font-size: 18px;
-top: 50px;
-right: 100px;
+top: 10px;
+right: 10px;
 padding: 5px 10px;
 background-color: #4CAF50;
 color: white;
 border: none;
 border-radius: 3px;
 cursor: pointer;
+}
+#simulation-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 10px;
+    width: 600px; /* Match the width of the obstacle course */
 }
 </style>
 </head>
@@ -171,7 +182,12 @@ cursor: pointer;
 <h2 data-translate="title">3D Drone Obstacle Course Challenge (upgraded ver.)</h2>
 <p data-translate="instruction">Use the command buttons to add movement instructions with parameters, then click 'Run Code' to navigate the drone through the obstacle course.</p>
 <div id="game-container">
-<div id="obstacle-course"></div>
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        <div id="obstacle-course"></div>
+        <a href="007a_Code_simulation.html" style="text-decoration: none;">
+            <button id="simulation-button" data-translate="simulationButton">Code Performance Simulation</button>
+        </a>
+    </div>
 <div id="code-area">
 <div id="command-buttons">
 <div class="button-row">
@@ -1625,6 +1641,7 @@ level2: "Level 2",
 level3: "Level 3",
 attemptsLabel: "No. of Attempts:",
 stepsLabel: "No. of Steps:",
+simulationButton: "Code Performance Simulation",
 rotateLeft: "Rotate Left",
 rotateRight: "Rotate Right",
 up: "Up",
@@ -1640,7 +1657,7 @@ aimForGoal: "🛸 Aim for the goal! Navigate carefully through all the hoops.",
 noValidCommands: "No valid commands to preview the path."
 },
 zh: {
-title: "3D 無人機障礙挑戰（升級版）",
+title: "3D 無人機障礙課程挑戰（升級版）",
 instruction: "使用命令按鈕添加帶參數的移動指令，然後點擊「執行編程」以引導無人機通過障礙課程。",
 throttleUp: "上升",
 throttleDown: "下降",
@@ -1658,7 +1675,8 @@ level1: "第一關",
 level2: "第二關",
 level3: "第三關",
 attemptsLabel: "嘗試次數：",
-stepsLabel: "步驟數：",
+stepsLabel: "步驟數目：",
+simulationButton: "編程表現模擬",
 rotateLeft: "向左旋轉",
 rotateRight: "向右旋轉",
 up: "向上",
