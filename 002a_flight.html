@@ -4,45 +4,43 @@
     <meta charset="UTF-8" />
     <title>Quadcopter Flight Game</title>
     <style>
-      /* Disable text selection and touch callout on buttons (useful for iPad) */
-      button {
-        -webkit-user-select: none;
-        -webkit-touch-callout: none;
-        user-select: none;
-      }
-
-      body {
+      /* Basic Reset */
+      body,
+      html {
         margin: 0;
+        padding: 0;
         overflow: hidden;
       }
       canvas {
         display: block;
       }
-      /* Title styling at the top middle with a white outline */
+      /* Title styling at the top middle */
       #title {
         position: absolute;
         top: 10px;
         left: 50%;
         transform: translateX(-50%);
-        font-size: 28px;
+        font-size: 32px;
         font-weight: bold;
-        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
+          -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
-      /* Overlays for alerts and messages */
-      #alert {
+      /* Language Toggle Button (Top Right Corner) */
+      #langToggle {
         position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: rgba(255, 0, 0, 0.8);
+        top: 10px;
+        right: 10px;
+        z-index: 110;
+        padding: 8px 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #4caf50;
         color: white;
-        padding: 20px 30px;
-        font-size: 24px;
-        display: none;
-        border-radius: 10px;
-        z-index: 10;
       }
+      /* General Message (e.g., congratulations) */
       #message {
         position: absolute;
         top: 10%;
@@ -52,9 +50,9 @@
         color: white;
         padding: 10px 20px;
         font-size: 20px;
-        display: none;
         border-radius: 5px;
         z-index: 10;
+        display: none;
       }
       /* Controls Container (bottom center) */
       #controls {
@@ -100,7 +98,7 @@
         background: rgba(0, 0, 0, 0.05);
         border-radius: 10px;
       }
-      /* Positioning directional buttons inside each joystick */
+      /* Position directional buttons inside each joystick */
       .cross-container .top {
         position: absolute;
         top: -25%;
@@ -125,19 +123,19 @@
         top: 50%;
         transform: translateY(-50%);
       }
-      /* Enlarge control buttons to match the enlarged font; allow wrapping */
+      /* Enlarge control buttons */
       .cross-container button {
         font-size: 32px;
         padding: 10px 15px;
         white-space: normal;
         text-align: center;
       }
-      /* Also enlarge the reset button */
+      /* Enlarge reset button */
       #controls button {
         font-size: 20px;
         padding: 10px 15px;
       }
-      /* Reduced font size for Show Flight Path button and force one line */
+      /* Reduced font size for Show Flight Path button */
       #toggleFlightPath {
         font-size: 16px;
         white-space: nowrap;
@@ -186,16 +184,42 @@
         font-size: 14px;
         padding: 4px 8px;
       }
+      /* Hoop Table in top right (displayed in 2 rows) */
+      #hoopTable {
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        z-index: 100;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border: 1px solid #ccc;
+        display: grid;
+        grid-template-columns: repeat(5, 30px);
+        gap: 5px;
+      }
+      #hoopTable .hoopCell {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        font-weight: bold;
+        background: yellow;
+        border: 1px solid #000;
+      }
+      #hoopTable .hoopCell.passed {
+        background: grey;
+      }
     </style>
   </head>
   <body>
     <!-- Title -->
-    <div id="title"><b>Quadcopter Flight Practice Simulation</b></div>
-
-    <div id="alert">Collision Detected!</div>
+    <div id="title">Quadcopter Flight Simulation</div>
+    <!-- Language Toggle Button -->
+    <button id="langToggle" class="btn-green">繁體中文</button>
+    <!-- General Message (e.g., congratulations) -->
     <div id="message"></div>
-    
-    <!-- Top View Container (Top Left Corner) -->
+
+    <!-- Top View Container -->
     <div id="topViewContainer">
       <div id="topViewRenderer"></div>
       <div id="zoomControls">
@@ -203,12 +227,26 @@
         <button id="zoomOut">Zoom Out</button>
       </div>
     </div>
-    
-    <!-- Controls Container (Bottom Center) -->
+
+    <!-- Hoop Table (with 10 cells, in 2 rows) -->
+    <div id="hoopTable">
+      <div class="hoopCell" id="hoopCell-1">1</div>
+      <div class="hoopCell" id="hoopCell-2">2</div>
+      <div class="hoopCell" id="hoopCell-3">3</div>
+      <div class="hoopCell" id="hoopCell-4">4</div>
+      <div class="hoopCell" id="hoopCell-5">5</div>
+      <div class="hoopCell" id="hoopCell-6">6</div>
+      <div class="hoopCell" id="hoopCell-7">7</div>
+      <div class="hoopCell" id="hoopCell-8">8</div>
+      <div class="hoopCell" id="hoopCell-9">9</div>
+      <div class="hoopCell" id="hoopCell-10">10</div>
+    </div>
+
+    <!-- Controls Container -->
     <div id="controls">
       <div id="info">Altitude: 0 | Distance: 0</div>
       <div id="main-controls">
-        <!-- Left Joystick: Throttle & Yaw (Green Buttons) -->
+        <!-- Left Joystick: Throttle & Yaw -->
         <div class="cross-container" id="left-joystick">
           <button id="btn-throttle-up" class="btn-green top">Throttle<br>Up</button>
           <button id="btn-throttle-down" class="btn-green bottom">Throttle<br>Down</button>
@@ -216,12 +254,19 @@
           <button id="btn-yaw-right" class="btn-green right">Yaw<br>Right</button>
           <div class="dummy-square"></div>
         </div>
-        <!-- Speed Slider Box (Center) -->
+        <!-- Speed Slider and Flight Path Toggle -->
         <div id="speedContainer">
-          <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
+          <input
+            type="range"
+            id="speedSlider"
+            min="10"
+            max="100"
+            value="50"
+            step="1"
+          />
           <button id="toggleFlightPath">Show Flight Path</button>
         </div>
-        <!-- Right Joystick: Pitch & Roll (Orange Buttons) -->
+        <!-- Right Joystick: Pitch & Roll -->
         <div class="cross-container" id="right-joystick">
           <button id="btn-pitch-forward" class="btn-orange top">Pitch<br>Forward</button>
           <button id="btn-pitch-backward" class="btn-orange bottom">Pitch<br>Backward</button>
@@ -232,492 +277,623 @@
       </div>
       <button id="btn-reset" class="btn-red">Reset</button>
     </div>
-    
+
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // --------------------------------------------------
-      // MAIN SCENE, CAMERA, & RENDERER
-      // --------------------------------------------------
-      const scene = new THREE.Scene();
-      
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x87ceeb); // sky-blue background
-      renderer.shadowMap.enabled = true;
-      document.body.appendChild(renderer.domElement);
-  
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        2000
-      );
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-      
-      // --------------------------------------------------
-      // TOP VIEW RENDERER & ORTHOGRAPHIC CAMERA
-      // --------------------------------------------------
-      const topViewRenderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: true // enable transparency
-      });
-      topViewRenderer.setSize(200, 200);
-      topViewRenderer.setClearColor(0x000000, 0); // transparent background
-      const topViewDiv = document.getElementById("topViewRenderer");
-      topViewDiv.appendChild(topViewRenderer.domElement);
-      
-      const d = 400;
-      const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
-      topViewCamera.position.set(0, 1000, 0);
-      topViewCamera.lookAt(0, 0, 0);
-      topViewCamera.zoom = 5;
-      topViewCamera.updateProjectionMatrix();
-  
-      document.getElementById("zoomIn").addEventListener("click", () => {
-        topViewCamera.zoom *= 1.1;
-        topViewCamera.updateProjectionMatrix();
-      });
-      document.getElementById("zoomOut").addEventListener("click", () => {
-        topViewCamera.zoom /= 1.1;
-        topViewCamera.updateProjectionMatrix();
-      });
-  
-      // --------------------------------------------------
-      // GROUND, GRID, & HOME MARKER
-      // --------------------------------------------------
-      const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
-      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xEDEDED });
-      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-      ground.rotation.x = -Math.PI / 2;
-      ground.receiveShadow = true;
-      scene.add(ground);
-  
-      const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
-      scene.add(grid);
-  
-      function createHomeMarker() {
-        const canvas = document.createElement("canvas");
-        canvas.width = 256;
-        canvas.height = 256;
-        const ctx = canvas.getContext("2d");
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        ctx.arc(128, 128, 120, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 10;
-        ctx.stroke();
-        ctx.fillStyle = "black";
-        ctx.font = "bold 100px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("H", 128, 128);
-        const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.MeshBasicMaterial({
-          map: texture,
-          side: THREE.DoubleSide,
-          transparent: true,
-        });
-        const geometry = new THREE.CircleGeometry(5, 32);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(0, 0.01, 0);
-        return mesh;
-      }
-      const homeMarker = createHomeMarker();
-      scene.add(homeMarker);
-  
-      // --------------------------------------------------
-      // BASIC LIGHTING
-      // --------------------------------------------------
-      const ambientLight = new THREE.AmbientLight(0x404040);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(100, 200, 100);
-      directionalLight.castShadow = true;
-      directionalLight.shadow.mapSize.width = 2048;
-      directionalLight.shadow.mapSize.height = 2048;
-      directionalLight.shadow.camera.near = 0.5;
-      directionalLight.shadow.camera.far = 500;
-      directionalLight.shadow.bias = -0.001;
-      scene.add(directionalLight);
-  
-      // --------------------------------------------------
-      // DRONE (QUADCOPTER) SETUP
-      // --------------------------------------------------
-      const droneGroup = new THREE.Group();
-      droneGroup.rotation.order = "YXZ";
-      scene.add(droneGroup);
-  
-      // Set drone on the ground (y = 0) so altitude is 0 on the ground.
-      const drone = {
-        position: new THREE.Vector3(0, 0, 0),
-        yaw: 0,
-        pitch: 0,
-        roll: 0,
-      };
-      const droneCollisionRadius = 0.6;
-  
-      const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
-      const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
-      const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
-      droneGroup.add(droneBody);
-  
-      // --------------------------------------------------
-      // ADD TEXT LABEL "EdUHK" ON THE DRONE
-      // --------------------------------------------------
-      function createDroneLabel(text) {
-        const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 128;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "bold 150px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.center = new THREE.Vector2(0.5, 0.5);
-        texture.rotation = Math.PI;
-        texture.needsUpdate = true;
-        const material = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-        });
-        const geometry = new THREE.PlaneGeometry(0.9, 0.3);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(0, 0.15 + 0.01, 0);
-        return mesh;
-      }
-      const label = createDroneLabel("EdUHK");
-      droneGroup.add(label);
-  
-      // --------------------------------------------------
-      // PROPELLERS SETUP
-      // --------------------------------------------------
-      const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
-      const propellers = [];
-  
-      // Front Left (Anticlockwise; default angle 45°)
-      const frontLeft = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0xff0000 })
-      );
-      frontLeft.position.set(-0.50, 0.2, 0.55);
-      droneGroup.add(frontLeft);
-      propellers.push({ 
-        mesh: frontLeft, 
-        spinSpeed: +10, 
-        defaultAngle: THREE.Math.degToRad(45)
-      });
-  
-      // Front Right (Clockwise; default angle 135°)
-      const frontRight = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0xff0000 })
-      );
-      frontRight.position.set(0.50, 0.2, 0.55);
-      droneGroup.add(frontRight);
-      propellers.push({ 
-        mesh: frontRight, 
-        spinSpeed: -10, 
-        defaultAngle: THREE.Math.degToRad(135)
-      });
-  
-      // Rear Left (Clockwise; default angle 135°)
-      const rearLeft = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0x00ff00 })
-      );
-      rearLeft.position.set(-0.50, 0.2, -0.55);
-      droneGroup.add(rearLeft);
-      propellers.push({ 
-        mesh: rearLeft, 
-        spinSpeed: -10, 
-        defaultAngle: THREE.Math.degToRad(135)
-      });
-  
-      // Rear Right (Anticlockwise; default angle 45°)
-      const rearRight = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0x00ff00 })
-      );
-      rearRight.position.set(0.50, 0.2, -0.55);
-      droneGroup.add(rearRight);
-      propellers.push({ 
-        mesh: rearRight, 
-        spinSpeed: +10, 
-        defaultAngle: THREE.Math.degToRad(45)
-      });
-  
-      droneGroup.scale.set(3, 3, 3);
-      
-      droneGroup.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          child.castShadow = true;
+      window.addEventListener("load", function () {
+        // --------------------------------------------------
+        // GLOBAL STATE VARIABLES & TRANSLATIONS
+        // --------------------------------------------------
+        let currentExpectedHoop = 1; // Expect hoop number 1 first.
+        let landedAtHome = false;
+        let takenOff = false;
+        let allHoopsPassed = false;
+        
+        // Current language (default English: "en"; toggle to Traditional Chinese: "zh")
+        let currentLanguage = "en";
+        
+        // Translation Strings for UI elements.
+        const translations = {
+          en: {
+            title: "Quadcopter Flight Simulation",
+            allHoopsPassed:
+              "All hoops passed! Now fly back and land on the home point (marked with H).",
+            landingMessage:
+              "Congratulations! You landed safely at home.<br><button id='newGameButton' class='btn-default'>New Game</button>",
+            reset: "Reset",
+            showFlightPath: "Show Flight Path",
+            hideFlightPath: "Hide Flight Path",
+            throttleUp: "Throttle<br>Up",
+            throttleDown: "Throttle<br>Down",
+            yawLeft: "Yaw<br>Left",
+            yawRight: "Yaw<br>Right",
+            pitchForward: "Pitch<br>Forward",
+            pitchBackward: "Pitch<br>Backward",
+            rollLeft: "Roll<br>Left",
+            rollRight: "Roll<br>Right",
+            zoomIn: "Zoom In",
+            zoomOut: "Zoom Out",
+            altitude: "Altitude",
+            distance: "Distance"
+          },
+          zh: {
+            title: "四軸無人機飛行模擬",
+            allHoopsPassed:
+              "所有環門已通過！請飛回並在以「H」標示的起飛點著陸。",
+            landingMessage:
+              "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' class='btn-default'>新遊戲</button>",
+            reset: "重置",
+            showFlightPath: "顯示飛行路徑",
+            hideFlightPath: "隱藏飛行路徑",
+            throttleUp: "上升",
+            throttleDown: "下降",
+            yawLeft: "左轉",
+            yawRight: "右轉",
+            pitchForward: "前飛",
+            pitchBackward: "後飛",
+            rollLeft: "左飛",
+            rollRight: "右飛",
+            zoomIn: "放大",
+            zoomOut: "縮小",
+            altitude: "高度",
+            distance: "距離"
+          }
+        };
+        
+        // Function to update static UI texts based on current language.
+        function updateUIText() {
+          document.getElementById("title").innerHTML = translations[currentLanguage].title;
+          document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
+          const flightToggle = document.getElementById("toggleFlightPath");
+          if (flightToggle) {
+            flightToggle.innerHTML = flightPathActive 
+              ? translations[currentLanguage].hideFlightPath 
+              : translations[currentLanguage].showFlightPath;
+          }
+          document.getElementById("btn-throttle-up").innerHTML = translations[currentLanguage].throttleUp;
+          document.getElementById("btn-throttle-down").innerHTML = translations[currentLanguage].throttleDown;
+          document.getElementById("btn-yaw-left").innerHTML = translations[currentLanguage].yawLeft;
+          document.getElementById("btn-yaw-right").innerHTML = translations[currentLanguage].yawRight;
+          document.getElementById("btn-pitch-forward").innerHTML = translations[currentLanguage].pitchForward;
+          document.getElementById("btn-pitch-backward").innerHTML = translations[currentLanguage].pitchBackward;
+          document.getElementById("btn-roll-left").innerHTML = translations[currentLanguage].rollLeft;
+          document.getElementById("btn-roll-right").innerHTML = translations[currentLanguage].rollRight;
+          document.getElementById("zoomIn").innerHTML = translations[currentLanguage].zoomIn;
+          document.getElementById("zoomOut").innerHTML = translations[currentLanguage].zoomOut;
         }
-      });
-  
-      // --------------------------------------------------
-      // BLINKING YELLOW SPOTS ON PROPELLERS
-      // --------------------------------------------------
-      const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-      propellers.forEach((prop, index) => {
-        const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-        const blinkSpot = new THREE.Mesh(blinkSphereGeometry, material);
-        blinkSpot.position.set(0, 0, 0);
-        prop.mesh.add(blinkSpot);
-        prop.blinkOffset = index * (Math.PI / 2);
-        prop.blinkSpot = blinkSpot;
-      });
-  
-      // --------------------------------------------------
-      // HOOPS (OBJECTIVES) SETUP
-      // --------------------------------------------------
-      const hoops = [];
-      const totalHoops = 5;
-      function createHoop() {
-        const mainRadius = 9;
-        const tubeRadius = 0.2;
-        const radialSegments = 16;
-        const tubularSegments = 100;
-        const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
-        const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
-        const hoopMesh = new THREE.Mesh(geometry, material);
-        hoopMesh.rotation.set(0, Math.PI / 2, 0);
-        return { mesh: hoopMesh, mainRadius: mainRadius, entered: false, passed: false };
-      }
-      for (let i = 0; i < totalHoops; i++) {
-        const hoop = createHoop();
-        hoop.mesh.position.set(
-          (Math.random() - 0.5) * 80,
-          5 + Math.random() * 10,
-          (Math.random() - 0.5) * 80
+        
+        // Language Toggle Button Event
+        document.getElementById("langToggle").addEventListener("click", function () {
+          if (currentLanguage === "en") {
+            currentLanguage = "zh";
+            this.innerHTML = "English";
+          } else {
+            currentLanguage = "en";
+            this.innerHTML = "繁體中文";
+          }
+          updateUIText();
+        });
+        
+        // --------------------------------------------------
+        // MAIN SCENE, CAMERA, & RENDERER
+        // --------------------------------------------------
+        const scene = new THREE.Scene();
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor(0x87ceeb);
+        renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        const camera = new THREE.PerspectiveCamera(
+          75,
+          window.innerWidth / window.innerHeight,
+          0.1,
+          2000
         );
-        scene.add(hoop.mesh);
-        hoops.push(hoop);
-      }
-  
-      // --------------------------------------------------
-      // AUDIO SETUP
-      // --------------------------------------------------
-      const bonusSound = new Audio("bonus.mp3");
-      const sweetSound = new Audio("sweet.mp3");
-  
-      // --------------------------------------------------
-      // USER CONTROLS, SPEED SLIDER & FLIGHT PATH TOGGLE
-      // --------------------------------------------------
-      let translationSpeed = 50;
-      const yawSpeed = 1.0;
-      const attitudeSpeed = 0.5;
-      const maxTilt = Math.PI / 6;
-  
-      let flightPathActive = false;
-      let flightPathPoints = [];
-      let flightPathLine = null;
-  
-      const keys = {};
-      document.addEventListener("keydown", (e) => { keys[e.code] = true; });
-      document.addEventListener("keyup", (e) => { keys[e.code] = false; });
-  
-      const speedSlider = document.getElementById("speedSlider");
-      speedSlider.addEventListener("input", function() {
-        translationSpeed = parseFloat(this.value);
-      });
-  
-      const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
-      toggleFlightPathBtn.addEventListener("click", function() {
-        flightPathActive = !flightPathActive;
-        if (flightPathActive) {
-          toggleFlightPathBtn.textContent = "Hide Flight Path";
+        window.addEventListener("resize", () => {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --------------------------------------------------
+        // TOP VIEW RENDERER & ORTHOGRAPHIC CAMERA
+        // --------------------------------------------------
+        const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        topViewRenderer.setSize(200, 200);
+        topViewRenderer.setClearColor(0x000000, 0); // Transparent background.
+        const topViewDiv = document.getElementById("topViewRenderer");
+        topViewDiv.appendChild(topViewRenderer.domElement);
+
+        const d = 400;
+        const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
+        topViewCamera.position.set(0, 1000, 0);
+        topViewCamera.lookAt(0, 0, 0);
+        topViewCamera.zoom = 5;
+        topViewCamera.updateProjectionMatrix();
+
+        document.getElementById("zoomIn").addEventListener("click", () => {
+          topViewCamera.zoom *= 1.1;
+          topViewCamera.updateProjectionMatrix();
+        });
+        document.getElementById("zoomOut").addEventListener("click", () => {
+          topViewCamera.zoom /= 1.1;
+          topViewCamera.updateProjectionMatrix();
+        });
+
+        // --------------------------------------------------
+        // GROUND, GRID, & HOME MARKER
+        // --------------------------------------------------
+        const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+        const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xEDEDED });
+        const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
+        scene.add(grid);
+
+        function createHomeMarker() {
+          const canvas = document.createElement("canvas");
+          canvas.width = 256;
+          canvas.height = 256;
+          const ctx = canvas.getContext("2d");
+          ctx.fillStyle = "white";
+          ctx.beginPath();
+          ctx.arc(128, 128, 120, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.strokeStyle = "black";
+          ctx.lineWidth = 10;
+          ctx.stroke();
+          ctx.fillStyle = "black";
+          ctx.font = "bold 100px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText("H", 128, 128);
+          const texture = new THREE.CanvasTexture(canvas);
+          const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            side: THREE.DoubleSide,
+            transparent: true,
+          });
+          const geometry = new THREE.CircleGeometry(5, 32);
+          const mesh = new THREE.Mesh(geometry, material);
+          mesh.rotation.x = -Math.PI / 2;
+          mesh.position.set(0, 0.01, 0);
+          return mesh;
+        }
+        const homeMarker = createHomeMarker();
+        scene.add(homeMarker);
+
+        // --------------------------------------------------
+        // BASIC LIGHTING
+        // --------------------------------------------------
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(100, 200, 100);
+        directionalLight.castShadow = true;
+        directionalLight.shadow.mapSize.width = 2048;
+        directionalLight.shadow.mapSize.height = 2048;
+        directionalLight.shadow.camera.near = 0.5;
+        directionalLight.shadow.camera.far = 500;
+        directionalLight.shadow.bias = -0.001;
+        scene.add(directionalLight);
+
+        // --------------------------------------------------
+        // DRONE (QUADCOPTER) SETUP
+        // --------------------------------------------------
+        const droneGroup = new THREE.Group();
+        droneGroup.rotation.order = "YXZ";
+        scene.add(droneGroup);
+
+        const drone = {
+          position: new THREE.Vector3(0, 0, 0),
+          yaw: 0,
+          pitch: 0,
+          roll: 0,
+        };
+        const droneCollisionRadius = 0.6;
+
+        const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
+        const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
+        const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
+        droneGroup.add(droneBody);
+
+        function createDroneLabel(text) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 512;
+          canvas.height = 128;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.font = "bold 150px Arial";
+          ctx.fillStyle = "white";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+          const texture = new THREE.CanvasTexture(canvas);
+          texture.center = new THREE.Vector2(0.5, 0.5);
+          texture.rotation = Math.PI;
+          texture.needsUpdate = true;
+          const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+          const geometry = new THREE.PlaneGeometry(0.9, 0.3);
+          const mesh = new THREE.Mesh(geometry, material);
+          mesh.rotation.x = -Math.PI / 2;
+          mesh.position.set(0, 0.15 + 0.01, 0);
+          return mesh;
+        }
+        const label = createDroneLabel("EdUHK");
+        droneGroup.add(label);
+
+        // --------------------------------------------------
+        // PROPELLERS SETUP
+        // --------------------------------------------------
+        const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
+        const propellers = [];
+
+        // Front Left
+        const frontLeft = new THREE.Mesh(
+          propellerGeometry,
+          new THREE.MeshLambertMaterial({ color: 0xff0000 })
+        );
+        frontLeft.position.set(-0.50, 0.2, 0.55);
+        droneGroup.add(frontLeft);
+        propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45) });
+
+        // Front Right
+        const frontRight = new THREE.Mesh(
+          propellerGeometry,
+          new THREE.MeshLambertMaterial({ color: 0xff0000 })
+        );
+        frontRight.position.set(0.50, 0.2, 0.55);
+        droneGroup.add(frontRight);
+        propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135) });
+
+        // Rear Left
+        const rearLeft = new THREE.Mesh(
+          propellerGeometry,
+          new THREE.MeshLambertMaterial({ color: 0x00ff00 })
+        );
+        rearLeft.position.set(-0.50, 0.2, -0.55);
+        droneGroup.add(rearLeft);
+        propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135) });
+
+        // Rear Right
+        const rearRight = new THREE.Mesh(
+          propellerGeometry,
+          new THREE.MeshLambertMaterial({ color: 0x00ff00 })
+        );
+        rearRight.position.set(0.50, 0.2, -0.55);
+        droneGroup.add(rearRight);
+        propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45) });
+
+        droneGroup.scale.set(3, 3, 3);
+        droneGroup.traverse(child => {
+          if (child instanceof THREE.Mesh) child.castShadow = true;
+        });
+
+        // --------------------------------------------------
+        // BLINKING YELLOW SPOTS ON PROPELLERS
+        // --------------------------------------------------
+        const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+        propellers.forEach((prop, index) => {
+          const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+          const blinkSpot = new THREE.Mesh(blinkSphereGeometry, mat);
+          blinkSpot.position.set(0, 0, 0);
+          prop.mesh.add(blinkSpot);
+          prop.blinkOffset = index * (Math.PI / 2);
+          prop.blinkSpot = blinkSpot;
+        });
+
+        // --------------------------------------------------
+        // HOOPS (OBJECTIVES) SETUP
+        // --------------------------------------------------
+        const totalHoops = 10;
+        const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+        // Helper: Create a label sprite for a hoop.
+        function createHoopLabel(number) {
+          const canvas = document.createElement("canvas");
+          canvas.width = 128;
+          canvas.height = 128;
+          const ctx = canvas.getContext("2d");
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          ctx.fillStyle = "yellow";
+          ctx.font = "Bold 120px Arial";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(number.toString(), canvas.width / 2, canvas.height / 2);
+          const texture = new THREE.CanvasTexture(canvas);
+          const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+          const sprite = new THREE.Sprite(spriteMaterial);
+          sprite.scale.set(4, 4, 1);
+          return sprite;
+        }
+        
+        // Helper: Create a hoop with a label.
+        function createHoop(number) {
+          const mainRadius = 9;
+          const tubeRadius = 0.2;
+          const radialSegments = 16;
+          const tubularSegments = 100;
+          const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
+          const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
+          const hoopMesh = new THREE.Mesh(geometry, material);
+          hoopMesh.rotation.set(0, Math.PI / 2, 0);
+          // Add label sprite.
+          const labelSprite = createHoopLabel(number);
+          labelSprite.position.set(0, mainRadius + 2, 0);
+          hoopMesh.add(labelSprite);
+          return { 
+            mesh: hoopMesh, 
+            mainRadius: mainRadius, 
+            entered: false, 
+            passed: false, 
+            number: number, 
+            labelSprite: labelSprite 
+          };
+        }
+
+        const hoops = [];
+        for (let i = 0; i < totalHoops; i++) {
+          const hoop = createHoop(i + 1);
+          hoop.mesh.position.set((Math.random() - 0.5) * 80, altitudes[i], (Math.random() - 0.5) * 80);
+          scene.add(hoop.mesh);
+          hoops.push(hoop);
+        }
+
+        // --------------------------------------------------
+        // AUDIO SETUP
+        // --------------------------------------------------
+        const bonusSound = new Audio("bonus.mp3");
+        const sweetSound = new Audio("sweet.mp3");
+
+        // --------------------------------------------------
+        // USER CONTROLS, SPEED SLIDER & FLIGHT PATH TOGGLE
+        // --------------------------------------------------
+        let translationSpeed = 50;
+        const yawSpeed = 1.0;
+        const attitudeSpeed = 0.5;
+        const maxTilt = Math.PI / 6;
+
+        let flightPathActive = false;
+        let flightPathPoints = [];
+        let flightPathLine = null;
+
+        const keys = {};
+        document.addEventListener("keydown", (e) => { keys[e.code] = true; });
+        document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+
+        const speedSlider = document.getElementById("speedSlider");
+        speedSlider.addEventListener("input", function () { translationSpeed = parseFloat(this.value); });
+
+        const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
+        toggleFlightPathBtn.addEventListener("click", function () {
+          flightPathActive = !flightPathActive;
+          if (flightPathActive) {
+            toggleFlightPathBtn.innerHTML = translations[currentLanguage].hideFlightPath;
+            flightPathPoints = [];
+            if (flightPathLine) {
+              scene.remove(flightPathLine);
+              flightPathLine = null;
+            }
+          } else {
+            toggleFlightPathBtn.innerHTML = translations[currentLanguage].showFlightPath;
+            if (flightPathLine) {
+              scene.remove(flightPathLine);
+              flightPathLine = null;
+            }
+          }
+        });
+
+        function addControlButton(id, keyCode) {
+          const btn = document.getElementById(id);
+          btn.addEventListener("mousedown", function () { keys[keyCode] = true; });
+          btn.addEventListener("mouseup", function () { keys[keyCode] = false; });
+          btn.addEventListener("touchstart", function (e) {
+            e.preventDefault();
+            keys[keyCode] = true;
+          });
+          btn.addEventListener("touchend", function (e) {
+            e.preventDefault();
+            keys[keyCode] = false;
+          });
+        }
+        addControlButton("btn-throttle-up", "KeyW");
+        addControlButton("btn-throttle-down", "KeyS");
+        addControlButton("btn-yaw-left", "KeyA");
+        addControlButton("btn-yaw-right", "KeyD");
+        addControlButton("btn-pitch-forward", "ArrowUp");
+        addControlButton("btn-pitch-backward", "ArrowDown");
+        addControlButton("btn-roll-left", "ArrowLeft");
+        addControlButton("btn-roll-right", "ArrowRight");
+
+        function resetDrone() {
+          drone.position.set(0, 0, 0);
+          drone.yaw = 0;
+          drone.pitch = 0;
+          drone.roll = 0;
+          takenOff = false;
+          landedAtHome = false;
+          allHoopsPassed = false;
+          currentExpectedHoop = 1;
           flightPathPoints = [];
           if (flightPathLine) {
             scene.remove(flightPathLine);
             flightPathLine = null;
           }
-        } else {
-          toggleFlightPathBtn.textContent = "Show Flight Path";
-          if (flightPathLine) {
-            scene.remove(flightPathLine);
-            flightPathLine = null;
+          hoops.forEach(hoop => {
+            hoop.entered = false;
+            hoop.passed = false;
+            hoop.mesh.material.color.set(0xffa500);
+            const canvas = hoop.labelSprite.material.map.image;
+            const ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "yellow";
+            ctx.font = "Bold 80px Arial";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+            hoop.labelSprite.material.map.needsUpdate = true;
+          });
+          document.getElementById("message").style.display = "none";
+          for (let i = 1; i <= totalHoops; i++) {
+            const cell = document.getElementById("hoopCell-" + i);
+            if (cell) cell.classList.remove("passed");
           }
+          updateUIText();
         }
+        document.getElementById("btn-reset").addEventListener("click", resetDrone);
+
+        const clock = new THREE.Clock();
+        function animate() {
+          requestAnimationFrame(animate);
+          const delta = clock.getDelta();
+
+          if (drone.position.y < 0) drone.position.y = 0;
+
+          const altitude = drone.position.y.toFixed(1);
+          const distance = Math.sqrt(
+            drone.position.x * drone.position.x + drone.position.z * drone.position.z
+          ).toFixed(1);
+          document.getElementById("info").textContent = 
+            translations[currentLanguage].altitude + ": " + altitude + " | " + 
+            translations[currentLanguage].distance + ": " + distance;
+
+          if (!landedAtHome) {
+            if (keys["KeyW"]) drone.position.y += 10 * delta;
+            if (keys["KeyS"]) drone.position.y -= 10 * delta;
+            if (drone.position.y < 0) drone.position.y = 0;
+            if (!takenOff && drone.position.y > 1.0) takenOff = true;
+            if (takenOff) {
+              if (keys["KeyA"]) drone.yaw += yawSpeed * delta;
+              if (keys["KeyD"]) drone.yaw -= yawSpeed * delta;
+              if (keys["ArrowUp"])
+                drone.pitch = Math.min(drone.pitch + attitudeSpeed * delta, maxTilt);
+              else if (keys["ArrowDown"])
+                drone.pitch = Math.max(drone.pitch - attitudeSpeed * delta, -maxTilt);
+              else drone.pitch *= 0.95;
+              if (keys["ArrowLeft"])
+                drone.roll = Math.min(drone.roll + attitudeSpeed * delta, maxTilt);
+              else if (keys["ArrowRight"])
+                drone.roll = Math.max(drone.roll - attitudeSpeed * delta, -maxTilt);
+              else drone.roll *= 0.95;
+              const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+              const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+              const horizontalDisplacement = new THREE.Vector3();
+              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)));
+              horizontalDisplacement.add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+              horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+              drone.position.add(horizontalDisplacement);
+            }
+          }
+
+          droneGroup.position.copy(drone.position);
+          droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
+
+          propellers.forEach(prop => {
+            if (drone.position.y > 0.1) prop.mesh.rotation.y += prop.spinSpeed * delta;
+            else prop.mesh.rotation.y = prop.defaultAngle;
+            let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
+            prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
+          });
+
+          if (flightPathActive) {
+            const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
+            if (
+              flightPathPoints.length === 0 ||
+              currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2
+            )
+              flightPathPoints.push(currentPos);
+            if (flightPathPoints.length > 1) {
+              const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
+              if (!flightPathLine) {
+                const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+                flightPathLine = new THREE.Line(geometry, material);
+                scene.add(flightPathLine);
+              } else {
+                flightPathLine.geometry.dispose();
+                flightPathLine.geometry = geometry;
+              }
+            }
+          }
+
+          // HOOP ORDER CHECK
+          hoops.forEach(hoop => {
+            const dToHoop = drone.position.distanceTo(hoop.mesh.position);
+            if (!hoop.entered && dToHoop < hoop.mainRadius) {
+              hoop.entered = true;
+            }
+            if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1) {
+              if (hoop.number === currentExpectedHoop) {
+                hoop.passed = true;
+                hoop.mesh.material.color.set(0x00ff00);
+                bonusSound.currentTime = 0;
+                bonusSound.play();
+                currentExpectedHoop++;
+                const cell = document.getElementById("hoopCell-" + hoop.number);
+                if (cell) cell.classList.add("passed");
+                const canvas = hoop.labelSprite.material.map.image;
+                const ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "green";
+                ctx.font = "Bold 80px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+                hoop.labelSprite.material.map.needsUpdate = true;
+              }
+              hoop.entered = false;
+            }
+          });
+
+          if (!allHoopsPassed) {
+            let passedCount = 0;
+            hoops.forEach(hoop => {
+              if (hoop.passed) passedCount++;
+            });
+            if (passedCount === totalHoops) {
+              allHoopsPassed = true;
+              const messageDiv = document.getElementById("message");
+              messageDiv.style.display = "block";
+              messageDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
+            }
+          }
+
+          if (allHoopsPassed && !landedAtHome) {
+            const dX = drone.position.x;
+            const dZ = drone.position.z;
+            const distToHome = Math.sqrt(dX * dX + dZ * dZ);
+            if (distToHome < 10 && drone.position.y < 1) {
+              landedAtHome = true;
+              const messageDiv = document.getElementById("message");
+              messageDiv.innerHTML = translations[currentLanguage].landingMessage;
+              // Attach event listener to the New Game button.
+              document.getElementById("newGameButton").addEventListener("click", function () {
+                resetDrone();
+              });
+              sweetSound.currentTime = 0;
+              sweetSound.play();
+            }
+          }
+
+          const cameraOffset = new THREE.Vector3(0, 5, -15);
+          const quat = new THREE.Quaternion();
+          quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
+          const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
+          camera.position.copy(drone.position.clone().add(rotatedOffset));
+          camera.lookAt(drone.position);
+
+          renderer.render(scene, camera);
+          topViewRenderer.render(scene, topViewCamera);
+        }
+        animate();
+
+        // Set initial UI text based on the default language.
+        updateUIText();
       });
-  
-      function addControlButton(id, keyCode) {
-        const btn = document.getElementById(id);
-        btn.addEventListener("mousedown", function () { keys[keyCode] = true; });
-        btn.addEventListener("mouseup", function () { keys[keyCode] = false; });
-        btn.addEventListener("touchstart", function (e) { e.preventDefault(); keys[keyCode] = true; });
-        btn.addEventListener("touchend", function (e) { e.preventDefault(); keys[keyCode] = false; });
-      }
-      addControlButton("btn-throttle-up", "KeyW");
-      addControlButton("btn-throttle-down", "KeyS");
-      addControlButton("btn-yaw-left", "KeyA");
-      addControlButton("btn-yaw-right", "KeyD");
-      addControlButton("btn-pitch-forward", "ArrowUp");
-      addControlButton("btn-pitch-backward", "ArrowDown");
-      addControlButton("btn-roll-left", "ArrowLeft");
-      addControlButton("btn-roll-right", "ArrowRight");
-  
-      function resetDrone() {
-        drone.position.set(0, 0, 0);
-        drone.yaw = 0;
-        drone.pitch = 0;
-        drone.roll = 0;
-        takenOff = false;
-        allHoopsPassed = false;
-        landedAtHome = false;
-        flightPathPoints = [];
-        if (flightPathLine) {
-          scene.remove(flightPathLine);
-          flightPathLine = null;
-        }
-        hoops.forEach(function(hoop) {
-          hoop.entered = false;
-          hoop.passed = false;
-          hoop.mesh.material.color.set(0xffa500);
-        });
-        const messageDiv = document.getElementById("message");
-        messageDiv.style.display = "none";
-      }
-      document.getElementById("btn-reset").addEventListener("click", resetDrone);
-  
-      let takenOff = false;
-      let allHoopsPassed = false;
-      let landedAtHome = false;
-  
-      const clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-  
-        // Ensure altitude never goes below 0
-        if (drone.position.y < 0) {
-          drone.position.y = 0;
-        }
-  
-        const altitude = drone.position.y.toFixed(1);
-        const distance = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
-        document.getElementById("info").textContent = "Altitude: " + altitude + " | Distance: " + distance;
-  
-        if (!landedAtHome) {
-          if (keys["KeyW"]) { drone.position.y += 10 * delta; }
-          if (keys["KeyS"]) { drone.position.y -= 10 * delta; }
-          // Keep the drone on the ground if it goes too low
-          if (drone.position.y < 0) { drone.position.y = 0; }
-  
-          if (!takenOff && drone.position.y > 1.0) { takenOff = true; }
-          if (takenOff) {
-            if (keys["KeyA"]) { drone.yaw += yawSpeed * delta; }
-            if (keys["KeyD"]) { drone.yaw -= yawSpeed * delta; }
-            if (keys["ArrowUp"]) {
-              drone.pitch = Math.min(drone.pitch + attitudeSpeed * delta, maxTilt);
-            } else if (keys["ArrowDown"]) {
-              drone.pitch = Math.max(drone.pitch - attitudeSpeed * delta, -maxTilt);
-            } else { 
-              drone.pitch *= 0.95; 
-            }
-            if (keys["ArrowLeft"]) {
-              drone.roll = Math.min(drone.roll + attitudeSpeed * delta, maxTilt);
-            } else if (keys["ArrowRight"]) {
-              drone.roll = Math.max(drone.roll - attitudeSpeed * delta, -maxTilt);
-            } else { 
-              drone.roll *= 0.95; 
-            }
-            const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-            const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-            const horizontalDisplacement = new THREE.Vector3();
-            horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)));
-            horizontalDisplacement.add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-            horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-            drone.position.add(horizontalDisplacement);
-          }
-        }
-  
-        droneGroup.position.copy(drone.position);
-        droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-  
-        // Propellers spin only in flight (when altitude > 0.1), and reset when landed.
-        propellers.forEach((prop) => {
-          if (drone.position.y > 0.1) {
-            prop.mesh.rotation.y += prop.spinSpeed * delta;
-          } else {
-            prop.mesh.rotation.y = prop.defaultAngle;
-          }
-          let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
-          prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
-        });
-  
-        if (flightPathActive) {
-          const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
-          if (flightPathPoints.length === 0 || currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
-            flightPathPoints.push(currentPos);
-          }
-          if (flightPathPoints.length > 1) {
-            const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
-            if (!flightPathLine) {
-              const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-              flightPathLine = new THREE.Line(geometry, material);
-              scene.add(flightPathLine);
-            } else {
-              flightPathLine.geometry.dispose();
-              flightPathLine.geometry = geometry;
-            }
-          }
-        }
-  
-        let passedCount = 0;
-        hoops.forEach((hoop) => {
-          const distanceToHoop = drone.position.distanceTo(hoop.mesh.position);
-          if (!hoop.entered && distanceToHoop < hoop.mainRadius) { hoop.entered = true; }
-          if (hoop.entered && !hoop.passed && distanceToHoop > hoop.mainRadius * 1.1) {
-            hoop.passed = true;
-            hoop.mesh.material.color.set(0x00ff00);
-            bonusSound.currentTime = 0;
-            bonusSound.play();
-          }
-          if (hoop.passed) { passedCount++; }
-        });
-  
-        if (!allHoopsPassed && passedCount === totalHoops) {
-          allHoopsPassed = true;
-          const messageDiv = document.getElementById("message");
-          messageDiv.style.display = "block";
-          messageDiv.innerHTML = "All hoops passed! Now fly back and land on the home point (marked with H).";
-        }
-  
-        if (allHoopsPassed && !landedAtHome) {
-          const dx = drone.position.x;
-          const dz = drone.position.z;
-          const distToHome = Math.sqrt(dx * dx + dz * dz);
-          if (distToHome < 10 && drone.position.y < 1) {
-            landedAtHome = true;
-            const messageDiv = document.getElementById("message");
-            messageDiv.innerHTML = "Congratulations! You landed safely at home.";
-            sweetSound.currentTime = 0;
-            sweetSound.play();
-          }
-        }
-  
-        const cameraOffset = new THREE.Vector3(0, 5, -15);
-        const quat = new THREE.Quaternion();
-        quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
-        const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
-        camera.position.copy(drone.position.clone().add(rotatedOffset));
-        camera.lookAt(drone.position);
-  
-        renderer.render(scene, camera);
-        topViewRenderer.render(scene, topViewCamera);
-      }
-      animate();
     </script>
   </body>
 </html>
