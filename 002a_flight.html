@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Quadcopter Flight Game</title>
+    <title>Quadcopter Flight Simulation</title>
     <style>
       /* Basic Reset */
       body,
@@ -40,7 +40,7 @@
         background-color: #4caf50;
         color: white;
       }
-      /* General Message (e.g., congratulations) */
+      /* General Message */
       #message {
         position: absolute;
         top: 10%;
@@ -57,28 +57,54 @@
       /* Controls Container (bottom center) */
       #controls {
         position: absolute;
-        bottom: 20px;
+        bottom: 10px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 20;
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 10px;
+        gap: 20px;
         background: rgba(255, 255, 255, 0.8);
         padding: 10px;
         border-radius: 5px;
+  width: 1000px;  /* Set a specific width */
+  padding: 20px; /* Adjust padding if needed */
+  height: 220px;
       }
       /* Info box for Altitude & Distance */
-      #info {
-        font-size: 18px;
-        color: #000;
-      }
+#info {
+  position: absolute;
+  top: 20px;      /* Adjust this value to move it downward (or upward if negative) */
+  left: 50%;      /* Center horizontally */
+  transform: translateX(-50%);
+  font-size: 18px;
+  color: #000;
+}
+#btn-reset {
+  /* Change position: use absolute or relative positioning */
+  position: absolute;       /* or relative if you want it within its container */
+  bottom: 10px;             /* adjust vertical position */
+  right: 480px;              /* adjust horizontal position */
+  
+  /* Change button size */
+  width: 80px;             /* set your desired width */
+  height: 40px;             /* set your desired height */
+  padding: 10px;            /* optional padding for internal spacing */
+
+  /* Change font properties */
+  font-size: 18px;          /* change font size */
+  font-weight: bold;        /* optionally adjust the font weight */
+  
+  /* Other styling */
+  border: none;
+  border-radius: 5px;
+}
       /* Container for slider and joysticks */
       #main-controls {
         display: flex;
         align-items: center;
-        gap: 80px;
+        gap: 100px;
       }
       /* Speed slider container (center) */
       #speedContainer {
@@ -90,74 +116,90 @@
       #speedSlider {
         width: 200px;
       }
-      /* Joystick container styling */
-      .cross-container {
+      /* Enlarged Virtual Joystick Styles */
+      .joystick-container {
+        width: 300px;
+        height: 300px;
         position: relative;
-        width: 280px;
-        height: 100px;
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 10px;
       }
-      /* Position directional buttons inside each joystick */
-      .cross-container .top {
+      .joystick-base {
+        width: 200px;
+        height: 200px;
+        background: rgba(200, 200, 200, 0.5);
+        border: 2px solid #aaa;
+        border-radius: 50%;
         position: absolute;
-        top: -25%;
         left: 50%;
-        transform: translateX(-50%);
+        top: 40%;
+        transform: translate(-50%, -50%);
       }
-      .cross-container .bottom {
+      .joystick-thumb {
+        width: 80px;
+        height: 80px;
+        background: rgba(100, 100, 100, 0.8);
+        border: 2px solid #555;
+        border-radius: 50%;
         position: absolute;
-        bottom: -25%;
         left: 50%;
-        transform: translateX(-50%);
+        top: 40%;
+        transform: translate(-50%, -50%);
+        touch-action: none;
       }
-      .cross-container .left {
+      /* Joystick label styles - placed outside the joystick base */
+      .joystick-label {
         position: absolute;
-        left: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      .cross-container .right {
-        position: absolute;
-        right: -5px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      /* Enlarge control buttons */
-      .cross-container button {
-        font-size: 32px;
-        padding: 10px 15px;
-        white-space: normal;
-        text-align: center;
-      }
-      /* Enlarge reset button */
-      #controls button {
-        font-size: 20px;
-        padding: 10px 15px;
-      }
-      /* Reduced font size for Show Flight Path button */
-      #toggleFlightPath {
         font-size: 16px;
-        white-space: nowrap;
+        color: rgba(0, 0, 0, 0.9);
+        font-weight: bold;
+        pointer-events: none;
       }
-      /* Button color classes */
-      .btn-green {
-        background-color: #4caf50;
-        color: white;
+      /* For the left joystick: 
+         Top label: Throttle Up; Bottom: Throttle Down; 
+         Left: Yaw Left; Right: Yaw Right */
+      #leftJoystick .label-top {
+        top: 0px;
+        left: 50%;
+        transform: translateX(-50%);
       }
-      .btn-orange {
-        background-color: #ff9800;
-        color: white;
+      #leftJoystick .label-bottom {
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
       }
-      .btn-red {
-        background-color: #f44336;
-        color: white;
+      #leftJoystick .label-left {
+        left: 0px;
+        top: 40%;
+        transform: translateY(-50%);
       }
-      .btn-default {
-        background-color: #2196f3;
-        color: white;
+      #leftJoystick .label-right {
+        right: 0px;
+        top: 40%;
+        transform: translateY(-50%);
       }
-      /* Top View Container (Top Left Corner) */
+      /* For the right joystick:
+         Top label: Pitch Forward; Bottom: Pitch Backward; 
+         Left: Roll Left; Right: Roll Right */
+      #rightJoystick .label-top {
+        top: 0px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #rightJoystick .label-bottom {
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #rightJoystick .label-left {
+        left: 0px;
+        top: 40%;
+        transform: translateY(-50%);
+      }
+      #rightJoystick .label-right {
+        right: 0px;
+        top: 40%;
+        transform: translateY(-50%);
+      }
+      /* Zoom Controls and Top View Container */
       #topViewContainer {
         position: absolute;
         top: 20px;
@@ -167,7 +209,6 @@
         flex-direction: column;
         align-items: center;
       }
-      /* Top View Renderer styling */
       #topViewRenderer {
         width: 200px;
         height: 200px;
@@ -209,6 +250,19 @@
       #hoopTable .hoopCell.passed {
         background: grey;
       }
+      /* Button classes */
+      .btn-green {
+        background-color: #4caf50;
+        color: white;
+      }
+      .btn-red {
+        background-color: #f44336;
+        color: white;
+      }
+      .btn-default {
+        background-color: #2196f3;
+        color: white;
+      }
     </style>
   </head>
   <body>
@@ -216,9 +270,9 @@
     <div id="title">Quadcopter Flight Simulation</div>
     <!-- Language Toggle Button -->
     <button id="langToggle" class="btn-green">繁體中文</button>
-    <!-- General Message (e.g., congratulations) -->
+    <!-- General Message -->
     <div id="message"></div>
-
+    
     <!-- Top View Container -->
     <div id="topViewContainer">
       <div id="topViewRenderer"></div>
@@ -227,8 +281,8 @@
         <button id="zoomOut">Zoom Out</button>
       </div>
     </div>
-
-    <!-- Hoop Table (with 10 cells, in 2 rows) -->
+    
+    <!-- Hoop Table -->
     <div id="hoopTable">
       <div class="hoopCell" id="hoopCell-1">1</div>
       <div class="hoopCell" id="hoopCell-2">2</div>
@@ -241,59 +295,128 @@
       <div class="hoopCell" id="hoopCell-9">9</div>
       <div class="hoopCell" id="hoopCell-10">10</div>
     </div>
-
+    
     <!-- Controls Container -->
     <div id="controls">
       <div id="info">Altitude: 0 | Distance: 0</div>
       <div id="main-controls">
-        <!-- Left Joystick: Throttle & Yaw -->
-        <div class="cross-container" id="left-joystick">
-          <button id="btn-throttle-up" class="btn-green top">Throttle<br>Up</button>
-          <button id="btn-throttle-down" class="btn-green bottom">Throttle<br>Down</button>
-          <button id="btn-yaw-left" class="btn-green left">Yaw<br>Left</button>
-          <button id="btn-yaw-right" class="btn-green right">Yaw<br>Right</button>
-          <div class="dummy-square"></div>
+        <!-- Left Virtual Joystick -->
+        <div class="joystick-container" id="leftJoystick">
+          <div class="joystick-base"></div>
+          <div class="joystick-thumb"></div>
+          <!-- Movement labels placed outside the base -->
+          <span class="joystick-label label-top">Throttle Up</span>
+          <span class="joystick-label label-bottom">Throttle Down</span>
+          <span class="joystick-label label-left">Yaw Left</span>
+          <span class="joystick-label label-right">Yaw Right</span>
         </div>
         <!-- Speed Slider and Flight Path Toggle -->
         <div id="speedContainer">
-          <input
-            type="range"
-            id="speedSlider"
-            min="10"
-            max="100"
-            value="50"
-            step="1"
-          />
-          <button id="toggleFlightPath">Show Flight Path</button>
+          <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
+          <button id="toggleFlightPath" class="btn-default">Show Flight Path</button>
         </div>
-        <!-- Right Joystick: Pitch & Roll -->
-        <div class="cross-container" id="right-joystick">
-          <button id="btn-pitch-forward" class="btn-orange top">Pitch<br>Forward</button>
-          <button id="btn-pitch-backward" class="btn-orange bottom">Pitch<br>Backward</button>
-          <button id="btn-roll-left" class="btn-orange left">Roll<br>Left</button>
-          <button id="btn-roll-right" class="btn-orange right">Roll<br>Right</button>
-          <div class="dummy-square"></div>
+        <!-- Right Virtual Joystick -->
+        <div class="joystick-container" id="rightJoystick">
+          <div class="joystick-base"></div>
+          <div class="joystick-thumb"></div>
+          <!-- Movement labels placed outside the base -->
+          <span class="joystick-label label-top">Pitch Forward</span>
+          <span class="joystick-label label-bottom">Pitch Backward</span>
+          <span class="joystick-label label-left">Roll Left</span>
+          <span class="joystick-label label-right">Roll Right</span>
         </div>
       </div>
       <button id="btn-reset" class="btn-red">Reset</button>
     </div>
-
+    
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+      // Linear interpolation helper
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+    
+      // Virtual Joystick helper: attach pointer/touch events to a joystick container.
+      function attachJoystick(containerId, joystickObj) {
+        const container = document.getElementById(containerId);
+        const thumb = container.querySelector(".joystick-thumb");
+        let dragging = false;
+        let center = { x: 0, y: 0 };
+        const maxDist = 40; // Maximum displacement in pixels
+      
+        function updateThumb(dx, dy) {
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist > maxDist) {
+            dx = (dx / dist) * maxDist;
+            dy = (dy / dist) * maxDist;
+          }
+          thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
+          joystickObj.dx = dx / maxDist;
+          joystickObj.dy = dy / maxDist;
+        }
+      
+        function resetJoystick() {
+          dragging = false;
+          joystickObj.dx = 0;
+          joystickObj.dy = 0;
+          thumb.style.transform = "translate(-50%, -50%)";
+        }
+      
+        function onMove(clientX, clientY) {
+          const dx = clientX - center.x;
+          const dy = clientY - center.y;
+          updateThumb(dx, dy);
+        }
+      
+        container.addEventListener("mousedown", (e) => {
+          dragging = true;
+          const rect = container.getBoundingClientRect();
+          center.x = rect.left + rect.width / 2;
+          center.y = rect.top + rect.height / 2;
+          onMove(e.clientX, e.clientY);
+        });
+      
+        container.addEventListener("mousemove", (e) => {
+          if (dragging) {
+            onMove(e.clientX, e.clientY);
+          }
+        });
+      
+        container.addEventListener("mouseup", resetJoystick);
+        container.addEventListener("mouseleave", resetJoystick);
+      
+        container.addEventListener("touchstart", (e) => {
+          dragging = true;
+          const rect = container.getBoundingClientRect();
+          center.x = rect.left + rect.width / 2;
+          center.y = rect.top + rect.height / 2;
+          const touch = e.touches[0];
+          onMove(touch.clientX, touch.clientY);
+          e.preventDefault();
+        });
+      
+        container.addEventListener("touchmove", (e) => {
+          if (dragging) {
+            const touch = e.touches[0];
+            onMove(touch.clientX, touch.clientY);
+            e.preventDefault();
+          }
+        });
+      
+        container.addEventListener("touchend", resetJoystick);
+      }
+    
       window.addEventListener("load", function () {
         // --------------------------------------------------
         // GLOBAL STATE VARIABLES & TRANSLATIONS
         // --------------------------------------------------
-        let currentExpectedHoop = 1; // Expect hoop number 1 first.
+        let currentExpectedHoop = 1;
         let landedAtHome = false;
         let takenOff = false;
         let allHoopsPassed = false;
-        
-        // Current language (default English: "en"; toggle to Traditional Chinese: "zh")
+    
         let currentLanguage = "en";
-        
-        // Translation Strings for UI elements.
         const translations = {
           en: {
             title: "Quadcopter Flight Simulation",
@@ -304,14 +427,14 @@
             reset: "Reset",
             showFlightPath: "Show Flight Path",
             hideFlightPath: "Hide Flight Path",
-            throttleUp: "Throttle<br>Up",
-            throttleDown: "Throttle<br>Down",
-            yawLeft: "Yaw<br>Left",
-            yawRight: "Yaw<br>Right",
-            pitchForward: "Pitch<br>Forward",
-            pitchBackward: "Pitch<br>Backward",
-            rollLeft: "Roll<br>Left",
-            rollRight: "Roll<br>Right",
+            throttleUp: "Throttle Up",
+            throttleDown: "Throttle Down",
+            yawLeft: "Yaw Left",
+            yawRight: "Yaw Right",
+            pitchForward: "Pitch Forward",
+            pitchBackward: "Pitch Backward",
+            rollLeft: "Roll Left",
+            rollRight: "Roll Right",
             zoomIn: "Zoom In",
             zoomOut: "Zoom Out",
             altitude: "Altitude",
@@ -340,30 +463,21 @@
             distance: "距離"
           }
         };
-        
-        // Function to update static UI texts based on current language.
+    
         function updateUIText() {
           document.getElementById("title").innerHTML = translations[currentLanguage].title;
           document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
           const flightToggle = document.getElementById("toggleFlightPath");
           if (flightToggle) {
-            flightToggle.innerHTML = flightPathActive 
-              ? translations[currentLanguage].hideFlightPath 
-              : translations[currentLanguage].showFlightPath;
+            flightToggle.innerHTML =
+              flightPathActive
+                ? translations[currentLanguage].hideFlightPath
+                : translations[currentLanguage].showFlightPath;
           }
-          document.getElementById("btn-throttle-up").innerHTML = translations[currentLanguage].throttleUp;
-          document.getElementById("btn-throttle-down").innerHTML = translations[currentLanguage].throttleDown;
-          document.getElementById("btn-yaw-left").innerHTML = translations[currentLanguage].yawLeft;
-          document.getElementById("btn-yaw-right").innerHTML = translations[currentLanguage].yawRight;
-          document.getElementById("btn-pitch-forward").innerHTML = translations[currentLanguage].pitchForward;
-          document.getElementById("btn-pitch-backward").innerHTML = translations[currentLanguage].pitchBackward;
-          document.getElementById("btn-roll-left").innerHTML = translations[currentLanguage].rollLeft;
-          document.getElementById("btn-roll-right").innerHTML = translations[currentLanguage].rollRight;
           document.getElementById("zoomIn").innerHTML = translations[currentLanguage].zoomIn;
           document.getElementById("zoomOut").innerHTML = translations[currentLanguage].zoomOut;
         }
-        
-        // Language Toggle Button Event
+    
         document.getElementById("langToggle").addEventListener("click", function () {
           if (currentLanguage === "en") {
             currentLanguage = "zh";
@@ -374,7 +488,7 @@
           }
           updateUIText();
         });
-        
+    
         // --------------------------------------------------
         // MAIN SCENE, CAMERA, & RENDERER
         // --------------------------------------------------
@@ -384,7 +498,7 @@
         renderer.setClearColor(0x87ceeb);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
-
+    
         const camera = new THREE.PerspectiveCamera(
           75,
           window.innerWidth / window.innerHeight,
@@ -396,23 +510,23 @@
           camera.updateProjectionMatrix();
           renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
+    
         // --------------------------------------------------
         // TOP VIEW RENDERER & ORTHOGRAPHIC CAMERA
         // --------------------------------------------------
         const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         topViewRenderer.setSize(200, 200);
-        topViewRenderer.setClearColor(0x000000, 0); // Transparent background.
+        topViewRenderer.setClearColor(0x000000, 0);
         const topViewDiv = document.getElementById("topViewRenderer");
         topViewDiv.appendChild(topViewRenderer.domElement);
-
+    
         const d = 400;
         const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
         topViewCamera.position.set(0, 1000, 0);
         topViewCamera.lookAt(0, 0, 0);
         topViewCamera.zoom = 5;
         topViewCamera.updateProjectionMatrix();
-
+    
         document.getElementById("zoomIn").addEventListener("click", () => {
           topViewCamera.zoom *= 1.1;
           topViewCamera.updateProjectionMatrix();
@@ -421,7 +535,7 @@
           topViewCamera.zoom /= 1.1;
           topViewCamera.updateProjectionMatrix();
         });
-
+    
         // --------------------------------------------------
         // GROUND, GRID, & HOME MARKER
         // --------------------------------------------------
@@ -431,10 +545,10 @@
         ground.rotation.x = -Math.PI / 2;
         ground.receiveShadow = true;
         scene.add(ground);
-
+    
         const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
         scene.add(grid);
-
+    
         function createHomeMarker() {
           const canvas = document.createElement("canvas");
           canvas.width = 256;
@@ -466,7 +580,7 @@
         }
         const homeMarker = createHomeMarker();
         scene.add(homeMarker);
-
+    
         // --------------------------------------------------
         // BASIC LIGHTING
         // --------------------------------------------------
@@ -481,14 +595,14 @@
         directionalLight.shadow.camera.far = 500;
         directionalLight.shadow.bias = -0.001;
         scene.add(directionalLight);
-
+    
         // --------------------------------------------------
         // DRONE (QUADCOPTER) SETUP
         // --------------------------------------------------
         const droneGroup = new THREE.Group();
         droneGroup.rotation.order = "YXZ";
         scene.add(droneGroup);
-
+    
         const drone = {
           position: new THREE.Vector3(0, 0, 0),
           yaw: 0,
@@ -496,12 +610,12 @@
           roll: 0,
         };
         const droneCollisionRadius = 0.6;
-
+    
         const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
         const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
         const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
         droneGroup.add(droneBody);
-
+    
         function createDroneLabel(text) {
           const canvas = document.createElement("canvas");
           canvas.width = 512;
@@ -526,13 +640,13 @@
         }
         const label = createDroneLabel("EdUHK");
         droneGroup.add(label);
-
+    
         // --------------------------------------------------
         // PROPELLERS SETUP
         // --------------------------------------------------
         const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
         const propellers = [];
-
+    
         // Front Left
         const frontLeft = new THREE.Mesh(
           propellerGeometry,
@@ -541,7 +655,7 @@
         frontLeft.position.set(-0.50, 0.2, 0.55);
         droneGroup.add(frontLeft);
         propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45) });
-
+    
         // Front Right
         const frontRight = new THREE.Mesh(
           propellerGeometry,
@@ -550,7 +664,7 @@
         frontRight.position.set(0.50, 0.2, 0.55);
         droneGroup.add(frontRight);
         propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135) });
-
+    
         // Rear Left
         const rearLeft = new THREE.Mesh(
           propellerGeometry,
@@ -559,7 +673,7 @@
         rearLeft.position.set(-0.50, 0.2, -0.55);
         droneGroup.add(rearLeft);
         propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135) });
-
+    
         // Rear Right
         const rearRight = new THREE.Mesh(
           propellerGeometry,
@@ -568,12 +682,12 @@
         rearRight.position.set(0.50, 0.2, -0.55);
         droneGroup.add(rearRight);
         propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45) });
-
+    
         droneGroup.scale.set(3, 3, 3);
         droneGroup.traverse(child => {
           if (child instanceof THREE.Mesh) child.castShadow = true;
         });
-
+    
         // --------------------------------------------------
         // BLINKING YELLOW SPOTS ON PROPELLERS
         // --------------------------------------------------
@@ -586,14 +700,13 @@
           prop.blinkOffset = index * (Math.PI / 2);
           prop.blinkSpot = blinkSpot;
         });
-
+    
         // --------------------------------------------------
         // HOOPS (OBJECTIVES) SETUP
         // --------------------------------------------------
         const totalHoops = 10;
         const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-
-        // Helper: Create a label sprite for a hoop.
+    
         function createHoopLabel(number) {
           const canvas = document.createElement("canvas");
           canvas.width = 128;
@@ -611,8 +724,7 @@
           sprite.scale.set(4, 4, 1);
           return sprite;
         }
-        
-        // Helper: Create a hoop with a label.
+    
         function createHoop(number) {
           const mainRadius = 9;
           const tubeRadius = 0.2;
@@ -622,7 +734,6 @@
           const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
           const hoopMesh = new THREE.Mesh(geometry, material);
           hoopMesh.rotation.set(0, Math.PI / 2, 0);
-          // Add label sprite.
           const labelSprite = createHoopLabel(number);
           labelSprite.position.set(0, mainRadius + 2, 0);
           hoopMesh.add(labelSprite);
@@ -635,7 +746,7 @@
             labelSprite: labelSprite 
           };
         }
-
+    
         const hoops = [];
         for (let i = 0; i < totalHoops; i++) {
           const hoop = createHoop(i + 1);
@@ -643,32 +754,33 @@
           scene.add(hoop.mesh);
           hoops.push(hoop);
         }
-
+    
         // --------------------------------------------------
         // AUDIO SETUP
         // --------------------------------------------------
         const bonusSound = new Audio("bonus.mp3");
         const sweetSound = new Audio("sweet.mp3");
-
+    
         // --------------------------------------------------
-        // USER CONTROLS, SPEED SLIDER & FLIGHT PATH TOGGLE
+        // USER INPUT - Virtual Joysticks & Keyboard Controls
         // --------------------------------------------------
         let translationSpeed = 50;
         const yawSpeed = 1.0;
+        const throttleSpeed = 10;
         const attitudeSpeed = 0.5;
         const maxTilt = Math.PI / 6;
-
+    
+        // Global joystick input objects.
+        const leftJoystickInput = { dx: 0, dy: 0 };
+        const rightJoystickInput = { dx: 0, dy: 0 };
+        attachJoystick("leftJoystick", leftJoystickInput);
+        attachJoystick("rightJoystick", rightJoystickInput);
+    
+        // Flight path toggle.
         let flightPathActive = false;
         let flightPathPoints = [];
         let flightPathLine = null;
-
-        const keys = {};
-        document.addEventListener("keydown", (e) => { keys[e.code] = true; });
-        document.addEventListener("keyup", (e) => { keys[e.code] = false; });
-
-        const speedSlider = document.getElementById("speedSlider");
-        speedSlider.addEventListener("input", function () { translationSpeed = parseFloat(this.value); });
-
+    
         const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
         toggleFlightPathBtn.addEventListener("click", function () {
           flightPathActive = !flightPathActive;
@@ -687,29 +799,19 @@
             }
           }
         });
-
-        function addControlButton(id, keyCode) {
-          const btn = document.getElementById(id);
-          btn.addEventListener("mousedown", function () { keys[keyCode] = true; });
-          btn.addEventListener("mouseup", function () { keys[keyCode] = false; });
-          btn.addEventListener("touchstart", function (e) {
-            e.preventDefault();
-            keys[keyCode] = true;
-          });
-          btn.addEventListener("touchend", function (e) {
-            e.preventDefault();
-            keys[keyCode] = false;
-          });
-        }
-        addControlButton("btn-throttle-up", "KeyW");
-        addControlButton("btn-throttle-down", "KeyS");
-        addControlButton("btn-yaw-left", "KeyA");
-        addControlButton("btn-yaw-right", "KeyD");
-        addControlButton("btn-pitch-forward", "ArrowUp");
-        addControlButton("btn-pitch-backward", "ArrowDown");
-        addControlButton("btn-roll-left", "ArrowLeft");
-        addControlButton("btn-roll-right", "ArrowRight");
-
+    
+        // Keyboard event handlers for AWSD and arrow keys.
+        const keys = {};
+        document.addEventListener("keydown", (e) => { keys[e.code] = true; });
+        document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+    
+        document.getElementById("speedSlider").addEventListener("input", function () {
+          translationSpeed = parseFloat(this.value);
+        });
+    
+        // --------------------------------------------------
+        // RESET FUNCTIONALITY
+        // --------------------------------------------------
         function resetDrone() {
           drone.position.set(0, 0, 0);
           drone.yaw = 0;
@@ -746,67 +848,86 @@
           updateUIText();
         }
         document.getElementById("btn-reset").addEventListener("click", resetDrone);
-
+    
+        // --------------------------------------------------
+        // MAIN ANIMATION LOOP
+        // --------------------------------------------------
         const clock = new THREE.Clock();
         function animate() {
           requestAnimationFrame(animate);
           const delta = clock.getDelta();
-
+      
           if (drone.position.y < 0) drone.position.y = 0;
-
+      
           const altitude = drone.position.y.toFixed(1);
           const distance = Math.sqrt(
             drone.position.x * drone.position.x + drone.position.z * drone.position.z
           ).toFixed(1);
-          document.getElementById("info").textContent = 
-            translations[currentLanguage].altitude + ": " + altitude + " | " + 
-            translations[currentLanguage].distance + ": " + distance;
-
+          document.getElementById("info").textContent =
+            translations[currentLanguage].altitude + ": " + altitude +
+            " | " + translations[currentLanguage].distance + ": " + distance;
+      
           if (!landedAtHome) {
-            if (keys["KeyW"]) drone.position.y += 10 * delta;
-            if (keys["KeyS"]) drone.position.y -= 10 * delta;
+            // Combined input: joystick + keyboard.
+            // Throttle: Left joystick vertical plus W/S keys.
+            let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+            drone.position.y += throttleInput * throttleSpeed * delta;
             if (drone.position.y < 0) drone.position.y = 0;
-            if (!takenOff && drone.position.y > 1.0) takenOff = true;
-            if (takenOff) {
-              if (keys["KeyA"]) drone.yaw += yawSpeed * delta;
-              if (keys["KeyD"]) drone.yaw -= yawSpeed * delta;
-              if (keys["ArrowUp"])
-                drone.pitch = Math.min(drone.pitch + attitudeSpeed * delta, maxTilt);
-              else if (keys["ArrowDown"])
-                drone.pitch = Math.max(drone.pitch - attitudeSpeed * delta, -maxTilt);
-              else drone.pitch *= 0.95;
-              if (keys["ArrowLeft"])
-                drone.roll = Math.min(drone.roll + attitudeSpeed * delta, maxTilt);
-              else if (keys["ArrowRight"])
-                drone.roll = Math.max(drone.roll - attitudeSpeed * delta, -maxTilt);
-              else drone.roll *= 0.95;
+      
+            if (drone.position.y > 0) {
+              // Yaw control: left joystick horizontal plus A/D keys.
+              let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+              drone.yaw += yawInput * yawSpeed * delta;
+      
+              // Pitch control: right joystick vertical plus Up/Down arrows.
+              let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+              let desiredPitch = pitchInput * maxTilt;
+              drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
+      
+              // Roll control: right joystick horizontal plus Right/Left arrows,
+              // and the roll directions are switched.
+              let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+              let desiredRoll = -rollInput * maxTilt; // Inversion.
+              drone.roll = lerp(drone.roll, desiredRoll, 0.1);
+      
+              // Calculate horizontal displacement.
               const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
               const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
               const horizontalDisplacement = new THREE.Vector3();
-              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)));
-              horizontalDisplacement.add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                                     .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
               horizontalDisplacement.multiplyScalar(translationSpeed * delta);
               drone.position.add(horizontalDisplacement);
+            } else {
+              drone.yaw = 0;
+              drone.pitch = 0;
+              drone.roll = 0;
             }
+      
+            if (!takenOff && drone.position.y > 1) takenOff = true;
           }
-
+      
           droneGroup.position.copy(drone.position);
           droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-
+      
           propellers.forEach(prop => {
-            if (drone.position.y > 0.1) prop.mesh.rotation.y += prop.spinSpeed * delta;
-            else prop.mesh.rotation.y = prop.defaultAngle;
+            if (drone.position.y > 0.1) {
+              prop.mesh.rotation.y += prop.spinSpeed * delta;
+            } else {
+              prop.mesh.rotation.y = prop.defaultAngle;
+            }
             let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
             prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
           });
-
+      
           if (flightPathActive) {
             const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
             if (
               flightPathPoints.length === 0 ||
               currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2
-            )
+            ) {
               flightPathPoints.push(currentPos);
+            }
             if (flightPathPoints.length > 1) {
               const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
               if (!flightPathLine) {
@@ -819,8 +940,7 @@
               }
             }
           }
-
-          // HOOP ORDER CHECK
+      
           hoops.forEach(hoop => {
             const dToHoop = drone.position.distanceTo(hoop.mesh.position);
             if (!hoop.entered && dToHoop < hoop.mainRadius) {
@@ -848,7 +968,7 @@
               hoop.entered = false;
             }
           });
-
+      
           if (!allHoopsPassed) {
             let passedCount = 0;
             hoops.forEach(hoop => {
@@ -861,7 +981,7 @@
               messageDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
             }
           }
-
+      
           if (allHoopsPassed && !landedAtHome) {
             const dX = drone.position.x;
             const dZ = drone.position.z;
@@ -870,28 +990,26 @@
               landedAtHome = true;
               const messageDiv = document.getElementById("message");
               messageDiv.innerHTML = translations[currentLanguage].landingMessage;
-              // Attach event listener to the New Game button.
-              document.getElementById("newGameButton").addEventListener("click", function () {
+              document.getElementById("newGameButton").addEventListener("click", () => {
                 resetDrone();
               });
               sweetSound.currentTime = 0;
               sweetSound.play();
             }
           }
-
+      
           const cameraOffset = new THREE.Vector3(0, 5, -15);
           const quat = new THREE.Quaternion();
           quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
           const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
           camera.position.copy(drone.position.clone().add(rotatedOffset));
           camera.lookAt(drone.position);
-
+      
           renderer.render(scene, camera);
           topViewRenderer.render(scene, topViewCamera);
         }
         animate();
-
-        // Set initial UI text based on the default language.
+      
         updateUIText();
       });
     </script>
