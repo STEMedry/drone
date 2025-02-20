@@ -104,7 +104,7 @@
         flex-direction: column;
         align-items: center;
         gap: 5px;
-        /* Shift upward to avoid overlapping with joysticks */
+        /* Shift upward to avoid overlapping with the joystick areas */
         transform: translateY(-60px);
       }
       /* New speed label style */
@@ -340,7 +340,7 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // Linear interpolation helper
+      // Linear interpolation helper.
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
@@ -351,8 +351,8 @@
         const thumb = container.querySelector(".joystick-thumb");
         let dragging = false;
         let center = { x: 0, y: 0 };
-        const maxDist = 40; // Maximum displacement in pixels
-      
+        const maxDist = 40; // Maximum displacement in pixels.
+    
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist > maxDist) {
@@ -363,20 +363,20 @@
           joystickObj.dx = dx / maxDist;
           joystickObj.dy = dy / maxDist;
         }
-      
+    
         function resetJoystick() {
           dragging = false;
           joystickObj.dx = 0;
           joystickObj.dy = 0;
           thumb.style.transform = "translate(-50%, -50%)";
         }
-      
+    
         function onMove(clientX, clientY) {
           const dx = clientX - center.x;
           const dy = clientY - center.y;
           updateThumb(dx, dy);
         }
-      
+    
         container.addEventListener("mousedown", (e) => {
           dragging = true;
           const rect = container.getBoundingClientRect();
@@ -384,16 +384,16 @@
           center.y = rect.top + rect.height / 2;
           onMove(e.clientX, e.clientY);
         });
-      
+    
         container.addEventListener("mousemove", (e) => {
           if (dragging) {
             onMove(e.clientX, e.clientY);
           }
         });
-      
+    
         container.addEventListener("mouseup", resetJoystick);
         container.addEventListener("mouseleave", resetJoystick);
-      
+    
         container.addEventListener("touchstart", (e) => {
           dragging = true;
           const rect = container.getBoundingClientRect();
@@ -403,7 +403,7 @@
           onMove(touch.clientX, touch.clientY);
           e.preventDefault();
         });
-      
+    
         container.addEventListener("touchmove", (e) => {
           if (dragging) {
             const touch = e.touches[0];
@@ -411,7 +411,7 @@
             e.preventDefault();
           }
         });
-      
+    
         container.addEventListener("touchend", resetJoystick);
       }
     
@@ -740,11 +740,13 @@
           const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
           const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
           const hoopMesh = new THREE.Mesh(geometry, material);
-          // Apply default Y rotation so the hoop is vertical
-          // For five of them, turn them 90° vertically by rotating around the X-axis by 90°
+          // By default all hoops previously faced north (rotation.y = Math.PI/2).
+          // To change five of them to face a different direction, we set:
           if (number <= 5) {
-            hoopMesh.rotation.set(Math.PI / 2, Math.PI / 2, 0);
+            // Face east.
+            hoopMesh.rotation.set(0, 0, 0);
           } else {
+            // Face north.
             hoopMesh.rotation.set(0, Math.PI / 2, 0);
           }
           const labelSprite = createHoopLabel(number);
@@ -881,42 +883,34 @@
       
           if (!landedAtHome) {
             // Combined input: joystick + keyboard.
-            // Throttle: Left joystick vertical plus W/S keys.
+            // Throttle: left joystick vertical + W/S keys.
             let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
             drone.position.y += throttleInput * throttleSpeed * delta;
             if (drone.position.y < 0) drone.position.y = 0;
       
-            if (drone.position.y > 0) {
-              // Yaw control: left joystick horizontal plus A/D keys.
-              let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
-              drone.yaw += yawInput * yawSpeed * delta;
+            // Always enable all combined controls for yaw, pitch, and roll.
+            let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+            drone.yaw += yawInput * yawSpeed * delta;
       
-              // Pitch control: right joystick vertical plus Up/Down arrows.
-              let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
-              let desiredPitch = pitchInput * maxTilt;
-              drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
+            let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+            let desiredPitch = pitchInput * maxTilt;
+            drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
       
-              // Roll control: right joystick horizontal plus Right/Left arrows.
-              let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
-              let desiredRoll = -rollInput * maxTilt; // Inversion.
-              drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-      
-              // Calculate horizontal displacement.
-              const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-              const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-              const horizontalDisplacement = new THREE.Vector3();
-              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                     .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-              horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-              drone.position.add(horizontalDisplacement);
-            } else {
-              drone.yaw = 0;
-              drone.pitch = 0;
-              drone.roll = 0;
-            }
+            let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+            let desiredRoll = -rollInput * maxTilt; // Inversion.
+            drone.roll = lerp(drone.roll, desiredRoll, 0.1);
       
             if (!takenOff && drone.position.y > 1) takenOff = true;
           }
+      
+          // Horizontal displacement based on pitch and roll (applied always).
+          const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+          const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+          const horizontalDisplacement = new THREE.Vector3();
+          horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                                 .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+          horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+          drone.position.add(horizontalDisplacement);
       
           droneGroup.position.copy(drone.position);
           droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
@@ -951,34 +945,6 @@
               }
             }
           }
-      
-          hoops.forEach(hoop => {
-            const dToHoop = drone.position.distanceTo(hoop.mesh.position);
-            if (!hoop.entered && dToHoop < hoop.mainRadius) {
-              hoop.entered = true;
-            }
-            if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1) {
-              if (hoop.number === currentExpectedHoop) {
-                hoop.passed = true;
-                hoop.mesh.material.color.set(0x00ff00);
-                bonusSound.currentTime = 0;
-                bonusSound.play();
-                currentExpectedHoop++;
-                const cell = document.getElementById("hoopCell-" + hoop.number);
-                if (cell) cell.classList.add("passed");
-                const canvas = hoop.labelSprite.material.map.image;
-                const ctx = canvas.getContext("2d");
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = "green";
-                ctx.font = "Bold 80px Arial";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
-                hoop.labelSprite.material.map.needsUpdate = true;
-              }
-              hoop.entered = false;
-            }
-          });
       
           if (!allHoopsPassed) {
             let passedCount = 0;
