@@ -4,12 +4,30 @@
     <meta charset="UTF-8" />
     <title>Quadcopter Flight Game</title>
     <style>
+      /* Disable text selection and touch callout on buttons (useful for iPad) */
+      button {
+        -webkit-user-select: none;
+        -webkit-touch-callout: none;
+        user-select: none;
+      }
+
       body {
         margin: 0;
         overflow: hidden;
       }
       canvas {
         display: block;
+      }
+      /* Title styling at the top middle with a white outline */
+      #title {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 28px;
+        font-weight: bold;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        z-index: 100;
       }
       /* Overlays for alerts and messages */
       #alert {
@@ -62,7 +80,7 @@
       #main-controls {
         display: flex;
         align-items: center;
-        gap: 80px; /* Increase this value to adjust horizontal spacing */
+        gap: 80px;
       }
       /* Speed slider container (center) */
       #speedContainer {
@@ -97,23 +115,22 @@
       }
       .cross-container .left {
         position: absolute;
-        left: 5px; /* Adjust to move left buttons further from the dummy square */
+        left: 5px;
         top: 50%;
         transform: translateY(-50%);
       }
       .cross-container .right {
         position: absolute;
-        right: -5px; /* Increase this to push right buttons farther away from the dummy square */
+        right: -5px;
         top: 50%;
         transform: translateY(-50%);
       }
       /* Enlarge control buttons to match the enlarged font; allow wrapping */
       .cross-container button {
-        font-size: 32px; /* 2× the base size */
+        font-size: 32px;
         padding: 10px 15px;
-        white-space: normal; /* allow wrapping to two lines */
+        white-space: normal;
         text-align: center;
-        /* No additional transform so that button size fits the font */
       }
       /* Also enlarge the reset button */
       #controls button {
@@ -152,7 +169,7 @@
         flex-direction: column;
         align-items: center;
       }
-      /* Top View Renderer: rotated 180deg; remove background */
+      /* Top View Renderer styling */
       #topViewRenderer {
         width: 200px;
         height: 200px;
@@ -172,6 +189,9 @@
     </style>
   </head>
   <body>
+    <!-- Title -->
+    <div id="title"><b>Quadcopter Flight Practice Simulation</b></div>
+
     <div id="alert">Collision Detected!</div>
     <div id="message"></div>
     
@@ -226,10 +246,10 @@
       renderer.setClearColor(0x87ceeb); // sky-blue background
       renderer.shadowMap.enabled = true;
       document.body.appendChild(renderer.domElement);
-    
+  
       const camera = new THREE.PerspectiveCamera(
         75,
-        window.innerWidth/window.innerHeight,
+        window.innerWidth / window.innerHeight,
         0.1,
         2000
       );
@@ -247,8 +267,7 @@
         alpha: true // enable transparency
       });
       topViewRenderer.setSize(200, 200);
-      // Set clear color with alpha 0 so it’s fully transparent
-      topViewRenderer.setClearColor(0x000000, 0);
+      topViewRenderer.setClearColor(0x000000, 0); // transparent background
       const topViewDiv = document.getElementById("topViewRenderer");
       topViewDiv.appendChild(topViewRenderer.domElement);
       
@@ -256,10 +275,9 @@
       const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
       topViewCamera.position.set(0, 1000, 0);
       topViewCamera.lookAt(0, 0, 0);
-      // Set default 5× zoom for top view and update projection matrix
       topViewCamera.zoom = 5;
       topViewCamera.updateProjectionMatrix();
-      
+  
       document.getElementById("zoomIn").addEventListener("click", () => {
         topViewCamera.zoom *= 1.1;
         topViewCamera.updateProjectionMatrix();
@@ -268,20 +286,20 @@
         topViewCamera.zoom /= 1.1;
         topViewCamera.updateProjectionMatrix();
       });
-    
+  
       // --------------------------------------------------
       // GROUND, GRID, & HOME MARKER
       // --------------------------------------------------
       const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
       const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xEDEDED });
       const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-      ground.rotation.x = -Math.PI/2;
+      ground.rotation.x = -Math.PI / 2;
       ground.receiveShadow = true;
       scene.add(ground);
-    
+  
       const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
       scene.add(grid);
-    
+  
       function createHomeMarker() {
         const canvas = document.createElement("canvas");
         canvas.width = 256;
@@ -289,7 +307,7 @@
         const ctx = canvas.getContext("2d");
         ctx.fillStyle = "white";
         ctx.beginPath();
-        ctx.arc(128, 128, 120, 0, Math.PI*2);
+        ctx.arc(128, 128, 120, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = "black";
         ctx.lineWidth = 10;
@@ -307,20 +325,20 @@
         });
         const geometry = new THREE.CircleGeometry(5, 32);
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI/2;
+        mesh.rotation.x = -Math.PI / 2;
         mesh.position.set(0, 0.01, 0);
         return mesh;
       }
       const homeMarker = createHomeMarker();
       scene.add(homeMarker);
-    
+  
       // --------------------------------------------------
       // BASIC LIGHTING
       // --------------------------------------------------
       const ambientLight = new THREE.AmbientLight(0x404040);
       scene.add(ambientLight);
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(100,200,100);
+      directionalLight.position.set(100, 200, 100);
       directionalLight.castShadow = true;
       directionalLight.shadow.mapSize.width = 2048;
       directionalLight.shadow.mapSize.height = 2048;
@@ -328,27 +346,28 @@
       directionalLight.shadow.camera.far = 500;
       directionalLight.shadow.bias = -0.001;
       scene.add(directionalLight);
-    
+  
       // --------------------------------------------------
       // DRONE (QUADCOPTER) SETUP
       // --------------------------------------------------
       const droneGroup = new THREE.Group();
       droneGroup.rotation.order = "YXZ";
       scene.add(droneGroup);
-    
+  
+      // Set drone on the ground (y = 0) so altitude is 0 on the ground.
       const drone = {
-        position: new THREE.Vector3(0,0.5,0),
+        position: new THREE.Vector3(0, 0, 0),
         yaw: 0,
         pitch: 0,
         roll: 0,
       };
       const droneCollisionRadius = 0.6;
-    
-      const droneBodyGeometry = new THREE.BoxGeometry(1,0.3,1);
+  
+      const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
       const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
       const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
       droneGroup.add(droneBody);
-    
+  
       // --------------------------------------------------
       // ADD TEXT LABEL "EdUHK" ON THE DRONE
       // --------------------------------------------------
@@ -357,88 +376,108 @@
         canvas.width = 512;
         canvas.height = 128;
         const ctx = canvas.getContext("2d");
-        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.font = "bold 150px Arial";
         ctx.fillStyle = "white";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width/2, canvas.height/2);
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
         const texture = new THREE.CanvasTexture(canvas);
-        texture.center = new THREE.Vector2(0.5,0.5);
+        texture.center = new THREE.Vector2(0.5, 0.5);
         texture.rotation = Math.PI;
         texture.needsUpdate = true;
         const material = new THREE.MeshBasicMaterial({
           map: texture,
           transparent: true,
         });
-        const geometry = new THREE.PlaneGeometry(0.9,0.3);
+        const geometry = new THREE.PlaneGeometry(0.9, 0.3);
         const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI/2;
-        mesh.position.set(0, 0.15+0.01, 0);
+        mesh.rotation.x = -Math.PI / 2;
+        mesh.position.set(0, 0.15 + 0.01, 0);
         return mesh;
       }
       const label = createDroneLabel("EdUHK");
       droneGroup.add(label);
-    
+  
       // --------------------------------------------------
       // PROPELLERS SETUP
       // --------------------------------------------------
-      const propellerGeometry = new THREE.BoxGeometry(0.2,0.05,0.9);
+      const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
       const propellers = [];
-    
+  
+      // Front Left (Anticlockwise; default angle 45°)
       const frontLeft = new THREE.Mesh(
         propellerGeometry,
         new THREE.MeshLambertMaterial({ color: 0xff0000 })
       );
-      frontLeft.position.set(-0.50,0.2,0.55);
+      frontLeft.position.set(-0.50, 0.2, 0.55);
       droneGroup.add(frontLeft);
-      propellers.push({ mesh: frontLeft, spinSpeed: -10 });
-    
+      propellers.push({ 
+        mesh: frontLeft, 
+        spinSpeed: +10, 
+        defaultAngle: THREE.Math.degToRad(45)
+      });
+  
+      // Front Right (Clockwise; default angle 135°)
       const frontRight = new THREE.Mesh(
         propellerGeometry,
         new THREE.MeshLambertMaterial({ color: 0xff0000 })
       );
-      frontRight.position.set(0.50,0.2,0.55);
+      frontRight.position.set(0.50, 0.2, 0.55);
       droneGroup.add(frontRight);
-      propellers.push({ mesh: frontRight, spinSpeed: +10 });
-    
+      propellers.push({ 
+        mesh: frontRight, 
+        spinSpeed: -10, 
+        defaultAngle: THREE.Math.degToRad(135)
+      });
+  
+      // Rear Left (Clockwise; default angle 135°)
       const rearLeft = new THREE.Mesh(
         propellerGeometry,
         new THREE.MeshLambertMaterial({ color: 0x00ff00 })
       );
-      rearLeft.position.set(-0.50,0.2,-0.55);
+      rearLeft.position.set(-0.50, 0.2, -0.55);
       droneGroup.add(rearLeft);
-      propellers.push({ mesh: rearLeft, spinSpeed: +10 });
-    
+      propellers.push({ 
+        mesh: rearLeft, 
+        spinSpeed: -10, 
+        defaultAngle: THREE.Math.degToRad(135)
+      });
+  
+      // Rear Right (Anticlockwise; default angle 45°)
       const rearRight = new THREE.Mesh(
         propellerGeometry,
         new THREE.MeshLambertMaterial({ color: 0x00ff00 })
       );
-      rearRight.position.set(0.50,0.2,-0.55);
+      rearRight.position.set(0.50, 0.2, -0.55);
       droneGroup.add(rearRight);
-      propellers.push({ mesh: rearRight, spinSpeed: -10 });
-    
-      droneGroup.scale.set(3,3,3);
+      propellers.push({ 
+        mesh: rearRight, 
+        spinSpeed: +10, 
+        defaultAngle: THREE.Math.degToRad(45)
+      });
+  
+      droneGroup.scale.set(3, 3, 3);
       
       droneGroup.traverse((child) => {
         if (child instanceof THREE.Mesh) {
           child.castShadow = true;
         }
       });
-    
+  
       // --------------------------------------------------
       // BLINKING YELLOW SPOTS ON PROPELLERS
       // --------------------------------------------------
-      const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16,16);
+      const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
       propellers.forEach((prop, index) => {
         const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
         const blinkSpot = new THREE.Mesh(blinkSphereGeometry, material);
-        blinkSpot.position.set(0,0,0);
+        blinkSpot.position.set(0, 0, 0);
         prop.mesh.add(blinkSpot);
-        prop.blinkOffset = index * (Math.PI/2);
+        prop.blinkOffset = index * (Math.PI / 2);
         prop.blinkSpot = blinkSpot;
       });
-    
+  
       // --------------------------------------------------
       // HOOPS (OBJECTIVES) SETUP
       // --------------------------------------------------
@@ -452,47 +491,47 @@
         const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
         const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
         const hoopMesh = new THREE.Mesh(geometry, material);
-        hoopMesh.rotation.set(0, Math.PI/2, 0);
+        hoopMesh.rotation.set(0, Math.PI / 2, 0);
         return { mesh: hoopMesh, mainRadius: mainRadius, entered: false, passed: false };
       }
       for (let i = 0; i < totalHoops; i++) {
         const hoop = createHoop();
         hoop.mesh.position.set(
-          (Math.random()-0.5)*80,
-          5+Math.random()*10,
-          (Math.random()-0.5)*80
+          (Math.random() - 0.5) * 80,
+          5 + Math.random() * 10,
+          (Math.random() - 0.5) * 80
         );
         scene.add(hoop.mesh);
         hoops.push(hoop);
       }
-    
+  
       // --------------------------------------------------
       // AUDIO SETUP
       // --------------------------------------------------
       const bonusSound = new Audio("bonus.mp3");
       const sweetSound = new Audio("sweet.mp3");
-    
+  
       // --------------------------------------------------
       // USER CONTROLS, SPEED SLIDER & FLIGHT PATH TOGGLE
       // --------------------------------------------------
       let translationSpeed = 50;
       const yawSpeed = 1.0;
       const attitudeSpeed = 0.5;
-      const maxTilt = Math.PI/6;
-    
+      const maxTilt = Math.PI / 6;
+  
       let flightPathActive = false;
       let flightPathPoints = [];
       let flightPathLine = null;
-    
+  
       const keys = {};
       document.addEventListener("keydown", (e) => { keys[e.code] = true; });
       document.addEventListener("keyup", (e) => { keys[e.code] = false; });
-    
+  
       const speedSlider = document.getElementById("speedSlider");
       speedSlider.addEventListener("input", function() {
         translationSpeed = parseFloat(this.value);
       });
-    
+  
       const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
       toggleFlightPathBtn.addEventListener("click", function() {
         flightPathActive = !flightPathActive;
@@ -511,7 +550,7 @@
           }
         }
       });
-    
+  
       function addControlButton(id, keyCode) {
         const btn = document.getElementById(id);
         btn.addEventListener("mousedown", function () { keys[keyCode] = true; });
@@ -527,9 +566,9 @@
       addControlButton("btn-pitch-backward", "ArrowDown");
       addControlButton("btn-roll-left", "ArrowLeft");
       addControlButton("btn-roll-right", "ArrowRight");
-    
+  
       function resetDrone() {
-        drone.position.set(0,0.5,0);
+        drone.position.set(0, 0, 0);
         drone.yaw = 0;
         drone.pitch = 0;
         drone.roll = 0;
@@ -550,25 +589,31 @@
         messageDiv.style.display = "none";
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
-    
+  
       let takenOff = false;
       let allHoopsPassed = false;
       let landedAtHome = false;
-    
+  
       const clock = new THREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
-    
+  
+        // Ensure altitude never goes below 0
+        if (drone.position.y < 0) {
+          drone.position.y = 0;
+        }
+  
         const altitude = drone.position.y.toFixed(1);
-        const distance = Math.sqrt(drone.position.x*drone.position.x + drone.position.z*drone.position.z).toFixed(1);
+        const distance = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
         document.getElementById("info").textContent = "Altitude: " + altitude + " | Distance: " + distance;
-    
+  
         if (!landedAtHome) {
           if (keys["KeyW"]) { drone.position.y += 10 * delta; }
           if (keys["KeyS"]) { drone.position.y -= 10 * delta; }
-          if (drone.position.y < 0.5) drone.position.y = 0.5;
-    
+          // Keep the drone on the ground if it goes too low
+          if (drone.position.y < 0) { drone.position.y = 0; }
+  
           if (!takenOff && drone.position.y > 1.0) { takenOff = true; }
           if (takenOff) {
             if (keys["KeyA"]) { drone.yaw += yawSpeed * delta; }
@@ -577,12 +622,16 @@
               drone.pitch = Math.min(drone.pitch + attitudeSpeed * delta, maxTilt);
             } else if (keys["ArrowDown"]) {
               drone.pitch = Math.max(drone.pitch - attitudeSpeed * delta, -maxTilt);
-            } else { drone.pitch *= 0.95; }
+            } else { 
+              drone.pitch *= 0.95; 
+            }
             if (keys["ArrowLeft"]) {
               drone.roll = Math.min(drone.roll + attitudeSpeed * delta, maxTilt);
             } else if (keys["ArrowRight"]) {
               drone.roll = Math.max(drone.roll - attitudeSpeed * delta, -maxTilt);
-            } else { drone.roll *= 0.95; }
+            } else { 
+              drone.roll *= 0.95; 
+            }
             const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
             const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
             const horizontalDisplacement = new THREE.Vector3();
@@ -592,16 +641,21 @@
             drone.position.add(horizontalDisplacement);
           }
         }
-    
+  
         droneGroup.position.copy(drone.position);
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-    
+  
+        // Propellers spin only in flight (when altitude > 0.1), and reset when landed.
         propellers.forEach((prop) => {
-          prop.mesh.rotation.y += prop.spinSpeed * delta;
+          if (drone.position.y > 0.1) {
+            prop.mesh.rotation.y += prop.spinSpeed * delta;
+          } else {
+            prop.mesh.rotation.y = prop.defaultAngle;
+          }
           let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
           prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
         });
-    
+  
         if (flightPathActive) {
           const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
           if (flightPathPoints.length === 0 || currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
@@ -619,7 +673,7 @@
             }
           }
         }
-    
+  
         let passedCount = 0;
         hoops.forEach((hoop) => {
           const distanceToHoop = drone.position.distanceTo(hoop.mesh.position);
@@ -632,18 +686,18 @@
           }
           if (hoop.passed) { passedCount++; }
         });
-    
+  
         if (!allHoopsPassed && passedCount === totalHoops) {
           allHoopsPassed = true;
           const messageDiv = document.getElementById("message");
           messageDiv.style.display = "block";
           messageDiv.innerHTML = "All hoops passed! Now fly back and land on the home point (marked with H).";
         }
-    
+  
         if (allHoopsPassed && !landedAtHome) {
           const dx = drone.position.x;
           const dz = drone.position.z;
-          const distToHome = Math.sqrt(dx*dx + dz*dz);
+          const distToHome = Math.sqrt(dx * dx + dz * dz);
           if (distToHome < 10 && drone.position.y < 1) {
             landedAtHome = true;
             const messageDiv = document.getElementById("message");
@@ -652,14 +706,14 @@
             sweetSound.play();
           }
         }
-    
+  
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion();
         quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
         const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
         camera.position.copy(drone.position.clone().add(rotatedOffset));
         camera.lookAt(drone.position);
-    
+  
         renderer.render(scene, camera);
         topViewRenderer.render(scene, topViewCamera);
       }
