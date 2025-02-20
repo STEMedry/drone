@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Quadcopter Flight Game</title>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+      canvas {
+        display: block;
+      }
+      /* Overlays for alerts and messages */
+      #alert {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(255, 0, 0, 0.8);
+        color: white;
+        padding: 20px 30px;
+        font-size: 24px;
+        display: none;
+        border-radius: 10px;
+        z-index: 10;
+      }
+      #message {
+        position: absolute;
+        top: 10%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px 20px;
+        font-size: 20px;
+        display: none;
+        border-radius: 5px;
+        z-index: 10;
+      }
+      /* Controls Container (bottom center) */
+      #controls {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 10px;
+        border-radius: 5px;
+      }
+      /* Info box for Altitude & Distance */
+      #info {
+        font-size: 18px;
+        color: #000;
+      }
+      /* Container for slider and joysticks */
+      #main-controls {
+        display: flex;
+        align-items: center;
+        gap: 80px; /* Increase this value to adjust horizontal spacing */
+      }
+      /* Speed slider container (center) */
+      #speedContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+      #speedSlider {
+        width: 200px;
+      }
+      /* Joystick container styling */
+      .cross-container {
+        position: relative;
+        width: 280px;
+        height: 100px;
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 10px;
+      }
+      /* Positioning directional buttons inside each joystick */
+      .cross-container .top {
+        position: absolute;
+        top: -25%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .cross-container .bottom {
+        position: absolute;
+        bottom: -25%;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .cross-container .left {
+        position: absolute;
+        left: 5px; /* Adjust to move left buttons further from the dummy square */
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .cross-container .right {
+        position: absolute;
+        right: -5px; /* Increase this to push right buttons farther away from the dummy square */
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      /* Enlarge control buttons to match the enlarged font; allow wrapping */
+      .cross-container button {
+        font-size: 32px; /* 2× the base size */
+        padding: 10px 15px;
+        white-space: normal; /* allow wrapping to two lines */
+        text-align: center;
+        /* No additional transform so that button size fits the font */
+      }
+      /* Also enlarge the reset button */
+      #controls button {
+        font-size: 20px;
+        padding: 10px 15px;
+      }
+      /* Reduced font size for Show Flight Path button and force one line */
+      #toggleFlightPath {
+        font-size: 16px;
+        white-space: nowrap;
+      }
+      /* Button color classes */
+      .btn-green {
+        background-color: #4caf50;
+        color: white;
+      }
+      .btn-orange {
+        background-color: #ff9800;
+        color: white;
+      }
+      .btn-red {
+        background-color: #f44336;
+        color: white;
+      }
+      .btn-default {
+        background-color: #2196f3;
+        color: white;
+      }
+      /* Top View Container (Top Left Corner) */
+      #topViewContainer {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        z-index: 30;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      /* Top View Renderer: rotated 180deg; remove background */
+      #topViewRenderer {
+        width: 200px;
+        height: 200px;
+        border: 2px solid black;
+        transform: rotate(180deg);
+        background: none;
+      }
+      #zoomControls {
+        margin-top: 5px;
+        display: flex;
+        gap: 10px;
+      }
+      #zoomControls button {
+        font-size: 14px;
+        padding: 4px 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="alert">Collision Detected!</div>
+    <div id="message"></div>
+    
+    <!-- Top View Container (Top Left Corner) -->
+    <div id="topViewContainer">
+      <div id="topViewRenderer"></div>
+      <div id="zoomControls">
+        <button id="zoomIn">Zoom In</button>
+        <button id="zoomOut">Zoom Out</button>
+      </div>
+    </div>
+    
+    <!-- Controls Container (Bottom Center) -->
+    <div id="controls">
+      <div id="info">Altitude: 0 | Distance: 0</div>
+      <div id="main-controls">
+        <!-- Left Joystick: Throttle & Yaw (Green Buttons) -->
+        <div class="cross-container" id="left-joystick">
+          <button id="btn-throttle-up" class="btn-green top">Throttle<br>Up</button>
+          <button id="btn-throttle-down" class="btn-green bottom">Throttle<br>Down</button>
+          <button id="btn-yaw-left" class="btn-green left">Yaw<br>Left</button>
+          <button id="btn-yaw-right" class="btn-green right">Yaw<br>Right</button>
+          <div class="dummy-square"></div>
+        </div>
+        <!-- Speed Slider Box (Center) -->
+        <div id="speedContainer">
+          <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
+          <button id="toggleFlightPath">Show Flight Path</button>
+        </div>
+        <!-- Right Joystick: Pitch & Roll (Orange Buttons) -->
+        <div class="cross-container" id="right-joystick">
+          <button id="btn-pitch-forward" class="btn-orange top">Pitch<br>Forward</button>
+          <button id="btn-pitch-backward" class="btn-orange bottom">Pitch<br>Backward</button>
+          <button id="btn-roll-left" class="btn-orange left">Roll<br>Left</button>
+          <button id="btn-roll-right" class="btn-orange right">Roll<br>Right</button>
+          <div class="dummy-square"></div>
+        </div>
+      </div>
+      <button id="btn-reset" class="btn-red">Reset</button>
+    </div>
+    
+    <!-- Include Three.js from CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+      // --------------------------------------------------
+      // MAIN SCENE, CAMERA, & RENDERER
+      // --------------------------------------------------
+      const scene = new THREE.Scene();
+      
+      const renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setClearColor(0x87ceeb); // sky-blue background
+      renderer.shadowMap.enabled = true;
+      document.body.appendChild(renderer.domElement);
+    
+      const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth/window.innerHeight,
+        0.1,
+        2000
+      );
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+      
+      // --------------------------------------------------
+      // TOP VIEW RENDERER & ORTHOGRAPHIC CAMERA
+      // --------------------------------------------------
+      const topViewRenderer = new THREE.WebGLRenderer({
+        antialias: true,
+        alpha: true // enable transparency
+      });
+      topViewRenderer.setSize(200, 200);
+      // Set clear color with alpha 0 so it’s fully transparent
+      topViewRenderer.setClearColor(0x000000, 0);
+      const topViewDiv = document.getElementById("topViewRenderer");
+      topViewDiv.appendChild(topViewRenderer.domElement);
+      
+      const d = 400;
+      const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
+      topViewCamera.position.set(0, 1000, 0);
+      topViewCamera.lookAt(0, 0, 0);
+      // Set default 5× zoom for top view and update projection matrix
+      topViewCamera.zoom = 5;
+      topViewCamera.updateProjectionMatrix();
+      
+      document.getElementById("zoomIn").addEventListener("click", () => {
+        topViewCamera.zoom *= 1.1;
+        topViewCamera.updateProjectionMatrix();
+      });
+      document.getElementById("zoomOut").addEventListener("click", () => {
+        topViewCamera.zoom /= 1.1;
+        topViewCamera.updateProjectionMatrix();
+      });
+    
+      // --------------------------------------------------
+      // GROUND, GRID, & HOME MARKER
+      // --------------------------------------------------
+      const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xEDEDED });
+      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+      ground.rotation.x = -Math.PI/2;
+      ground.receiveShadow = true;
+      scene.add(ground);
+    
+      const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
+      scene.add(grid);
+    
+      function createHomeMarker() {
+        const canvas = document.createElement("canvas");
+        canvas.width = 256;
+        canvas.height = 256;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(128, 128, 120, 0, Math.PI*2);
+        ctx.fill();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 10;
+        ctx.stroke();
+        ctx.fillStyle = "black";
+        ctx.font = "bold 100px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("H", 128, 128);
+        const texture = new THREE.CanvasTexture(canvas);
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          side: THREE.DoubleSide,
+          transparent: true,
+        });
+        const geometry = new THREE.CircleGeometry(5, 32);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.rotation.x = -Math.PI/2;
+        mesh.position.set(0, 0.01, 0);
+        return mesh;
+      }
+      const homeMarker = createHomeMarker();
+      scene.add(homeMarker);
+    
+      // --------------------------------------------------
+      // BASIC LIGHTING
+      // --------------------------------------------------
+      const ambientLight = new THREE.AmbientLight(0x404040);
+      scene.add(ambientLight);
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(100,200,100);
+      directionalLight.castShadow = true;
+      directionalLight.shadow.mapSize.width = 2048;
+      directionalLight.shadow.mapSize.height = 2048;
+      directionalLight.shadow.camera.near = 0.5;
+      directionalLight.shadow.camera.far = 500;
+      directionalLight.shadow.bias = -0.001;
+      scene.add(directionalLight);
+    
+      // --------------------------------------------------
+      // DRONE (QUADCOPTER) SETUP
+      // --------------------------------------------------
+      const droneGroup = new THREE.Group();
+      droneGroup.rotation.order = "YXZ";
+      scene.add(droneGroup);
+    
+      const drone = {
+        position: new THREE.Vector3(0,0.5,0),
+        yaw: 0,
+        pitch: 0,
+        roll: 0,
+      };
+      const droneCollisionRadius = 0.6;
+    
+      const droneBodyGeometry = new THREE.BoxGeometry(1,0.3,1);
+      const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
+      const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
+      droneGroup.add(droneBody);
+    
+      // --------------------------------------------------
+      // ADD TEXT LABEL "EdUHK" ON THE DRONE
+      // --------------------------------------------------
+      function createDroneLabel(text) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 512;
+        canvas.height = 128;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.font = "bold 150px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, canvas.width/2, canvas.height/2);
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.center = new THREE.Vector2(0.5,0.5);
+        texture.rotation = Math.PI;
+        texture.needsUpdate = true;
+        const material = new THREE.MeshBasicMaterial({
+          map: texture,
+          transparent: true,
+        });
+        const geometry = new THREE.PlaneGeometry(0.9,0.3);
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.rotation.x = -Math.PI/2;
+        mesh.position.set(0, 0.15+0.01, 0);
+        return mesh;
+      }
+      const label = createDroneLabel("EdUHK");
+      droneGroup.add(label);
+    
+      // --------------------------------------------------
+      // PROPELLERS SETUP
+      // --------------------------------------------------
+      const propellerGeometry = new THREE.BoxGeometry(0.2,0.05,0.9);
+      const propellers = [];
+    
+      const frontLeft = new THREE.Mesh(
+        propellerGeometry,
+        new THREE.MeshLambertMaterial({ color: 0xff0000 })
+      );
+      frontLeft.position.set(-0.50,0.2,0.55);
+      droneGroup.add(frontLeft);
+      propellers.push({ mesh: frontLeft, spinSpeed: -10 });
+    
+      const frontRight = new THREE.Mesh(
+        propellerGeometry,
+        new THREE.MeshLambertMaterial({ color: 0xff0000 })
+      );
+      frontRight.position.set(0.50,0.2,0.55);
+      droneGroup.add(frontRight);
+      propellers.push({ mesh: frontRight, spinSpeed: +10 });
+    
+      const rearLeft = new THREE.Mesh(
+        propellerGeometry,
+        new THREE.MeshLambertMaterial({ color: 0x00ff00 })
+      );
+      rearLeft.position.set(-0.50,0.2,-0.55);
+      droneGroup.add(rearLeft);
+      propellers.push({ mesh: rearLeft, spinSpeed: +10 });
+    
+      const rearRight = new THREE.Mesh(
+        propellerGeometry,
+        new THREE.MeshLambertMaterial({ color: 0x00ff00 })
+      );
+      rearRight.position.set(0.50,0.2,-0.55);
+      droneGroup.add(rearRight);
+      propellers.push({ mesh: rearRight, spinSpeed: -10 });
+    
+      droneGroup.scale.set(3,3,3);
+      
+      droneGroup.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.castShadow = true;
+        }
+      });
+    
+      // --------------------------------------------------
+      // BLINKING YELLOW SPOTS ON PROPELLERS
+      // --------------------------------------------------
+      const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16,16);
+      propellers.forEach((prop, index) => {
+        const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const blinkSpot = new THREE.Mesh(blinkSphereGeometry, material);
+        blinkSpot.position.set(0,0,0);
+        prop.mesh.add(blinkSpot);
+        prop.blinkOffset = index * (Math.PI/2);
+        prop.blinkSpot = blinkSpot;
+      });
+    
+      // --------------------------------------------------
+      // HOOPS (OBJECTIVES) SETUP
+      // --------------------------------------------------
+      const hoops = [];
+      const totalHoops = 5;
+      function createHoop() {
+        const mainRadius = 9;
+        const tubeRadius = 0.2;
+        const radialSegments = 16;
+        const tubularSegments = 100;
+        const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
+        const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
+        const hoopMesh = new THREE.Mesh(geometry, material);
+        hoopMesh.rotation.set(0, Math.PI/2, 0);
+        return { mesh: hoopMesh, mainRadius: mainRadius, entered: false, passed: false };
+      }
+      for (let i = 0; i < totalHoops; i++) {
+        const hoop = createHoop();
+        hoop.mesh.position.set(
+          (Math.random()-0.5)*80,
+          5+Math.random()*10,
+          (Math.random()-0.5)*80
+        );
+        scene.add(hoop.mesh);
+        hoops.push(hoop);
+      }
+    
+      // --------------------------------------------------
+      // AUDIO SETUP
+      // --------------------------------------------------
+      const bonusSound = new Audio("bonus.mp3");
+      const sweetSound = new Audio("sweet.mp3");
+    
+      // --------------------------------------------------
+      // USER CONTROLS, SPEED SLIDER & FLIGHT PATH TOGGLE
+      // --------------------------------------------------
+      let translationSpeed = 50;
+      const yawSpeed = 1.0;
+      const attitudeSpeed = 0.5;
+      const maxTilt = Math.PI/6;
+    
+      let flightPathActive = false;
+      let flightPathPoints = [];
+      let flightPathLine = null;
+    
+      const keys = {};
+      document.addEventListener("keydown", (e) => { keys[e.code] = true; });
+      document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+    
+      const speedSlider = document.getElementById("speedSlider");
+      speedSlider.addEventListener("input", function() {
+        translationSpeed = parseFloat(this.value);
+      });
+    
+      const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
+      toggleFlightPathBtn.addEventListener("click", function() {
+        flightPathActive = !flightPathActive;
+        if (flightPathActive) {
+          toggleFlightPathBtn.textContent = "Hide Flight Path";
+          flightPathPoints = [];
+          if (flightPathLine) {
+            scene.remove(flightPathLine);
+            flightPathLine = null;
+          }
+        } else {
+          toggleFlightPathBtn.textContent = "Show Flight Path";
+          if (flightPathLine) {
+            scene.remove(flightPathLine);
+            flightPathLine = null;
+          }
+        }
+      });
+    
+      function addControlButton(id, keyCode) {
+        const btn = document.getElementById(id);
+        btn.addEventListener("mousedown", function () { keys[keyCode] = true; });
+        btn.addEventListener("mouseup", function () { keys[keyCode] = false; });
+        btn.addEventListener("touchstart", function (e) { e.preventDefault(); keys[keyCode] = true; });
+        btn.addEventListener("touchend", function (e) { e.preventDefault(); keys[keyCode] = false; });
+      }
+      addControlButton("btn-throttle-up", "KeyW");
+      addControlButton("btn-throttle-down", "KeyS");
+      addControlButton("btn-yaw-left", "KeyA");
+      addControlButton("btn-yaw-right", "KeyD");
+      addControlButton("btn-pitch-forward", "ArrowUp");
+      addControlButton("btn-pitch-backward", "ArrowDown");
+      addControlButton("btn-roll-left", "ArrowLeft");
+      addControlButton("btn-roll-right", "ArrowRight");
+    
+      function resetDrone() {
+        drone.position.set(0,0.5,0);
+        drone.yaw = 0;
+        drone.pitch = 0;
+        drone.roll = 0;
+        takenOff = false;
+        allHoopsPassed = false;
+        landedAtHome = false;
+        flightPathPoints = [];
+        if (flightPathLine) {
+          scene.remove(flightPathLine);
+          flightPathLine = null;
+        }
+        hoops.forEach(function(hoop) {
+          hoop.entered = false;
+          hoop.passed = false;
+          hoop.mesh.material.color.set(0xffa500);
+        });
+        const messageDiv = document.getElementById("message");
+        messageDiv.style.display = "none";
+      }
+      document.getElementById("btn-reset").addEventListener("click", resetDrone);
+    
+      let takenOff = false;
+      let allHoopsPassed = false;
+      let landedAtHome = false;
+    
+      const clock = new THREE.Clock();
+      function animate() {
+        requestAnimationFrame(animate);
+        const delta = clock.getDelta();
+    
+        const altitude = drone.position.y.toFixed(1);
+        const distance = Math.sqrt(drone.position.x*drone.position.x + drone.position.z*drone.position.z).toFixed(1);
+        document.getElementById("info").textContent = "Altitude: " + altitude + " | Distance: " + distance;
+    
+        if (!landedAtHome) {
+          if (keys["KeyW"]) { drone.position.y += 10 * delta; }
+          if (keys["KeyS"]) { drone.position.y -= 10 * delta; }
+          if (drone.position.y < 0.5) drone.position.y = 0.5;
+    
+          if (!takenOff && drone.position.y > 1.0) { takenOff = true; }
+          if (takenOff) {
+            if (keys["KeyA"]) { drone.yaw += yawSpeed * delta; }
+            if (keys["KeyD"]) { drone.yaw -= yawSpeed * delta; }
+            if (keys["ArrowUp"]) {
+              drone.pitch = Math.min(drone.pitch + attitudeSpeed * delta, maxTilt);
+            } else if (keys["ArrowDown"]) {
+              drone.pitch = Math.max(drone.pitch - attitudeSpeed * delta, -maxTilt);
+            } else { drone.pitch *= 0.95; }
+            if (keys["ArrowLeft"]) {
+              drone.roll = Math.min(drone.roll + attitudeSpeed * delta, maxTilt);
+            } else if (keys["ArrowRight"]) {
+              drone.roll = Math.max(drone.roll - attitudeSpeed * delta, -maxTilt);
+            } else { drone.roll *= 0.95; }
+            const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+            const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+            const horizontalDisplacement = new THREE.Vector3();
+            horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)));
+            horizontalDisplacement.add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+            horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+            drone.position.add(horizontalDisplacement);
+          }
+        }
+    
+        droneGroup.position.copy(drone.position);
+        droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
+    
+        propellers.forEach((prop) => {
+          prop.mesh.rotation.y += prop.spinSpeed * delta;
+          let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
+          prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
+        });
+    
+        if (flightPathActive) {
+          const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
+          if (flightPathPoints.length === 0 || currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
+            flightPathPoints.push(currentPos);
+          }
+          if (flightPathPoints.length > 1) {
+            const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
+            if (!flightPathLine) {
+              const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+              flightPathLine = new THREE.Line(geometry, material);
+              scene.add(flightPathLine);
+            } else {
+              flightPathLine.geometry.dispose();
+              flightPathLine.geometry = geometry;
+            }
+          }
+        }
+    
+        let passedCount = 0;
+        hoops.forEach((hoop) => {
+          const distanceToHoop = drone.position.distanceTo(hoop.mesh.position);
+          if (!hoop.entered && distanceToHoop < hoop.mainRadius) { hoop.entered = true; }
+          if (hoop.entered && !hoop.passed && distanceToHoop > hoop.mainRadius * 1.1) {
+            hoop.passed = true;
+            hoop.mesh.material.color.set(0x00ff00);
+            bonusSound.currentTime = 0;
+            bonusSound.play();
+          }
+          if (hoop.passed) { passedCount++; }
+        });
+    
+        if (!allHoopsPassed && passedCount === totalHoops) {
+          allHoopsPassed = true;
+          const messageDiv = document.getElementById("message");
+          messageDiv.style.display = "block";
+          messageDiv.innerHTML = "All hoops passed! Now fly back and land on the home point (marked with H).";
+        }
+    
+        if (allHoopsPassed && !landedAtHome) {
+          const dx = drone.position.x;
+          const dz = drone.position.z;
+          const distToHome = Math.sqrt(dx*dx + dz*dz);
+          if (distToHome < 10 && drone.position.y < 1) {
+            landedAtHome = true;
+            const messageDiv = document.getElementById("message");
+            messageDiv.innerHTML = "Congratulations! You landed safely at home.";
+            sweetSound.currentTime = 0;
+            sweetSound.play();
+          }
+        }
+    
+        const cameraOffset = new THREE.Vector3(0, 5, -15);
+        const quat = new THREE.Quaternion();
+        quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
+        const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
+        camera.position.copy(drone.position.clone().add(rotatedOffset));
+        camera.lookAt(drone.position);
+    
+        renderer.render(scene, camera);
+        topViewRenderer.render(scene, topViewCamera);
+      }
+      animate();
+    </script>
+  </body>
+</html>
