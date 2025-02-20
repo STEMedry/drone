@@ -66,40 +66,32 @@
         align-items: center;
         gap: 20px;
         background: rgba(255, 255, 255, 0.8);
-        padding: 10px;
+        padding: 20px;
         border-radius: 5px;
-  width: 1000px;  /* Set a specific width */
-  padding: 20px; /* Adjust padding if needed */
-  height: 220px;
+        width: 1000px;
+        height: 220px;
       }
       /* Info box for Altitude & Distance */
-#info {
-  position: absolute;
-  top: 20px;      /* Adjust this value to move it downward (or upward if negative) */
-  left: 50%;      /* Center horizontally */
-  transform: translateX(-50%);
-  font-size: 18px;
-  color: #000;
-}
-#btn-reset {
-  /* Change position: use absolute or relative positioning */
-  position: absolute;       /* or relative if you want it within its container */
-  bottom: 10px;             /* adjust vertical position */
-  right: 480px;              /* adjust horizontal position */
-  
-  /* Change button size */
-  width: 80px;             /* set your desired width */
-  height: 40px;             /* set your desired height */
-  padding: 10px;            /* optional padding for internal spacing */
-
-  /* Change font properties */
-  font-size: 18px;          /* change font size */
-  font-weight: bold;        /* optionally adjust the font weight */
-  
-  /* Other styling */
-  border: none;
-  border-radius: 5px;
-}
+      #info {
+        position: absolute;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 18px;
+        color: #000;
+      }
+      #btn-reset {
+        position: absolute;
+        bottom: 10px;
+        right: 480px;
+        width: 80px;
+        height: 40px;
+        padding: 10px;
+        font-size: 18px;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+      }
       /* Container for slider and joysticks */
       #main-controls {
         display: flex;
@@ -112,6 +104,13 @@
         flex-direction: column;
         align-items: center;
         gap: 5px;
+        /* Shift upward to avoid overlapping with joysticks */
+        transform: translateY(-60px);
+      }
+      /* New speed label style */
+      #speedLabel {
+        font-size: 18px;
+        font-weight: bold;
       }
       #speedSlider {
         width: 200px;
@@ -153,8 +152,8 @@
         font-weight: bold;
         pointer-events: none;
       }
-      /* For the left joystick: 
-         Top label: Throttle Up; Bottom: Throttle Down; 
+      /* For the left joystick:
+         Top: Throttle Up; Bottom: Throttle Down;
          Left: Yaw Left; Right: Yaw Right */
       #leftJoystick .label-top {
         top: 0px;
@@ -177,7 +176,7 @@
         transform: translateY(-50%);
       }
       /* For the right joystick:
-         Top label: Pitch Forward; Bottom: Pitch Backward; 
+         Top: Pitch Forward; Bottom: Pitch Backward;
          Left: Roll Left; Right: Roll Right */
       #rightJoystick .label-top {
         top: 0px;
@@ -263,6 +262,14 @@
         background-color: #2196f3;
         color: white;
       }
+      /* Enlarge the "Show Flight Path" button */
+      #toggleFlightPath {
+        width: 200px;
+        height: 50px;
+        font-size: 20px;
+        border: none;
+        border-radius: 5px;
+      }
     </style>
   </head>
   <body>
@@ -312,6 +319,7 @@
         </div>
         <!-- Speed Slider and Flight Path Toggle -->
         <div id="speedContainer">
+          <div id="speedLabel">Speed</div>
           <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
           <button id="toggleFlightPath" class="btn-default">Show Flight Path</button>
         </div>
@@ -337,7 +345,7 @@
         return a + (b - a) * t;
       }
     
-      // Virtual Joystick helper: attach pointer/touch events to a joystick container.
+      // Virtual Joystick helper: attaches pointer/touch events to a joystick container.
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
@@ -609,7 +617,6 @@
           pitch: 0,
           roll: 0,
         };
-        const droneCollisionRadius = 0.6;
     
         const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
         const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
@@ -733,7 +740,13 @@
           const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
           const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
           const hoopMesh = new THREE.Mesh(geometry, material);
-          hoopMesh.rotation.set(0, Math.PI / 2, 0);
+          // Apply default Y rotation so the hoop is vertical
+          // For five of them, turn them 90° vertically by rotating around the X-axis by 90°
+          if (number <= 5) {
+            hoopMesh.rotation.set(Math.PI / 2, Math.PI / 2, 0);
+          } else {
+            hoopMesh.rotation.set(0, Math.PI / 2, 0);
+          }
           const labelSprite = createHoopLabel(number);
           labelSprite.position.set(0, mainRadius + 2, 0);
           hoopMesh.add(labelSprite);
@@ -767,7 +780,6 @@
         let translationSpeed = 50;
         const yawSpeed = 1.0;
         const throttleSpeed = 10;
-        const attitudeSpeed = 0.5;
         const maxTilt = Math.PI / 6;
     
         // Global joystick input objects.
@@ -884,8 +896,7 @@
               let desiredPitch = pitchInput * maxTilt;
               drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
       
-              // Roll control: right joystick horizontal plus Right/Left arrows,
-              // and the roll directions are switched.
+              // Roll control: right joystick horizontal plus Right/Left arrows.
               let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
               let desiredRoll = -rollInput * maxTilt; // Inversion.
               drone.roll = lerp(drone.roll, desiredRoll, 0.1);
