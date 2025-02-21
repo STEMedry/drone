@@ -26,8 +26,7 @@
         transform: translateX(-50%);
         font-size: 32px;
         font-weight: bold;
-        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
-                     -1px 1px 0 #fff, 1px 1px 0 #fff;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
       /* Language Toggle Button (Top Right Corner) */
@@ -174,15 +173,47 @@
         pointer-events: none;
       }
       /* Left joystick labels */
-      #leftJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
-      #leftJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
-      #leftJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
-      #leftJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
+      #leftJoystick .label-top {
+        top: 0px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #leftJoystick .label-bottom {
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #leftJoystick .label-left {
+        left: 0px;
+        top: 40%;
+        transform: translateY(-50%);
+      }
+      #leftJoystick .label-right {
+        right: 0px;
+        top: 40%;
+        transform: translateY(-50%);
+      }
       /* Right joystick labels */
-      #rightJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
-      #rightJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
-      #rightJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
-      #rightJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
+      #rightJoystick .label-top {
+        top: 0px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #rightJoystick .label-bottom {
+        bottom: 60px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      #rightJoystick .label-left {
+        left: 0px;
+        top: 40%;
+        transform: translateY(-50%);
+      }
+      #rightJoystick .label-right {
+        right: 0px;
+        top: 40%;
+        transform: translateY(-50%);
+      }
       /* Top View Container and Controls */
       #topViewContainer {
         position: absolute;
@@ -205,13 +236,14 @@
       /* Arrow buttons positioned inside the top view renderer */
       .arrow-btn {
         position: absolute;
-        background: rgba(200,200,200,0.7);
+        background: rgba(200, 200, 200, 0.7);
         border: 1px solid #666;
         border-radius: 3px;
         font-size: 18px;
         padding: 5px;
         cursor: pointer;
       }
+      /* Position the arrow buttons within the container */
       #topArrowUp {
         top: 5px;
         left: 50%;
@@ -222,9 +254,9 @@
         left: 50%;
         transform: translateX(-50%);
       }
-      /* Switched left/right directions remain:
-         Left arrow now adds to X (moves target right);
-         Right arrow subtracts from X (moves target left). */
+      /* Switch left/right moving directions:
+         Left arrow will now move the target to the right (increase x)
+         and Right arrow will move the target to the left (decrease x). */
       #topArrowLeft {
         left: 5px;
         top: 50%;
@@ -235,7 +267,7 @@
         top: 50%;
         transform: translateY(-50%);
       }
-      /* Zoom Controls for Top View with a Home button remain outside the renderer */
+      /* Zoom Controls for Top View with a Home button remain below the renderer */
       #zoomControls {
         margin-top: 5px;
         display: flex;
@@ -283,13 +315,13 @@
     <!-- Top View Container -->
     <div id="topViewContainer">
       <div id="topViewRenderer">
-        <!-- Arrow buttons now inside the top view renderer -->
+        <!-- Arrow buttons inside the top view renderer -->
         <button id="topArrowUp" class="arrow-btn">▲</button>
         <button id="topArrowDown" class="arrow-btn">▼</button>
         <button id="topArrowLeft" class="arrow-btn">◄</button>
         <button id="topArrowRight" class="arrow-btn">►</button>
       </div>
-      <!-- Zoom Controls with "Home" Button below the Top View Renderer -->
+      <!-- Zoom Controls with "Home" Button below the top view renderer -->
       <div id="zoomControls">
         <button id="zoomIn">Zoom In</button>
         <button id="homeView">Home</button>
@@ -346,15 +378,57 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // Log to verify Three.js is loaded.
-      if (THREE) { console.log("Three.js loaded successfully."); }
-
-      // Linear interpolation helper.
+      // Quick check to verify Three.js is loaded
+      if (THREE) {
+        console.log("Three.js loaded successfully.");
+      }
+      
+      // Linear interpolation helper
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
-
-      // Helper to draw the Home marker on a given canvas context with a specified pad color.
+      
+      // Helper function to create a directional sprite with a given label and color.
+      function createDirectionSprite(text, color = "black") {
+        const canvas = document.createElement("canvas");
+        canvas.width = 512
+        canvas.height = 512
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = color;
+        ctx.font = "bold 90px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+        const texture = new THREE.CanvasTexture(canvas);
+        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+        const sprite = new THREE.Sprite(spriteMaterial);
+        // Scale sprite so it is clearly visible
+        sprite.scale.set(250, 250, 1);
+        return sprite;
+      }
+      
+      // --- Three.js Scene Setup ---
+      const scene = new THREE.Scene();
+      
+      // Add cardinal directional sprites to the scene
+      const northSprite = createDirectionSprite("NORTH");
+      northSprite.position.set(0, 8, 540);
+      scene.add(northSprite);
+      
+      const eastSprite = createDirectionSprite("EAST");
+      eastSprite.position.set(-540, 8, 0);
+      scene.add(eastSprite);
+      
+      const southSprite = createDirectionSprite("SOUTH");
+      southSprite.position.set(0, 8, -540);
+      scene.add(southSprite);
+      
+      const westSprite = createDirectionSprite("WEST");
+      westSprite.position.set(540, 8, 0);
+      scene.add(westSprite);
+      
+      // Home Marker Creation
       function drawHomeMarker(ctx, padColor) {
         ctx.clearRect(0, 0, 256, 256);
         ctx.fillStyle = padColor;
@@ -370,8 +444,6 @@
         ctx.textBaseline = "middle";
         ctx.fillText("H", 128, 128);
       }
-
-      // Create the Home marker and store its drawing context and texture for later updating.
       function createHomeMarker() {
         const canvas = document.createElement("canvas");
         canvas.width = 256;
@@ -379,11 +451,7 @@
         const ctx = canvas.getContext("2d");
         drawHomeMarker(ctx, "white");
         const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.MeshBasicMaterial({
-          map: texture,
-          side: THREE.DoubleSide,
-          transparent: true
-        });
+        const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true });
         const geometry = new THREE.CircleGeometry(5, 32);
         const mesh = new THREE.Mesh(geometry, material);
         mesh.rotation.x = -Math.PI / 2;
@@ -391,10 +459,9 @@
         mesh.userData = { canvas: canvas, ctx: ctx, texture: texture };
         return mesh;
       }
-
-      // Global variable for mission completion.
+      
       let missionCompleted = false;
-
+      
       // --- Virtual Joystick Helper ---
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
@@ -423,7 +490,6 @@
           joystickObj.dy = 0;
           thumb.style.transform = "translate(-50%, -50%)";
         }
-        // Pointer events.
         function onPointerDown(e) {
           if (e.pointerType === "mouse" && e.button !== 0) return;
           dragging = true;
@@ -447,7 +513,6 @@
           container.releasePointerCapture(e.pointerId);
           e.preventDefault();
         }
-        // Touch events.
         function onTouchStart(e) {
           if (e.targetTouches.length > 0) {
             dragging = true;
@@ -495,7 +560,7 @@
         container.addEventListener("touchmove", onTouchMove, { passive: false });
         container.addEventListener("touchend", onTouchEnd, { passive: false });
       }
-
+      
       // --- Joystick Label Active Color Updates ---
       function updateLeftJoystickLabels() {
         const upLabel = document.querySelector("#leftJoystick .label-top");
@@ -537,42 +602,42 @@
           rightLabel.style.color = "orange";
         }
       }
-
+      
       // --- Top View Navigation ---
       // Global target and height for the top view camera.
       let topViewTarget = new THREE.Vector3(0, 0, 0);
       const topViewHeight = 1000;
       const topViewStep = 20;
-      // Event listeners for arrow buttons (left/right directions remain switched).
-      document.getElementById("topArrowUp").addEventListener("click", function() {
+      // For this revision, we switch left/right moving directions relative to standard:
+      // Left arrow moves the target to the right (increases x)
+      // Right arrow moves the target to the left (decreases x)
+      document.getElementById("topArrowUp").addEventListener("click", function () {
         topViewTarget.z -= topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
-      document.getElementById("topArrowDown").addEventListener("click", function() {
+      document.getElementById("topArrowDown").addEventListener("click", function () {
         topViewTarget.z += topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
-      // Switched: Left arrow increases X (moves target right)
-      document.getElementById("topArrowLeft").addEventListener("click", function() {
+      document.getElementById("topArrowLeft").addEventListener("click", function () {
         topViewTarget.x += topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
-      // Right arrow decreases X (moves target left)
-      document.getElementById("topArrowRight").addEventListener("click", function() {
+      document.getElementById("topArrowRight").addEventListener("click", function () {
         topViewTarget.x -= topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
       // "Home" button resets the top view target.
-      document.getElementById("homeView").addEventListener("click", function() {
+      document.getElementById("homeView").addEventListener("click", function () {
         topViewTarget.set(0, 0, 0);
         topViewCamera.position.set(0, topViewHeight, 0);
         topViewCamera.lookAt(topViewTarget);
       });
-
+      
       // --- Global Variables & Translations ---
       let currentExpectedHoop = 1;
       let landedAtHome = false;
@@ -621,15 +686,13 @@
           distance: "距離"
         }
       };
-
+      
       function updateUIText() {
         document.getElementById("title").innerHTML = translations[currentLanguage].title;
         document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
         const flightToggle = document.getElementById("toggleFlightPath");
         if (flightToggle) {
-          flightToggle.innerHTML = flightPathActive
-            ? translations[currentLanguage].hideFlightPath
-            : translations[currentLanguage].showFlightPath;
+          flightToggle.innerHTML = flightPathActive ? translations[currentLanguage].hideFlightPath : translations[currentLanguage].showFlightPath;
         }
         document.querySelector("#leftJoystick .label-top").textContent = translations[currentLanguage].throttleUp;
         document.querySelector("#leftJoystick .label-bottom").textContent = translations[currentLanguage].throttleDown;
@@ -653,15 +716,14 @@
         }
         updateUIText();
       });
-
-      // --- Three.js Scene Setup ---
-      const scene = new THREE.Scene();
+      
+      // --- Main Renderer Setup ---
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0x87ceeb);
       renderer.shadowMap.enabled = true;
       document.body.appendChild(renderer.domElement);
-
+      
       const camera = new THREE.PerspectiveCamera(
         75,
         window.innerWidth / window.innerHeight,
@@ -673,7 +735,7 @@
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
+      
       // --- Top View Renderer & Orthographic Camera ---
       const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       topViewRenderer.setSize(200, 200);
@@ -686,7 +748,7 @@
       topViewCamera.lookAt(topViewTarget);
       topViewCamera.zoom = 5;
       topViewCamera.updateProjectionMatrix();
-
+      
       document.getElementById("zoomIn").addEventListener("click", () => {
         topViewCamera.zoom *= 1.1;
         topViewCamera.updateProjectionMatrix();
@@ -695,21 +757,21 @@
         topViewCamera.zoom /= 1.1;
         topViewCamera.updateProjectionMatrix();
       });
-
+      
       // --- Ground & Grid ---
       const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
-      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xEDEDED });
+      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xededed });
       const ground = new THREE.Mesh(groundGeometry, groundMaterial);
       ground.rotation.x = -Math.PI / 2;
       ground.receiveShadow = true;
       scene.add(ground);
       const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
       scene.add(grid);
-
+      
       // --- Home Marker ---
       const homeMarker = createHomeMarker();
       scene.add(homeMarker);
-
+      
       // --- Lighting ---
       const ambientLight = new THREE.AmbientLight(0x404040);
       scene.add(ambientLight);
@@ -722,7 +784,7 @@
       directionalLight.shadow.camera.far = 500;
       directionalLight.shadow.bias = -0.001;
       scene.add(directionalLight);
-
+      
       // --- Drone Setup ---
       const droneGroup = new THREE.Group();
       droneGroup.rotation.order = "YXZ";
@@ -734,7 +796,7 @@
         roll: 0
       };
       const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
-      const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000FF });
+      const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff });
       const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
       droneGroup.add(droneBody);
       function createDroneLabel(text) {
@@ -761,7 +823,7 @@
       }
       const label = createDroneLabel("EdUHK");
       droneGroup.add(label);
-
+      
       // --- Propellers Setup ---
       const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
       const propellers = [];
@@ -782,8 +844,10 @@
       droneGroup.add(rearRight);
       propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
       droneGroup.scale.set(3, 3, 3);
-      droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
-
+      droneGroup.traverse(child => {
+        if (child instanceof THREE.Mesh) child.castShadow = true;
+      });
+      
       // --- Blinking Spots on Propellers ---
       const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
       propellers.forEach((prop, index) => {
@@ -794,7 +858,7 @@
         prop.blinkOffset = index * (Math.PI / 2);
         prop.blinkSpot = blinkSpot;
       });
-
+      
       // --- Hoops Setup ---
       const totalHoops = 10;
       const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -847,16 +911,16 @@
         scene.add(hoop.mesh);
         hoops.push(hoop);
       }
-
+      
       // --- Audio Setup ---
       const bonusSound = new Audio("bonus.mp3");
       const sweetSound = new Audio("sweet.mp3");
-
+      
       // --- User Input ---
       let translationSpeed = 50;
       const yawSpeed = 1.0;
       const throttleSpeed = 10;
-      const maxTilt = 0.4*Math.PI / 6;
+      const maxTilt = 0.5*Math.PI / 6;
       const leftJoystickInput = { dx: 0, dy: 0 };
       const rightJoystickInput = { dx: 0, dy: 0 };
       attachJoystick("leftJoystick", leftJoystickInput);
@@ -865,7 +929,9 @@
       document.addEventListener("keydown", e => { keys[e.code] = true; });
       document.addEventListener("keyup", e => { keys[e.code] = false; });
       const speedSlider = document.getElementById("speedSlider");
-      speedSlider.addEventListener("input", function () { translationSpeed = parseFloat(this.value); });
+      speedSlider.addEventListener("input", function () {
+        translationSpeed = parseFloat(this.value);
+      });
       let flightPathActive = false;
       let flightPathPoints = [];
       let flightPathLine = null;
@@ -875,13 +941,19 @@
         if (flightPathActive) {
           toggleFlightPathBtn.innerHTML = translations[currentLanguage].hideFlightPath;
           flightPathPoints = [];
-          if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+          if (flightPathLine) {
+            scene.remove(flightPathLine);
+            flightPathLine = null;
+          }
         } else {
           toggleFlightPathBtn.innerHTML = translations[currentLanguage].showFlightPath;
-          if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+          if (flightPathLine) {
+            scene.remove(flightPathLine);
+            flightPathLine = null;
+          }
         }
       });
-
+      
       function syncJoystickWithKeyboard() {
         if (!leftJoystickInput.active) {
           let leftKbDx = 0, leftKbDy = 0;
@@ -894,7 +966,9 @@
           const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
           if (leftKbDx !== 0 || leftKbDy !== 0) {
             leftThumb.style.transform = `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`;
-          } else { leftThumb.style.transform = "translate(-50%, -50%)"; }
+          } else {
+            leftThumb.style.transform = "translate(-50%, -50%)";
+          }
         }
         if (!rightJoystickInput.active) {
           let rightKbDx = 0, rightKbDy = 0;
@@ -907,10 +981,12 @@
           const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
           if (rightKbDx !== 0 || rightKbDy !== 0) {
             rightThumb.style.transform = `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`;
-          } else { rightThumb.style.transform = "translate(-50%, -50%)"; }
+          } else {
+            rightThumb.style.transform = "translate(-50%, -50%)";
+          }
         }
       }
-
+      
       const clock = new THREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
@@ -918,13 +994,13 @@
         syncJoystickWithKeyboard();
         updateLeftJoystickLabels();
         updateRightJoystickLabels();
-
+        
         // --- Throttle control ---
         let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
         drone.position.y += throttleInput * throttleSpeed * delta;
         if (drone.position.y < 0.45) drone.position.y = 0.45;
         if (!takenOff && drone.position.y > 1.0) takenOff = true;
-
+        
         // --- Attitude and horizontal movement ---
         if (drone.position.y > 0.46) {
           let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
@@ -932,14 +1008,14 @@
           let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
           let desiredPitch = pitchInput * maxTilt;
           drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-          let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+          let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
           let desiredRoll = -rollInput * maxTilt;
           drone.roll = lerp(drone.roll, desiredRoll, 0.1);
           const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
           const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
           const horizontalDisplacement = new THREE.Vector3();
           horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                  .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+                                 .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
           horizontalDisplacement.multiplyScalar(translationSpeed * delta);
           drone.position.add(horizontalDisplacement);
         } else {
@@ -949,7 +1025,7 @@
         }
         droneGroup.position.copy(drone.position);
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-
+      
         // --- Propeller rotation and blinking ---
         propellers.forEach(prop => {
           if (drone.position.y > 0.46) {
@@ -962,7 +1038,7 @@
           let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
           prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
         });
-
+      
         // --- Flight path drawing ---
         if (flightPathActive) {
           const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
@@ -981,7 +1057,7 @@
             }
           }
         }
-
+      
         // --- Hoop checking ---
         hoops.forEach(hoop => {
           const dToHoop = drone.position.distanceTo(hoop.mesh.position);
@@ -1012,7 +1088,9 @@
         });
         if (!allHoopsPassed) {
           let passedCount = 0;
-          hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
+          hoops.forEach(hoop => {
+            if (hoop.passed) passedCount++;
+          });
           if (passedCount === totalHoops) {
             allHoopsPassed = true;
             const msgDiv = document.getElementById("message");
@@ -1020,7 +1098,7 @@
             msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
           }
         }
-        
+      
         // --- Landing Check ---
         if (allHoopsPassed && !landedAtHome) {
           const dX = drone.position.x;
@@ -1040,7 +1118,7 @@
             }
           }
         }
-        
+      
         // --- Camera Update for Main View ---
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion();
@@ -1048,19 +1126,18 @@
         const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
         camera.position.copy(drone.position.clone().add(rotatedOffset));
         camera.lookAt(drone.position);
-        
+      
         // --- Info Update ---
         const alt = (drone.position.y - 0.45).toFixed(1);
         const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
         document.getElementById("info").textContent =
-          translations[currentLanguage].altitude + ": " + alt + " | " +
-          translations[currentLanguage].distance + ": " + dist;
-          
+          translations[currentLanguage].altitude + ": " + alt + " | " + translations[currentLanguage].distance + ": " + dist;
+      
         renderer.render(scene, camera);
         topViewRenderer.render(scene, topViewCamera);
       }
       animate();
-
+      
       function resetDrone() {
         drone.position.set(0, 0.45, 0);
         drone.yaw = 0;
@@ -1071,7 +1148,10 @@
         allHoopsPassed = false;
         currentExpectedHoop = 1;
         flightPathPoints = [];
-        if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+        if (flightPathLine) {
+          scene.remove(flightPathLine);
+          flightPathLine = null;
+        }
         leftJoystickInput.dx = 0;
         leftJoystickInput.dy = 0;
         document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
@@ -1105,7 +1185,7 @@
         updateUIText();
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
-
+      
       updateUIText();
     </script>
   </body>
