@@ -142,12 +142,12 @@
         transform: translate(-50%, -50%);
         touch-action: none;
       }
-      /* Deep colour for joystick thumbs */
+      /* Deep colours for joystick thumbs */
       #leftJoystick .joystick-thumb {
-        background-color: #006400; /* deep green */
+        background-color: #006400; /* Deep green */
       }
       #rightJoystick .joystick-thumb {
-        background-color: #FF8C00; /* deep orange */
+        background-color: #FF8C00; /* Deep orange */
       }
       /* Joystick label styles - placed outside the joystick base */
       .joystick-label {
@@ -392,6 +392,7 @@
         container.addEventListener("mouseup", resetJoystick);
         container.addEventListener("mouseleave", resetJoystick);
     
+        // For iPad and touch devices, add event listeners with passive:false.
         container.addEventListener("touchstart", (e) => {
           dragging = true;
           const rect = container.getBoundingClientRect();
@@ -400,7 +401,7 @@
           const touch = e.touches[0];
           onMove(touch.clientX, touch.clientY);
           e.preventDefault();
-        });
+        }, { passive: false });
     
         container.addEventListener("touchmove", (e) => {
           if (dragging) {
@@ -408,15 +409,16 @@
             onMove(touch.clientX, touch.clientY);
             e.preventDefault();
           }
-        });
+        }, { passive: false });
     
-        container.addEventListener("touchend", resetJoystick);
+        container.addEventListener("touchend", resetJoystick, { passive: false });
       }
     
-      // Synchronize keyboard inputs with the virtual joystick.
+      // Synchronize keyboard control with virtual joysticks.
       function syncJoystickWithKeyboard() {
-        // Left joystick: WASD control throttle & yaw.
-        let leftKbDx = 0, leftKbDy = 0;
+        // Left joystick (Throttle & Yaw: WASD)
+        let leftKbDx = 0,
+          leftKbDy = 0;
         if (keys["KeyW"]) leftKbDy = -1;
         if (keys["KeyS"]) leftKbDy = 1;
         if (keys["KeyA"]) leftKbDx = -1;
@@ -430,8 +432,9 @@
           leftThumb.style.transform = "translate(-50%, -50%)";
         }
     
-        // Right joystick: Arrow keys control pitch & roll.
-        let rightKbDx = 0, rightKbDy = 0;
+        // Right joystick (Pitch & Roll: Arrow keys)
+        let rightKbDx = 0,
+          rightKbDy = 0;
         if (keys["ArrowUp"]) rightKbDy = -1;
         if (keys["ArrowDown"]) rightKbDy = 1;
         if (keys["ArrowLeft"]) rightKbDx = -1;
@@ -648,7 +651,7 @@
         // --------------------------------------------------
         // The drone body is built from a box (1×0.3×1) scaled by 3.
         // Its effective height is 0.9, so its base is 0.45 below the center.
-        // We enforce a minimum drone.position.y of 0.45 so that the base just touches the ground.
+        // We enforce a minimum drone.position.y = 0.45 so that the base just touches the ground.
         const droneGroup = new THREE.Group();
         droneGroup.rotation.order = "YXZ";
         scene.add(droneGroup);
@@ -895,18 +898,16 @@
           requestAnimationFrame(animate);
           const delta = clock.getDelta();
     
-          // Sync joystick thumb position with keyboard input.
+          // Sync joystick thumb positions with keyboard input.
           syncJoystickWithKeyboard();
     
           // --- THROTTLE CONTROL: Always allowed ---
           let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
           drone.position.y += throttleInput * throttleSpeed * delta;
-          // Enforce minimum altitude so drone.base (0.45 below center) just touches ground.
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
     
           // --- ATTITUDE & HORIZONTAL MOVEMENT ---
-          // Only allow attitude control if drone is slightly above ground.
           if (drone.position.y > 0.46) {
             let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
@@ -919,7 +920,6 @@
             let desiredRoll = -rollInput * maxTilt;
             drone.roll = lerp(drone.roll, desiredRoll, 0.1);
     
-            // Compute horizontal movement.
             const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
             const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
             const horizontalDisplacement = new THREE.Vector3();
@@ -1035,11 +1035,11 @@
           camera.position.copy(drone.position.clone().add(rotatedOffset));
           camera.lookAt(drone.position);
     
-          // Display altitude as (drone.position.y - 0.45)
           const alt = (drone.position.y - 0.45).toFixed(1);
           const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
           document.getElementById("info").textContent =
-            translations[currentLanguage].altitude + ": " + alt + " | " + translations[currentLanguage].distance + ": " + dist;
+            translations[currentLanguage].altitude + ": " +
+            alt + " | " + translations[currentLanguage].distance + ": " + dist;
     
           renderer.render(scene, camera);
           topViewRenderer.render(scene, topViewCamera);
@@ -1047,7 +1047,6 @@
         animate();
     
         function resetDrone() {
-          // Reset drone's position and attitude.
           drone.position.set(0, 0.45, 0);
           drone.yaw = 0;
           drone.pitch = 0;
@@ -1061,14 +1060,12 @@
             scene.remove(flightPathLine);
             flightPathLine = null;
           }
-          // Reset virtual joystick inputs and thumb positions.
           leftJoystickInput.dx = 0;
           leftJoystickInput.dy = 0;
           document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
           rightJoystickInput.dx = 0;
           rightJoystickInput.dy = 0;
           document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-          // Reset hoops.
           hoops.forEach(hoop => {
             hoop.entered = false;
             hoop.passed = false;
