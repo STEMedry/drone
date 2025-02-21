@@ -607,12 +607,14 @@
         // --------------------------------------------------
         // DRONE (QUADCOPTER) SETUP
         // --------------------------------------------------
+        // The drone body is a 1×0.3×1 box scaled by 3 – effective height is 0.9.
+        // Its center is initialized at y=0.45 so its base touches the ground.
         const droneGroup = new THREE.Group();
         droneGroup.rotation.order = "YXZ";
         scene.add(droneGroup);
     
         const drone = {
-          position: new THREE.Vector3(0, 0, 0),
+          position: new THREE.Vector3(0, 0.45, 0),
           yaw: 0,
           pitch: 0,
           roll: 0,
@@ -661,7 +663,12 @@
         );
         frontLeft.position.set(-0.50, 0.2, 0.55);
         droneGroup.add(frontLeft);
-        propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45) });
+        propellers.push({ 
+          mesh: frontLeft, 
+          spinSpeed: +10, 
+          defaultAngle: THREE.Math.degToRad(45),
+          currentSpinSpeed: +10
+        });
     
         // Front Right
         const frontRight = new THREE.Mesh(
@@ -670,7 +677,12 @@
         );
         frontRight.position.set(0.50, 0.2, 0.55);
         droneGroup.add(frontRight);
-        propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135) });
+        propellers.push({ 
+          mesh: frontRight, 
+          spinSpeed: -10, 
+          defaultAngle: THREE.Math.degToRad(135),
+          currentSpinSpeed: -10
+        });
     
         // Rear Left
         const rearLeft = new THREE.Mesh(
@@ -679,7 +691,12 @@
         );
         rearLeft.position.set(-0.50, 0.2, -0.55);
         droneGroup.add(rearLeft);
-        propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135) });
+        propellers.push({ 
+          mesh: rearLeft, 
+          spinSpeed: -10, 
+          defaultAngle: THREE.Math.degToRad(135),
+          currentSpinSpeed: -10
+        });
     
         // Rear Right
         const rearRight = new THREE.Mesh(
@@ -688,7 +705,12 @@
         );
         rearRight.position.set(0.50, 0.2, -0.55);
         droneGroup.add(rearRight);
-        propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45) });
+        propellers.push({ 
+          mesh: rearRight, 
+          spinSpeed: +10, 
+          defaultAngle: THREE.Math.degToRad(45),
+          currentSpinSpeed: +10
+        });
     
         droneGroup.scale.set(3, 3, 3);
         droneGroup.traverse(child => {
@@ -732,6 +754,7 @@
           return sprite;
         }
     
+        // For hoops 1–5, face east (rotation.y = 0); for hoops 6–10, face north (rotation.y = Math.PI/2)
         function createHoop(number) {
           const mainRadius = 9;
           const tubeRadius = 0.2;
@@ -740,8 +763,6 @@
           const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
           const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
           const hoopMesh = new THREE.Mesh(geometry, material);
-          // By default all hoops previously faced north (rotation.y = Math.PI/2).
-          // To change five of them to face a different direction, we set:
           if (number <= 5) {
             // Face east.
             hoopMesh.rotation.set(0, 0, 0);
@@ -827,7 +848,8 @@
         // RESET FUNCTIONALITY
         // --------------------------------------------------
         function resetDrone() {
-          drone.position.set(0, 0, 0);
+          // Reset drone's position so its base (0.45 units below the center) just touches the ground.
+          drone.position.set(0, 0.45, 0);
           drone.yaw = 0;
           drone.pitch = 0;
           drone.roll = 0;
@@ -870,61 +892,67 @@
         function animate() {
           requestAnimationFrame(animate);
           const delta = clock.getDelta();
-      
-          if (drone.position.y < 0) drone.position.y = 0;
-      
-          const altitude = drone.position.y.toFixed(1);
-          const distance = Math.sqrt(
-            drone.position.x * drone.position.x + drone.position.z * drone.position.z
-          ).toFixed(1);
-          document.getElementById("info").textContent =
-            translations[currentLanguage].altitude + ": " + altitude +
-            " | " + translations[currentLanguage].distance + ": " + distance;
-      
-          if (!landedAtHome) {
-            // Combined input: joystick + keyboard.
-            // Throttle: left joystick vertical + W/S keys.
-            let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
-            drone.position.y += throttleInput * throttleSpeed * delta;
-            if (drone.position.y < 0) drone.position.y = 0;
-      
-            // Always enable all combined controls for yaw, pitch, and roll.
+    
+          // Process throttle input (always allowed).
+          let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+          drone.position.y += throttleInput * throttleSpeed * delta;
+          if (drone.position.y < 0.45) drone.position.y = 0.45;
+    
+          // Use a threshold (0.5) so that when close to ground no yaw, pitch, roll or horizontal motion is allowed.
+          if (drone.position.y > 0.5) {
             let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawInput * yawSpeed * delta;
-      
+    
             let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
             let desiredPitch = pitchInput * maxTilt;
             drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-      
+    
             let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
-            let desiredRoll = -rollInput * maxTilt; // Inversion.
+            let desiredRoll = -rollInput * maxTilt;
             drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-      
-            if (!takenOff && drone.position.y > 1) takenOff = true;
+    
+            // Calculate horizontal displacement.
+            const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+            const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+            const horizontalDisplacement = new THREE.Vector3();
+            horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                                   .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+            horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+            drone.position.add(horizontalDisplacement);
+          } else {
+            // At ground level: disable yaw, pitch, roll and horizontal motion.
+            drone.yaw = 0;
+            drone.pitch = 0;
+            drone.roll = 0;
           }
-      
-          // Horizontal displacement based on pitch and roll (applied always).
-          const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-          const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-          const horizontalDisplacement = new THREE.Vector3();
-          horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                 .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-          horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-          drone.position.add(horizontalDisplacement);
-      
+    
+          if (!takenOff && drone.position.y > 1) takenOff = true;
+    
+          // If landed and throttle raises above 1, resume flight.
+          if (landedAtHome && drone.position.y >= 1) {
+            landedAtHome = false;
+          }
+    
+          // Update the drone group.
           droneGroup.position.copy(drone.position);
           droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-      
+    
+          // Update propellers:
+          // When the drone is above ground (altitude > 0.5) set spin speed normally.
+          // When on the ground, gradually brake the propellers.
           propellers.forEach(prop => {
-            if (drone.position.y > 0.1) {
-              prop.mesh.rotation.y += prop.spinSpeed * delta;
+            if (drone.position.y > 0.5) {
+              prop.currentSpinSpeed = prop.spinSpeed;
             } else {
-              prop.mesh.rotation.y = prop.defaultAngle;
+              let brakingFactor = 2.0; // Increase for faster deceleration.
+              prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, brakingFactor * delta);
             }
+            prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
             let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
             prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
           });
-      
+    
+          // Flight path drawing.
           if (flightPathActive) {
             const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
             if (
@@ -945,20 +973,45 @@
               }
             }
           }
-      
-          if (!allHoopsPassed) {
-            let passedCount = 0;
-            hoops.forEach(hoop => {
-              if (hoop.passed) passedCount++;
-            });
-            if (passedCount === totalHoops) {
-              allHoopsPassed = true;
-              const messageDiv = document.getElementById("message");
-              messageDiv.style.display = "block";
-              messageDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
+    
+          // Hoops checking.
+          let passedCount = 0;
+          hoops.forEach(hoop => {
+            const dToHoop = drone.position.distanceTo(hoop.mesh.position);
+            if (!hoop.entered && dToHoop < hoop.mainRadius) {
+              hoop.entered = true;
             }
+            if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1) {
+              if (hoop.number === currentExpectedHoop) {
+                hoop.passed = true;
+                hoop.mesh.material.color.set(0x00ff00);
+                bonusSound.currentTime = 0;
+                bonusSound.play();
+                currentExpectedHoop++;
+                const cell = document.getElementById("hoopCell-" + hoop.number);
+                if (cell) cell.classList.add("passed");
+                const canvas = hoop.labelSprite.material.map.image;
+                const ctx = canvas.getContext("2d");
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "green";
+                ctx.font = "Bold 80px Arial";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+                hoop.labelSprite.material.map.needsUpdate = true;
+              }
+              hoop.entered = false;
+            }
+            if (hoop.passed) passedCount++;
+          });
+    
+          if (!allHoopsPassed && passedCount === totalHoops) {
+            allHoopsPassed = true;
+            const messageDiv = document.getElementById("message");
+            messageDiv.style.display = "block";
+            messageDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
           }
-      
+    
           if (allHoopsPassed && !landedAtHome) {
             const dX = drone.position.x;
             const dZ = drone.position.z;
@@ -974,19 +1027,19 @@
               sweetSound.play();
             }
           }
-      
+    
           const cameraOffset = new THREE.Vector3(0, 5, -15);
           const quat = new THREE.Quaternion();
           quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
           const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
           camera.position.copy(drone.position.clone().add(rotatedOffset));
           camera.lookAt(drone.position);
-      
+    
           renderer.render(scene, camera);
           topViewRenderer.render(scene, topViewCamera);
         }
         animate();
-      
+    
         updateUIText();
       });
     </script>
