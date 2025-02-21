@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <!-- Meta viewport to improve touch responsiveness on iOS -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Quadcopter Flight Simulation</title>
     <style>
       /* Prevent zooming/scrolling on touch devices */
@@ -193,6 +193,7 @@
         flex-direction: column;
         align-items: center;
       }
+      /* The top view renderer now acts as a container for the arrow buttons */
       #topViewRenderer {
         width: 200px;
         height: 200px;
@@ -201,7 +202,7 @@
         background: none;
         position: relative;
       }
-      /* Arrow buttons for top view navigation */
+      /* Arrow buttons positioned inside the top view renderer */
       .arrow-btn {
         position: absolute;
         background: rgba(200,200,200,0.7);
@@ -212,28 +213,29 @@
         cursor: pointer;
       }
       #topArrowUp {
-        top: -30px;
+        top: 5px;
         left: 50%;
         transform: translateX(-50%);
-      }
-      /* Switch left/right directions: left arrow now moves target right */
-      #topArrowLeft {
-        left: -30px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      /* and right arrow now moves target left */
-      #topArrowRight {
-        right: -30px;
-        top: 50%;
-        transform: translateY(-50%);
       }
       #topArrowDown {
-        bottom: -30px;
+        bottom: 5px;
         left: 50%;
         transform: translateX(-50%);
       }
-      /* Zoom Controls for Top View with a Home button */
+      /* Switched left/right directions remain:
+         Left arrow now adds to X (moves target right);
+         Right arrow subtracts from X (moves target left). */
+      #topArrowLeft {
+        left: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      #topArrowRight {
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      /* Zoom Controls for Top View with a Home button remain outside the renderer */
       #zoomControls {
         margin-top: 5px;
         display: flex;
@@ -280,13 +282,14 @@
 
     <!-- Top View Container -->
     <div id="topViewContainer">
-      <div id="topViewRenderer"></div>
-      <!-- Top View Navigation Arrow Buttons -->
-      <button id="topArrowUp" class="arrow-btn">▲</button>
-      <button id="topArrowDown" class="arrow-btn">▼</button>
-      <button id="topArrowLeft" class="arrow-btn">◄</button>
-      <button id="topArrowRight" class="arrow-btn">►</button>
-      <!-- Zoom Controls with "Home" Button in between -->
+      <div id="topViewRenderer">
+        <!-- Arrow buttons now inside the top view renderer -->
+        <button id="topArrowUp" class="arrow-btn">▲</button>
+        <button id="topArrowDown" class="arrow-btn">▼</button>
+        <button id="topArrowLeft" class="arrow-btn">◄</button>
+        <button id="topArrowRight" class="arrow-btn">►</button>
+      </div>
+      <!-- Zoom Controls with "Home" Button below the Top View Renderer -->
       <div id="zoomControls">
         <button id="zoomIn">Zoom In</button>
         <button id="homeView">Home</button>
@@ -344,9 +347,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
       // Log to verify Three.js is loaded.
-      if (THREE) {
-        console.log("Three.js loaded successfully.");
-      }
+      if (THREE) { console.log("Three.js loaded successfully."); }
 
       // Linear interpolation helper.
       function lerp(a, b, t) {
@@ -403,9 +404,7 @@
         let activeTouchId = null;
         let center = { x: 0, y: 0 };
         const maxDist = 40; // Maximum displacement in pixels.
-        
         joystickObj.active = false;
-        
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist > maxDist) {
@@ -416,7 +415,6 @@
           joystickObj.dy = dy / maxDist;
           thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
         }
-        
         function resetThumb() {
           dragging = false;
           joystickObj.active = false;
@@ -425,8 +423,7 @@
           joystickObj.dy = 0;
           thumb.style.transform = "translate(-50%, -50%)";
         }
-        
-        // --- Pointer events.
+        // Pointer events.
         function onPointerDown(e) {
           if (e.pointerType === "mouse" && e.button !== 0) return;
           dragging = true;
@@ -450,8 +447,7 @@
           container.releasePointerCapture(e.pointerId);
           e.preventDefault();
         }
-        
-        // --- Touch events.
+        // Touch events.
         function onTouchStart(e) {
           if (e.targetTouches.length > 0) {
             dragging = true;
@@ -489,7 +485,6 @@
           e.preventDefault();
         }
         container.addEventListener("touchcancel", onTouchEnd, { passive: false });
-        
         if (window.PointerEvent) {
           container.addEventListener("pointerdown", onPointerDown, { passive: false });
           container.addEventListener("pointermove", onPointerMove, { passive: false });
@@ -507,7 +502,6 @@
         const downLabel = document.querySelector("#leftJoystick .label-bottom");
         const leftLabel = document.querySelector("#leftJoystick .label-left");
         const rightLabel = document.querySelector("#leftJoystick .label-right");
-        // Reset all to black.
         upLabel.style.color = "black";
         downLabel.style.color = "black";
         leftLabel.style.color = "black";
@@ -549,8 +543,7 @@
       let topViewTarget = new THREE.Vector3(0, 0, 0);
       const topViewHeight = 1000;
       const topViewStep = 20;
-      // Event listeners for top view arrow buttons.
-      // Switch left and right move directions:
+      // Event listeners for arrow buttons (left/right directions remain switched).
       document.getElementById("topArrowUp").addEventListener("click", function() {
         topViewTarget.z -= topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
@@ -561,13 +554,13 @@
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
-      // SWITCHED: Left arrow now adds to X (moves target right)...
+      // Switched: Left arrow increases X (moves target right)
       document.getElementById("topArrowLeft").addEventListener("click", function() {
         topViewTarget.x += topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
-      // ...and right arrow subtracts from X (moves target left)
+      // Right arrow decreases X (moves target left)
       document.getElementById("topArrowRight").addEventListener("click", function() {
         topViewTarget.x -= topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
