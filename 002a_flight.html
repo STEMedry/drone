@@ -6,14 +6,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Quadcopter Flight Simulation</title>
     <style>
-      /* Prevent zooming/scrolling on touch devices */
-      html, body {
+      /* Prevent zooming/scrolling on touch devices and disable text selection */
+      html,
+      body {
         margin: 0;
         padding: 0;
         overflow: hidden;
         touch-action: none;
         -ms-touch-action: none;
         user-select: none;
+        -webkit-user-select: none;
       }
       canvas {
         display: block;
@@ -26,7 +28,8 @@
         transform: translateX(-50%);
         font-size: 32px;
         font-weight: bold;
-        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
+          -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
       /* Language Toggle Button (Top Right Corner) */
@@ -43,19 +46,28 @@
         background-color: #4caf50;
         color: white;
       }
-      /* General Message */
+      /* General Message (for RTH & landing messages) */
       #message {
         position: absolute;
-        top: 10%;
+        top: 40%;
         left: 50%;
-        transform: translateX(-50%);
+        transform: translate(-50%, -50%);
         background: rgba(0, 0, 0, 0.7);
         color: white;
         padding: 10px 20px;
-        font-size: 20px;
+        font-size: 24px;
         border-radius: 5px;
-        z-index: 10;
+        z-index: 110;
         display: none;
+      }
+      /* Blinking animation for the message */
+      @keyframes blinking {
+        0%   { opacity: 1; }
+        50%  { opacity: 0; }
+        100% { opacity: 1; }
+      }
+      .blinking {
+        animation: blinking 1s infinite;
       }
       /* Controls Container (bottom center) */
       #controls {
@@ -121,6 +133,12 @@
       #toggleFlightPath {
         font-size: 18px;
         padding: 10px 20px;
+      }
+      /* RTH Button styling */
+      #rthBtn {
+        font-size: 18px;
+        padding: 10px 20px;
+        margin-top: 5px;
       }
       /* Enlarged Virtual Joystick Styles */
       .joystick-container {
@@ -254,9 +272,8 @@
         left: 50%;
         transform: translateX(-50%);
       }
-      /* Switch left/right moving directions:
-         Left arrow will now move the target to the right (increase x)
-         and Right arrow will move the target to the left (decrease x). */
+      /* Left arrow moves the target to the left (decreases x)
+         and Right arrow moves the target to the right (increases x). */
       #topArrowLeft {
         left: 5px;
         top: 50%;
@@ -356,11 +373,12 @@
           <span class="joystick-label label-left">Yaw Left</span>
           <span class="joystick-label label-right">Yaw Right</span>
         </div>
-        <!-- Speed Slider and Flight Path Toggle -->
+        <!-- Speed Slider, Flight Path Toggle, and RTH Button -->
         <div id="speedContainer">
           <div id="speedLabel">Speed</div>
           <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
           <button id="toggleFlightPath" class="btn-default">Show Flight Path</button>
+          <button id="rthBtn" class="btn-default">RTH</button>
         </div>
         <!-- Right Virtual Joystick (Pitch & Roll) -->
         <div class="joystick-container" id="rightJoystick">
@@ -378,12 +396,12 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // Quick check to verify Three.js is loaded
+      // Quick check to verify Three.js is loaded.
       if (THREE) {
         console.log("Three.js loaded successfully.");
       }
       
-      // Linear interpolation helper
+      // Linear interpolation helper.
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
@@ -391,8 +409,8 @@
       // Helper function to create a directional sprite with a given label and color.
       function createDirectionSprite(text, color = "black") {
         const canvas = document.createElement("canvas");
-        canvas.width = 512
-        canvas.height = 512
+        canvas.width = 512;
+        canvas.height = 512;
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = color;
@@ -403,7 +421,7 @@
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
         const sprite = new THREE.Sprite(spriteMaterial);
-        // Scale sprite so it is clearly visible
+        // Scale sprite so it is clearly visible.
         sprite.scale.set(250, 250, 1);
         return sprite;
       }
@@ -411,7 +429,7 @@
       // --- Three.js Scene Setup ---
       const scene = new THREE.Scene();
       
-      // Add cardinal directional sprites to the scene
+      // Add cardinal directional sprites.
       const northSprite = createDirectionSprite("NORTH");
       northSprite.position.set(0, 8, 540);
       scene.add(northSprite);
@@ -428,7 +446,7 @@
       westSprite.position.set(540, 8, 0);
       scene.add(westSprite);
       
-      // Home Marker Creation
+      // Home Marker Creation.
       function drawHomeMarker(ctx, padColor) {
         ctx.clearRect(0, 0, 256, 256);
         ctx.fillStyle = padColor;
@@ -461,6 +479,20 @@
       }
       
       let missionCompleted = false;
+      // RTH flag.
+      let rthActive = false;
+      
+      // --- Audio Setup ---
+      // Existing audio.
+      const bonusSound = new Audio("bonus.mp3");
+      const sweetSound = new Audio("sweet.mp3");
+      // New audio objects for RTH and Landing.
+      let rthAudio = new Audio("RTH12.mp3");
+      rthAudio.loop = true;
+      let landAudio = new Audio("Land1.mp3");
+      landAudio.loop = false;
+      let rthAudioPlaying = false;
+      let landAudioPlayed = false;
       
       // --- Virtual Joystick Helper ---
       function attachJoystick(containerId, joystickObj) {
@@ -470,7 +502,7 @@
         let pointerId = null;
         let activeTouchId = null;
         let center = { x: 0, y: 0 };
-        const maxDist = 40; // Maximum displacement in pixels.
+        const maxDist = 40; // Maximum displacement.
         joystickObj.active = false;
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -604,13 +636,9 @@
       }
       
       // --- Top View Navigation ---
-      // Global target and height for the top view camera.
       let topViewTarget = new THREE.Vector3(0, 0, 0);
       const topViewHeight = 1000;
       const topViewStep = 20;
-      // For this revision, we switch left/right moving directions relative to standard:
-      // Left arrow moves the target to the right (increases x)
-      // Right arrow moves the target to the left (decreases x)
       document.getElementById("topArrowUp").addEventListener("click", function () {
         topViewTarget.z -= topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
@@ -622,16 +650,15 @@
         topViewCamera.lookAt(topViewTarget);
       });
       document.getElementById("topArrowLeft").addEventListener("click", function () {
-        topViewTarget.x += topViewStep;
-        topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
-        topViewCamera.lookAt(topViewTarget);
-      });
-      document.getElementById("topArrowRight").addEventListener("click", function () {
         topViewTarget.x -= topViewStep;
         topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
         topViewCamera.lookAt(topViewTarget);
       });
-      // "Home" button resets the top view target.
+      document.getElementById("topArrowRight").addEventListener("click", function () {
+        topViewTarget.x += topViewStep;
+        topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
+        topViewCamera.lookAt(topViewTarget);
+      });
       document.getElementById("homeView").addEventListener("click", function () {
         topViewTarget.set(0, 0, 0);
         topViewCamera.position.set(0, topViewHeight, 0);
@@ -644,6 +671,10 @@
       let takenOff = false;
       let allHoopsPassed = false;
       let currentLanguage = "en";
+      
+      // Reference to the RTH button.
+      let rthBtn = document.getElementById("rthBtn");
+      
       const translations = {
         en: {
           title: "Quadcopter Flight Simulation",
@@ -898,6 +929,7 @@
         return {
           mesh: hoopMesh,
           mainRadius: mainRadius,
+          tubeRadius: tubeRadius,
           entered: false,
           passed: false,
           number: number,
@@ -912,15 +944,11 @@
         hoops.push(hoop);
       }
       
-      // --- Audio Setup ---
-      const bonusSound = new Audio("bonus.mp3");
-      const sweetSound = new Audio("sweet.mp3");
-      
       // --- User Input ---
       let translationSpeed = 50;
       const yawSpeed = 1.0;
       const throttleSpeed = 10;
-      const maxTilt = 0.5*Math.PI / 6;
+      const maxTilt = 0.5 * Math.PI / 6;
       const leftJoystickInput = { dx: 0, dy: 0 };
       const rightJoystickInput = { dx: 0, dy: 0 };
       attachJoystick("leftJoystick", leftJoystickInput);
@@ -952,6 +980,21 @@
             flightPathLine = null;
           }
         }
+      });
+      
+      // RTH Button event listener:
+      // Now, if the drone's altitude is less than 1, the button will not respond.
+      document.getElementById("rthBtn").addEventListener("click", function () {
+        if (drone.position.y < 1) {
+          // Do nothing if altitude is less than 1.
+          return;
+        }
+        rthActive = true;
+        this.style.backgroundColor = "grey";
+        const msgDiv = document.getElementById("message");
+        msgDiv.style.display = "block";
+        msgDiv.innerHTML = "Return-to-Home in Progress";
+        msgDiv.classList.add("blinking");
       });
       
       function syncJoystickWithKeyboard() {
@@ -991,42 +1034,87 @@
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
-        syncJoystickWithKeyboard();
-        updateLeftJoystickLabels();
-        updateRightJoystickLabels();
-        
-        // --- Throttle control ---
-        let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
-        drone.position.y += throttleInput * throttleSpeed * delta;
-        if (drone.position.y < 0.45) drone.position.y = 0.45;
-        if (!takenOff && drone.position.y > 1.0) takenOff = true;
-        
-        // --- Attitude and horizontal movement ---
-        if (drone.position.y > 0.46) {
-          let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
-          drone.yaw += yawSpeed * yawInput * delta;
-          let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
-          let desiredPitch = pitchInput * maxTilt;
-          drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-          let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
-          let desiredRoll = -rollInput * maxTilt;
-          drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-          const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-          const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-          const horizontalDisplacement = new THREE.Vector3();
-          horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                 .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-          horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-          drone.position.add(horizontalDisplacement);
+      
+        if (rthActive) {
+          // When RTH is active, manual controls are disabled.
+          const msgDiv = document.getElementById("message");
+          // Compute horizontal distance from drone to home (home = (0, *, 0)).
+          const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
+          if (hDist > 1) {
+            // While far from home horizontally.
+            msgDiv.innerHTML = "Return-to-Home in Progress";
+            msgDiv.classList.add("blinking");
+            if (!rthAudioPlaying) {
+              rthAudio.play();
+              rthAudioPlaying = true;
+            }
+            const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
+            const desiredYaw = Math.atan2(dir.x, dir.z);
+            drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
+            drone.position.x += dir.x * 30 * delta;
+            drone.position.z += dir.z * 30 * delta;
+          } else {
+            // When the drone is nearly above home.
+            msgDiv.innerHTML = "Automatic Landing";
+            msgDiv.classList.remove("blinking");
+            if (rthAudioPlaying) {
+              rthAudio.pause();
+              rthAudio.currentTime = 0;
+              rthAudioPlaying = false;
+            }
+            if (!landAudioPlayed) {
+              landAudio.play();
+              landAudioPlayed = true;
+            }
+            if (drone.position.y > 0.45) {
+              drone.position.y -= 5 * delta;
+            }
+            drone.yaw = lerp(drone.yaw, 0, 0.05);
+            drone.pitch = lerp(drone.pitch, 0, 0.1);
+            drone.roll = lerp(drone.roll, 0, 0.1);
+            if (drone.position.y <= 0.45 + 0.01) {
+              drone.position.y = 0.45;
+              rthActive = false;
+              msgDiv.style.display = "none";
+              rthBtn.style.backgroundColor = "#2196f3";
+              rthAudioPlaying = false;
+              landAudioPlayed = false;
+            }
+          }
         } else {
-          drone.yaw = 0;
-          drone.pitch = 0;
-          drone.roll = 0;
+          // Normal manual controls.
+          syncJoystickWithKeyboard();
+          let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+          drone.position.y += throttleInput * throttleSpeed * delta;
+          if (drone.position.y < 0.45) drone.position.y = 0.45;
+          if (!takenOff && drone.position.y > 1.0) takenOff = true;
+          
+          if (drone.position.y > 0.46) {
+            let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+            drone.yaw += yawSpeed * yawInput * delta;
+            let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+            let desiredPitch = pitchInput * maxTilt;
+            drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
+            let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+            let desiredRoll = -rollInput * maxTilt;
+            drone.roll = lerp(drone.roll, desiredRoll, 0.1);
+            const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+            const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+            const horizontalDisplacement = new THREE.Vector3();
+            horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                                   .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+            horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+            drone.position.add(horizontalDisplacement);
+          } else {
+            drone.yaw = 0;
+            drone.pitch = 0;
+            drone.roll = 0;
+          }
         }
+      
         droneGroup.position.copy(drone.position);
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
       
-        // --- Propeller rotation and blinking ---
         propellers.forEach(prop => {
           if (drone.position.y > 0.46) {
             prop.currentSpinSpeed = prop.spinSpeed;
@@ -1039,7 +1127,6 @@
           prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
         });
       
-        // --- Flight path drawing ---
         if (flightPathActive) {
           const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
           if (flightPathPoints.length === 0 || currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
@@ -1058,7 +1145,6 @@
           }
         }
       
-        // --- Hoop checking ---
         hoops.forEach(hoop => {
           const dToHoop = drone.position.distanceTo(hoop.mesh.position);
           if (!hoop.entered && dToHoop < hoop.mainRadius) {
@@ -1099,7 +1185,6 @@
           }
         }
       
-        // --- Landing Check ---
         if (allHoopsPassed && !landedAtHome) {
           const dX = drone.position.x;
           const dZ = drone.position.z;
@@ -1111,7 +1196,6 @@
             document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
             sweetSound.currentTime = 0;
             sweetSound.play();
-            // Change the home pad to yellow.
             if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
               drawHomeMarker(homeMarker.userData.ctx, "yellow");
               homeMarker.userData.texture.needsUpdate = true;
@@ -1119,7 +1203,6 @@
           }
         }
       
-        // --- Camera Update for Main View ---
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion();
         quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
@@ -1127,11 +1210,11 @@
         camera.position.copy(drone.position.clone().add(rotatedOffset));
         camera.lookAt(drone.position);
       
-        // --- Info Update ---
         const alt = (drone.position.y - 0.45).toFixed(1);
         const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
         document.getElementById("info").textContent =
-          translations[currentLanguage].altitude + ": " + alt + " | " + translations[currentLanguage].distance + ": " + dist;
+          translations[currentLanguage].altitude + ": " + alt + " | " +
+          translations[currentLanguage].distance + ": " + dist;
       
         renderer.render(scene, camera);
         topViewRenderer.render(scene, topViewCamera);
@@ -1172,7 +1255,6 @@
           ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
           hoop.labelSprite.material.map.needsUpdate = true;
         });
-        // Reset home marker to white.
         if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
           drawHomeMarker(homeMarker.userData.ctx, "white");
           homeMarker.userData.texture.needsUpdate = true;
@@ -1182,6 +1264,11 @@
           const cell = document.getElementById("hoopCell-" + i);
           if (cell) cell.classList.remove("passed");
         }
+        // Restore RTH button color.
+        rthBtn.style.backgroundColor = "#2196f3";
+        // Reset RTH audio flags.
+        rthAudioPlaying = false;
+        landAudioPlayed = false;
         updateUIText();
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
