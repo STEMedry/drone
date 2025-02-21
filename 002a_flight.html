@@ -351,7 +351,7 @@
         const thumb = container.querySelector(".joystick-thumb");
         let dragging = false;
         let center = { x: 0, y: 0 };
-        const maxDist = 40; // Maximum displacement in pixels.
+        const maxDist = 40;
     
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -608,7 +608,7 @@
         // DRONE (QUADCOPTER) SETUP
         // --------------------------------------------------
         // The drone body is a 1×0.3×1 box scaled by 3 – effective height is 0.9.
-        // Its center is initialized at y=0.45 so its base touches the ground.
+        // Its center is initialized at y = 0.45 so that its base just touches the ground.
         const droneGroup = new THREE.Group();
         droneGroup.rotation.order = "YXZ";
         scene.add(droneGroup);
@@ -754,7 +754,7 @@
           return sprite;
         }
     
-        // For hoops 1–5, face east (rotation.y = 0); for hoops 6–10, face north (rotation.y = Math.PI/2)
+        // For hoops 1–5, face east (rotation.y = 0); for hoops 6–10, face north (rotation.y = Math.PI/2).
         function createHoop(number) {
           const mainRadius = 9;
           const tubeRadius = 0.2;
@@ -764,10 +764,8 @@
           const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
           const hoopMesh = new THREE.Mesh(geometry, material);
           if (number <= 5) {
-            // Face east.
             hoopMesh.rotation.set(0, 0, 0);
           } else {
-            // Face north.
             hoopMesh.rotation.set(0, Math.PI / 2, 0);
           }
           const labelSprite = createHoopLabel(number);
@@ -848,7 +846,7 @@
         // RESET FUNCTIONALITY
         // --------------------------------------------------
         function resetDrone() {
-          // Reset drone's position so its base (0.45 units below the center) just touches the ground.
+          // Reset drone's position so its base (0.45 units below its center) just touches the ground.
           drone.position.set(0, 0.45, 0);
           drone.yaw = 0;
           drone.pitch = 0;
@@ -898,8 +896,14 @@
           drone.position.y += throttleInput * throttleSpeed * delta;
           if (drone.position.y < 0.45) drone.position.y = 0.45;
     
-          // Use a threshold (0.5) so that when close to ground no yaw, pitch, roll or horizontal motion is allowed.
-          if (drone.position.y > 0.5) {
+          /* 
+            Process yaw, pitch, roll and horizontal displacement.
+            To enable the combined controls that were not working, we allow inputs if:
+              - The drone is sufficiently above ground (drone.position.y > 0.5)
+              OR
+              - The pilot is actively throttling up from ground level (throttleInput > 0 && drone.position.y >= 0.45)
+          */
+          if (drone.position.y > 0.5 || (throttleInput > 0 && drone.position.y >= 0.45)) {
             let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawInput * yawSpeed * delta;
     
@@ -911,7 +915,7 @@
             let desiredRoll = -rollInput * maxTilt;
             drone.roll = lerp(drone.roll, desiredRoll, 0.1);
     
-            // Calculate horizontal displacement.
+            // Calculate horizontal displacement based on pitch and roll.
             const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
             const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
             const horizontalDisplacement = new THREE.Vector3();
@@ -920,7 +924,6 @@
             horizontalDisplacement.multiplyScalar(translationSpeed * delta);
             drone.position.add(horizontalDisplacement);
           } else {
-            // At ground level: disable yaw, pitch, roll and horizontal motion.
             drone.yaw = 0;
             drone.pitch = 0;
             drone.roll = 0;
@@ -933,18 +936,18 @@
             landedAtHome = false;
           }
     
-          // Update the drone group.
+          // Update the drone group transformation.
           droneGroup.position.copy(drone.position);
           droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
     
-          // Update propellers:
-          // When the drone is above ground (altitude > 0.5) set spin speed normally.
-          // When on the ground, gradually brake the propellers.
+          // Propellers update:
+          // When the drone is above ground (altitude > 0.5) use full spinSpeed.
+          // When on ground, gradually brake the propellers.
           propellers.forEach(prop => {
             if (drone.position.y > 0.5) {
               prop.currentSpinSpeed = prop.spinSpeed;
             } else {
-              let brakingFactor = 2.0; // Increase for faster deceleration.
+              let brakingFactor = 2.0;
               prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, brakingFactor * delta);
             }
             prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
