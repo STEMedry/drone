@@ -123,7 +123,7 @@
       .joystick-base {
         width: 200px;
         height: 200px;
-        background: rgba(200, 200, 200, 0.5);
+        background: rgba(76, 175, 80, 0.5); /* For left joystick; overridden for right below */
         border: 2px solid #aaa;
         border-radius: 50%;
         position: absolute;
@@ -148,6 +148,10 @@
       }
       #rightJoystick .joystick-thumb {
         background-color: #FF8C00; /* Deep orange */
+      }
+      /* For the right joystick, change base color to orange */
+      #rightJoystick .joystick-base {
+        background: rgba(255, 152, 0, 0.5);
       }
       /* Joystick label styles - placed outside the joystick base */
       .joystick-label {
@@ -198,13 +202,6 @@
         right: 0px;
         top: 40%;
         transform: translateY(-50%);
-      }
-      /* Change left joystick base color to green and right joystick base to orange */
-      #leftJoystick .joystick-base {
-        background: rgba(76, 175, 80, 0.5);
-      }
-      #rightJoystick .joystick-base {
-        background: rgba(255, 152, 0, 0.5);
       }
       /* Zoom Controls and Top View Container */
       #topViewContainer {
@@ -343,11 +340,12 @@
         return a + (b - a) * t;
       }
     
-      // Virtual Joystick helper: attaches pointer/touch events.
+      // Updated Virtual Joystick helper using Pointer Events.
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
         let dragging = false;
+        let pointerId = null;
         let center = { x: 0, y: 0 };
         const maxDist = 40; // Maximum displacement in pixels.
     
@@ -357,68 +355,54 @@
             dx = (dx / dist) * maxDist;
             dy = (dy / dist) * maxDist;
           }
-          thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
           joystickObj.dx = dx / maxDist;
           joystickObj.dy = dy / maxDist;
+          thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
         }
     
-        function resetJoystick() {
+        function resetThumb() {
           dragging = false;
           joystickObj.dx = 0;
           joystickObj.dy = 0;
           thumb.style.transform = "translate(-50%, -50%)";
         }
     
-        function onMove(clientX, clientY) {
-          const dx = clientX - center.x;
-          const dy = clientY - center.y;
-          updateThumb(dx, dy);
+        function onPointerDown(e) {
+          // Only respond to left mouse button or touch.
+          if (e.pointerType === "mouse" && e.button !== 0) return;
+          dragging = true;
+          pointerId = e.pointerId;
+          const rect = container.getBoundingClientRect();
+          center.x = rect.left + rect.width / 2;
+          center.y = rect.top + rect.height / 2;
+          updateThumb(e.clientX - center.x, e.clientY - center.y);
+          container.setPointerCapture(e.pointerId);
+          e.preventDefault();
         }
     
-        container.addEventListener("mousedown", (e) => {
-          dragging = true;
-          const rect = container.getBoundingClientRect();
-          center.x = rect.left + rect.width / 2;
-          center.y = rect.top + rect.height / 2;
-          onMove(e.clientX, e.clientY);
-        });
-    
-        container.addEventListener("mousemove", (e) => {
-          if (dragging) {
-            onMove(e.clientX, e.clientY);
-          }
-        });
-    
-        container.addEventListener("mouseup", resetJoystick);
-        container.addEventListener("mouseleave", resetJoystick);
-    
-        // For iPad and touch devices, add event listeners with passive:false.
-        container.addEventListener("touchstart", (e) => {
-          dragging = true;
-          const rect = container.getBoundingClientRect();
-          center.x = rect.left + rect.width / 2;
-          center.y = rect.top + rect.height / 2;
-          const touch = e.touches[0];
-          onMove(touch.clientX, touch.clientY);
+        function onPointerMove(e) {
+          if (!dragging || e.pointerId !== pointerId) return;
+          updateThumb(e.clientX - center.x, e.clientY - center.y);
           e.preventDefault();
-        }, { passive: false });
+        }
     
-        container.addEventListener("touchmove", (e) => {
-          if (dragging) {
-            const touch = e.touches[0];
-            onMove(touch.clientX, touch.clientY);
-            e.preventDefault();
-          }
-        }, { passive: false });
+        function onPointerUp(e) {
+          if (e.pointerId !== pointerId) return;
+          resetThumb();
+          container.releasePointerCapture(e.pointerId);
+          e.preventDefault();
+        }
     
-        container.addEventListener("touchend", resetJoystick, { passive: false });
+        container.addEventListener("pointerdown", onPointerDown, { passive: false });
+        container.addEventListener("pointermove", onPointerMove, { passive: false });
+        container.addEventListener("pointerup", onPointerUp, { passive: false });
+        container.addEventListener("pointercancel", onPointerUp, { passive: false });
       }
     
       // Synchronize keyboard control with virtual joysticks.
       function syncJoystickWithKeyboard() {
         // Left joystick (Throttle & Yaw: WASD)
-        let leftKbDx = 0,
-          leftKbDy = 0;
+        let leftKbDx = 0, leftKbDy = 0;
         if (keys["KeyW"]) leftKbDy = -1;
         if (keys["KeyS"]) leftKbDy = 1;
         if (keys["KeyA"]) leftKbDx = -1;
@@ -433,8 +417,7 @@
         }
     
         // Right joystick (Pitch & Roll: Arrow keys)
-        let rightKbDx = 0,
-          rightKbDy = 0;
+        let rightKbDx = 0, rightKbDy = 0;
         if (keys["ArrowUp"]) rightKbDy = -1;
         if (keys["ArrowDown"]) rightKbDy = 1;
         if (keys["ArrowLeft"]) rightKbDx = -1;
@@ -774,7 +757,6 @@
           return sprite;
         }
     
-        // Create hoops so that hoops 1–5 face east and hoops 6–10 face north.
         function createHoop(number) {
           const mainRadius = 9;
           const tubeRadius = 0.2;
@@ -860,7 +842,6 @@
           }
         });
     
-        // --- Synchronize keyboard control with virtual joysticks ---
         function syncJoystickWithKeyboard() {
           // Left joystick (Throttle & Yaw: WASD)
           let leftKbDx = 0, leftKbDy = 0;
@@ -901,13 +882,11 @@
           // Sync joystick thumb positions with keyboard input.
           syncJoystickWithKeyboard();
     
-          // --- THROTTLE CONTROL: Always allowed ---
           let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
           drone.position.y += throttleInput * throttleSpeed * delta;
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
     
-          // --- ATTITUDE & HORIZONTAL MOVEMENT ---
           if (drone.position.y > 0.46) {
             let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
@@ -933,11 +912,9 @@
             drone.roll = 0;
           }
     
-          // --- UPDATE DRONE TRANSFORM ---
           droneGroup.position.copy(drone.position);
           droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
     
-          // --- PROPULSION (PROPELLERS) ---
           propellers.forEach(prop => {
             if (drone.position.y > 0.46) {
               prop.currentSpinSpeed = prop.spinSpeed;
@@ -950,13 +927,10 @@
             prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
           });
     
-          // --- FLIGHT PATH DRAWING ---
           if (flightPathActive) {
             const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
-            if (
-              flightPathPoints.length === 0 ||
-              currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2
-            ) {
+            if (flightPathPoints.length === 0 ||
+                currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
               flightPathPoints.push(currentPos);
             }
             if (flightPathPoints.length > 1) {
@@ -972,7 +946,6 @@
             }
           }
     
-          // --- HOOP CHECKING ---
           hoops.forEach(hoop => {
             const dToHoop = drone.position.distanceTo(hoop.mesh.position);
             if (!hoop.entered && dToHoop < hoop.mainRadius) {
@@ -1003,7 +976,9 @@
     
           if (!allHoopsPassed) {
             let passedCount = 0;
-            hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
+            hoops.forEach(hoop => {
+              if (hoop.passed) passedCount++;
+            });
             if (passedCount === totalHoops) {
               allHoopsPassed = true;
               const msgDiv = document.getElementById("message");
