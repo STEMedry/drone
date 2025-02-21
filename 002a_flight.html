@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Meta viewport to improve touch responsiveness -->
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <!-- Meta viewport to improve touch responsiveness on iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
     <title>Quadcopter Flight Simulation</title>
     <style>
       /* Prevent zooming/scrolling on touch devices */
@@ -27,7 +27,7 @@
         font-size: 32px;
         font-weight: bold;
         text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
-          -1px 1px 0 #fff, 1px 1px 0 #fff;
+                     -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
       /* Language Toggle Button (Top Right Corner) */
@@ -75,14 +75,15 @@
         width: 1000px;
         height: 220px;
       }
-      /* Info box for Altitude & Distance */
+      /* Info box for Altitude & Distance (red and bold) */
       #info {
         position: absolute;
         top: 20px;
         left: 50%;
         transform: translateX(-50%);
         font-size: 18px;
-        color: #000;
+        color: red;
+        font-weight: bold;
       }
       #btn-reset {
         position: absolute;
@@ -128,7 +129,7 @@
       .joystick-base {
         width: 200px;
         height: 200px;
-        background: rgba(76, 175, 80, 0.5); /* Left joystick default */
+        background: rgba(76, 175, 80, 0.5);
         border: 2px solid #aaa;
         border-radius: 50%;
         position: absolute;
@@ -150,10 +151,10 @@
       }
       /* Deep colours for joystick thumbs */
       #leftJoystick .joystick-thumb {
-        background-color: #006400; /* Deep green */
+        background-color: #006400;
       }
       #rightJoystick .joystick-thumb {
-        background-color: #FF8C00; /* Deep orange */
+        background-color: #FF8C00;
       }
       /* Right joystick base in orange */
       #rightJoystick .joystick-base {
@@ -168,47 +169,15 @@
         pointer-events: none;
       }
       /* Left joystick labels */
-      #leftJoystick .label-top {
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #leftJoystick .label-bottom {
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #leftJoystick .label-left {
-        left: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      #leftJoystick .label-right {
-        right: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
+      #leftJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
+      #leftJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+      #leftJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
+      #leftJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
       /* Right joystick labels */
-      #rightJoystick .label-top {
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #rightJoystick .label-bottom {
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #rightJoystick .label-left {
-        left: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      #rightJoystick .label-right {
-        right: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
+      #rightJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
+      #rightJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+      #rightJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
+      #rightJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
       /* Zoom Controls and Top View Container */
       #topViewContainer {
         position: absolute;
@@ -329,26 +298,31 @@
       <button id="btn-reset" class="btn-red">Reset</button>
     </div>
 
-    <!-- Include Three.js -->
+    <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+      // Quick log to verify Three.js is loaded.
+      if (THREE) {
+        console.log("Three.js loaded successfully.");
+      }
+
       // Linear interpolation helper.
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
 
-      // Virtual Joystick helper using pointer and touch events.
-      // We add an "active" property so that when the joystick is being used,
-      // keyboard synchronization is prevented.
+      // Virtual Joystick helper using both Pointer and Touch events.
+      // Each joystick object gains an "active" flag and (for touch) an activeTouchId.
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
         let dragging = false;
         let pointerId = null;
+        let activeTouchId = null;
         let center = { x: 0, y: 0 };
         const maxDist = 40; // Maximum displacement in pixels.
         
-        // Add a flag:
+        // Initialize active flag.
         joystickObj.active = false;
         
         function updateThumb(dx, dy) {
@@ -365,12 +339,13 @@
         function resetThumb() {
           dragging = false;
           joystickObj.active = false;
+          activeTouchId = null;
           joystickObj.dx = 0;
           joystickObj.dy = 0;
           thumb.style.transform = "translate(-50%, -50%)";
         }
 
-        // --- Pointer event handlers ---
+        // --- Pointer Event Handlers ---
         function onPointerDown(e) {
           if (e.pointerType === "mouse" && e.button !== 0) return;
           dragging = true;
@@ -395,28 +370,47 @@
           e.preventDefault();
         }
 
-        // --- Touch event handlers (fallback) ---
+        // --- Touch Event Handlers (with multi-touch support) ---
         function onTouchStart(e) {
-          dragging = true;
-          joystickObj.active = true;
-          const touch = e.touches[0];
-          const rect = container.getBoundingClientRect();
-          center.x = rect.left + rect.width / 2;
-          center.y = rect.top + rect.height / 2;
-          updateThumb(touch.clientX - center.x, touch.clientY - center.y);
-          e.preventDefault();
+          if (e.targetTouches.length > 0) {
+            dragging = true;
+            joystickObj.active = true;
+            const touch = e.targetTouches[0];
+            activeTouchId = touch.identifier;
+            const rect = container.getBoundingClientRect();
+            center.x = rect.left + rect.width / 2;
+            center.y = rect.top + rect.height / 2;
+            updateThumb(touch.clientX - center.x, touch.clientY - center.y);
+            e.preventDefault();
+          }
         }
         function onTouchMove(e) {
-          if (!dragging) return;
-          const touch = e.touches[0];
-          updateThumb(touch.clientX - center.x, touch.clientY - center.y);
+          if (!dragging || activeTouchId === null) return;
+          let targetTouch = null;
+          for (let i = 0; i < e.touches.length; i++) {
+            if (e.touches[i].identifier === activeTouchId) {
+              targetTouch = e.touches[i];
+              break;
+            }
+          }
+          if (targetTouch) {
+            updateThumb(targetTouch.clientX - center.x, targetTouch.clientY - center.y);
+          }
           e.preventDefault();
         }
         function onTouchEnd(e) {
-          resetThumb();
+          // If the active touch ended, reset.
+          for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === activeTouchId) {
+              resetThumb();
+              break;
+            }
+          }
           e.preventDefault();
         }
+        container.addEventListener("touchcancel", onTouchEnd, { passive: false });
 
+        // Attach event listeners (if PointerEvents are supported, use them, but always attach touch events)
         if (window.PointerEvent) {
           container.addEventListener("pointerdown", onPointerDown, { passive: false });
           container.addEventListener("pointermove", onPointerMove, { passive: false });
@@ -429,9 +423,8 @@
       }
 
       // Synchronize keyboard control with virtual joysticks.
-      // If the joystick is active (being dragged), skip keyboard syncing.
+      // If a joystick is active (being dragged), skip keyboard syncing.
       function syncJoystickWithKeyboard() {
-        // Left joystick (Throttle & Yaw: WASD)
         if (!leftJoystickInput.active) {
           let leftKbDx = 0, leftKbDy = 0;
           if (keys["KeyW"]) leftKbDy = -1;
@@ -447,7 +440,6 @@
             leftThumb.style.transform = "translate(-50%, -50%)";
           }
         }
-        // Right joystick (Pitch & Roll: Arrow keys)
         if (!rightJoystickInput.active) {
           let rightKbDx = 0, rightKbDy = 0;
           if (keys["ArrowUp"]) rightKbDy = -1;
@@ -465,7 +457,7 @@
         }
       }
 
-      // Global variables and translations.
+      // Global state variables and translations.
       let currentExpectedHoop = 1;
       let landedAtHome = false;
       let takenOff = false;
@@ -691,34 +683,22 @@
       const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
       const propellers = [];
 
-      const frontLeft = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0xff0000 })
-      );
+      const frontLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
       frontLeft.position.set(-0.50, 0.2, 0.55);
       droneGroup.add(frontLeft);
       propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
 
-      const frontRight = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0xff0000 })
-      );
+      const frontRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
       frontRight.position.set(0.50, 0.2, 0.55);
       droneGroup.add(frontRight);
       propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
 
-      const rearLeft = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0x00ff00 })
-      );
+      const rearLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
       rearLeft.position.set(-0.50, 0.2, -0.55);
       droneGroup.add(rearLeft);
       propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
 
-      const rearRight = new THREE.Mesh(
-        propellerGeometry,
-        new THREE.MeshLambertMaterial({ color: 0x00ff00 })
-      );
+      const rearRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
       rearRight.position.set(0.50, 0.2, -0.55);
       droneGroup.add(rearRight);
       propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
@@ -770,9 +750,9 @@
         const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
         const hoopMesh = new THREE.Mesh(geometry, material);
         if (number <= 5) {
-          hoopMesh.rotation.set(0, 0, 0); // Face east.
+          hoopMesh.rotation.set(0, 0, 0);
         } else {
-          hoopMesh.rotation.set(0, Math.PI / 2, 0); // Face north.
+          hoopMesh.rotation.set(0, Math.PI / 2, 0);
         }
         const labelSprite = createHoopLabel(number);
         labelSprite.position.set(0, mainRadius + 2, 0);
@@ -810,6 +790,7 @@
       attachJoystick("leftJoystick", leftJoystickInput);
       attachJoystick("rightJoystick", rightJoystickInput);
 
+      // Single keys object.
       const keys = {};
       document.addEventListener("keydown", e => { keys[e.code] = true; });
       document.addEventListener("keyup", e => { keys[e.code] = false; });
@@ -879,7 +860,6 @@
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
-
         syncJoystickWithKeyboard();
 
         // --- Throttle control ---
@@ -888,19 +868,16 @@
         if (drone.position.y < 0.45) drone.position.y = 0.45;
         if (!takenOff && drone.position.y > 1.0) takenOff = true;
 
-        // --- Attitude & horizontal movement (if airborne) ---
+        // --- Attitude and horizontal movement ---
         if (drone.position.y > 0.46) {
           let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
           drone.yaw += yawSpeed * yawInput * delta;
-
           let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
           let desiredPitch = pitchInput * maxTilt;
           drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-
           let rollInput = (rightJoystickInput.dx) + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
           let desiredRoll = -rollInput * maxTilt;
           drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-
           const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
           const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
           const horizontalDisplacement = new THREE.Vector3();
@@ -933,10 +910,7 @@
         // --- Flight path drawing ---
         if (flightPathActive) {
           const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
-          if (
-            flightPathPoints.length === 0 ||
-            currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2
-          ) {
+          if (flightPathPoints.length === 0 || currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
             flightPathPoints.push(currentPos);
           }
           if (flightPathPoints.length > 1) {
@@ -1000,9 +974,7 @@
             landedAtHome = true;
             const msgDiv = document.getElementById("message");
             msgDiv.innerHTML = translations[currentLanguage].landingMessage;
-            document.getElementById("newGameButton").addEventListener("click", () => {
-              resetDrone();
-            });
+            document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
             sweetSound.currentTime = 0;
             sweetSound.play();
           }
@@ -1018,8 +990,8 @@
         const alt = (drone.position.y - 0.45).toFixed(1);
         const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
         document.getElementById("info").textContent =
-          translations[currentLanguage].altitude + ": " +
-          alt + " | " + translations[currentLanguage].distance + ": " + dist;
+          translations[currentLanguage].altitude + ": " + alt + " | " +
+          translations[currentLanguage].distance + ": " + dist;
 
         renderer.render(scene, camera);
         topViewRenderer.render(scene, topViewCamera);
