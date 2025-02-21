@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <!-- Meta viewport to prevent zooming and improve touch responsiveness -->
+    <!-- Meta viewport to improve touch responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Quadcopter Flight Simulation</title>
     <style>
@@ -122,7 +122,7 @@
         width: 300px;
         height: 300px;
         position: relative;
-        touch-action: none; /* Prevent touch scrolling */
+        touch-action: none;
         -ms-touch-action: none;
       }
       .joystick-base {
@@ -337,15 +337,20 @@
         return a + (b - a) * t;
       }
 
-      // Virtual Joystick helper using both Pointer and Touch events.
+      // Virtual Joystick helper using pointer and touch events.
+      // We add an "active" property so that when the joystick is being used,
+      // keyboard synchronization is prevented.
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
         let dragging = false;
         let pointerId = null;
         let center = { x: 0, y: 0 };
-        const maxDist = 40; // Maximum displacement (in pixels).
-
+        const maxDist = 40; // Maximum displacement in pixels.
+        
+        // Add a flag:
+        joystickObj.active = false;
+        
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist > maxDist) {
@@ -359,6 +364,7 @@
         
         function resetThumb() {
           dragging = false;
+          joystickObj.active = false;
           joystickObj.dx = 0;
           joystickObj.dy = 0;
           thumb.style.transform = "translate(-50%, -50%)";
@@ -368,6 +374,7 @@
         function onPointerDown(e) {
           if (e.pointerType === "mouse" && e.button !== 0) return;
           dragging = true;
+          joystickObj.active = true;
           pointerId = e.pointerId;
           const rect = container.getBoundingClientRect();
           center.x = rect.left + rect.width / 2;
@@ -391,6 +398,7 @@
         // --- Touch event handlers (fallback) ---
         function onTouchStart(e) {
           dragging = true;
+          joystickObj.active = true;
           const touch = e.touches[0];
           const rect = container.getBoundingClientRect();
           center.x = rect.left + rect.width / 2;
@@ -409,7 +417,6 @@
           e.preventDefault();
         }
 
-        // Attach pointer events (if supported) and always attach touch events.
         if (window.PointerEvent) {
           container.addEventListener("pointerdown", onPointerDown, { passive: false });
           container.addEventListener("pointermove", onPointerMove, { passive: false });
@@ -421,36 +428,40 @@
         container.addEventListener("touchend", onTouchEnd, { passive: false });
       }
 
-      // Synchronize keyboard events with joystick visuals.
+      // Synchronize keyboard control with virtual joysticks.
+      // If the joystick is active (being dragged), skip keyboard syncing.
       function syncJoystickWithKeyboard() {
         // Left joystick (Throttle & Yaw: WASD)
-        let leftKbDx = 0, leftKbDy = 0;
-        if (keys["KeyW"]) leftKbDy = -1;
-        if (keys["KeyS"]) leftKbDy = 1;
-        if (keys["KeyA"]) leftKbDx = -1;
-        if (keys["KeyD"]) leftKbDx = 1;
-        leftJoystickInput.dx = leftKbDx;
-        leftJoystickInput.dy = leftKbDy;
-        const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
-        if (leftKbDx !== 0 || leftKbDy !== 0) {
-          leftThumb.style.transform = `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`;
-        } else {
-          leftThumb.style.transform = "translate(-50%, -50%)";
+        if (!leftJoystickInput.active) {
+          let leftKbDx = 0, leftKbDy = 0;
+          if (keys["KeyW"]) leftKbDy = -1;
+          if (keys["KeyS"]) leftKbDy = 1;
+          if (keys["KeyA"]) leftKbDx = -1;
+          if (keys["KeyD"]) leftKbDx = 1;
+          leftJoystickInput.dx = leftKbDx;
+          leftJoystickInput.dy = leftKbDy;
+          const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
+          if (leftKbDx !== 0 || leftKbDy !== 0) {
+            leftThumb.style.transform = `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`;
+          } else {
+            leftThumb.style.transform = "translate(-50%, -50%)";
+          }
         }
-        
         // Right joystick (Pitch & Roll: Arrow keys)
-        let rightKbDx = 0, rightKbDy = 0;
-        if (keys["ArrowUp"]) rightKbDy = -1;
-        if (keys["ArrowDown"]) rightKbDy = 1;
-        if (keys["ArrowLeft"]) rightKbDx = -1;
-        if (keys["ArrowRight"]) rightKbDx = 1;
-        rightJoystickInput.dx = rightKbDx;
-        rightJoystickInput.dy = rightKbDy;
-        const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
-        if (rightKbDx !== 0 || rightKbDy !== 0) {
-          rightThumb.style.transform = `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`;
-        } else {
-          rightThumb.style.transform = "translate(-50%, -50%)";
+        if (!rightJoystickInput.active) {
+          let rightKbDx = 0, rightKbDy = 0;
+          if (keys["ArrowUp"]) rightKbDy = -1;
+          if (keys["ArrowDown"]) rightKbDy = 1;
+          if (keys["ArrowLeft"]) rightKbDx = -1;
+          if (keys["ArrowRight"]) rightKbDx = 1;
+          rightJoystickInput.dx = rightKbDx;
+          rightJoystickInput.dy = rightKbDy;
+          const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
+          if (rightKbDx !== 0 || rightKbDy !== 0) {
+            rightThumb.style.transform = `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`;
+          } else {
+            rightThumb.style.transform = "translate(-50%, -50%)";
+          }
         }
       }
 
@@ -717,7 +728,7 @@
         if (child instanceof THREE.Mesh) child.castShadow = true;
       });
 
-      // --- Blinking Yellow Spots on Propellers ---
+      // --- Blinking Spots on Propellers ---
       const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
       propellers.forEach((prop, index) => {
         const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
@@ -728,7 +739,7 @@
         prop.blinkSpot = blinkSpot;
       });
 
-      // --- Hoops (Objectives) ---
+      // --- Hoops Setup ---
       const totalHoops = 10;
       const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
 
@@ -788,11 +799,11 @@
       const bonusSound = new Audio("bonus.mp3");
       const sweetSound = new Audio("sweet.mp3");
 
-      // --- User Input: Virtual Joysticks & Keyboard ---
+      // --- User Input ---
       let translationSpeed = 50;
       const yawSpeed = 1.0;
       const throttleSpeed = 10;
-      const maxTilt = 0.4*Math.PI / 6;
+      const maxTilt = 0.3*Math.PI / 6;
 
       const leftJoystickInput = { dx: 0, dy: 0 };
       const rightJoystickInput = { dx: 0, dy: 0 };
@@ -800,8 +811,8 @@
       attachJoystick("rightJoystick", rightJoystickInput);
 
       const keys = {};
-      document.addEventListener("keydown", (e) => { keys[e.code] = true; });
-      document.addEventListener("keyup", (e) => { keys[e.code] = false; });
+      document.addEventListener("keydown", e => { keys[e.code] = true; });
+      document.addEventListener("keyup", e => { keys[e.code] = false; });
 
       const speedSlider = document.getElementById("speedSlider");
       speedSlider.addEventListener("input", function () {
@@ -832,34 +843,35 @@
       });
 
       function syncJoystickWithKeyboard() {
-        // Left joystick (Throttle & Yaw: WASD)
-        let leftKbDx = 0, leftKbDy = 0;
-        if (keys["KeyW"]) leftKbDy = -1;
-        if (keys["KeyS"]) leftKbDy = 1;
-        if (keys["KeyA"]) leftKbDx = -1;
-        if (keys["KeyD"]) leftKbDx = 1;
-        leftJoystickInput.dx = leftKbDx;
-        leftJoystickInput.dy = leftKbDy;
-        const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
-        if (leftKbDx !== 0 || leftKbDy !== 0) {
-          leftThumb.style.transform = `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`;
-        } else {
-          leftThumb.style.transform = "translate(-50%, -50%)";
+        if (!leftJoystickInput.active) {
+          let leftKbDx = 0, leftKbDy = 0;
+          if (keys["KeyW"]) leftKbDy = -1;
+          if (keys["KeyS"]) leftKbDy = 1;
+          if (keys["KeyA"]) leftKbDx = -1;
+          if (keys["KeyD"]) leftKbDx = 1;
+          leftJoystickInput.dx = leftKbDx;
+          leftJoystickInput.dy = leftKbDy;
+          const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
+          if (leftKbDx !== 0 || leftKbDy !== 0) {
+            leftThumb.style.transform = `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`;
+          } else {
+            leftThumb.style.transform = "translate(-50%, -50%)";
+          }
         }
-
-        // Right joystick (Pitch & Roll: Arrow keys)
-        let rightKbDx = 0, rightKbDy = 0;
-        if (keys["ArrowUp"]) rightKbDy = -1;
-        if (keys["ArrowDown"]) rightKbDy = 1;
-        if (keys["ArrowLeft"]) rightKbDx = -1;
-        if (keys["ArrowRight"]) rightKbDx = 1;
-        rightJoystickInput.dx = rightKbDx;
-        rightJoystickInput.dy = rightKbDy;
-        const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
-        if (rightKbDx !== 0 || rightKbDy !== 0) {
-          rightThumb.style.transform = `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`;
-        } else {
-          rightThumb.style.transform = "translate(-50%, -50%)";
+        if (!rightJoystickInput.active) {
+          let rightKbDx = 0, rightKbDy = 0;
+          if (keys["ArrowUp"]) rightKbDy = -1;
+          if (keys["ArrowDown"]) rightKbDy = 1;
+          if (keys["ArrowLeft"]) rightKbDx = -1;
+          if (keys["ArrowRight"]) rightKbDx = 1;
+          rightJoystickInput.dx = rightKbDx;
+          rightJoystickInput.dy = rightKbDy;
+          const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
+          if (rightKbDx !== 0 || rightKbDy !== 0) {
+            rightThumb.style.transform = `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`;
+          } else {
+            rightThumb.style.transform = "translate(-50%, -50%)";
+          }
         }
       }
 
