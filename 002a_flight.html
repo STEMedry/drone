@@ -983,10 +983,9 @@
       });
       
       // RTH Button event listener:
-      // Now, if the drone's altitude is less than 1, the button will not respond.
+      // If the drone's altitude is less than 1, the button will not respond.
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) {
-          // Do nothing if altitude is less than 1.
           return;
         }
         rthActive = true;
@@ -1072,8 +1071,12 @@
             drone.yaw = lerp(drone.yaw, 0, 0.05);
             drone.pitch = lerp(drone.pitch, 0, 0.1);
             drone.roll = lerp(drone.roll, 0, 0.1);
+            // Stop Land1.mp3 when landing finishes.
             if (drone.position.y <= 0.45 + 0.01) {
               drone.position.y = 0.45;
+              // Stop Land1.mp3 playing:
+              landAudio.pause();
+              landAudio.currentTime = 0;
               rthActive = false;
               msgDiv.style.display = "none";
               rthBtn.style.backgroundColor = "#2196f3";
