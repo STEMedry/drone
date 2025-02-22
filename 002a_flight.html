@@ -1030,12 +1030,6 @@
           } else {
             msgDiv.innerHTML = "Automatic Landing";
             msgDiv.classList.remove("blinking");
-            if (rthAudioPlaying) {
-              rthAudio.pause();
-              rthAudio.currentTime = 0;
-              rthAudioPlaying = false;
-            }
-            // Use a new Audio instance for landAudio if not yet played.
             if (!landAudioPlayed) {
               landAudio.play().catch(err => console.log("land audio error", err));
               landAudioPlayed = true;
@@ -1065,7 +1059,9 @@
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
           
-          if (drone.position.y > 0.46) {
+          // When drone is sufficiently above ground, allow yaw/pitch/roll.
+          // Otherwise, when altitude is nearly 0 (i.e. drone.position.y near 0.45), disable those controls.
+          if (drone.position.y > 0.50) {
             let yawInput =
               (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
@@ -1095,7 +1091,7 @@
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
       
         propellers.forEach(prop => {
-          if (drone.position.y > 0.46) { prop.currentSpinSpeed = prop.spinSpeed; }
+          if (drone.position.y > 0.45) { prop.currentSpinSpeed = prop.spinSpeed; }
           else { prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); }
           prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
           let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
@@ -1130,7 +1126,7 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
-              // Create new Audio instance for bonus sound each time.
+              // Play bonus sound when passing each hoop.
               new Audio(bonusSoundSrc).play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
@@ -1169,7 +1165,7 @@
             const msgDiv = document.getElementById("message");
             msgDiv.innerHTML = translations[currentLanguage].landingMessage;
             document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
-            // Create a new Audio instance for sweet sound
+            // Play sweet sound when landing is finished.
             new Audio(sweetSoundSrc).play().catch(err => console.log("Error playing sweetSound:", err));
             if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
               drawHomeMarker(homeMarker.userData.ctx, "yellow");
