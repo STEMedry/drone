@@ -727,593 +727,598 @@
         }
       };
       
-      function updateUIText() {
-        document.getElementById("title").innerHTML = translations[currentLanguage].title;
-        document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
-        const flightToggle = document.getElementById("toggleFlightPath");
-        if (flightToggle) {
-          flightToggle.innerHTML = flightPathActive
-            ? translations[currentLanguage].hideFlightPath
-            : translations[currentLanguage].showFlightPath;
+function updateUIText() {
+  document.getElementById("title").innerHTML = translations[currentLanguage].title;
+  document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
+  const flightToggle = document.getElementById("toggleFlightPath");
+  if (flightToggle) {
+    flightToggle.innerHTML = flightPathActive
+      ? translations[currentLanguage].hideFlightPath
+      : translations[currentLanguage].showFlightPath;
+  }
+  document.querySelector("#leftJoystick .label-top").textContent =
+    translations[currentLanguage].throttleUp;
+  document.querySelector("#leftJoystick .label-bottom").textContent =
+    translations[currentLanguage].throttleDown;
+  document.querySelector("#leftJoystick .label-left").textContent =
+    translations[currentLanguage].yawLeft;
+  document.querySelector("#leftJoystick .label-right").textContent =
+    translations[currentLanguage].yawRight;
+  document.querySelector("#rightJoystick .label-top").textContent =
+    translations[currentLanguage].pitchForward;
+  document.querySelector("#rightJoystick .label-bottom").textContent =
+    translations[currentLanguage].pitchBackward;
+  document.querySelector("#rightJoystick .label-left").textContent =
+    translations[currentLanguage].rollLeft;
+  document.querySelector("#rightJoystick .label-right").textContent =
+    translations[currentLanguage].rollRight;
+  document.getElementById("zoomIn").innerHTML =
+    translations[currentLanguage].zoomIn;
+  document.getElementById("zoomOut").innerHTML =
+    translations[currentLanguage].zoomOut;
+}
+
+document.getElementById("langToggle").addEventListener("click", function () {
+  if (currentLanguage === "en") {
+    currentLanguage = "zh";
+    this.innerHTML = "English";
+  } else {
+    currentLanguage = "en";
+    this.innerHTML = "繁體中文";
+  }
+  updateUIText();
+});
+
+// --- Main Renderer Setup ---
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x87ceeb);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+// --- Top View Renderer & Orthographic Camera ---
+const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+topViewRenderer.setSize(200, 200);
+topViewRenderer.setClearColor(0x000000, 0);
+const topViewDiv = document.getElementById("topViewRenderer");
+topViewDiv.appendChild(topViewRenderer.domElement);
+const d = 400;
+const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
+topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
+topViewCamera.lookAt(topViewTarget);
+topViewCamera.zoom = 5;
+topViewCamera.updateProjectionMatrix();
+
+document.getElementById("zoomIn").addEventListener("click", () => {
+  topViewCamera.zoom *= 1.1;
+  topViewCamera.updateProjectionMatrix();
+});
+document.getElementById("zoomOut").addEventListener("click", () => {
+  topViewCamera.zoom /= 1.1;
+  topViewCamera.updateProjectionMatrix();
+});
+
+// --- Ground & Grid ---
+const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xededed });
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
+scene.add(grid);
+
+// --- Home Marker ---
+const homeMarker = createHomeMarker();
+scene.add(homeMarker);
+
+// --- Lighting ---
+const ambientLight = new THREE.AmbientLight(0x404040);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(100, 200, 100);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
+directionalLight.shadow.camera.near = 0.5;
+directionalLight.shadow.camera.far = 500;
+directionalLight.shadow.bias = -0.001;
+scene.add(directionalLight);
+
+// --- Drone Setup ---
+const droneGroup = new THREE.Group();
+droneGroup.rotation.order = "YXZ";
+scene.add(droneGroup);
+const drone = {
+  position: new THREE.Vector3(0, 0.45, 0),
+  yaw: 0,
+  pitch: 0,
+  roll: 0
+};
+const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
+const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff });
+const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
+droneGroup.add(droneBody);
+function createDroneLabel(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "bold 150px Arial";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.center = new THREE.Vector2(0.5, 0.5);
+  texture.rotation = Math.PI;
+  texture.needsUpdate = true;
+  const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+  const geometry = new THREE.PlaneGeometry(0.9, 0.3);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(0, 0.15 + 0.01, 0);
+  return mesh;
+}
+const label = createDroneLabel("EdUHK");
+droneGroup.add(label);
+
+// --- Propellers Setup ---
+const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
+const propellers = [];
+const frontLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+frontLeft.position.set(-0.50, 0.2, 0.55);
+droneGroup.add(frontLeft);
+propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
+const frontRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+frontRight.position.set(0.50, 0.2, 0.55);
+droneGroup.add(frontRight);
+propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
+const rearLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
+rearLeft.position.set(-0.50, 0.2, -0.55);
+droneGroup.add(rearLeft);
+propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
+const rearRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
+rearRight.position.set(0.50, 0.2, -0.55);
+droneGroup.add(rearRight);
+propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
+droneGroup.scale.set(3, 3, 3);
+droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
+
+// --- Blinking Spots on Propellers ---
+const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+propellers.forEach((prop, index) => {
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const blinkSpot = new THREE.Mesh(blinkSphereGeometry, mat);
+  blinkSpot.position.set(0, 0, 0);
+  prop.mesh.add(blinkSpot);
+  prop.blinkOffset = index * (Math.PI / 2);
+  prop.blinkSpot = blinkSpot;
+});
+
+// --- Hoops Setup ---
+const totalHoops = 10;
+const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+function createHoopLabel(number) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "yellow";
+  ctx.font = "Bold 120px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(number.toString(), canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+  const sprite = new THREE.Sprite(spriteMaterial);
+  sprite.scale.set(4, 4, 1);
+  return sprite;
+}
+function createHoop(number) {
+  const mainRadius = 9;
+  const tubeRadius = 0.2;
+  const radialSegments = 16;
+  const tubularSegments = 100;
+  const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
+  const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
+  const hoopMesh = new THREE.Mesh(geometry, material);
+  if (number <= 5) { hoopMesh.rotation.set(0, 0, 0); }
+  else { hoopMesh.rotation.set(0, Math.PI / 2, 0); }
+  const labelSprite = createHoopLabel(number);
+  labelSprite.position.set(0, mainRadius + 2, 0);
+  hoopMesh.add(labelSprite);
+  return {
+    mesh: hoopMesh,
+    mainRadius: mainRadius,
+    tubeRadius: tubeRadius,
+    entered: false,
+    passed: false,
+    number: number,
+    labelSprite: labelSprite
+  };
+}
+const hoops = [];
+for (let i = 0; i < totalHoops; i++) {
+  const hoop = createHoop(i + 1);
+  hoop.mesh.position.set((Math.random() - 0.5) * 160, altitudes[i], (Math.random() - 0.5) * 160);
+  scene.add(hoop.mesh);
+  hoops.push(hoop);
+}
+
+// --- User Input ---
+let translationSpeed = 50;
+const yawSpeed = 1.0;
+const throttleSpeed = 10;
+const maxTilt = 0.5 * Math.PI / 6;
+// Use a dead zone threshold for joystick throttle input to avoid accidental touches.
+const throttleDeadZone = 0.2;
+const leftJoystickInput = { dx: 0, dy: 0 };
+const rightJoystickInput = { dx: 0, dy: 0 };
+attachJoystick("leftJoystick", leftJoystickInput);
+attachJoystick("rightJoystick", rightJoystickInput);
+const keys = {};
+document.addEventListener("keydown", e => { keys[e.code] = true; });
+document.addEventListener("keyup", e => { keys[e.code] = false; });
+const speedSlider = document.getElementById("speedSlider");
+speedSlider.addEventListener("input", function () { translationSpeed = parseFloat(this.value); });
+
+let flightPathActive = false;
+// Toggle flight path visibility and reset points when toggled.
+const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
+toggleFlightPathBtn.addEventListener("click", function () {
+  flightPathActive = !flightPathActive;
+  if (flightPathActive) {
+    toggleFlightPathBtn.innerHTML = translations[currentLanguage].hideFlightPath;
+    flightPathPoints = [];
+    if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+  } else {
+    toggleFlightPathBtn.innerHTML = translations[currentLanguage].showFlightPath;
+    if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+  }
+});
+
+// RTH Button event listener: ignore if altitude is less than 1.
+document.getElementById("rthBtn").addEventListener("click", function () {
+  if (drone.position.y < 1) { return; }
+  // Stop flyAudio immediately.
+  if (flyAudioPlaying) {
+    flyAudio.pause();
+    flyAudio.currentTime = 0;
+    flyAudioPlaying = false;
+  }
+  rthActive = true;
+  this.style.backgroundColor = "grey";
+  const msgDiv = document.getElementById("message");
+  msgDiv.style.display = "block";
+  msgDiv.innerHTML = "Return-to-Home in Progress";
+  msgDiv.classList.add("blinking");
+});
+
+function syncJoystickWithKeyboard() {
+  if (!leftJoystickInput.active) {
+    let leftKbDx = 0, leftKbDy = 0;
+    if (keys["KeyW"]) leftKbDy = -1;
+    if (keys["KeyS"]) leftKbDy = 1;
+    if (keys["KeyA"]) leftKbDx = -1;
+    if (keys["KeyD"]) leftKbDx = 1;
+    leftJoystickInput.dx = leftKbDx;
+    leftJoystickInput.dy = leftKbDy;
+    const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
+    leftThumb.style.transform = (leftKbDx !== 0 || leftKbDy !== 0)
+      ? `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`
+      : "translate(-50%, -50%)";
+  }
+  if (!rightJoystickInput.active) {
+    let rightKbDx = 0, rightKbDy = 0;
+    if (keys["ArrowUp"]) rightKbDy = -1;
+    if (keys["ArrowDown"]) rightKbDy = 1;
+    if (keys["ArrowLeft"]) rightKbDx = -1;
+    if (keys["ArrowRight"]) rightKbDx = 1;
+    rightJoystickInput.dx = rightKbDx;
+    rightJoystickInput.dy = rightKbDy;
+    const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
+    rightThumb.style.transform = (rightKbDx !== 0 || rightKbDy !== 0)
+      ? `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`
+      : "translate(-50%, -50%)";
+  }
+}
+
+const clock = new THREE.Clock();
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+
+  // If RTH is active, ensure flyAudio stops.
+  if (rthActive && flyAudioPlaying) {
+    flyAudio.pause();
+    flyAudio.currentTime = 0;
+    flyAudioPlaying = false;
+  }
+
+  // If the drone is frozen (mission complete and landed), do not update manual control.
+  if (!disableDroneControls) {
+    if (rthActive) {
+      // Disable manual controls during RTH.
+      const msgDiv = document.getElementById("message");
+      const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
+      if (hDist > 1) {
+        msgDiv.innerHTML = "Return-to-Home in Progress";
+        msgDiv.classList.add("blinking");
+        if (!rthAudioPlaying && takenOff) {
+          rthAudio.play().catch(err => console.log("RTH audio error", err));
+          rthAudioPlaying = true;
         }
-        document.querySelector("#leftJoystick .label-top").textContent =
-          translations[currentLanguage].throttleUp;
-        document.querySelector("#leftJoystick .label-bottom").textContent =
-          translations[currentLanguage].throttleDown;
-        document.querySelector("#leftJoystick .label-left").textContent =
-          translations[currentLanguage].yawLeft;
-        document.querySelector("#leftJoystick .label-right").textContent =
-          translations[currentLanguage].yawRight;
-        document.querySelector("#rightJoystick .label-top").textContent =
-          translations[currentLanguage].pitchForward;
-        document.querySelector("#rightJoystick .label-bottom").textContent =
-          translations[currentLanguage].pitchBackward;
-        document.querySelector("#rightJoystick .label-left").textContent =
-          translations[currentLanguage].rollLeft;
-        document.querySelector("#rightJoystick .label-right").textContent =
-          translations[currentLanguage].rollRight;
-        document.getElementById("zoomIn").innerHTML =
-          translations[currentLanguage].zoomIn;
-        document.getElementById("zoomOut").innerHTML =
-          translations[currentLanguage].zoomOut;
-      }
-      
-      document.getElementById("langToggle").addEventListener("click", function () {
-        if (currentLanguage === "en") {
-          currentLanguage = "zh";
-          this.innerHTML = "English";
-        } else {
-          currentLanguage = "en";
-          this.innerHTML = "繁體中文";
+        const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
+        const desiredYaw = Math.atan2(dir.x, dir.z);
+        drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
+        drone.position.x += dir.x * 30 * delta;
+        drone.position.z += dir.z * 30 * delta;
+      } else {
+        msgDiv.innerHTML = "Automatic Landing";
+        msgDiv.classList.remove("blinking");
+        if (rthAudioPlaying) {
+          rthAudio.pause();
+          rthAudio.currentTime = 0;
+          rthAudioPlaying = false;
         }
-        updateUIText();
-      });
-      
-      // --- Main Renderer Setup ---
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x87ceeb);
-      renderer.shadowMap.enabled = true;
-      document.body.appendChild(renderer.domElement);
-      
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-      
-      // --- Top View Renderer & Orthographic Camera ---
-      const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      topViewRenderer.setSize(200, 200);
-      topViewRenderer.setClearColor(0x000000, 0);
-      const topViewDiv = document.getElementById("topViewRenderer");
-      topViewDiv.appendChild(topViewRenderer.domElement);
-      const d = 400;
-      const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
-      topViewCamera.position.set(topViewTarget.x, topViewHeight, topViewTarget.z);
-      topViewCamera.lookAt(topViewTarget);
-      topViewCamera.zoom = 5;
-      topViewCamera.updateProjectionMatrix();
-      
-      document.getElementById("zoomIn").addEventListener("click", () => {
-        topViewCamera.zoom *= 1.1;
-        topViewCamera.updateProjectionMatrix();
-      });
-      document.getElementById("zoomOut").addEventListener("click", () => {
-        topViewCamera.zoom /= 1.1;
-        topViewCamera.updateProjectionMatrix();
-      });
-      
-      // --- Ground & Grid ---
-      const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
-      const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xededed });
-      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-      ground.rotation.x = -Math.PI / 2;
-      ground.receiveShadow = true;
-      scene.add(ground);
-      const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
-      scene.add(grid);
-      
-      // --- Home Marker ---
-      const homeMarker = createHomeMarker();
-      scene.add(homeMarker);
-      
-      // --- Lighting ---
-      const ambientLight = new THREE.AmbientLight(0x404040);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(100, 200, 100);
-      directionalLight.castShadow = true;
-      directionalLight.shadow.mapSize.width = 2048;
-      directionalLight.shadow.mapSize.height = 2048;
-      directionalLight.shadow.camera.near = 0.5;
-      directionalLight.shadow.camera.far = 500;
-      directionalLight.shadow.bias = -0.001;
-      scene.add(directionalLight);
-      
-      // --- Drone Setup ---
-      const droneGroup = new THREE.Group();
-      droneGroup.rotation.order = "YXZ";
-      scene.add(droneGroup);
-      const drone = {
-        position: new THREE.Vector3(0, 0.45, 0),
-        yaw: 0,
-        pitch: 0,
-        roll: 0
-      };
-      const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
-      const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff });
-      const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
-      droneGroup.add(droneBody);
-      function createDroneLabel(text) {
-        const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 128;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "bold 150px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.center = new THREE.Vector2(0.5, 0.5);
-        texture.rotation = Math.PI;
-        texture.needsUpdate = true;
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-        const geometry = new THREE.PlaneGeometry(0.9, 0.3);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(0, 0.15 + 0.01, 0);
-        return mesh;
-      }
-      const label = createDroneLabel("EdUHK");
-      droneGroup.add(label);
-      
-      // --- Propellers Setup ---
-      const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
-      const propellers = [];
-      const frontLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-      frontLeft.position.set(-0.50, 0.2, 0.55);
-      droneGroup.add(frontLeft);
-      propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
-      const frontRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-      frontRight.position.set(0.50, 0.2, 0.55);
-      droneGroup.add(frontRight);
-      propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
-      const rearLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
-      rearLeft.position.set(-0.50, 0.2, -0.55);
-      droneGroup.add(rearLeft);
-      propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
-      const rearRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
-      rearRight.position.set(0.50, 0.2, -0.55);
-      droneGroup.add(rearRight);
-      propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
-      droneGroup.scale.set(3, 3, 3);
-      droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
-      
-      // --- Blinking Spots on Propellers ---
-      const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-      propellers.forEach((prop, index) => {
-        const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-        const blinkSpot = new THREE.Mesh(blinkSphereGeometry, mat);
-        blinkSpot.position.set(0, 0, 0);
-        prop.mesh.add(blinkSpot);
-        prop.blinkOffset = index * (Math.PI / 2);
-        prop.blinkSpot = blinkSpot;
-      });
-      
-      // --- Hoops Setup ---
-      const totalHoops = 10;
-      const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-      function createHoopLabel(number) {
-        const canvas = document.createElement("canvas");
-        canvas.width = 128;
-        canvas.height = 128;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "yellow";
-        ctx.font = "Bold 120px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(number.toString(), canvas.width / 2, canvas.height / 2);
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(4, 4, 1);
-        return sprite;
-      }
-      function createHoop(number) {
-        const mainRadius = 9;
-        const tubeRadius = 0.2;
-        const radialSegments = 16;
-        const tubularSegments = 100;
-        const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, radialSegments, tubularSegments);
-        const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
-        const hoopMesh = new THREE.Mesh(geometry, material);
-        if (number <= 5) { hoopMesh.rotation.set(0, 0, 0); }
-        else { hoopMesh.rotation.set(0, Math.PI / 2, 0); }
-        const labelSprite = createHoopLabel(number);
-        labelSprite.position.set(0, mainRadius + 2, 0);
-        hoopMesh.add(labelSprite);
-        return {
-          mesh: hoopMesh,
-          mainRadius: mainRadius,
-          tubeRadius: tubeRadius,
-          entered: false,
-          passed: false,
-          number: number,
-          labelSprite: labelSprite
-        };
-      }
-      const hoops = [];
-      for (let i = 0; i < totalHoops; i++) {
-        const hoop = createHoop(i + 1);
-        hoop.mesh.position.set((Math.random() - 0.5) * 160, altitudes[i], (Math.random() - 0.5) * 160);
-        scene.add(hoop.mesh);
-        hoops.push(hoop);
-      }
-      
-      // --- User Input ---
-      let translationSpeed = 50;
-      const yawSpeed = 1.0;
-      const throttleSpeed = 10;
-      const maxTilt = 0.5 * Math.PI / 6;
-      // Use a dead zone threshold for joystick throttle input to avoid accidental touches.
-      const throttleDeadZone = 0.2;
-      const leftJoystickInput = { dx: 0, dy: 0 };
-      const rightJoystickInput = { dx: 0, dy: 0 };
-      attachJoystick("leftJoystick", leftJoystickInput);
-      attachJoystick("rightJoystick", rightJoystickInput);
-      const keys = {};
-      document.addEventListener("keydown", e => { keys[e.code] = true; });
-      document.addEventListener("keyup", e => { keys[e.code] = false; });
-      const speedSlider = document.getElementById("speedSlider");
-      speedSlider.addEventListener("input", function () { translationSpeed = parseFloat(this.value); });
-      
-      let flightPathActive = false;
-      // Toggle flight path visibility and reset points when toggled.
-      const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
-      toggleFlightPathBtn.addEventListener("click", function () {
-        flightPathActive = !flightPathActive;
-        if (flightPathActive) {
-          toggleFlightPathBtn.innerHTML = translations[currentLanguage].hideFlightPath;
-          flightPathPoints = [];
-          if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
-        } else {
-          toggleFlightPathBtn.innerHTML = translations[currentLanguage].showFlightPath;
-          if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+        // Play land1.mp3 when above the home marker (and only if already in flight).
+        if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2 && takenOff) {
+          setTimeout(function() {
+            landAudio.play().catch(err => console.log("land audio error", err));
+          }, 100);
+          landAudioPlayed = true;
         }
-      });
-      
-      // RTH Button event listener: ignore if altitude is less than 1.
-      document.getElementById("rthBtn").addEventListener("click", function () {
-        if (drone.position.y < 1) { return; }
-        // Stop flyAudio immediately.
+        // Automatic descent.
+        if (drone.position.y > 0.45) {
+          drone.position.y -= 5 * delta;
+        }
+        drone.yaw = lerp(drone.yaw, 0, 0.05);
+        drone.pitch = lerp(drone.pitch, 0, 0.1);
+        drone.roll = lerp(drone.roll, 0, 0.1);
+        if (drone.position.y <= 0.45 + 0.01) {
+          drone.position.y = 0.45;
+          landAudio.pause();
+          landAudio.currentTime = 0;
+          rthActive = false;
+          msgDiv.style.display = "none";
+          rthBtn.style.backgroundColor = "#2196f3";
+          rthAudioPlaying = false;
+          landAudioPlayed = false;
+          // Also freeze the drone once landed so that it cannot move.
+          disableDroneControls = true;
+        }
+      }
+    } else {
+      syncJoystickWithKeyboard();
+      // Use a dead zone: throttle input only if |dy| >= threshold.
+      let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+      let throttleInput = Math.abs(rawThrottle) >= throttleDeadZone ? rawThrottle : 0;
+      drone.position.y += throttleInput * throttleSpeed * delta;
+      if (drone.position.y < 0.45) drone.position.y = 0.45;
+
+      // Set takenOff only if throttle input was significant and altitude > 1.0.
+      if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
+        takenOff = true;
+      }
+
+      if (drone.position.y > 0.45) {
+        let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+        drone.yaw += yawSpeed * yawInput * delta;
+        let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+        let desiredPitch = pitchInput * maxTilt;
+        drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
+        let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+        let desiredRoll = -rollInput * maxTilt;
+        drone.roll = lerp(drone.roll, desiredRoll, 0.1);
+        const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+        const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+        const horizontalDisplacement = new THREE.Vector3();
+        horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                               .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+        horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+        drone.position.add(horizontalDisplacement);
+      } else {
+        drone.yaw = 0;
+        drone.pitch = 0;
+        drone.roll = 0;
+      }
+
+      if (drone.position.y > 1.0 && takenOff) {
+        if (!flyAudioPlaying) {
+          flyAudio.play().catch(err => console.log("Error playing flyAudio", err));
+          flyAudioPlaying = true;
+          flyAudio.volume = 0;
+        }
+        if (flyAudio.volume < 1.0) {
+          flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
+        }
+      } else {
         if (flyAudioPlaying) {
           flyAudio.pause();
           flyAudio.currentTime = 0;
           flyAudioPlaying = false;
         }
-        rthActive = true;
-        this.style.backgroundColor = "grey";
-        const msgDiv = document.getElementById("message");
-        msgDiv.style.display = "block";
-        msgDiv.innerHTML = "Return-to-Home in Progress";
-        msgDiv.classList.add("blinking");
-      });
-      
-      function syncJoystickWithKeyboard() {
-        if (!leftJoystickInput.active) {
-          let leftKbDx = 0, leftKbDy = 0;
-          if (keys["KeyW"]) leftKbDy = -1;
-          if (keys["KeyS"]) leftKbDy = 1;
-          if (keys["KeyA"]) leftKbDx = -1;
-          if (keys["KeyD"]) leftKbDx = 1;
-          leftJoystickInput.dx = leftKbDx;
-          leftJoystickInput.dy = leftKbDy;
-          const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
-          leftThumb.style.transform = (leftKbDx !== 0 || leftKbDy !== 0)
-            ? `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`
-            : "translate(-50%, -50%)";
-        }
-        if (!rightJoystickInput.active) {
-          let rightKbDx = 0, rightKbDy = 0;
-          if (keys["ArrowUp"]) rightKbDy = -1;
-          if (keys["ArrowDown"]) rightKbDy = 1;
-          if (keys["ArrowLeft"]) rightKbDx = -1;
-          if (keys["ArrowRight"]) rightKbDx = 1;
-          rightJoystickInput.dx = rightKbDx;
-          rightJoystickInput.dy = rightKbDy;
-          const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
-          rightThumb.style.transform = (rightKbDx !== 0 || rightKbDy !== 0)
-            ? `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`
-            : "translate(-50%, -50%)";
-        }
       }
-      
-      const clock = new THREE.Clock();
-      function animate() {
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-      
-        // If RTH is active, ensure flyAudio stops.
-        if (rthActive && flyAudioPlaying) {
-          flyAudio.pause();
-          flyAudio.currentTime = 0;
-          flyAudioPlaying = false;
-        }
-      
-        // If the drone is frozen (mission complete and landed), do not update manual control.
-        if (!disableDroneControls) {
-          if (rthActive) {
-            // Disable manual controls during RTH.
-            const msgDiv = document.getElementById("message");
-            const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
-            if (hDist > 1) {
-              msgDiv.innerHTML = "Return-to-Home in Progress";
-              msgDiv.classList.add("blinking");
-              if (!rthAudioPlaying) {
-                rthAudio.play().catch(err => console.log("RTH audio error", err));
-                rthAudioPlaying = true;
-              }
-              const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
-              const desiredYaw = Math.atan2(dir.x, dir.z);
-              drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
-              drone.position.x += dir.x * 30 * delta;
-              drone.position.z += dir.z * 30 * delta;
-            } else {
-              msgDiv.innerHTML = "Automatic Landing";
-              msgDiv.classList.remove("blinking");
-              if (rthAudioPlaying) {
-                rthAudio.pause();
-                rthAudio.currentTime = 0;
-                rthAudioPlaying = false;
-              }
-              // Play land1.mp3 when above the home marker (and only if already in flight).
-              if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2 && takenOff) {
-                setTimeout(function() {
-                  landAudio.play().catch(err => console.log("land audio error", err));
-                }, 100);
-                landAudioPlayed = true;
-              }
-              // Automatic descent.
-              if (drone.position.y > 0.45) {
-                drone.position.y -= 5 * delta;
-              }
-              drone.yaw = lerp(drone.yaw, 0, 0.05);
-              drone.pitch = lerp(drone.pitch, 0, 0.1);
-              drone.roll = lerp(drone.roll, 0, 0.1);
-              if (drone.position.y <= 0.45 + 0.01) {
-                drone.position.y = 0.45;
-                landAudio.pause();
-                landAudio.currentTime = 0;
-                rthActive = false;
-                msgDiv.style.display = "none";
-                rthBtn.style.backgroundColor = "#2196f3";
-                rthAudioPlaying = false;
-                landAudioPlayed = false;
-                // Also freeze the drone once landed so that it cannot move.
-                disableDroneControls = true;
-              }
-            }
-          } else {
-            syncJoystickWithKeyboard();
-            // Use a dead zone: throttle input only if |dy| >= threshold.
-            let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
-            let throttleInput = Math.abs(rawThrottle) >= throttleDeadZone ? rawThrottle : 0;
-            drone.position.y += throttleInput * throttleSpeed * delta;
-            if (drone.position.y < 0.45) drone.position.y = 0.45;
-      
-            // Set takenOff only if throttle input was significant and altitude > 1.0.
-            if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
-              takenOff = true;
-            }
-      
-            if (drone.position.y > 0.45) {
-              let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
-              drone.yaw += yawSpeed * yawInput * delta;
-              let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
-              let desiredPitch = pitchInput * maxTilt;
-              drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-              let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
-              let desiredRoll = -rollInput * maxTilt;
-              drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-              const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-              const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-              const horizontalDisplacement = new THREE.Vector3();
-              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                     .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-              horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-              drone.position.add(horizontalDisplacement);
-            } else {
-              drone.yaw = 0;
-              drone.pitch = 0;
-              drone.roll = 0;
-            }
-      
-            if (drone.position.y > 1.0) {
-              if (!flyAudioPlaying) {
-                flyAudio.play().catch(err => console.log("Error playing flyAudio", err));
-                flyAudioPlaying = true;
-                flyAudio.volume = 0;
-              }
-              if (flyAudio.volume < 1.0) {
-                flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
-              }
-            } else {
-              if (flyAudioPlaying) {
-                flyAudio.pause();
-                flyAudio.currentTime = 0;
-                flyAudioPlaying = false;
-              }
-            }
-          }
-        } else {
-          // If drone controls are disabled (mission completed and landed)
-          if (flyAudioPlaying) {
-            flyAudio.pause();
-            flyAudio.currentTime = 0;
-            flyAudioPlaying = false;
-          }
-        }
-      
-        droneGroup.position.copy(drone.position);
-        // Apply rotations
-        droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-      
-        propellers.forEach(prop => {
-          if (drone.position.y > 0.45) { 
-            prop.currentSpinSpeed = prop.spinSpeed; 
-          } else { 
-            prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); 
-          }
-          prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
-          let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
-          prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
-        });
-      
-        hoops.forEach(hoop => {
-          const dToHoop = drone.position.distanceTo(hoop.mesh.position);
-          if (!hoop.entered && dToHoop < hoop.mainRadius) {
-            hoop.entered = true;
-          }
-          if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff) {
-            if (hoop.number === currentExpectedHoop) {
-              hoop.passed = true;
-              hoop.mesh.material.color.set(0x00ff00);
-              bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
-              currentExpectedHoop++;
-              const cell = document.getElementById("hoopCell-" + hoop.number);
-              if (cell) cell.classList.add("passed");
-              const canvas = hoop.labelSprite.material.map.image;
-              const ctx = canvas.getContext("2d");
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
-              ctx.fillStyle = "green";
-              ctx.font = "Bold 80px Arial";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
-              hoop.labelSprite.material.map.needsUpdate = true;
-            }
-            hoop.entered = false;
-          }
-        });
-      
-        if (!allHoopsPassed) {
-          let passedCount = 0;
-          hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
-          if (passedCount === totalHoops) {
-            allHoopsPassed = true;
-            const msgDiv = document.getElementById("message");
-            msgDiv.style.display = "block";
-            msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
-          }
-        }
-      
-        // Once mission completed and not yet landed, check for landing:
-        if (allHoopsPassed && !landedAtHome) {
-          const dX = drone.position.x;
-          const dZ = drone.position.z;
-          const distToHome = Math.sqrt(dX * dX + dZ * dZ);
-          if (distToHome < 10 && drone.position.y < 1 && takenOff) {
-            landedAtHome = true;
-            const msgDiv = document.getElementById("message");
-            msgDiv.innerHTML = translations[currentLanguage].landingMessage;
-            document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
-            sweetSound.play().catch(err => console.log("Error playing sweetSound:", err));
-            if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
-              drawHomeMarker(homeMarker.userData.ctx, "yellow");
-              homeMarker.userData.texture.needsUpdate = true;
-            }
-            // Freeze drone controls so that it cannot move
-            disableDroneControls = true;
-          }
-        }
-      
-        // Update camera
-        const cameraOffset = new THREE.Vector3(0, 5, -15);
-        const quat = new THREE.Quaternion();
-        quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
-        const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
-        camera.position.copy(drone.position.clone().add(rotatedOffset));
-        camera.lookAt(drone.position);
-      
-        const alt = (drone.position.y - 0.45).toFixed(1);
-        const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
-        document.getElementById("info").textContent =
-          translations[currentLanguage].altitude + ": " + alt + " | " +
-          translations[currentLanguage].distance + ": " + dist;
-      
-        // Recover Flight Path drawing in top view.
-        if (flightPathActive && takenOff) {
-          flightPathPoints.push(drone.position.clone());
-          // Limit points to avoid memory growth
-          if(flightPathPoints.length > 500) {
-            flightPathPoints.shift();
-          }
-          if (flightPathLine) scene.remove(flightPathLine);
-          const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
-          const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-          flightPathLine = new THREE.Line(geometry, material);
-          scene.add(flightPathLine);
-        }
-      
-        renderer.render(scene, camera);
-        topViewRenderer.render(scene, topViewCamera);
+    }
+  } else {
+    // If drone controls are disabled (mission completed and landed)
+    if (flyAudioPlaying) {
+      flyAudio.pause();
+      flyAudio.currentTime = 0;
+      flyAudioPlaying = false;
+    }
+  }
+
+  droneGroup.position.copy(drone.position);
+  // Apply rotations
+  droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
+
+  propellers.forEach(prop => {
+    if (drone.position.y > 0.45) { 
+      prop.currentSpinSpeed = prop.spinSpeed; 
+    } else { 
+      prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); 
+    }
+    prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
+    let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
+    prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
+  });
+
+  hoops.forEach(hoop => {
+    const dToHoop = drone.position.distanceTo(hoop.mesh.position);
+    if (!hoop.entered && dToHoop < hoop.mainRadius) {
+      hoop.entered = true;
+    }
+    if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff) {
+      if (hoop.number === currentExpectedHoop) {
+        hoop.passed = true;
+        hoop.mesh.material.color.set(0x00ff00);
+        bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
+        currentExpectedHoop++;
+        const cell = document.getElementById("hoopCell-" + hoop.number);
+        if (cell) cell.classList.add("passed");
+        const canvas = hoop.labelSprite.material.map.image;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "green";
+        ctx.font = "Bold 80px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+        hoop.labelSprite.material.map.needsUpdate = true;
       }
-      animate();
-      
-      function resetDrone() {
-        drone.position.set(0, 0.45, 0);
-        drone.yaw = 0;
-        drone.pitch = 0;
-        drone.roll = 0;
-        takenOff = false;
-        landedAtHome = false;
-        allHoopsPassed = false;
-        currentExpectedHoop = 1;
-        flightPathPoints = [];
-        if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
-        leftJoystickInput.dx = 0;
-        leftJoystickInput.dy = 0;
-        document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-        rightJoystickInput.dx = 0;
-        rightJoystickInput.dy = 0;
-        document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-        hoops.forEach(hoop => {
-          hoop.entered = false;
-          hoop.passed = false;
-          hoop.mesh.material.color.set(0xffa500);
-          const canvas = hoop.labelSprite.material.map.image;
-          const ctx = canvas.getContext("2d");
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "yellow";
-          ctx.font = "Bold 80px Arial";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
-          hoop.labelSprite.material.map.needsUpdate = true;
-        });
-        if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
-          drawHomeMarker(homeMarker.userData.ctx, "white");
-          homeMarker.userData.texture.needsUpdate = true;
-        }
-        document.getElementById("message").style.display = "none";
-        for (let i = 1; i <= totalHoops; i++) {
-          const cell = document.getElementById("hoopCell-" + i);
-          if (cell) cell.classList.remove("passed");
-        }
-        rthBtn.style.backgroundColor = "#2196f3";
-        rthAudioPlaying = false;
-        landAudioPlayed = false;
-        disableDroneControls = false;
-        updateUIText();
+      hoop.entered = false;
+    }
+  });
+
+  if (!allHoopsPassed) {
+    let passedCount = 0;
+    hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
+    if (passedCount === totalHoops) {
+      allHoopsPassed = true;
+      const msgDiv = document.getElementById("message");
+      msgDiv.style.display = "block";
+      msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
+    }
+  }
+
+  // Once mission completed and not yet landed, check for landing:
+  if (allHoopsPassed && !landedAtHome) {
+    const dX = drone.position.x;
+    const dZ = drone.position.z;
+    const distToHome = Math.sqrt(dX * dX + dZ * dZ);
+    if (distToHome < 10 && drone.position.y < 1 && takenOff) {
+      landedAtHome = true;
+      const msgDiv = document.getElementById("message");
+      msgDiv.innerHTML = translations[currentLanguage].landingMessage;
+      document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
+      sweetSound.play().catch(err => console.log("Error playing sweetSound:", err));
+      if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+        drawHomeMarker(homeMarker.userData.ctx, "yellow");
+        homeMarker.userData.texture.needsUpdate = true;
       }
-      document.getElementById("btn-reset").addEventListener("click", resetDrone);
-      
-      updateUIText();
+      // Freeze drone controls so that it cannot move
+      disableDroneControls = true;
+    }
+  }
+
+  // Update camera
+  const cameraOffset = new THREE.Vector3(0, 5, -15);
+  const quat = new THREE.Quaternion();
+  quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
+  const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
+  camera.position.copy(drone.position.clone().add(rotatedOffset));
+  camera.lookAt(drone.position);
+
+  const alt = (drone.position.y - 0.45).toFixed(1);
+  const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
+  document.getElementById("info").textContent =
+    translations[currentLanguage].altitude + ": " + alt + " | " +
+    translations[currentLanguage].distance + ": " + dist;
+
+  // Recover Flight Path drawing in top view.
+  if (flightPathActive && takenOff) {
+    flightPathPoints.push(drone.position.clone());
+    // Limit points to avoid memory growth
+    if(flightPathPoints.length > 500) {
+      flightPathPoints.shift();
+    }
+    if (flightPathLine) scene.remove(flightPathLine);
+    const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    flightPathLine = new THREE.Line(geometry, material);
+    scene.add(flightPathLine);
+  }
+
+  renderer.render(scene, camera);
+  topViewRenderer.render(scene, topViewCamera);
+}
+animate();
+
+function resetDrone() {
+  drone.position.set(0, 0.45, 0);
+  drone.yaw = 0;
+  drone.pitch = 0;
+  drone.roll = 0;
+  takenOff = false;
+  landedAtHome = false;
+  allHoopsPassed = false;
+  currentExpectedHoop = 1;
+  flightPathPoints = [];
+  if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+  leftJoystickInput.dx = 0;
+  leftJoystickInput.dy = 0;
+  document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+  rightJoystickInput.dx = 0;
+  rightJoystickInput.dy = 0;
+  document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+  hoops.forEach(hoop => {
+    hoop.entered = false;
+    hoop.passed = false;
+    hoop.mesh.material.color.set(0xffa500);
+    const canvas = hoop.labelSprite.material.map.image;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "yellow";
+    ctx.font = "Bold 80px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+    hoop.labelSprite.material.map.needsUpdate = true;
+  });
+  if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+    drawHomeMarker(homeMarker.userData.ctx, "white");
+    homeMarker.userData.texture.needsUpdate = true;
+  }
+  document.getElementById("message").style.display = "none";
+  for (let i = 1; i <= totalHoops; i++) {
+    const cell = document.getElementById("hoopCell-" + i);
+    if (cell) cell.classList.remove("passed");
+  }
+  rthBtn.style.backgroundColor = "#2196f3";
+  rthAudioPlaying = false;
+  landAudioPlayed = false;
+  disableDroneControls = false;
+  flyAudioPlaying = false;
+  if (flyAudio.played.length > 0) {
+    flyAudio.pause();
+    flyAudio.currentTime = 0;
+  }
+  updateUIText();
+}
+document.getElementById("btn-reset").addEventListener("click", resetDrone);
+
+updateUIText();
     </script>
   </body>
 </html>
