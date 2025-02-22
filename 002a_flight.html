@@ -409,22 +409,38 @@
       bonusSound.loop = false;
       const sweetSound = new Audio("sweet.mp3");
       sweetSound.loop = false;
-      // landAudio and rthAudio are defined later.
       
       // Create flyAudio to play "flysound.mp3" during flight.
       const flyAudio = new Audio("flysound.mp3");
       flyAudio.loop = true;
-      flyAudio.volume = 0; // start at a low volume for fade-in
+      flyAudio.volume = 0; // start muted for fade-in
       let flyAudioPlaying = false;
       
+      // --- Audio Setup for Landing & RTH ---
+      let rthAudio = new Audio("rth12.mp3");
+      rthAudio.loop = true;
+      let landAudio = new Audio("land1.mp3");
+      landAudio.loop = false;
+      let rthAudioPlaying = false;
+      let landAudioPlayed = false;
+      
+      // Global flag to disable drone controls after a mission is completed and landed.
+      let disableDroneControls = false;
+      
       // --- Audio Unlock for iOS ---
-      // iOS requires a user gesture to enable sound. Unlock all audios on first touch.
       function unlockAudio() {
-        [bonusSound, sweetSound, landAudio, rthAudio, flyAudio].forEach(audio => {
-          audio.play().then(() => {
-            audio.pause();
-            audio.currentTime = 0;
-          }).catch(() => {});
+        // Only unlock audios that are defined.
+        [bonusSound, sweetSound, flyAudio, landAudio, rthAudio].forEach(audio => {
+          if (audio) {
+            // Temporarily set volume to 0 so that unlocking does not produce audible sound.
+            const prevVolume = audio.volume;
+            audio.volume = 0;
+            audio.play().then(() => {
+              audio.pause();
+              audio.currentTime = 0;
+              audio.volume = prevVolume;
+            }).catch(() => {});
+          }
         });
         document.removeEventListener("touchstart", unlockAudio);
       }
@@ -507,14 +523,6 @@
       
       let missionCompleted = false;
       let rthActive = false;
-      
-      // --- Audio Setup ---
-      let rthAudio = new Audio("rth12.mp3");
-      rthAudio.loop = true;
-      let landAudio = new Audio("land1.mp3");
-      landAudio.loop = false;
-      let rthAudioPlaying = false;
-      let landAudioPlayed = false;
       
       // --- Flight Path Variables ---
       let flightPathPoints = [];
@@ -1037,105 +1045,117 @@
           flyAudioPlaying = false;
         }
       
-        if (rthActive) {
-          // Disable manual controls during RTH.
-          const msgDiv = document.getElementById("message");
-          const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
-          if (hDist > 1) {
-            msgDiv.innerHTML = "Return-to-Home in Progress";
-            msgDiv.classList.add("blinking");
-            if (!rthAudioPlaying) {
-              rthAudio.play().catch(err => console.log("RTH audio error", err));
-              rthAudioPlaying = true;
+        // If the drone is frozen (mission complete and landed), do not update manual control.
+        if (!disableDroneControls) {
+          if (rthActive) {
+            // Disable manual controls during RTH.
+            const msgDiv = document.getElementById("message");
+            const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
+            if (hDist > 1) {
+              msgDiv.innerHTML = "Return-to-Home in Progress";
+              msgDiv.classList.add("blinking");
+              if (!rthAudioPlaying) {
+                rthAudio.play().catch(err => console.log("RTH audio error", err));
+                rthAudioPlaying = true;
+              }
+              const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
+              const desiredYaw = Math.atan2(dir.x, dir.z);
+              drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
+              drone.position.x += dir.x * 30 * delta;
+              drone.position.z += dir.z * 30 * delta;
+            } else {
+              msgDiv.innerHTML = "Automatic Landing";
+              msgDiv.classList.remove("blinking");
+              if (rthAudioPlaying) {
+                rthAudio.pause();
+                rthAudio.currentTime = 0;
+                rthAudioPlaying = false;
+              }
+              // Play land1.mp3 when above the home marker (and only if already in flight).
+              if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2 && takenOff) {
+                setTimeout(function() {
+                  landAudio.play().catch(err => console.log("land audio error", err));
+                }, 100);
+                landAudioPlayed = true;
+              }
+              // Automatic descent.
+              if (drone.position.y > 0.45) {
+                drone.position.y -= 5 * delta;
+              }
+              drone.yaw = lerp(drone.yaw, 0, 0.05);
+              drone.pitch = lerp(drone.pitch, 0, 0.1);
+              drone.roll = lerp(drone.roll, 0, 0.1);
+              if (drone.position.y <= 0.45 + 0.01) {
+                drone.position.y = 0.45;
+                landAudio.pause();
+                landAudio.currentTime = 0;
+                rthActive = false;
+                msgDiv.style.display = "none";
+                rthBtn.style.backgroundColor = "#2196f3";
+                rthAudioPlaying = false;
+                landAudioPlayed = false;
+                // Also freeze the drone once landed so that it cannot move.
+                disableDroneControls = true;
+              }
             }
-            const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
-            const desiredYaw = Math.atan2(dir.x, dir.z);
-            drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
-            drone.position.x += dir.x * 30 * delta;
-            drone.position.z += dir.z * 30 * delta;
           } else {
-            msgDiv.innerHTML = "Automatic Landing";
-            msgDiv.classList.remove("blinking");
-            if (rthAudioPlaying) {
-              rthAudio.pause();
-              rthAudio.currentTime = 0;
-              rthAudioPlaying = false;
+            syncJoystickWithKeyboard();
+            // Use a dead zone: throttle input only if |dy| >= threshold.
+            let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+            let throttleInput = Math.abs(rawThrottle) >= throttleDeadZone ? rawThrottle : 0;
+            drone.position.y += throttleInput * throttleSpeed * delta;
+            if (drone.position.y < 0.45) drone.position.y = 0.45;
+      
+            // Set takenOff only if throttle input was significant and altitude > 1.0.
+            if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
+              takenOff = true;
             }
-            // Play land1.mp3 when above the home marker (and only if already in flight).
-            if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2 && takenOff) {
-              setTimeout(function() {
-                landAudio.play().catch(err => console.log("land audio error", err));
-              }, 100);
-              landAudioPlayed = true;
-            }
-            // Automatic descent.
+      
             if (drone.position.y > 0.45) {
-              drone.position.y -= 5 * delta;
+              let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+              drone.yaw += yawSpeed * yawInput * delta;
+              let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+              let desiredPitch = pitchInput * maxTilt;
+              drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
+              let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+              let desiredRoll = -rollInput * maxTilt;
+              drone.roll = lerp(drone.roll, desiredRoll, 0.1);
+              const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+              const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+              const horizontalDisplacement = new THREE.Vector3();
+              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                                     .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+              horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+              drone.position.add(horizontalDisplacement);
+            } else {
+              drone.yaw = 0;
+              drone.pitch = 0;
+              drone.roll = 0;
             }
-            drone.yaw = lerp(drone.yaw, 0, 0.05);
-            drone.pitch = lerp(drone.pitch, 0, 0.1);
-            drone.roll = lerp(drone.roll, 0, 0.1);
-            if (drone.position.y <= 0.45 + 0.01) {
-              drone.position.y = 0.45;
-              landAudio.pause();
-              landAudio.currentTime = 0;
-              rthActive = false;
-              msgDiv.style.display = "none";
-              rthBtn.style.backgroundColor = "#2196f3";
-              rthAudioPlaying = false;
-              landAudioPlayed = false;
+      
+            if (drone.position.y > 1.0) {
+              if (!flyAudioPlaying) {
+                flyAudio.play().catch(err => console.log("Error playing flyAudio", err));
+                flyAudioPlaying = true;
+                flyAudio.volume = 0;
+              }
+              if (flyAudio.volume < 1.0) {
+                flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
+              }
+            } else {
+              if (flyAudioPlaying) {
+                flyAudio.pause();
+                flyAudio.currentTime = 0;
+                flyAudioPlaying = false;
+              }
             }
           }
         } else {
-          syncJoystickWithKeyboard();
-          // Use a dead zone: throttle input only if |dy| >= threshold.
-          let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
-          let throttleInput = Math.abs(rawThrottle) >= throttleDeadZone ? rawThrottle : 0;
-          drone.position.y += throttleInput * throttleSpeed * delta;
-          if (drone.position.y < 0.45) drone.position.y = 0.45;
-      
-          // Set takenOff only if throttle input was significant and altitude > 1.0.
-          if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
-            takenOff = true;
-          }
-      
-          if (drone.position.y > 0.45) {
-            let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
-            drone.yaw += yawSpeed * yawInput * delta;
-            let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
-            let desiredPitch = pitchInput * maxTilt;
-            drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-            let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
-            let desiredRoll = -rollInput * maxTilt;
-            drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-            const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-            const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-            const horizontalDisplacement = new THREE.Vector3();
-            horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                   .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-            horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-            drone.position.add(horizontalDisplacement);
-          } else {
-            drone.yaw = 0;
-            drone.pitch = 0;
-            drone.roll = 0;
-          }
-      
-          if (drone.position.y > 1.0) {
-            if (!flyAudioPlaying) {
-              flyAudio.play().catch(err => console.log("Error playing flyAudio", err));
-              flyAudioPlaying = true;
-              flyAudio.volume = 0;
-            }
-            if (flyAudio.volume < 1.0) {
-              flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
-            }
-          } else {
-            if (flyAudioPlaying) {
-              flyAudio.pause();
-              flyAudio.currentTime = 0;
-              flyAudioPlaying = false;
-            }
+          // If drone controls are disabled (mission completed and landed)
+          if (flyAudioPlaying) {
+            flyAudio.pause();
+            flyAudio.currentTime = 0;
+            flyAudioPlaying = false;
           }
         }
       
@@ -1207,6 +1227,8 @@
               drawHomeMarker(homeMarker.userData.ctx, "yellow");
               homeMarker.userData.texture.needsUpdate = true;
             }
+            // Freeze drone controls so that it cannot move
+            disableDroneControls = true;
           }
         }
       
@@ -1286,6 +1308,7 @@
         rthBtn.style.backgroundColor = "#2196f3";
         rthAudioPlaying = false;
         landAudioPlayed = false;
+        disableDroneControls = false;
         updateUIText();
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
