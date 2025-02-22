@@ -7,8 +7,7 @@
     <title>Quadcopter Flight Simulation</title>
     <style>
       /* Prevent zooming/scrolling on touch devices and disable text selection */
-      html,
-      body {
+      html, body {
         margin: 0;
         padding: 0;
         overflow: hidden;
@@ -23,20 +22,17 @@
       /* Title styling at the top middle */
       #title {
         position: absolute;
-        top: 10px;
-        left: 50%;
+        top: 10px; left: 50%;
         transform: translateX(-50%);
         font-size: 32px;
         font-weight: bold;
-        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
-          -1px 1px 0 #fff, 1px 1px 0 #fff;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
       /* Language Toggle Button (Top Right Corner) */
       #langToggle {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 10px; right: 10px;
         z-index: 110;
         padding: 8px 12px;
         font-size: 16px;
@@ -49,8 +45,7 @@
       /* General Message (for RTH & landing messages) */
       #message {
         position: absolute;
-        top: 40%;
-        left: 50%;
+        top: 40%; left: 50%;
         transform: translate(-50%, -50%);
         background: rgba(0, 0, 0, 0.7);
         color: white;
@@ -62,18 +57,17 @@
       }
       /* Blinking animation for the message */
       @keyframes blinking {
-        0%   { opacity: 1; }
-        50%  { opacity: 0; }
-        100% { opacity: 1; }
+         0% { opacity: 1; }
+         50% { opacity: 0; }
+         100% { opacity: 1; }
       }
       .blinking {
-        animation: blinking 1s infinite;
+         animation: blinking 1s infinite;
       }
       /* Controls Container (bottom center) */
       #controls {
         position: absolute;
-        bottom: 10px;
-        left: 50%;
+        bottom: 10px; left: 50%;
         transform: translateX(-50%);
         z-index: 20;
         display: flex;
@@ -89,8 +83,7 @@
       /* Info box for Altitude & Distance (red and bold) */
       #info {
         position: absolute;
-        top: 20px;
-        left: 50%;
+        top: 20px; left: 50%;
         transform: translateX(-50%);
         font-size: 18px;
         color: red;
@@ -98,8 +91,7 @@
       }
       #btn-reset {
         position: absolute;
-        bottom: 10px;
-        right: 480px;
+        bottom: 10px; right: 480px;
         width: 80px;
         height: 40px;
         padding: 10px;
@@ -123,16 +115,12 @@
         transform: translateY(-60px);
       }
       #speedLabel {
-        font-size: 18px;
-        font-weight: bold;
+        font-size: 18px; font-weight: bold;
       }
-      #speedSlider {
-        width: 200px;
-      }
+      #speedSlider { width: 200px; }
       /* Enlarge Flight Path Button (same size as Speed) */
       #toggleFlightPath {
-        font-size: 18px;
-        padding: 10px 20px;
+        font-size: 18px; padding: 10px 20px;
       }
       /* RTH Button styling */
       #rthBtn {
@@ -155,29 +143,22 @@
         border: 2px solid #aaa;
         border-radius: 50%;
         position: absolute;
-        left: 50%;
-        top: 40%;
+        left: 50%; top: 40%;
         transform: translate(-50%, -50%);
       }
       .joystick-thumb {
-        width: 80px;
-        height: 80px;
+        width: 80px; height: 80px;
         border: 2px solid #555;
         border-radius: 50%;
         position: absolute;
-        left: 50%;
-        top: 40%;
+        left: 50%; top: 40%;
         transform: translate(-50%, -50%);
         touch-action: none;
         -ms-touch-action: none;
       }
       /* Deep colours for joystick thumbs */
-      #leftJoystick .joystick-thumb {
-        background-color: #006400;
-      }
-      #rightJoystick .joystick-thumb {
-        background-color: #FF8C00;
-      }
+      #leftJoystick .joystick-thumb { background-color: #006400; }
+      #rightJoystick .joystick-thumb { background-color: #FF8C00; }
       /* Right joystick base in orange */
       #rightJoystick .joystick-base {
         background: rgba(255, 152, 0, 0.5);
@@ -191,52 +172,19 @@
         pointer-events: none;
       }
       /* Left joystick labels */
-      #leftJoystick .label-top {
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #leftJoystick .label-bottom {
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #leftJoystick .label-left {
-        left: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      #leftJoystick .label-right {
-        right: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
+      #leftJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
+      #leftJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+      #leftJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
+      #leftJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
       /* Right joystick labels */
-      #rightJoystick .label-top {
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #rightJoystick .label-bottom {
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #rightJoystick .label-left {
-        left: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      #rightJoystick .label-right {
-        right: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
+      #rightJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
+      #rightJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+      #rightJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
+      #rightJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
       /* Top View Container and Controls */
       #topViewContainer {
         position: absolute;
-        top: 20px;
-        left: 20px;
+        top: 20px; left: 20px;
         z-index: 30;
         display: flex;
         flex-direction: column;
@@ -244,8 +192,7 @@
       }
       /* The top view renderer now acts as a container for the arrow buttons */
       #topViewRenderer {
-        width: 200px;
-        height: 200px;
+        width: 200px; height: 200px;
         border: 2px solid black;
         transform: rotate(180deg);
         background: none;
@@ -262,28 +209,11 @@
         cursor: pointer;
       }
       /* Position the arrow buttons within the container */
-      #topArrowUp {
-        top: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #topArrowDown {
-        bottom: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      /* Left arrow moves the target to the left (decreases x)
-         and Right arrow moves the target to the right (increases x). */
-      #topArrowLeft {
-        left: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      #topArrowRight {
-        right: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
+      #topArrowUp { top: 5px; left: 50%; transform: translateX(-50%); }
+      #topArrowDown { bottom: 5px; left: 50%; transform: translateX(-50%); }
+      /* Left arrow moves the target to the left (decreases x) and Right arrow moves the target to the right (increases x). */
+      #topArrowLeft { left: 5px; top: 50%; transform: translateY(-50%); }
+      #topArrowRight { right: 5px; top: 50%; transform: translateY(-50%); }
       /* Zoom Controls for Top View with a Home button remain below the renderer */
       #zoomControls {
         margin-top: 5px;
@@ -293,8 +223,7 @@
       /* Hoop Table (2 rows) at the top right */
       #hoopTable {
         position: absolute;
-        top: 60px;
-        right: 20px;
+        top: 60px; right: 20px;
         z-index: 100;
         background: rgba(255, 255, 255, 0.8);
         padding: 10px;
@@ -304,8 +233,7 @@
         gap: 5px;
       }
       #hoopTable .hoopCell {
-        width: 30px;
-        height: 30px;
+        width: 30px; height: 30px;
         line-height: 30px;
         text-align: center;
         font-weight: bold;
@@ -397,10 +325,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
       // --- Audio Unlock for iOS ---
-      // iOS Safari requires user interaction to play audio.
-      // On the first touch, we "unlock" all audio objects:
+      // iOS requires a user gesture to enable sound.
       function unlockAudio() {
-        // Play all audio objects briefly to unlock them.
         [bonusSound, sweetSound, landAudio, rthAudio].forEach(audio => {
           audio.play().then(() => {
             audio.pause();
@@ -416,7 +342,7 @@
         return a + (b - a) * t;
       }
       
-      // Helper function to create a directional sprite with a given label and color.
+      // Helper function to create a directional sprite.
       function createDirectionSprite(text, color = "black") {
         const canvas = document.createElement("canvas");
         canvas.width = 512;
@@ -431,27 +357,21 @@
         const texture = new THREE.CanvasTexture(canvas);
         const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
         const sprite = new THREE.Sprite(spriteMaterial);
-        // Scale sprite so it is clearly visible.
         sprite.scale.set(250, 250, 1);
         return sprite;
       }
       
       // --- Three.js Scene Setup ---
       const scene = new THREE.Scene();
-      
-      // Add cardinal directional sprites.
       const northSprite = createDirectionSprite("NORTH");
       northSprite.position.set(0, 8, 540);
       scene.add(northSprite);
-      
       const eastSprite = createDirectionSprite("EAST");
       eastSprite.position.set(-540, 8, 0);
       scene.add(eastSprite);
-      
       const southSprite = createDirectionSprite("SOUTH");
       southSprite.position.set(0, 8, -540);
       scene.add(southSprite);
-      
       const westSprite = createDirectionSprite("WEST");
       westSprite.position.set(540, 8, 0);
       scene.add(westSprite);
@@ -489,11 +409,9 @@
       }
       
       let missionCompleted = false;
-      // RTH flag.
       let rthActive = false;
       
       // --- Audio Setup ---
-      // Create audio objects.
       const bonusSound = new Audio("bonus.mp3");
       const sweetSound = new Audio("sweet.mp3");
       let rthAudio = new Audio("RTH12.mp3");
@@ -507,18 +425,13 @@
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
-        let dragging = false;
-        let pointerId = null;
-        let activeTouchId = null;
+        let dragging = false, pointerId = null, activeTouchId = null;
         let center = { x: 0, y: 0 };
         const maxDist = 40;
         joystickObj.active = false;
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > maxDist) {
-            dx = (dx / dist) * maxDist;
-            dy = (dy / dist) * maxDist;
-          }
+          if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
           joystickObj.dx = dx / maxDist;
           joystickObj.dy = dy / maxDist;
           thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
@@ -533,9 +446,7 @@
         }
         function onPointerDown(e) {
           if (e.pointerType === "mouse" && e.button !== 0) return;
-          dragging = true;
-          joystickObj.active = true;
-          pointerId = e.pointerId;
+          dragging = true; joystickObj.active = true; pointerId = e.pointerId;
           const rect = container.getBoundingClientRect();
           center.x = rect.left + rect.width / 2;
           center.y = rect.top + rect.height / 2;
@@ -556,8 +467,7 @@
         }
         function onTouchStart(e) {
           if (e.targetTouches.length > 0) {
-            dragging = true;
-            joystickObj.active = true;
+            dragging = true; joystickObj.active = true;
             const touch = e.targetTouches[0];
             activeTouchId = touch.identifier;
             const rect = container.getBoundingClientRect();
@@ -571,22 +481,14 @@
           if (!dragging || activeTouchId === null) return;
           let targetTouch = null;
           for (let i = 0; i < e.touches.length; i++) {
-            if (e.touches[i].identifier === activeTouchId) {
-              targetTouch = e.touches[i];
-              break;
-            }
+            if (e.touches[i].identifier === activeTouchId) { targetTouch = e.touches[i]; break; }
           }
-          if (targetTouch) {
-            updateThumb(targetTouch.clientX - center.x, targetTouch.clientY - center.y);
-          }
+          if (targetTouch) { updateThumb(targetTouch.clientX - center.x, targetTouch.clientY - center.y); }
           e.preventDefault();
         }
         function onTouchEnd(e) {
           for (let i = 0; i < e.changedTouches.length; i++) {
-            if (e.changedTouches[i].identifier === activeTouchId) {
-              resetThumb();
-              break;
-            }
+            if (e.changedTouches[i].identifier === activeTouchId) { resetThumb(); break; }
           }
           e.preventDefault();
         }
@@ -608,40 +510,24 @@
         const downLabel = document.querySelector("#leftJoystick .label-bottom");
         const leftLabel = document.querySelector("#leftJoystick .label-left");
         const rightLabel = document.querySelector("#leftJoystick .label-right");
-        upLabel.style.color = "black";
-        downLabel.style.color = "black";
-        leftLabel.style.color = "black";
-        rightLabel.style.color = "black";
-        if (leftJoystickInput.dy < -0.1) {
-          upLabel.style.color = "green";
-        } else if (leftJoystickInput.dy > 0.1) {
-          downLabel.style.color = "green";
-        }
-        if (leftJoystickInput.dx < -0.1) {
-          leftLabel.style.color = "green";
-        } else if (leftJoystickInput.dx > 0.1) {
-          rightLabel.style.color = "green";
-        }
+        upLabel.style.color = "black"; downLabel.style.color = "black";
+        leftLabel.style.color = "black"; rightLabel.style.color = "black";
+        if (leftJoystickInput.dy < -0.1) { upLabel.style.color = "green"; }
+        else if (leftJoystickInput.dy > 0.1) { downLabel.style.color = "green"; }
+        if (leftJoystickInput.dx < -0.1) { leftLabel.style.color = "green"; }
+        else if (leftJoystickInput.dx > 0.1) { rightLabel.style.color = "green"; }
       }
       function updateRightJoystickLabels() {
         const upLabel = document.querySelector("#rightJoystick .label-top");
         const downLabel = document.querySelector("#rightJoystick .label-bottom");
         const leftLabel = document.querySelector("#rightJoystick .label-left");
         const rightLabel = document.querySelector("#rightJoystick .label-right");
-        upLabel.style.color = "black";
-        downLabel.style.color = "black";
-        leftLabel.style.color = "black";
-        rightLabel.style.color = "black";
-        if (rightJoystickInput.dy < -0.1) {
-          upLabel.style.color = "orange";
-        } else if (rightJoystickInput.dy > 0.1) {
-          downLabel.style.color = "orange";
-        }
-        if (rightJoystickInput.dx < -0.1) {
-          leftLabel.style.color = "orange";
-        } else if (rightJoystickInput.dx > 0.1) {
-          rightLabel.style.color = "orange";
-        }
+        upLabel.style.color = "black"; downLabel.style.color = "black";
+        leftLabel.style.color = "black"; rightLabel.style.color = "black";
+        if (rightJoystickInput.dy < -0.1) { upLabel.style.color = "orange"; }
+        else if (rightJoystickInput.dy > 0.1) { downLabel.style.color = "orange"; }
+        if (rightJoystickInput.dx < -0.1) { leftLabel.style.color = "orange"; }
+        else if (rightJoystickInput.dx > 0.1) { rightLabel.style.color = "orange"; }
       }
       
       // --- Top View Navigation ---
@@ -764,12 +650,7 @@
       renderer.shadowMap.enabled = true;
       document.body.appendChild(renderer.domElement);
       
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        2000
-      );
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
@@ -884,9 +765,7 @@
       droneGroup.add(rearRight);
       propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
       droneGroup.scale.set(3, 3, 3);
-      droneGroup.traverse(child => {
-        if (child instanceof THREE.Mesh) child.castShadow = true;
-      });
+      droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
       
       // --- Blinking Spots on Propellers ---
       const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
@@ -994,9 +873,7 @@
       // RTH Button event listener:
       // If the drone's altitude is less than 1, do nothing.
       document.getElementById("rthBtn").addEventListener("click", function () {
-        if (drone.position.y < 1) {
-          return;
-        }
+        if (drone.position.y < 1) { return; }
         rthActive = true;
         this.style.backgroundColor = "grey";
         const msgDiv = document.getElementById("message");
@@ -1044,16 +921,14 @@
         const delta = clock.getDelta();
       
         if (rthActive) {
-          // When RTH is active, manual controls are disabled.
+          // Disable manual controls during RTH.
           const msgDiv = document.getElementById("message");
-          // Compute horizontal distance from drone to home (home = (0,*,0)).
           const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
           if (hDist > 1) {
-            // While far from home horizontally.
             msgDiv.innerHTML = "Return-to-Home in Progress";
             msgDiv.classList.add("blinking");
             if (!rthAudioPlaying) {
-              rthAudio.play();
+              rthAudio.play().catch(err => console.log("RTH audio error", err));
               rthAudioPlaying = true;
             }
             const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
@@ -1062,7 +937,6 @@
             drone.position.x += dir.x * 30 * delta;
             drone.position.z += dir.z * 30 * delta;
           } else {
-            // When the drone is nearly above home.
             msgDiv.innerHTML = "Automatic Landing";
             msgDiv.classList.remove("blinking");
             if (rthAudioPlaying) {
@@ -1071,7 +945,7 @@
               rthAudioPlaying = false;
             }
             if (!landAudioPlayed) {
-              landAudio.play();
+              landAudio.play().catch(err => console.log("land audio error", err));
               landAudioPlayed = true;
             }
             if (drone.position.y > 0.45) {
@@ -1080,7 +954,7 @@
             drone.yaw = lerp(drone.yaw, 0, 0.05);
             drone.pitch = lerp(drone.pitch, 0, 0.1);
             drone.roll = lerp(drone.roll, 0, 0.1);
-            // When landing completes, stop playing Land1.mp3.
+            // Only trigger landing sound if the drone has taken off.
             if (drone.position.y <= 0.45 + 0.01) {
               drone.position.y = 0.45;
               landAudio.pause();
@@ -1093,7 +967,6 @@
             }
           }
         } else {
-          // Normal manual controls.
           syncJoystickWithKeyboard();
           let throttleInput = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
           drone.position.y += throttleInput * throttleSpeed * delta;
@@ -1117,9 +990,7 @@
             horizontalDisplacement.multiplyScalar(translationSpeed * delta);
             drone.position.add(horizontalDisplacement);
           } else {
-            drone.yaw = 0;
-            drone.pitch = 0;
-            drone.roll = 0;
+            drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
           }
         }
       
@@ -1158,15 +1029,14 @@
       
         hoops.forEach(hoop => {
           const dToHoop = drone.position.distanceTo(hoop.mesh.position);
-          if (!hoop.entered && dToHoop < hoop.mainRadius) {
-            hoop.entered = true;
-          }
+          if (!hoop.entered && dToHoop < hoop.mainRadius) { hoop.entered = true; }
           if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1) {
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
+              bonusSound.pause();
               bonusSound.currentTime = 0;
-              bonusSound.play();
+              bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if (cell) cell.classList.add("passed");
@@ -1185,9 +1055,7 @@
         });
         if (!allHoopsPassed) {
           let passedCount = 0;
-          hoops.forEach(hoop => {
-            if (hoop.passed) passedCount++;
-          });
+          hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
           if (passedCount === totalHoops) {
             allHoopsPassed = true;
             const msgDiv = document.getElementById("message");
@@ -1200,13 +1068,15 @@
           const dX = drone.position.x;
           const dZ = drone.position.z;
           const distToHome = Math.sqrt(dX * dX + dZ * dZ);
-          if (distToHome < 10 && drone.position.y < 1) {
+          // Also require that the drone has taken off.
+          if (distToHome < 10 && drone.position.y < 1 && takenOff) {
             landedAtHome = true;
             const msgDiv = document.getElementById("message");
             msgDiv.innerHTML = translations[currentLanguage].landingMessage;
             document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
+            sweetSound.pause();
             sweetSound.currentTime = 0;
-            sweetSound.play();
+            sweetSound.play().catch(err => console.log("Error playing sweetSound:", err));
             if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
               drawHomeMarker(homeMarker.userData.ctx, "yellow");
               homeMarker.userData.texture.needsUpdate = true;
@@ -1275,9 +1145,7 @@
           const cell = document.getElementById("hoopCell-" + i);
           if (cell) cell.classList.remove("passed");
         }
-        // Restore RTH button color.
         rthBtn.style.backgroundColor = "#2196f3";
-        // Reset RTH audio flags.
         rthAudioPlaying = false;
         landAudioPlayed = false;
         updateUIText();
