@@ -408,12 +408,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
       // --- Global Audio Setup ---
-      // Pre-create bonusSound and sweetSound so that they can be unlocked on iOS and reused.
+      // Pre-create bonusSound and sweetSound so they can be unlocked on iOS and reused.
       const bonusSound = new Audio("bonus.mp3");
       bonusSound.loop = false;
       const sweetSound = new Audio("sweet.mp3");
       sweetSound.loop = false;
-      // landAudio and rthAudio are already created below.
+      // landAudio and rthAudio are defined later.
       
       // --- Audio Unlock for iOS ---
       // iOS requires a user gesture to enable sound. Unlock all audios on first touch.
@@ -507,8 +507,6 @@
       let rthActive = false;
       
       // --- Audio Setup ---
-      const bonusSoundSrc = "bonus.mp3";  // Now using bonusSound object.
-      const sweetSoundSrc = "sweet.mp3";  // Now using sweetSound object.
       let rthAudio = new Audio("RTH12.mp3");
       rthAudio.loop = true;
       let landAudio = new Audio("Land1.mp3");
@@ -1044,10 +1042,13 @@
             }
             // --- Play Land1.mp3 when above the home point ---
             if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2) {
-              landAudio.play().catch(err => console.log("land audio error", err));
+              // Delay start of Land1.mp3 by 100ms to ensure overlap is avoided.
+              setTimeout(function() {
+                landAudio.play().catch(err => console.log("land audio error", err));
+              }, 100);
               landAudioPlayed = true;
             }
-            // Use automatic landing (descent) if drone is above base altitude.
+            // Continue automatic landing (descent) if drone is above base altitude.
             if (drone.position.y > 0.45) {
               drone.position.y -= 5 * delta;
             }
@@ -1117,7 +1118,8 @@
           if (!hoop.entered && dToHoop < hoop.mainRadius) {
             hoop.entered = true;
           }
-          if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1) {
+          if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff) {
+            // Only trigger bonus sound if the drone has taken off.
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               // Change hoop color from orange to green.
@@ -1151,7 +1153,7 @@
           }
         }
       
-        // Mission completion: if all hoops passed and drone is landing.
+        // Mission completion: when all hoops are passed and drone is landing.
         if (allHoopsPassed && !landedAtHome) {
           const dX = drone.position.x;
           const dZ = drone.position.z;
