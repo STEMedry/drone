@@ -3,10 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <!-- Meta viewport to improve touch responsiveness on iOS -->
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Quadcopter Flight Simulation</title>
     <style>
       /* Prevent zooming/scrolling on touch devices and disable text selection */
@@ -31,8 +28,7 @@
         transform: translateX(-50%);
         font-size: 32px;
         font-weight: bold;
-        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
-          -1px 1px 0 #fff, 1px 1px 0 #fff;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
       /* Language Toggle Button (Top Right Corner) */
@@ -520,6 +516,10 @@
       let rthAudioPlaying = false;
       let landAudioPlayed = false;
       
+      // --- Flight Path Variables ---
+      let flightPathPoints = [];
+      let flightPathLine = null;
+      
       // --- Virtual Joystick Helper ---
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
@@ -952,6 +952,8 @@
       const yawSpeed = 1.0;
       const throttleSpeed = 10;
       const maxTilt = 0.5 * Math.PI / 6;
+      // Use a dead zone threshold for joystick throttle input to avoid accidental touches.
+      const throttleDeadZone = 0.2;
       const leftJoystickInput = { dx: 0, dy: 0 };
       const rightJoystickInput = { dx: 0, dy: 0 };
       attachJoystick("leftJoystick", leftJoystickInput);
@@ -961,9 +963,9 @@
       document.addEventListener("keyup", e => { keys[e.code] = false; });
       const speedSlider = document.getElementById("speedSlider");
       speedSlider.addEventListener("input", function () { translationSpeed = parseFloat(this.value); });
+      
       let flightPathActive = false;
-      let flightPathPoints = [];
-      let flightPathLine = null;
+      // Toggle flight path visibility and reset points when toggled.
       const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
       toggleFlightPathBtn.addEventListener("click", function () {
         flightPathActive = !flightPathActive;
@@ -980,7 +982,7 @@
       // RTH Button event listener: ignore if altitude is less than 1.
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) { return; }
-        // When RTH is activated, stop the flyAudio immediately.
+        // Stop flyAudio immediately.
         if (flyAudioPlaying) {
           flyAudio.pause();
           flyAudio.currentTime = 0;
@@ -1028,7 +1030,7 @@
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
       
-        // If RTH active then ensure flyAudio stops.
+        // If RTH is active, ensure flyAudio stops.
         if (rthActive && flyAudioPlaying) {
           flyAudio.pause();
           flyAudio.currentTime = 0;
@@ -1059,15 +1061,14 @@
               rthAudio.currentTime = 0;
               rthAudioPlaying = false;
             }
-            // --- Play land1.mp3 when above the home point ---
-            if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2) {
-              // Delay start of land1.mp3 by 100ms to ensure overlap is avoided.
+            // Play land1.mp3 when above the home marker (and only if already in flight).
+            if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2 && takenOff) {
               setTimeout(function() {
                 landAudio.play().catch(err => console.log("land audio error", err));
               }, 100);
               landAudioPlayed = true;
             }
-            // Continue automatic landing (descent) if drone is above base altitude.
+            // Automatic descent.
             if (drone.position.y > 0.45) {
               drone.position.y -= 5 * delta;
             }
@@ -1087,23 +1088,24 @@
           }
         } else {
           syncJoystickWithKeyboard();
-          let throttleInput =
-            (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+          // Use a dead zone: throttle input only if |dy| >= threshold.
+          let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+          let throttleInput = Math.abs(rawThrottle) >= throttleDeadZone ? rawThrottle : 0;
           drone.position.y += throttleInput * throttleSpeed * delta;
           if (drone.position.y < 0.45) drone.position.y = 0.45;
-          if (!takenOff && drone.position.y > 1.0) takenOff = true;
-          
-          // --- Disable yaw, pitch, roll if drone is at ground altitude (0 altitude) ---
+      
+          // Set takenOff only if throttle input was significant and altitude > 1.0.
+          if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
+            takenOff = true;
+          }
+      
           if (drone.position.y > 0.45) {
-            let yawInput =
-              (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+            let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
-            let pitchInput =
-              (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+            let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
             let desiredPitch = pitchInput * maxTilt;
             drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-            let rollInput =
-              rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+            let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
             let desiredRoll = -rollInput * maxTilt;
             drone.roll = lerp(drone.roll, desiredRoll, 0.1);
             const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
@@ -1118,15 +1120,13 @@
             drone.pitch = 0;
             drone.roll = 0;
           }
-          
-          // --- Start and Fade In flyAudio when the drone has taken off ---
+      
           if (drone.position.y > 1.0) {
             if (!flyAudioPlaying) {
               flyAudio.play().catch(err => console.log("Error playing flyAudio", err));
               flyAudioPlaying = true;
               flyAudio.volume = 0;
             }
-            // Fade in: increase volume gradually (adjust fade rate as needed)
             if (flyAudio.volume < 1.0) {
               flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
             }
@@ -1140,12 +1140,15 @@
         }
       
         droneGroup.position.copy(drone.position);
-        // Apply rotations; note that if drone.position.y == 0.45 the rotations remain zero.
+        // Apply rotations
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
       
         propellers.forEach(prop => {
-          if (drone.position.y > 0.45) { prop.currentSpinSpeed = prop.spinSpeed; }
-          else { prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); }
+          if (drone.position.y > 0.45) { 
+            prop.currentSpinSpeed = prop.spinSpeed; 
+          } else { 
+            prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); 
+          }
           prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
           let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
           prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
@@ -1157,12 +1160,9 @@
             hoop.entered = true;
           }
           if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff) {
-            // Only trigger bonus sound if the drone has taken off.
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
-              // Change hoop color from orange to green.
               hoop.mesh.material.color.set(0x00ff00);
-              // Play bonus sound when passing hoop.
               bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
@@ -1180,6 +1180,7 @@
             hoop.entered = false;
           }
         });
+      
         if (!allHoopsPassed) {
           let passedCount = 0;
           hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
@@ -1191,18 +1192,16 @@
           }
         }
       
-        // Mission completion: when all hoops are passed and drone is landing.
+        // Once mission completed and not yet landed, check for landing:
         if (allHoopsPassed && !landedAtHome) {
           const dX = drone.position.x;
           const dZ = drone.position.z;
           const distToHome = Math.sqrt(dX * dX + dZ * dZ);
-          // Only trigger landing if takenOff is true.
           if (distToHome < 10 && drone.position.y < 1 && takenOff) {
             landedAtHome = true;
             const msgDiv = document.getElementById("message");
             msgDiv.innerHTML = translations[currentLanguage].landingMessage;
             document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
-            // Play sweet sound to signify mission completion.
             sweetSound.play().catch(err => console.log("Error playing sweetSound:", err));
             if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
               drawHomeMarker(homeMarker.userData.ctx, "yellow");
@@ -1211,6 +1210,7 @@
           }
         }
       
+        // Update camera
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion();
         quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
@@ -1223,6 +1223,20 @@
         document.getElementById("info").textContent =
           translations[currentLanguage].altitude + ": " + alt + " | " +
           translations[currentLanguage].distance + ": " + dist;
+      
+        // Recover Flight Path drawing in top view.
+        if (flightPathActive && takenOff) {
+          flightPathPoints.push(drone.position.clone());
+          // Limit points to avoid memory growth
+          if(flightPathPoints.length > 500) {
+            flightPathPoints.shift();
+          }
+          if (flightPathLine) scene.remove(flightPathLine);
+          const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
+          const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+          flightPathLine = new THREE.Line(geometry, material);
+          scene.add(flightPathLine);
+        }
       
         renderer.render(scene, camera);
         topViewRenderer.render(scene, topViewCamera);
