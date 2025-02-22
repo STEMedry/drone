@@ -421,6 +421,19 @@
         }).catch(err => {
           console.log("Error unlocking bonusAudio:", err);
         });
+        // Also unlock our new audios.
+        sweetAudio.play().then(() => {
+          sweetAudio.pause();
+          sweetAudio.currentTime = 0;
+        }).catch(() => {});
+        rth12Audio.play().then(() => {
+          rth12Audio.pause();
+          rth12Audio.currentTime = 0;
+        }).catch(() => {});
+        land1Audio.play().then(() => {
+          land1Audio.pause();
+          land1Audio.currentTime = 0;
+        }).catch(() => {});
         // Remove the event listener after unlocking.
         document.removeEventListener("touchstart", unlockAudio);
       }
@@ -438,6 +451,11 @@
       // Create bonusAudio for playing bonus sound when passing a hoop.
       const bonusAudio = new Audio("bonus.mp3");
       bonusAudio.loop = false;
+      
+      // New Audio objects for mission events:
+      const sweetAudio = new Audio("sweet.mp3");  // Mission successful landing.
+      const rth12Audio = new Audio("rth12.mp3");    // Playing during RTH phase.
+      const land1Audio = new Audio("land1.mp3");    // Playing when above home during landing.
       
       // Linear interpolation helper.
       function lerp(a, b, t) {
@@ -989,7 +1007,11 @@
         msgDiv.style.display = "block";
         msgDiv.innerHTML = "Return-to-Home in Progress";
         msgDiv.classList.add("blinking");
-        // If RTH is activated, stop the fly audio.
+        // When RTH is pressed, play rth12.mp3.
+        if (rth12Audio.paused) {
+          rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
+        }
+        // Ensure flyAudio is stopped.
         if (flyAudioPlaying) {
           flyAudio.pause();
           flyAudio.currentTime = 0;
@@ -1038,7 +1060,14 @@
             const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
             if (hDist > 1) {
               msgDiv.innerHTML = "Return-to-Home in Progress";
-              msgDiv.classList.add("blinking");
+              // Ensure rth12Audio is playing and land1Audio is stopped.
+              if (rth12Audio.paused) {
+                rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
+              }
+              if (!land1Audio.paused) {
+                land1Audio.pause();
+                land1Audio.currentTime = 0;
+              }
               const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
               const desiredYaw = Math.atan2(dir.x, dir.z);
               drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
@@ -1046,7 +1075,14 @@
               drone.position.z += dir.z * 30 * delta;
             } else {
               msgDiv.innerHTML = "Automatic Landing";
-              msgDiv.classList.remove("blinking");
+              // Switch to land1Audio when above the home point.
+              if (!rth12Audio.paused) {
+                rth12Audio.pause();
+                rth12Audio.currentTime = 0;
+              }
+              if (land1Audio.paused) {
+                land1Audio.play().catch(err => console.log("Error playing land1Audio:", err));
+              }
               if (drone.position.y > 0.45) {
                 drone.position.y -= 5 * delta;
               }
@@ -1059,13 +1095,12 @@
                 msgDiv.style.display = "none";
                 rthBtn.style.backgroundColor = "#2196f3";
                 disableDroneControls = true;
+                // Stop land1Audio when landing is complete.
+                if (!land1Audio.paused) {
+                  land1Audio.pause();
+                  land1Audio.currentTime = 0;
+                }
               }
-            }
-            // Stop the flight sound when RTH is active.
-            if (flyAudioPlaying) {
-              flyAudio.pause();
-              flyAudio.currentTime = 0;
-              flyAudioPlaying = false;
             }
           } else {
             syncJoystickWithKeyboard();
@@ -1180,6 +1215,7 @@
           }
         }
       
+        // When all hoops are passed and the drone lands at home, update the home marker and play sweetAudio.
         if (allHoopsPassed && !landedAtHome) {
           const dX = drone.position.x;
           const dZ = drone.position.z;
@@ -1188,6 +1224,13 @@
             landedAtHome = true;
             const msgDiv = document.getElementById("message");
             msgDiv.innerHTML = translations[currentLanguage].landingMessage;
+            // Change home marker from white to yellow.
+            if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+              drawHomeMarker(homeMarker.userData.ctx, "yellow");
+              homeMarker.userData.texture.needsUpdate = true;
+            }
+            // Play sweet.mp3 to signify mission completion.
+            sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
             document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
           }
         }
@@ -1270,6 +1313,9 @@
           flyAudio.volume = 0;
           flyAudioPlaying = false;
         }
+        // Reset our RTH audios.
+        if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
+        if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
         updateUIText();
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
