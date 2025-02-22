@@ -415,10 +415,16 @@
       sweetSound.loop = false;
       // landAudio and rthAudio are defined later.
       
+      // Create flyAudio to play "flysound.mp3" during flight.
+      const flyAudio = new Audio("flysound.mp3");
+      flyAudio.loop = true;
+      flyAudio.volume = 0; // start at a low volume for fade-in
+      let flyAudioPlaying = false;
+      
       // --- Audio Unlock for iOS ---
       // iOS requires a user gesture to enable sound. Unlock all audios on first touch.
       function unlockAudio() {
-        [bonusSound, sweetSound, landAudio, rthAudio].forEach(audio => {
+        [bonusSound, sweetSound, landAudio, rthAudio, flyAudio].forEach(audio => {
           audio.play().then(() => {
             audio.pause();
             audio.currentTime = 0;
@@ -974,6 +980,12 @@
       // RTH Button event listener: ignore if altitude is less than 1.
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) { return; }
+        // When RTH is activated, stop the flyAudio immediately.
+        if (flyAudioPlaying) {
+          flyAudio.pause();
+          flyAudio.currentTime = 0;
+          flyAudioPlaying = false;
+        }
         rthActive = true;
         this.style.backgroundColor = "grey";
         const msgDiv = document.getElementById("message");
@@ -1015,6 +1027,13 @@
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
+      
+        // If RTH active then ensure flyAudio stops.
+        if (rthActive && flyAudioPlaying) {
+          flyAudio.pause();
+          flyAudio.currentTime = 0;
+          flyAudioPlaying = false;
+        }
       
         if (rthActive) {
           // Disable manual controls during RTH.
@@ -1098,6 +1117,25 @@
             drone.yaw = 0;
             drone.pitch = 0;
             drone.roll = 0;
+          }
+          
+          // --- Start and Fade In flyAudio when the drone has taken off ---
+          if (drone.position.y > 1.0) {
+            if (!flyAudioPlaying) {
+              flyAudio.play().catch(err => console.log("Error playing flyAudio", err));
+              flyAudioPlaying = true;
+              flyAudio.volume = 0;
+            }
+            // Fade in: increase volume gradually (adjust fade rate as needed)
+            if (flyAudio.volume < 1.0) {
+              flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
+            }
+          } else {
+            if (flyAudioPlaying) {
+              flyAudio.pause();
+              flyAudio.currentTime = 0;
+              flyAudioPlaying = false;
+            }
           }
         }
       
