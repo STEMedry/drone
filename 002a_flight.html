@@ -505,8 +505,6 @@
       
       let missionCompleted = false;
       let rthActive = false;
-      // New flag to mark when Return-to-Home is initiated.
-      let rthInitiated = false;
       
       // --- Audio Setup ---
       let rthAudio = new Audio("RTH12.mp3");
@@ -977,7 +975,6 @@
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) { return; }
         rthActive = true;
-        rthInitiated = true;  // Mark that RTH has been initiated.
         this.style.backgroundColor = "grey";
         const msgDiv = document.getElementById("message");
         msgDiv.style.display = "block";
@@ -1045,10 +1042,10 @@
             }
             // --- Play Land1.mp3 when above the home point ---
             if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2) {
-              // Delay start of Land1.mp3 by 500ms to ensure clear playback.
+              // Delay start of Land1.mp3 by 100ms to ensure overlap is avoided.
               setTimeout(function() {
                 landAudio.play().catch(err => console.log("land audio error", err));
-              }, 500);
+              }, 100);
               landAudioPlayed = true;
             }
             // Continue automatic landing (descent) if drone is above base altitude.
@@ -1063,6 +1060,8 @@
               landAudio.pause();
               landAudio.currentTime = 0;
               rthActive = false;
+              msgDiv.style.display = "none";
+              rthBtn.style.backgroundColor = "#2196f3";
               rthAudioPlaying = false;
               landAudioPlayed = false;
             }
@@ -1120,6 +1119,7 @@
             hoop.entered = true;
           }
           if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff) {
+            // Only trigger bonus sound if the drone has taken off.
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               // Change hoop color from orange to green.
@@ -1142,15 +1142,25 @@
             hoop.entered = false;
           }
         });
-        // --- Mission Completion Check ---
-        // Only complete landing (and play sweet sound) if return-to-home was initiated.
-        if (allHoopsPassed && rthInitiated && !landedAtHome) {
+        if (!allHoopsPassed) {
+          let passedCount = 0;
+          hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
+          if (passedCount === totalHoops) {
+            allHoopsPassed = true;
+            const msgDiv = document.getElementById("message");
+            msgDiv.style.display = "block";
+            msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
+          }
+        }
+      
+        // Mission completion: when all hoops are passed and drone is landing.
+        if (allHoopsPassed && !landedAtHome) {
           const dX = drone.position.x;
           const dZ = drone.position.z;
           const distToHome = Math.sqrt(dX * dX + dZ * dZ);
-          if (distToHome < 10 && drone.position.y <= 0.45 + 0.01 && takenOff) {
+          // Only trigger landing if takenOff is true.
+          if (distToHome < 10 && drone.position.y < 1 && takenOff) {
             landedAtHome = true;
-            rthInitiated = false; // reset this flag so sweet.mp3 is not triggered on take off
             const msgDiv = document.getElementById("message");
             msgDiv.innerHTML = translations[currentLanguage].landingMessage;
             document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
