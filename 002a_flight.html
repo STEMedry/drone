@@ -88,7 +88,7 @@
       /* Info box for Altitude & Distance (red and bold) */
       #info {
         position: absolute;
-        top: 20px;
+        top: 10px;
         left: 50%;
         transform: translateX(-50%);
         font-size: 18px;
@@ -501,7 +501,9 @@
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
-        let dragging = false, pointerId = null, activeTouchId = null;
+        let dragging = false,
+          pointerId = null,
+          activeTouchId = null;
         let center = { x: 0, y: 0 };
         const maxDist = 40;
         joystickObj.active = false;
@@ -824,7 +826,7 @@
         }
       });
 
-      // RTH Button event
+      // RTH Button event listener.
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) { return; }
         rthActive = true;
@@ -1038,7 +1040,7 @@
           translations[currentLanguage].flightSpeed + flightSpeed.toFixed(1) + "<br>" +
           translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s";
 
-        // Process controls only if they are not locked and flight has not ended.
+        // Process controls only if not locked and flight not ended.
         if (!disableDroneControls && !flightEnded) {
           if (rthActive) {
             const msgDiv = document.getElementById("message");
@@ -1075,6 +1077,9 @@
               drone.roll = lerp(drone.roll, 0, 0.1);
               if (drone.position.y <= 0.45 + 0.01) {
                 drone.position.y = 0.45;
+                // Stop the landing sound after landing
+                land1Audio.pause();
+                land1Audio.currentTime = 0;
                 rthActive = false;
                 flightEnded = true;
                 document.getElementById("message").style.display = "none";
@@ -1203,7 +1208,10 @@
             homeMarker.userData.texture.needsUpdate = true;
           }
           sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
-          // Attach click listener to New Game button embedded in the landing message.
+          // Stop land1 audio just in case.
+          land1Audio.pause();
+          land1Audio.currentTime = 0;
+          // Attach listener to New Game button embedded in landing message.
           document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
         }
 
@@ -1237,7 +1245,7 @@
       animate();
 
       function resetDrone() {
-        // Reset simulation to default state.
+        // Reset simulation state.
         drone.position.set(0, 0.45, 0);
         drone.yaw = 0;
         drone.pitch = 0;
@@ -1282,7 +1290,7 @@
         }
         rthBtn.style.backgroundColor = "#2196f3";
         disableDroneControls = false;
-        flightEnded = false;  // Unlock controls for new game
+        flightEnded = false;  // Unlock controls
         totalDistance = 0;
         totalFlightTime = 0;
         previousPosition = null;
