@@ -404,11 +404,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
       // --- Global Audio Setup ---
-      // Pre-create bonusSound and sweetSound so they can be unlocked on iOS and reused.
-      const bonusSound = new Audio("bonus.mp3");
-      bonusSound.loop = false;
-      const sweetSound = new Audio("sweet.mp3");
-      sweetSound.loop = false;
+      // Removed bonusSound, sweetSound, and landAudio.
       
       // Create flyAudio to play "flysound.mp3" during flight.
       const flyAudio = new Audio("flysound.mp3");
@@ -416,13 +412,10 @@
       flyAudio.volume = 0; // start muted for fade-in
       let flyAudioPlaying = false;
       
-      // --- Audio Setup for Landing & RTH ---
+      // --- Audio Setup for RTH ---
       let rthAudio = new Audio("rth12.mp3");
       rthAudio.loop = true;
-      let landAudio = new Audio("land1.mp3");
-      landAudio.loop = false;
       let rthAudioPlaying = false;
-      let landAudioPlayed = false;
       
       // Global flag to disable drone controls after a mission is completed and landed.
       let disableDroneControls = false;
@@ -430,7 +423,7 @@
       // --- Audio Unlock for iOS ---
       function unlockAudio() {
         // Only unlock audios that are defined.
-        [bonusSound, sweetSound, flyAudio, landAudio, rthAudio].forEach(audio => {
+        [flyAudio, rthAudio].forEach(audio => {
           if (audio) {
             // Temporarily set volume to 0 so that unlocking does not produce audible sound.
             const prevVolume = audio.volume;
@@ -1071,13 +1064,6 @@ function animate() {
           rthAudio.currentTime = 0;
           rthAudioPlaying = false;
         }
-        // Play land1.mp3 when above the home marker (and only if already in flight).
-        if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2 && takenOff) {
-          setTimeout(function() {
-            landAudio.play().catch(err => console.log("land audio error", err));
-          }, 100);
-          landAudioPlayed = true;
-        }
         // Automatic descent.
         if (drone.position.y > 0.45) {
           drone.position.y -= 5 * delta;
@@ -1087,13 +1073,10 @@ function animate() {
         drone.roll = lerp(drone.roll, 0, 0.1);
         if (drone.position.y <= 0.45 + 0.01) {
           drone.position.y = 0.45;
-          landAudio.pause();
-          landAudio.currentTime = 0;
           rthActive = false;
           msgDiv.style.display = "none";
           rthBtn.style.backgroundColor = "#2196f3";
           rthAudioPlaying = false;
-          landAudioPlayed = false;
           // Also freeze the drone once landed so that it cannot move.
           disableDroneControls = true;
         }
@@ -1183,7 +1166,6 @@ function animate() {
       if (hoop.number === currentExpectedHoop) {
         hoop.passed = true;
         hoop.mesh.material.color.set(0x00ff00);
-        bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
         currentExpectedHoop++;
         const cell = document.getElementById("hoopCell-" + hoop.number);
         if (cell) cell.classList.add("passed");
@@ -1222,7 +1204,6 @@ function animate() {
       const msgDiv = document.getElementById("message");
       msgDiv.innerHTML = translations[currentLanguage].landingMessage;
       document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
-      sweetSound.play().catch(err => console.log("Error playing sweetSound:", err));
       if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
         drawHomeMarker(homeMarker.userData.ctx, "yellow");
         homeMarker.userData.texture.needsUpdate = true;
@@ -1307,7 +1288,6 @@ function resetDrone() {
   }
   rthBtn.style.backgroundColor = "#2196f3";
   rthAudioPlaying = false;
-  landAudioPlayed = false;
   disableDroneControls = false;
   flyAudioPlaying = false;
   if (flyAudio.played.length > 0) {
