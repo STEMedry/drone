@@ -396,10 +396,20 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // Quick check to verify Three.js is loaded.
-      if (THREE) {
-        console.log("Three.js loaded successfully.");
+      // --- Audio Unlock for iOS ---
+      // iOS Safari requires user interaction to play audio.
+      // On the first touch, we "unlock" all audio objects:
+      function unlockAudio() {
+        // Play all audio objects briefly to unlock them.
+        [bonusSound, sweetSound, landAudio, rthAudio].forEach(audio => {
+          audio.play().then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+          }).catch(() => {});
+        });
+        document.removeEventListener("touchstart", unlockAudio);
       }
+      document.addEventListener("touchstart", unlockAudio, false);
       
       // Linear interpolation helper.
       function lerp(a, b, t) {
@@ -483,10 +493,9 @@
       let rthActive = false;
       
       // --- Audio Setup ---
-      // Existing audio.
+      // Create audio objects.
       const bonusSound = new Audio("bonus.mp3");
       const sweetSound = new Audio("sweet.mp3");
-      // New audio objects for RTH and Landing.
       let rthAudio = new Audio("RTH12.mp3");
       rthAudio.loop = true;
       let landAudio = new Audio("Land1.mp3");
@@ -502,7 +511,7 @@
         let pointerId = null;
         let activeTouchId = null;
         let center = { x: 0, y: 0 };
-        const maxDist = 40; // Maximum displacement.
+        const maxDist = 40;
         joystickObj.active = false;
         function updateThumb(dx, dy) {
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -983,7 +992,7 @@
       });
       
       // RTH Button event listener:
-      // If the drone's altitude is less than 1, the button will not respond.
+      // If the drone's altitude is less than 1, do nothing.
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) {
           return;
@@ -1037,7 +1046,7 @@
         if (rthActive) {
           // When RTH is active, manual controls are disabled.
           const msgDiv = document.getElementById("message");
-          // Compute horizontal distance from drone to home (home = (0, *, 0)).
+          // Compute horizontal distance from drone to home (home = (0,*,0)).
           const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
           if (hDist > 1) {
             // While far from home horizontally.
@@ -1071,10 +1080,9 @@
             drone.yaw = lerp(drone.yaw, 0, 0.05);
             drone.pitch = lerp(drone.pitch, 0, 0.1);
             drone.roll = lerp(drone.roll, 0, 0.1);
-            // Stop Land1.mp3 when landing finishes.
+            // When landing completes, stop playing Land1.mp3.
             if (drone.position.y <= 0.45 + 0.01) {
               drone.position.y = 0.45;
-              // Stop Land1.mp3 playing:
               landAudio.pause();
               landAudio.currentTime = 0;
               rthActive = false;
