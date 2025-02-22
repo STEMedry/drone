@@ -410,7 +410,7 @@
       // --- Audio Unlock for iOS ---
       // iOS requires a user gesture to enable sound. Unlock all audios on first touch.
       function unlockAudio() {
-        [bonusSound, sweetSound, landAudio, rthAudio].forEach(audio => {
+        [rthAudio, landAudio].forEach(audio => {
           audio.play().then(() => {
             audio.pause();
             audio.currentTime = 0;
@@ -499,7 +499,7 @@
       let rthActive = false;
       
       // --- Audio Setup ---
-      // We define rthAudio and also define bonusSound and sweetSound source URLs.
+      // Preload the main audio objects.
       const bonusSoundSrc = "bonus.mp3";
       const sweetSoundSrc = "sweet.mp3";
       let rthAudio = new Audio("RTH12.mp3");
@@ -1022,18 +1022,27 @@
               rthAudio.play().catch(err => console.log("RTH audio error", err));
               rthAudioPlaying = true;
             }
+            // Move drone toward home.
             const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
             const desiredYaw = Math.atan2(dir.x, dir.z);
             drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
             drone.position.x += dir.x * 30 * delta;
             drone.position.z += dir.z * 30 * delta;
           } else {
+            // When over the home point, stop RTH audio if still playing.
+            if (rthAudioPlaying) {
+              rthAudio.pause();
+              rthAudio.currentTime = 0;
+              rthAudioPlaying = false;
+            }
             msgDiv.innerHTML = "Automatic Landing";
             msgDiv.classList.remove("blinking");
+            // Start Land1.mp3 if not already playing.
             if (!landAudioPlayed) {
-              landAudio.play().catch(err => console.log("land audio error", err));
+              landAudio.play().catch(err => console.log("Land audio error", err));
               landAudioPlayed = true;
             }
+            // Descend until reaching ground level (0.45)
             if (drone.position.y > 0.45) {
               drone.position.y -= 5 * delta;
             }
@@ -1042,6 +1051,7 @@
             drone.roll = lerp(drone.roll, 0, 0.1);
             if (drone.position.y <= 0.45 + 0.01) {
               drone.position.y = 0.45;
+              // Stop Land audio.
               landAudio.pause();
               landAudio.currentTime = 0;
               rthActive = false;
@@ -1049,6 +1059,8 @@
               rthBtn.style.backgroundColor = "#2196f3";
               rthAudioPlaying = false;
               landAudioPlayed = false;
+              // Play sweet sound to signify mission completion.
+              new Audio(sweetSoundSrc).play().catch(err => console.log("Sweet sound error", err));
             }
           }
         } else {
@@ -1059,8 +1071,7 @@
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
           
-          // When drone is sufficiently above ground, allow yaw/pitch/roll.
-          // Otherwise, when altitude is nearly 0 (i.e. drone.position.y near 0.45), disable those controls.
+          // Only allow yaw/pitch/roll if altitude is above ground level.
           if (drone.position.y > 0.50) {
             let yawInput =
               (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
@@ -1081,6 +1092,7 @@
             horizontalDisplacement.multiplyScalar(translationSpeed * delta);
             drone.position.add(horizontalDisplacement);
           } else {
+            // When near ground, fix yaw/pitch/roll (the quadcopter cannot turn on ground).
             drone.yaw = 0;
             drone.pitch = 0;
             drone.roll = 0;
@@ -1126,7 +1138,7 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
-              // Play bonus sound when passing each hoop.
+              // Play bonus sound for each hoop passed.
               new Audio(bonusSoundSrc).play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
@@ -1152,25 +1164,6 @@
             const msgDiv = document.getElementById("message");
             msgDiv.style.display = "block";
             msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
-          }
-        }
-      
-        if (allHoopsPassed && !landedAtHome) {
-          const dX = drone.position.x;
-          const dZ = drone.position.z;
-          const distToHome = Math.sqrt(dX * dX + dZ * dZ);
-          // Only trigger landing if takenOff is true
-          if (distToHome < 10 && drone.position.y < 1 && takenOff) {
-            landedAtHome = true;
-            const msgDiv = document.getElementById("message");
-            msgDiv.innerHTML = translations[currentLanguage].landingMessage;
-            document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
-            // Play sweet sound when landing is finished.
-            new Audio(sweetSoundSrc).play().catch(err => console.log("Error playing sweetSound:", err));
-            if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
-              drawHomeMarker(homeMarker.userData.ctx, "yellow");
-              homeMarker.userData.texture.needsUpdate = true;
-            }
           }
         }
       
