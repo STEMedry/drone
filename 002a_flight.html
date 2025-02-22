@@ -1030,7 +1030,7 @@
             drone.position.x += dir.x * 30 * delta;
             drone.position.z += dir.z * 30 * delta;
           } else {
-            // Over home point: stop RTH audio and start landing.
+            // Over home point: stop RTH audio and begin landing.
             if (rthAudioPlaying) {
               rthAudio.pause();
               rthAudio.currentTime = 0;
@@ -1057,8 +1057,14 @@
               rthBtn.style.backgroundColor = "#2196f3";
               rthAudioPlaying = false;
               landAudioPlayed = false;
-              // Play sweet sound to signify mission completion.
-              new Audio(sweetSoundSrc).play().catch(err => console.log("Sweet sound error", err));
+              // When all hoops are passed and landed, change the home marker to yellow and play sweet.mp3.
+              if (allHoopsPassed) {
+                if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+                  drawHomeMarker(homeMarker.userData.ctx, "yellow");
+                  homeMarker.userData.texture.needsUpdate = true;
+                }
+                new Audio(sweetSoundSrc).play().catch(err => console.log("Sweet sound error", err));
+              }
             }
           }
         } else {
@@ -1069,12 +1075,11 @@
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
           
-          // Allow yaw (from left joystick and keyboard) only if drone is above ground or throttle up is executed.
+          // Allow yaw only if above ground or if throttle up (a positive throttle input) is executed.
           if (drone.position.y > 0.50 || throttleInput > 0) {
             let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
           } else {
-            // On ground with no throttle input, do not allow yaw left/right.
             drone.yaw = 0;
           }
       
@@ -1138,7 +1143,7 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
-              // Play bonus sound from the unlocked bonusAudio.
+              // Play bonus sound (pause and restart to ensure it plays on iPad)
               bonusAudio.pause();
               bonusAudio.currentTime = 0;
               bonusAudio.play().catch(err => console.log("Error playing bonusSound:", err));
@@ -1158,16 +1163,6 @@
             hoop.entered = false;
           }
         });
-        if (!allHoopsPassed) {
-          let passedCount = 0;
-          hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
-          if (passedCount === totalHoops) {
-            allHoopsPassed = true;
-            const msgDiv = document.getElementById("message");
-            msgDiv.style.display = "block";
-            msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
-          }
-        }
       
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion();
