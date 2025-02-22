@@ -65,8 +65,8 @@
       }
       /* Blinking animation for the message */
       @keyframes blinking {
-        0% { opacity: 1; }
-        50% { opacity: 0; }
+        0%   { opacity: 1; }
+        50%  { opacity: 0; }
         100% { opacity: 1; }
       }
       .blinking {
@@ -407,13 +407,18 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+      // --- Global Audio Setup ---
+      // Pre-create bonusSound and sweetSound so that they can be unlocked on iOS and reused.
+      const bonusSound = new Audio("bonus.mp3");
+      bonusSound.loop = false;
+      const sweetSound = new Audio("sweet.mp3");
+      sweetSound.loop = false;
+      // landAudio and rthAudio are already created below.
+      
       // --- Audio Unlock for iOS ---
-      // iOS requires a user gesture to enable sound.
-      // We unlock rthAudio, landAudio and bonusAudio on first touch.
-      let bonusAudio = new Audio("bonus.mp3");
-      bonusAudio.preload = "auto";
+      // iOS requires a user gesture to enable sound. Unlock all audios on first touch.
       function unlockAudio() {
-        [rthAudio, landAudio, bonusAudio].forEach(audio => {
+        [bonusSound, sweetSound, landAudio, rthAudio].forEach(audio => {
           audio.play().then(() => {
             audio.pause();
             audio.currentTime = 0;
@@ -422,12 +427,12 @@
         document.removeEventListener("touchstart", unlockAudio);
       }
       document.addEventListener("touchstart", unlockAudio, false);
-
+      
       // Linear interpolation helper.
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
-
+      
       // Helper function to create a directional sprite.
       function createDirectionSprite(text, color = "black") {
         const canvas = document.createElement("canvas");
@@ -446,26 +451,26 @@
         sprite.scale.set(250, 250, 1);
         return sprite;
       }
-
+      
       // --- Three.js Scene Setup ---
       const scene = new THREE.Scene();
-
+      
       const northSprite = createDirectionSprite("NORTH");
       northSprite.position.set(0, 8, 540);
       scene.add(northSprite);
-
+      
       const eastSprite = createDirectionSprite("EAST");
       eastSprite.position.set(-540, 8, 0);
       scene.add(eastSprite);
-
+      
       const southSprite = createDirectionSprite("SOUTH");
       southSprite.position.set(0, 8, -540);
       scene.add(southSprite);
-
+      
       const westSprite = createDirectionSprite("WEST");
       westSprite.position.set(540, 8, 0);
       scene.add(westSprite);
-
+      
       // Home Marker Creation.
       function drawHomeMarker(ctx, padColor) {
         ctx.clearRect(0, 0, 256, 256);
@@ -497,20 +502,20 @@
         mesh.userData = { canvas: canvas, ctx: ctx, texture: texture };
         return mesh;
       }
-
+      
       let missionCompleted = false;
       let rthActive = false;
-
+      
       // --- Audio Setup ---
-      // Preload rthAudio and landAudio.
-      const sweetSoundSrc = "sweet.mp3";
+      const bonusSoundSrc = "bonus.mp3";  // Now using bonusSound object.
+      const sweetSoundSrc = "sweet.mp3";  // Now using sweetSound object.
       let rthAudio = new Audio("RTH12.mp3");
       rthAudio.loop = true;
       let landAudio = new Audio("Land1.mp3");
       landAudio.loop = false;
       let rthAudioPlaying = false;
       let landAudioPlayed = false;
-
+      
       // --- Virtual Joystick Helper ---
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
@@ -596,7 +601,7 @@
         container.addEventListener("touchmove", onTouchMove, { passive: false });
         container.addEventListener("touchend", onTouchEnd, { passive: false });
       }
-
+      
       // --- Joystick Label Active Color Updates ---
       function updateLeftJoystickLabels() {
         const upLabel = document.querySelector("#leftJoystick .label-top");
@@ -626,7 +631,7 @@
         if (rightJoystickInput.dx < -0.1) { leftLabel.style.color = "orange"; }
         else if (rightJoystickInput.dx > 0.1) { rightLabel.style.color = "orange"; }
       }
-
+      
       // --- Top View Navigation ---
       let topViewTarget = new THREE.Vector3(0, 0, 0);
       const topViewHeight = 1000;
@@ -656,17 +661,17 @@
         topViewCamera.position.set(0, topViewHeight, 0);
         topViewCamera.lookAt(topViewTarget);
       });
-
+      
       // --- Global Variables & Translations ---
       let currentExpectedHoop = 1;
       let landedAtHome = false;
       let takenOff = false;
       let allHoopsPassed = false;
       let currentLanguage = "en";
-
+      
       // Reference to the RTH button.
       let rthBtn = document.getElementById("rthBtn");
-
+      
       const translations = {
         en: {
           title: "Quadcopter Flight Simulation",
@@ -709,7 +714,7 @@
           distance: "距離"
         }
       };
-
+      
       function updateUIText() {
         document.getElementById("title").innerHTML = translations[currentLanguage].title;
         document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
@@ -740,7 +745,7 @@
         document.getElementById("zoomOut").innerHTML =
           translations[currentLanguage].zoomOut;
       }
-
+      
       document.getElementById("langToggle").addEventListener("click", function () {
         if (currentLanguage === "en") {
           currentLanguage = "zh";
@@ -751,26 +756,21 @@
         }
         updateUIText();
       });
-
+      
       // --- Main Renderer Setup ---
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0x87ceeb);
       renderer.shadowMap.enabled = true;
       document.body.appendChild(renderer.domElement);
-
-      const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        2000
-      );
+      
+      const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
       window.addEventListener("resize", () => {
         camera.aspect = window.innerWidth / window.innerHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
-
+      
       // --- Top View Renderer & Orthographic Camera ---
       const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       topViewRenderer.setSize(200, 200);
@@ -783,7 +783,7 @@
       topViewCamera.lookAt(topViewTarget);
       topViewCamera.zoom = 5;
       topViewCamera.updateProjectionMatrix();
-
+      
       document.getElementById("zoomIn").addEventListener("click", () => {
         topViewCamera.zoom *= 1.1;
         topViewCamera.updateProjectionMatrix();
@@ -792,7 +792,7 @@
         topViewCamera.zoom /= 1.1;
         topViewCamera.updateProjectionMatrix();
       });
-
+      
       // --- Ground & Grid ---
       const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
       const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xededed });
@@ -802,11 +802,11 @@
       scene.add(ground);
       const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
       scene.add(grid);
-
+      
       // --- Home Marker ---
       const homeMarker = createHomeMarker();
       scene.add(homeMarker);
-
+      
       // --- Lighting ---
       const ambientLight = new THREE.AmbientLight(0x404040);
       scene.add(ambientLight);
@@ -819,7 +819,7 @@
       directionalLight.shadow.camera.far = 500;
       directionalLight.shadow.bias = -0.001;
       scene.add(directionalLight);
-
+      
       // --- Drone Setup ---
       const droneGroup = new THREE.Group();
       droneGroup.rotation.order = "YXZ";
@@ -858,7 +858,7 @@
       }
       const label = createDroneLabel("EdUHK");
       droneGroup.add(label);
-
+      
       // --- Propellers Setup ---
       const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
       const propellers = [];
@@ -880,7 +880,7 @@
       propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
       droneGroup.scale.set(3, 3, 3);
       droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
-
+      
       // --- Blinking Spots on Propellers ---
       const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
       propellers.forEach((prop, index) => {
@@ -891,7 +891,7 @@
         prop.blinkOffset = index * (Math.PI / 2);
         prop.blinkSpot = blinkSpot;
       });
-
+      
       // --- Hoops Setup ---
       const totalHoops = 10;
       const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
@@ -942,7 +942,7 @@
         scene.add(hoop.mesh);
         hoops.push(hoop);
       }
-
+      
       // --- User Input ---
       let translationSpeed = 50;
       const yawSpeed = 1.0;
@@ -972,7 +972,7 @@
           if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
         }
       });
-
+      
       // RTH Button event listener: ignore if altitude is less than 1.
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) { return; }
@@ -983,7 +983,7 @@
         msgDiv.innerHTML = "Return-to-Home in Progress";
         msgDiv.classList.add("blinking");
       });
-
+      
       function syncJoystickWithKeyboard() {
         if (!leftJoystickInput.active) {
           let leftKbDx = 0, leftKbDy = 0;
@@ -994,7 +994,7 @@
           leftJoystickInput.dx = leftKbDx;
           leftJoystickInput.dy = leftKbDy;
           const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
-          leftThumb.style.transform = (leftKbDx || leftKbDy)
+          leftThumb.style.transform = (leftKbDx !== 0 || leftKbDy !== 0)
             ? `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`
             : "translate(-50%, -50%)";
         }
@@ -1007,17 +1007,17 @@
           rightJoystickInput.dx = rightKbDx;
           rightJoystickInput.dy = rightKbDy;
           const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
-          rightThumb.style.transform = (rightKbDx || rightKbDy)
+          rightThumb.style.transform = (rightKbDx !== 0 || rightKbDy !== 0)
             ? `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`
             : "translate(-50%, -50%)";
         }
       }
-
+      
       const clock = new THREE.Clock();
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
-
+      
         if (rthActive) {
           // Disable manual controls during RTH.
           const msgDiv = document.getElementById("message");
@@ -1035,18 +1035,19 @@
             drone.position.x += dir.x * 30 * delta;
             drone.position.z += dir.z * 30 * delta;
           } else {
-            // Over home point: stop RTH audio and begin landing.
+            msgDiv.innerHTML = "Automatic Landing";
+            msgDiv.classList.remove("blinking");
             if (rthAudioPlaying) {
               rthAudio.pause();
               rthAudio.currentTime = 0;
               rthAudioPlaying = false;
             }
-            msgDiv.innerHTML = "Automatic Landing";
-            msgDiv.classList.remove("blinking");
-            if (!landAudioPlayed) {
-              landAudio.play().catch(err => console.log("Land audio error", err));
+            // --- Play Land1.mp3 when above the home point ---
+            if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2) {
+              landAudio.play().catch(err => console.log("land audio error", err));
               landAudioPlayed = true;
             }
+            // Use automatic landing (descent) if drone is above base altitude.
             if (drone.position.y > 0.45) {
               drone.position.y -= 5 * delta;
             }
@@ -1062,14 +1063,6 @@
               rthBtn.style.backgroundColor = "#2196f3";
               rthAudioPlaying = false;
               landAudioPlayed = false;
-              // When all hoops are passed and landed, change the home marker to yellow and play sweet.mp3.
-              if (allHoopsPassed) {
-                if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
-                  drawHomeMarker(homeMarker.userData.ctx, "yellow");
-                  homeMarker.userData.texture.needsUpdate = true;
-                }
-                (new Audio(sweetSoundSrc)).play().catch(err => console.log("Sweet sound error", err));
-              }
             }
           }
         } else {
@@ -1079,21 +1072,18 @@
           drone.position.y += throttleInput * throttleSpeed * delta;
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
-
-          // Allow yaw only if above ground or if throttle up is executed.
-          if (drone.position.y > 0.50 || throttleInput > 0) {
-            let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+          
+          // --- Disable yaw, pitch, roll if drone is at ground altitude (0 altitude) ---
+          if (drone.position.y > 0.45) {
+            let yawInput =
+              (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
-          } else {
-            drone.yaw = 0;
-          }
-
-          // For pitch and roll, only allow if above ground.
-          if (drone.position.y > 0.50) {
-            let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+            let pitchInput =
+              (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
             let desiredPitch = pitchInput * maxTilt;
             drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-            let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+            let rollInput =
+              rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
             let desiredRoll = -rollInput * maxTilt;
             drone.roll = lerp(drone.roll, desiredRoll, 0.1);
             const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
@@ -1104,14 +1094,16 @@
             horizontalDisplacement.multiplyScalar(translationSpeed * delta);
             drone.position.add(horizontalDisplacement);
           } else {
+            drone.yaw = 0;
             drone.pitch = 0;
             drone.roll = 0;
           }
         }
-
+      
         droneGroup.position.copy(drone.position);
+        // Apply rotations; note that if drone.position.y == 0.45 the rotations remain zero.
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-
+      
         propellers.forEach(prop => {
           if (drone.position.y > 0.45) { prop.currentSpinSpeed = prop.spinSpeed; }
           else { prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); }
@@ -1119,26 +1111,7 @@
           let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
           prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
         });
-
-        if (flightPathActive) {
-          const currentPos = new THREE.Vector3(drone.position.x, 0.1, drone.position.z);
-          if (flightPathPoints.length === 0 ||
-              currentPos.distanceTo(flightPathPoints[flightPathPoints.length - 1]) > 0.2) {
-            flightPathPoints.push(currentPos);
-          }
-          if (flightPathPoints.length > 1) {
-            const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
-            if (!flightPathLine) {
-              const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-              flightPathLine = new THREE.Line(geometry, material);
-              scene.add(flightPathLine);
-            } else {
-              flightPathLine.geometry.dispose();
-              flightPathLine.geometry = geometry;
-            }
-          }
-        }
-
+      
         hoops.forEach(hoop => {
           const dToHoop = drone.position.distanceTo(hoop.mesh.position);
           if (!hoop.entered && dToHoop < hoop.mainRadius) {
@@ -1149,8 +1122,8 @@
               hoop.passed = true;
               // Change hoop color from orange to green.
               hoop.mesh.material.color.set(0x00ff00);
-              // Play bonus sound simultaneously using a new Audio instance.
-              (new Audio("bonus.mp3")).play().catch(err => console.log("Error playing bonusSound:", err));
+              // Play bonus sound when passing hoop.
+              bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if (cell) cell.classList.add("passed");
@@ -1167,25 +1140,55 @@
             hoop.entered = false;
           }
         });
-
+        if (!allHoopsPassed) {
+          let passedCount = 0;
+          hoops.forEach(hoop => { if (hoop.passed) passedCount++; });
+          if (passedCount === totalHoops) {
+            allHoopsPassed = true;
+            const msgDiv = document.getElementById("message");
+            msgDiv.style.display = "block";
+            msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
+          }
+        }
+      
+        // Mission completion: if all hoops passed and drone is landing.
+        if (allHoopsPassed && !landedAtHome) {
+          const dX = drone.position.x;
+          const dZ = drone.position.z;
+          const distToHome = Math.sqrt(dX * dX + dZ * dZ);
+          // Only trigger landing if takenOff is true.
+          if (distToHome < 10 && drone.position.y < 1 && takenOff) {
+            landedAtHome = true;
+            const msgDiv = document.getElementById("message");
+            msgDiv.innerHTML = translations[currentLanguage].landingMessage;
+            document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
+            // Play sweet sound to signify mission completion.
+            sweetSound.play().catch(err => console.log("Error playing sweetSound:", err));
+            if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+              drawHomeMarker(homeMarker.userData.ctx, "yellow");
+              homeMarker.userData.texture.needsUpdate = true;
+            }
+          }
+        }
+      
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion();
         quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
         const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
         camera.position.copy(drone.position.clone().add(rotatedOffset));
         camera.lookAt(drone.position);
-
+      
         const alt = (drone.position.y - 0.45).toFixed(1);
         const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
         document.getElementById("info").textContent =
           translations[currentLanguage].altitude + ": " + alt + " | " +
           translations[currentLanguage].distance + ": " + dist;
-
+      
         renderer.render(scene, camera);
         topViewRenderer.render(scene, topViewCamera);
       }
       animate();
-
+      
       function resetDrone() {
         drone.position.set(0, 0.45, 0);
         drone.yaw = 0;
@@ -1232,7 +1235,7 @@
         updateUIText();
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
-
+      
       updateUIText();
     </script>
   </body>
