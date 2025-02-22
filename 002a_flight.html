@@ -408,9 +408,12 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
       // --- Audio Unlock for iOS ---
-      // iOS requires a user gesture to enable sound. Unlock all audios on first touch.
+      // iOS requires a user gesture to enable sound.
+      // We unlock rthAudio, landAudio, and bonusAudio on first touch.
+      let bonusAudio = new Audio("bonus.mp3");
+      bonusAudio.preload = "auto";
       function unlockAudio() {
-        [rthAudio, landAudio].forEach(audio => {
+        [rthAudio, landAudio, bonusAudio].forEach(audio => {
           audio.play().then(() => {
             audio.pause();
             audio.currentTime = 0;
@@ -499,8 +502,7 @@
       let rthActive = false;
       
       // --- Audio Setup ---
-      // Preload the main audio objects.
-      const bonusSoundSrc = "bonus.mp3";
+      // Preload bonusAudio, rthAudio, and landAudio.
       const sweetSoundSrc = "sweet.mp3";
       let rthAudio = new Audio("RTH12.mp3");
       rthAudio.loop = true;
@@ -1022,14 +1024,13 @@
               rthAudio.play().catch(err => console.log("RTH audio error", err));
               rthAudioPlaying = true;
             }
-            // Move drone toward home.
             const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
             const desiredYaw = Math.atan2(dir.x, dir.z);
             drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
             drone.position.x += dir.x * 30 * delta;
             drone.position.z += dir.z * 30 * delta;
           } else {
-            // When over the home point, stop RTH audio if still playing.
+            // Over home point: stop RTH audio and start landing.
             if (rthAudioPlaying) {
               rthAudio.pause();
               rthAudio.currentTime = 0;
@@ -1037,12 +1038,10 @@
             }
             msgDiv.innerHTML = "Automatic Landing";
             msgDiv.classList.remove("blinking");
-            // Start Land1.mp3 if not already playing.
             if (!landAudioPlayed) {
               landAudio.play().catch(err => console.log("Land audio error", err));
               landAudioPlayed = true;
             }
-            // Descend until reaching ground level (0.45)
             if (drone.position.y > 0.45) {
               drone.position.y -= 5 * delta;
             }
@@ -1051,7 +1050,6 @@
             drone.roll = lerp(drone.roll, 0, 0.1);
             if (drone.position.y <= 0.45 + 0.01) {
               drone.position.y = 0.45;
-              // Stop Land audio.
               landAudio.pause();
               landAudio.currentTime = 0;
               rthActive = false;
@@ -1071,17 +1069,21 @@
           if (drone.position.y < 0.45) drone.position.y = 0.45;
           if (!takenOff && drone.position.y > 1.0) takenOff = true;
           
-          // Only allow yaw/pitch/roll if altitude is above ground level.
-          if (drone.position.y > 0.50) {
-            let yawInput =
-              (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+          // Allow yaw (from left joystick and keyboard) only if drone is above ground or throttle up is executed.
+          if (drone.position.y > 0.50 || throttleInput > 0) {
+            let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
             drone.yaw += yawSpeed * yawInput * delta;
-            let pitchInput =
-              (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+          } else {
+            // On ground with no throttle input, do not allow yaw left/right.
+            drone.yaw = 0;
+          }
+      
+          // For pitch and roll, only allow if above ground.
+          if (drone.position.y > 0.50) {
+            let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
             let desiredPitch = pitchInput * maxTilt;
             drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-            let rollInput =
-              rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+            let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
             let desiredRoll = -rollInput * maxTilt;
             drone.roll = lerp(drone.roll, desiredRoll, 0.1);
             const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
@@ -1092,8 +1094,6 @@
             horizontalDisplacement.multiplyScalar(translationSpeed * delta);
             drone.position.add(horizontalDisplacement);
           } else {
-            // When near ground, fix yaw/pitch/roll (the quadcopter cannot turn on ground).
-            drone.yaw = 0;
             drone.pitch = 0;
             drone.roll = 0;
           }
@@ -1138,8 +1138,10 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
-              // Play bonus sound for each hoop passed.
-              new Audio(bonusSoundSrc).play().catch(err => console.log("Error playing bonusSound:", err));
+              // Play bonus sound from the unlocked bonusAudio.
+              bonusAudio.pause();
+              bonusAudio.currentTime = 0;
+              bonusAudio.play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if (cell) cell.classList.add("passed");
