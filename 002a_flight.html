@@ -513,9 +513,9 @@
       let rthActive = false;
       
       // --- Audio Setup ---
-      let rthAudio = new Audio("RTH12.mp3");
+      let rthAudio = new Audio("rth12.mp3");
       rthAudio.loop = true;
-      let landAudio = new Audio("Land1.mp3");
+      let landAudio = new Audio("land1.mp3");
       landAudio.loop = false;
       let rthAudioPlaying = false;
       let landAudioPlayed = false;
@@ -1059,9 +1059,9 @@
               rthAudio.currentTime = 0;
               rthAudioPlaying = false;
             }
-            // --- Play Land1.mp3 when above the home point ---
+            // --- Play land1.mp3 when above the home point ---
             if (!landAudioPlayed && Math.abs(drone.position.x) < 2 && Math.abs(drone.position.z) < 2) {
-              // Delay start of Land1.mp3 by 100ms to ensure overlap is avoided.
+              // Delay start of land1.mp3 by 100ms to ensure overlap is avoided.
               setTimeout(function() {
                 landAudio.play().catch(err => console.log("land audio error", err));
               }, 100);
