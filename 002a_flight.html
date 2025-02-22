@@ -88,7 +88,7 @@
       /* Info box for Altitude & Distance (red and bold) */
       #info {
         position: absolute;
-        top: 10px;
+        top: 20px;
         left: 50%;
         transform: translateX(-50%);
         font-size: 18px;
@@ -420,16 +420,18 @@
       let flyAudioPlaying = false;
 
       // --- Audio Unlock Logic ---
-      // This function unlocks the audio context by playing each audio object (volume set temporarily to 0)
-      // upon a user interaction, then immediately pausing and resetting it.
+      // To unlock the audio context on devices such as iOS without audible output,
+      // we temporarily mute the audio before playing.
       function unlockAudio() {
         const audios = [flyAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio];
         audios.forEach(audio => {
           const currentVolume = audio.volume;
-          audio.volume = 0;
+          audio.muted = true;
+          audio.volume = 0; // Ensure volume is 0
           audio.play().then(() => {
             audio.pause();
             audio.currentTime = 0;
+            audio.muted = false;
             audio.volume = currentVolume;
           }).catch(err => console.log("Error unlocking audio:", err));
         });
@@ -438,7 +440,6 @@
       document.addEventListener("touchstart", unlockAudio, false);
 
       // --- Global Variable ---
-      // Declare a global flag to disable drone controls when needed.
       let disableDroneControls = false;
 
       // --- Helper Functions ---
