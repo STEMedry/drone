@@ -403,6 +403,29 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
+      // --- Audio Unlock Setup ---
+      // On iOS, audio cannot be played until a user interacts with the page.
+      // This function unlocks the audio for both flyAudio and bonusAudio.
+      function unlockAudio() {
+        // Try playing flyAudio and bonusAudio silently (volume = 0) and then pause.
+        flyAudio.volume = 0;
+        flyAudio.play().then(() => {
+          flyAudio.pause();
+          flyAudio.currentTime = 0;
+        }).catch(err => {
+          console.log("Error unlocking flyAudio:", err);
+        });
+        bonusAudio.play().then(() => {
+          bonusAudio.pause();
+          bonusAudio.currentTime = 0;
+        }).catch(err => {
+          console.log("Error unlocking bonusAudio:", err);
+        });
+        // Remove the event listener after unlocking.
+        document.removeEventListener("touchstart", unlockAudio);
+      }
+      document.addEventListener("touchstart", unlockAudio, false);
+      
       // Global flag to disable drone controls after a mission is completed and landed.
       let disableDroneControls = false;
       
@@ -411,6 +434,10 @@
       flyAudio.loop = true;
       flyAudio.volume = 0;
       let flyAudioPlaying = false;
+      
+      // Create bonusAudio for playing bonus sound when passing a hoop.
+      const bonusAudio = new Audio("bonus.mp3");
+      bonusAudio.loop = false;
       
       // Linear interpolation helper.
       function lerp(a, b, t) {
@@ -1073,8 +1100,7 @@
               drone.roll = 0;
             }
       
-            // Flight sound fade in: When the drone is in flight (altitude > 1.0 and takenOff),
-            // start playing flyAudio with a gradual fade in effect.
+            // Flight sound fade in.
             if (drone.position.y > 1.0 && takenOff) {
               if (!flyAudioPlaying) {
                 flyAudio.play().catch(err => console.log("Error playing flyAudio:", err));
@@ -1093,7 +1119,7 @@
             }
           }
         } else {
-          // If drone controls are disabled (mission completed and landed), ensure flight sound stops.
+          // When drone controls are disabled (mission completed and landed), ensure flyAudio stops.
           if (flyAudioPlaying) {
             flyAudio.pause();
             flyAudio.currentTime = 0;
@@ -1124,6 +1150,8 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
+              // Play bonus sound when passing the hoop.
+              bonusAudio.play().catch(err => console.log("Error playing bonusAudio:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if (cell) cell.classList.add("passed");
@@ -1179,7 +1207,7 @@
       
         if (flightPathActive && takenOff) {
           flightPathPoints.push(drone.position.clone());
-          if(flightPathPoints.length > 500) {
+          if (flightPathPoints.length > 500) {
             flightPathPoints.shift();
           }
           if (flightPathLine) scene.remove(flightPathLine);
@@ -1236,7 +1264,6 @@
         }
         rthBtn.style.backgroundColor = "#2196f3";
         disableDroneControls = false;
-        // Reset flyAudio state.
         if (flyAudioPlaying) {
           flyAudio.pause();
           flyAudio.currentTime = 0;
