@@ -6,13 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Quadcopter Flight Simulation</title>
     <style>
-      /* Basic styling and prevent zoom/scroll */
+      /* Universal styles and Arial font */
+      * {
+        box-sizing: border-box;
+      }
       html, body {
         margin: 0;
         padding: 0;
+        width: 100vw;
+        height: 100vh;
         overflow: hidden;
+        font-family: Arial, sans-serif;
         touch-action: none;
-        -ms-touch-action: none;
         user-select: none;
         -webkit-user-select: none;
       }
@@ -28,6 +33,16 @@
         font-size: 32px;
         font-weight: bold;
         text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        z-index: 100;
+      }
+      /* Game Description below Title */
+      #description {
+        position: absolute;
+        top: 50px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 16px;
+        color: #333;
         z-index: 100;
       }
       /* Language Toggle Button */
@@ -133,7 +148,7 @@
       }
       #rthBtn {
         font-size: 16px;
-        padding: 10px 20px;
+        padding: 10px 10px;
         margin-top: 5px;
       }
       /* Virtual Joystick Styles */
@@ -329,14 +344,25 @@
         cursor: pointer;
       }
       /* Button Classes */
-      .btn-green { background-color: #4caf50; color: white; }
-      .btn-red { background-color: #f44336; color: white; }
-      .btn-default { background-color: #2196f3; color: white; }
+      .btn-green {
+        background-color: #4caf50;
+        color: white;
+      }
+      .btn-red {
+        background-color: #f44336;
+        color: white;
+      }
+      .btn-default {
+        background-color: #2196f3;
+        color: white;
+      }
     </style>
   </head>
   <body>
     <!-- Title -->
     <div id="title">Quadcopter Flight Simulation</div>
+    <!-- Game Description -->
+    <div id="description">Guide your drone through hoops and safely return home.</div>
     <!-- Language Toggle Button -->
     <button id="langToggle" class="btn-green">繁體中文</button>
     <!-- General Message -->
@@ -823,11 +849,11 @@
         const rInner = rOuter - 0.2;
         const shape = new THREE.Shape();
         const outerVertices = [];
-        for(let i = 0; i < 3; i++){
+        for (let i = 0; i < 3; i++){
           const theta = THREE.Math.degToRad(90 + i * 120);
           const x = rOuter * Math.cos(theta);
           const y = rOuter * Math.sin(theta);
-          outerVertices.push(new THREE.Vector2(x,y));
+          outerVertices.push(new THREE.Vector2(x, y));
         }
         shape.moveTo(outerVertices[0].x, outerVertices[0].y);
         shape.lineTo(outerVertices[1].x, outerVertices[1].y);
@@ -836,14 +862,14 @@
       
         const hole = new THREE.Path();
         const innerVertices = [];
-        for(let i = 0; i < 3; i++){
+        for (let i = 0; i < 3; i++){
           const theta = THREE.Math.degToRad(90 + i * 120);
           const x = rInner * Math.cos(theta);
           const y = rInner * Math.sin(theta);
-          innerVertices.push(new THREE.Vector2(x,y));
+          innerVertices.push(new THREE.Vector2(x, y));
         }
         hole.moveTo(innerVertices[innerVertices.length-1].x, innerVertices[innerVertices.length-1].y);
-        for(let i = innerVertices.length-2; i >=0; i--){
+        for (let i = innerVertices.length-2; i >= 0; i--){
           hole.lineTo(innerVertices[i].x, innerVertices[i].y);
         }
         hole.closePath();
@@ -873,12 +899,12 @@
       // ------------------------------------
       const altitudes = [10,15,20,25,30,35,40,45,50,55];
       const hoops = [];
-      for(let i=1; i<=10; i++){
+      for (let i = 1; i <= 10; i++){
         let hoop;
-        if(i<=4){
+        if(i <= 4){
           hoop = createCircularHoop(i);
         }
-        else if(i<=7){
+        else if(i <= 7){
           hoop = createSquareHoop(i);
         }
         else{
@@ -911,10 +937,10 @@
         if(event.code === "KeyH"){
           document.getElementById("rthBtn").click();
         }
-        else if(event.code==="KeyP"){
+        else if(event.code === "KeyP"){
           document.getElementById("toggleFlightPath").click();
         }
-        else if(event.code==="KeyR"){
+        else if(event.code === "KeyR"){
           document.getElementById("btn-reset").click();
         }
       });
@@ -1004,6 +1030,7 @@
       const translations = {
         en: {
           title: "Quadcopter Flight Simulation",
+          description: "Guide your drone through hoops and safely return home.",
           allHoopsPassed: "All hoops passed! Now fly back and land on the home point (marked with H).",
           landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
           reset: "Reset",
@@ -1031,6 +1058,7 @@
         },
         zh: {
           title: "四軸無人機飛行模擬",
+          description: "操控無人機穿越環門並安全降落於起飛點。",
           allHoopsPassed: "所有環門已通過！請飛回並在以「H」標示的起飛點著陸。",
           landingMessage: "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>新遊戲</button>",
           reset: "重置",
@@ -1060,6 +1088,7 @@
       let currentLanguage = "en";
       function updateUIText(){
         document.getElementById("title").innerHTML = translations[currentLanguage].title;
+        document.getElementById("description").innerHTML = translations[currentLanguage].description;
         document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
         const flightToggle = document.getElementById("toggleFlightPath");
         if(flightToggle){
@@ -1146,7 +1175,7 @@
       const topArrowDown = document.getElementById("topArrowDown");
       const topArrowLeft = document.getElementById("topArrowLeft");
       const topArrowRight = document.getElementById("topArrowRight");
-      const panStep = 20; // Amount to pan per click.
+      const panStep = 20;
       
       topArrowUp.addEventListener("click", () => {
         topViewCamera.position.z -= panStep;
@@ -1319,8 +1348,7 @@
           }
         }
       
-        // ---- NEW: Check for landing on home (manual landing) ----
-        // If the drone has taken off, its altitude is at baseline (<=0.46), and its horizontal distance to home (origin) is below 10, then mark flight as ended.
+        // ---- Check for landing on home (manual landing) ----
         if(!flightEnded && takenOff && drone.position.y <= 0.46) {
           const horizDist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z);
           if(horizDist < 10) {
@@ -1333,7 +1361,7 @@
         droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
       
         // Update propellers.
-        propellers.forEach(prop => {
+        propellers.forEach(prop=>{
           if(drone.position.y > 0.45){
             prop.currentSpinSpeed = prop.spinSpeed;
           } else {
@@ -1345,7 +1373,7 @@
         });
       
         // Hoop collision detection.
-        hoops.forEach(hoop => {
+        hoops.forEach(hoop=>{
           const dToHoop = drone.position.distanceTo(hoop.mesh.position);
           if(!hoop.entered && dToHoop < hoop.mainRadius){
             hoop.entered = true;
@@ -1356,20 +1384,20 @@
               hoop.mesh.material.color.set(0x00ff00);
               bonusAudio.pause();
               bonusAudio.currentTime = 0;
-              setTimeout(() => {
-                bonusAudio.play().catch(err => console.log("Error playing bonusAudio:", err));
-              }, 10);
+              setTimeout(()=>{
+                bonusAudio.play().catch(err=>console.log("Error playing bonusAudio:", err));
+              },10);
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if(cell) cell.classList.add("passed");
               const canvas = hoop.labelSprite.material.map.image;
               const ctx = canvas.getContext("2d");
-              ctx.clearRect(0, 0, canvas.width, canvas.height);
+              ctx.clearRect(0,0,canvas.width,canvas.height);
               ctx.fillStyle = "green";
               ctx.font = "Bold 80px Arial";
               ctx.textAlign = "center";
               ctx.textBaseline = "middle";
-              ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+              ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
               hoop.labelSprite.material.map.needsUpdate = true;
             }
             hoop.entered = false;
@@ -1377,7 +1405,7 @@
         });
       
         // Rotate square and triangular hoops.
-        hoops.forEach(hoop => {
+        hoops.forEach(hoop=>{
           if(hoop.type === "square" || hoop.type === "triangle"){
             hoop.mesh.rotation.z += delta;
           }
@@ -1385,8 +1413,8 @@
       
         if(!allHoopsPassed){
           let passedCount = 0;
-          hoops.forEach(hoop => { if(hoop.passed) passedCount++; });
-          if(passedCount === hoops.length){
+          hoops.forEach(hoop=>{ if(hoop.passed) passedCount++; });
+          if(passedCount===hoops.length){
             allHoopsPassed = true;
             const msgDiv = document.getElementById("message");
             msgDiv.style.display = "block";
@@ -1396,7 +1424,7 @@
       
         const dX = drone.position.x;
         const dZ = drone.position.z;
-        const distToHome = Math.sqrt(dX * dX + dZ * dZ);
+        const distToHome = Math.sqrt(dX*dX+dZ*dZ);
         if(allHoopsPassed && !landedAtHome && distToHome < 10 && drone.position.y < 1 && takenOff){
           landedAtHome = true;
           flightEnded = true;
@@ -1407,25 +1435,25 @@
             homeMarker.userData.texture.needsUpdate = true;
           }
           sweetAudio.currentTime = 0;
-          sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
+          sweetAudio.play().catch(err=>console.log("Error playing sweetAudio:", err));
           land1Audio.pause();
           land1Audio.currentTime = 0;
         }
       
-        const cameraOffset = new THREE.Vector3(0, 5, -15);
+        const cameraOffset = new THREE.Vector3(0,5,-15);
         const quat = new THREE.Quaternion();
-        quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
+        quat.setFromEuler(new THREE.Euler(0,drone.yaw,0));
         const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
         camera.position.copy(drone.position.clone().add(rotatedOffset));
         camera.lookAt(drone.position);
-        const alt = (drone.position.y - 0.45).toFixed(1);
-        const dist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z).toFixed(1);
+        const alt = (drone.position.y-0.45).toFixed(1);
+        const dist = Math.sqrt(drone.position.x*drone.position.x+drone.position.z*drone.position.z).toFixed(1);
         document.getElementById("info").textContent =
           translations[currentLanguage].altitude + ": " + alt + " | " +
           translations[currentLanguage].distance + ": " + dist;
         if(flightPathActive && takenOff){
           flightPathPoints.push(drone.position.clone());
-          if(flightPathPoints.length > 500){
+          if(flightPathPoints.length>500){
             flightPathPoints.shift();
           }
           if(flightPathLine){
@@ -1436,7 +1464,7 @@
           flightPathLine = new THREE.Line(geometry, material);
           scene.add(flightPathLine);
         }
-        renderer.render(scene, camera);
+        renderer.render(scene,camera);
         topViewRenderer.render(scene, topViewCamera);
       }
       animate();
@@ -1445,7 +1473,7 @@
       // Reset Function
       // ------------------------------------
       function resetDrone(){
-        drone.position.set(0, 0.45, 0);
+        drone.position.set(0,0.45,0);
         drone.yaw = 0;
         drone.pitch = 0;
         drone.roll = 0;
@@ -1465,29 +1493,29 @@
         rightJoystickInput.dx = 0;
         rightJoystickInput.dy = 0;
         document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-        hoops.forEach(hoop => {
+        hoops.forEach(hoop=>{
           hoop.entered = false;
           hoop.passed = false;
           hoop.mesh.material.color.setHex(hoop.originalColor);
           const canvas = hoop.labelSprite.material.map.image;
           const ctx = canvas.getContext("2d");
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.fillStyle = "yellow";
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          ctx.fillStyle="yellow";
           ctx.font = "Bold 80px Arial";
           ctx.textAlign = "center";
           ctx.textBaseline = "middle";
-          ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+          ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
           hoop.labelSprite.material.map.needsUpdate = true;
         });
         if(homeMarker && homeMarker.userData && homeMarker.userData.ctx){
-          drawHomeMarker(homeMarker.userData.ctx, "white");
+          drawHomeMarker(homeMarker.userData.ctx,"white");
           homeMarker.userData.texture.needsUpdate = true;
         }
         const msgDiv = document.getElementById("message");
         msgDiv.style.display = "none";
         msgDiv.innerHTML = "";
-        for(let i = 1; i <= hoops.length; i++){
-          const cell = document.getElementById("hoopCell-" + i);
+        for(let i=1;i<=hoops.length;i++){
+          const cell = document.getElementById("hoopCell-"+i);
           if(cell) cell.classList.remove("passed");
         }
         rthBtn.style.backgroundColor = "#2196f3";
