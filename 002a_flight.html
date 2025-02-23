@@ -445,12 +445,16 @@
       const land1Audio = new Audio("land1.mp3");
       let flyAudioPlaying = false;
       
-      // To unlock audio on iOS/iPad, add a one‑time touchstart that “primes” the audio elements.
+      // To unlock audio on iOS/iPad without playing sounds:
+      // On the first touch, temporarily set each target audio element's volume to 0 then play() and immediately pause() so that they are unlocked.
       function initAudio() {
         [flyAudio, bonusAudio, sweetAudio].forEach(audioElem => {
+          const prevVolume = audioElem.volume;
+          audioElem.volume = 0;
           audioElem.play().then(() => {
             audioElem.pause();
             audioElem.currentTime = 0;
+            audioElem.volume = prevVolume;
           }).catch(() => {});
         });
         document.removeEventListener("touchstart", initAudio);
