@@ -416,11 +416,9 @@
     <!-- Include Three.js from CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // ====================================
+      // ------------------------------------
       // Global Variables and Helper Functions
-      // ====================================
-      
-      // Define a simple lerp function.
+      // ------------------------------------
       function lerp(a, b, t) {
         return a + (b - a) * t;
       }
@@ -446,6 +444,18 @@
       const rth12Audio = new Audio("rth12.mp3");
       const land1Audio = new Audio("land1.mp3");
       let flyAudioPlaying = false;
+      
+      // To unlock audio on iOS/iPad, add a one‑time touchstart that “primes” the audio elements.
+      function initAudio() {
+        [flyAudio, bonusAudio, sweetAudio].forEach(audioElem => {
+          audioElem.play().then(() => {
+            audioElem.pause();
+            audioElem.currentTime = 0;
+          }).catch(() => {});
+        });
+        document.removeEventListener("touchstart", initAudio);
+      }
+      document.addEventListener("touchstart", initAudio, false);
       
       // Helper: createDirectionSprite
       function createDirectionSprite(text, color = "black") {
@@ -582,9 +592,9 @@
         container.addEventListener("touchend", onTouchEnd, { passive: false });
       }
       
-      // ====================================
+      // ------------------------------------
       // Three.js Scene Setup
-      // ====================================
+      // ------------------------------------
       const scene = new THREE.Scene();
       const northSprite = createDirectionSprite("NORTH");
       northSprite.position.set(0, 8, 540);
@@ -599,9 +609,9 @@
       westSprite.position.set(540, 8, 0);
       scene.add(westSprite);
       
-      // ====================================
+      // ------------------------------------
       // Home Marker Creation
-      // ====================================
+      // ------------------------------------
       function drawHomeMarker(ctx, padColor) {
         ctx.clearRect(0, 0, 256, 256);
         ctx.fillStyle = padColor;
@@ -629,15 +639,15 @@
         const mesh = new THREE.Mesh(geometry, material);
         mesh.rotation.x = -Math.PI / 2;
         mesh.position.set(0, 0.01, 0);
-        mesh.userData = { canvas: canvas, ctx: ctx, texture: texture };
+        mesh.userData = { canvas, ctx, texture };
         return mesh;
       }
       const homeMarker = createHomeMarker();
       scene.add(homeMarker);
       
-      // ====================================
+      // ------------------------------------
       // Lighting
-      // ====================================
+      // ------------------------------------
       const ambientLight = new THREE.AmbientLight(0x404040);
       scene.add(ambientLight);
       const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -650,9 +660,9 @@
       directionalLight.shadow.bias = -0.001;
       scene.add(directionalLight);
       
-      // ====================================
+      // ------------------------------------
       // Drone Setup
-      // ====================================
+      // ------------------------------------
       const droneGroup = new THREE.Group();
       droneGroup.rotation.order = "YXZ";
       scene.add(droneGroup);
@@ -691,9 +701,9 @@
       const label = createDroneLabel("EdUHK");
       droneGroup.add(label);
       
-      // ====================================
+      // ------------------------------------
       // Drone Propellers Setup
-      // ====================================
+      // ------------------------------------
       const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
       const propellers = [];
       
@@ -738,9 +748,9 @@
         prop.blinkSpot = blinkSpot;
       });
       
-      // ====================================
+      // ------------------------------------
       // Hoop Creation Functions
-      // ====================================
+      // ------------------------------------
       
       // Circular Hoop
       function createCircularHoop(number) {
@@ -783,7 +793,6 @@
         hole.lineTo(-inner, -inner);
         shape.holes.push(hole);
         const geometry = new THREE.ShapeGeometry(shape);
-        // Set material side to DoubleSide so it renders initially.
         const material = new THREE.MeshLambertMaterial({ color: 0xff69b4, side: THREE.DoubleSide });
         const hoopMesh = new THREE.Mesh(geometry, material);
         const labelSprite = createHoopLabel(number);
@@ -806,8 +815,6 @@
       function createTriangleHoop(number) {
         const rOuter = 9;
         const rInner = rOuter - 0.2;
-      
-        // Create the outer triangular shape.
         const shape = new THREE.Shape();
         const outerVertices = [];
         for (let i = 0; i < 3; i++) {
@@ -816,13 +823,11 @@
           const y = rOuter * Math.sin(theta);
           outerVertices.push(new THREE.Vector2(x, y));
         }
-        // Outer shape defined in counterclockwise order.
         shape.moveTo(outerVertices[0].x, outerVertices[0].y);
         shape.lineTo(outerVertices[1].x, outerVertices[1].y);
         shape.lineTo(outerVertices[2].x, outerVertices[2].y);
         shape.closePath();
       
-        // Create the inner hole.
         const hole = new THREE.Path();
         const innerVertices = [];
         for (let i = 0; i < 3; i++) {
@@ -831,24 +836,19 @@
           const y = rInner * Math.sin(theta);
           innerVertices.push(new THREE.Vector2(x, y));
         }
-        // Reverse order for the hole (clockwise winding)
         hole.moveTo(innerVertices[innerVertices.length - 1].x, innerVertices[innerVertices.length - 1].y);
         for (let i = innerVertices.length - 2; i >= 0; i--) {
           hole.lineTo(innerVertices[i].x, innerVertices[i].y);
         }
         hole.closePath();
-      
         shape.holes.push(hole);
       
         const geometry = new THREE.ShapeGeometry(shape);
-        // Set material side to DoubleSide.
         const material = new THREE.MeshLambertMaterial({ color: 0x800080, side: THREE.DoubleSide });
         const hoopMesh = new THREE.Mesh(geometry, material);
-      
         const labelSprite = createHoopLabel(number);
         labelSprite.position.set(0, rOuter + 2, 0);
         hoopMesh.add(labelSprite);
-      
         return {
           mesh: hoopMesh,
           mainRadius: rOuter,
@@ -862,24 +862,28 @@
         };
       }
       
-      // ====================================
+      // ------------------------------------
       // Hoops Setup (10 hoops: 4 circular, 3 square, 3 triangle)
-      // ====================================
+      // ------------------------------------
       const altitudes = [10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
       const hoops = [];
       for (let i = 1; i <= 10; i++) {
         let hoop;
-        if (i <= 4) hoop = createCircularHoop(i);
-        else if (i <= 7) hoop = createSquareHoop(i);
-        else hoop = createTriangleHoop(i);
+        if (i <= 4) {
+          hoop = createCircularHoop(i);
+        } else if (i <= 7) {
+          hoop = createSquareHoop(i);
+        } else {
+          hoop = createTriangleHoop(i);
+        }
         hoop.mesh.position.set((Math.random() - 0.5) * 160, altitudes[i - 1], (Math.random() - 0.5) * 160);
         scene.add(hoop.mesh);
         hoops.push(hoop);
       }
       
-      // ====================================
-      // User Input Handling
-      // ====================================
+      // ------------------------------------
+      // User Input Handling 
+      // ------------------------------------
       let translationSpeed = 50;
       const yawSpeed = 1.0;
       const throttleSpeed = 10;
@@ -889,9 +893,22 @@
       const rightJoystickInput = { dx: 0, dy: 0 };
       attachJoystick("leftJoystick", leftJoystickInput);
       attachJoystick("rightJoystick", rightJoystickInput);
+      
       const keys = {};
       document.addEventListener("keydown", e => { keys[e.code] = true; });
       document.addEventListener("keyup", e => { keys[e.code] = false; });
+      
+      // Keyboard shortcuts for RTH ("H"), Flight Path ("P") and Reset ("R")
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "KeyH") {
+          document.getElementById("rthBtn").click();
+        } else if (event.code === "KeyP") {
+          document.getElementById("toggleFlightPath").click();
+        } else if (event.code === "KeyR") {
+          document.getElementById("btn-reset").click();
+        }
+      });
+      
       const speedSlider = document.getElementById("speedSlider");
       speedSlider.addEventListener("input", function () {
         translationSpeed = parseFloat(this.value);
@@ -919,9 +936,9 @@
         }
       });
       
-      // ====================================
+      // ------------------------------------
       // RTH Button and Audio
-      // ====================================
+      // ------------------------------------
       document.getElementById("rthBtn").addEventListener("click", function () {
         if (drone.position.y < 1) return;
         rthActive = true;
@@ -931,6 +948,7 @@
         msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
         msgDiv.classList.add("blinking");
         if (rth12Audio.paused) {
+          rth12Audio.currentTime = 0;
           rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
         }
         if (flyAudioPlaying) {
@@ -969,9 +987,9 @@
         }
       }
       
-      // ====================================
+      // ------------------------------------
       // Translations
-      // ====================================
+      // ------------------------------------
       const translations = {
         en: {
           title: "Quadcopter Flight Simulation",
@@ -1066,9 +1084,9 @@
         updateUIText();
       });
       
-      // ====================================
+      // ------------------------------------
       // Main Renderer Setup
-      // ====================================
+      // ------------------------------------
       const renderer = new THREE.WebGLRenderer({ antialias: true });
       renderer.setSize(window.innerWidth, window.innerHeight);
       renderer.setClearColor(0x87ceeb);
@@ -1081,9 +1099,9 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
       });
       
-      // ====================================
+      // ------------------------------------
       // Top View Renderer & Orthographic Camera
-      // ====================================
+      // ------------------------------------
       const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
       topViewRenderer.setSize(200, 200);
       topViewRenderer.setClearColor(0x000000, 0);
@@ -1104,9 +1122,9 @@
         topViewCamera.updateProjectionMatrix();
       });
       
-      // ====================================
+      // ------------------------------------
       // Ground & Grid
-      // ====================================
+      // ------------------------------------
       const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
       const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xededed });
       const ground = new THREE.Mesh(groundGeometry, groundMaterial);
@@ -1116,14 +1134,14 @@
       const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
       scene.add(grid);
       
-      // ====================================
+      // ------------------------------------
       // Global Clock
-      // ====================================
+      // ------------------------------------
       const clock = new THREE.Clock();
       
-      // ====================================
+      // ------------------------------------
       // Animation Loop
-      // ====================================
+      // ------------------------------------
       function animate() {
         requestAnimationFrame(animate);
         const delta = clock.getDelta();
@@ -1154,6 +1172,7 @@
             if (hDist > 1) {
               msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
               if (rth12Audio.paused) {
+                rth12Audio.currentTime = 0;
                 rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
               }
               if (!land1Audio.paused) {
@@ -1173,6 +1192,7 @@
                 rth12Audio.currentTime = 0;
               }
               if (land1Audio.paused) {
+                land1Audio.currentTime = 0;
                 land1Audio.play().catch(err => console.log("Error playing land1Audio:", err));
               }
               if (drone.position.y > 0.45) {
@@ -1224,6 +1244,7 @@
             }
             if (drone.position.y > 1.0 && takenOff) {
               if (!flyAudioPlaying) {
+                flyAudio.currentTime = 0;
                 flyAudio.play().catch(err => console.log("Error playing flyAudio:", err));
                 flyAudioPlaying = true;
                 flyAudio.volume = 0;
@@ -1272,6 +1293,7 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
+              bonusAudio.currentTime = 0;
               bonusAudio.play().catch(err => console.log("Error playing bonusAudio:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
@@ -1320,6 +1342,7 @@
             drawHomeMarker(homeMarker.userData.ctx, "yellow");
             homeMarker.userData.texture.needsUpdate = true;
           }
+          sweetAudio.currentTime = 0;
           sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
           land1Audio.pause();
           land1Audio.currentTime = 0;
@@ -1355,9 +1378,9 @@
       }
       animate();
       
-      // ====================================
+      // ------------------------------------
       // Reset Function
-      // ====================================
+      // ------------------------------------
       function resetDrone() {
         drone.position.set(0, 0.45, 0);
         drone.yaw = 0;
