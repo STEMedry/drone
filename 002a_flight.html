@@ -438,7 +438,7 @@
       const flyAudio = new Audio("flysound.mp3");
       flyAudio.loop = true;
       flyAudio.volume = 0;
-      // bonusAudio is preloaded below but will be controlled via play() in the hoop event.
+      // bonusAudio is preloaded here, but now we rely on our setTimeout workaround in the hoop event.
       const bonusAudio = new Audio("bonus.mp3");
       bonusAudio.loop = false;
       const sweetAudio = new Audio("sweet.mp3");
@@ -1116,10 +1116,12 @@
       topViewDiv.appendChild(topViewRenderer.domElement);
       const d = 400;
       const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
+      // Initially position the top-view camera directly above the origin.
       topViewCamera.position.set(0, 1000, 0);
       topViewCamera.lookAt(new THREE.Vector3(0, 0, 0));
       topViewCamera.zoom = 5;
       topViewCamera.updateProjectionMatrix();
+      // Zoom in and out controls.
       document.getElementById("zoomIn").addEventListener("click", () => {
         topViewCamera.zoom *= 1.1;
         topViewCamera.updateProjectionMatrix();
@@ -1127,6 +1129,31 @@
       document.getElementById("zoomOut").addEventListener("click", () => {
         topViewCamera.zoom /= 1.1;
         topViewCamera.updateProjectionMatrix();
+      });
+      
+      // Enable top view navigation buttons.
+      const topArrowUp = document.getElementById("topArrowUp");
+      const topArrowDown = document.getElementById("topArrowDown");
+      const topArrowLeft = document.getElementById("topArrowLeft");
+      const topArrowRight = document.getElementById("topArrowRight");
+      const panStep = 20; // Amount to pan per click.
+      
+      topArrowUp.addEventListener("click", () => {
+        // Move the top-view camera closer in the Z direction (since looking down).
+        topViewCamera.position.z -= panStep;
+        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+      });
+      topArrowDown.addEventListener("click", () => {
+        topViewCamera.position.z += panStep;
+        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+      });
+      topArrowLeft.addEventListener("click", () => {
+        topViewCamera.position.x -= panStep;
+        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+      });
+      topArrowRight.addEventListener("click", () => {
+        topViewCamera.position.x += panStep;
+        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
       });
       
       // ------------------------------------
@@ -1300,12 +1327,12 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
-              // Force bonusAudio to play by pausing it, resetting currentTime, then calling play via setTimeout.
+              // Force bonusAudio to play reliably with a brief timeout.
               bonusAudio.pause();
               bonusAudio.currentTime = 0;
               setTimeout(() => {
                 bonusAudio.play().catch(err => console.log("Error playing bonusAudio:", err));
-              }, 0);
+              }, 10);
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if (cell) cell.classList.add("passed");
