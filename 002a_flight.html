@@ -445,8 +445,7 @@
       const land1Audio = new Audio("land1.mp3");
       let flyAudioPlaying = false;
       
-      // iOS/iPad audio unlocking without audible playback.
-      // On the first touch, mute the audio elements, call play and then immediately pause and unmute.
+      // iOS/iPad audio unlock that does not play audible sound on first touch.
       function initAudio() {
         [flyAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio].forEach(audioElem => {
           const prevVolume = audioElem.volume;
@@ -455,7 +454,6 @@
             audioElem.pause();
             audioElem.currentTime = 0;
             audioElem.muted = false;
-            // Reset volume back to previous setting.
             audioElem.volume = prevVolume;
           }).catch(() => {});
         });
@@ -1301,6 +1299,8 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
+              // Ensure bonus sound always plays by pausing first.
+              bonusAudio.pause();
               bonusAudio.currentTime = 0;
               bonusAudio.play().catch(err => console.log("Error playing bonusAudio:", err));
               currentExpectedHoop++;
