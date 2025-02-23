@@ -49,7 +49,7 @@
       #langToggle {
         position: absolute;
         top: 10px;
-        right: 10px;
+        right: 120px;
         z-index: 110;
         padding: 8px 12px;
         font-size: 16px;
@@ -57,6 +57,20 @@
         border-radius: 5px;
         cursor: pointer;
         background-color: #4caf50;
+        color: white;
+      }
+      /* Back Button */
+      #backButton {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        z-index: 110;
+        padding: 8px 20px;
+        font-size: 18px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #2196f3;
         color: white;
       }
       /* General message (for RTH, landing, etc.) */
@@ -95,13 +109,13 @@
         background: rgba(255, 255, 255, 0.8);
         padding: 20px;
         border-radius: 5px;
-        width: 1000px;
-        height: 220px;
+        width: 1050px;
+        height: 270px;
       }
       /* Info box */
       #info {
         position: absolute;
-        top: 10px;
+        top: 20px;
         left: 50%;
         transform: translateX(-50%);
         font-size: 18px;
@@ -110,7 +124,7 @@
       }
       #btn-reset {
         position: absolute;
-        bottom: 10px;
+        bottom: 20px;
         right: 480px;
         width: 80px;
         height: 40px;
@@ -132,7 +146,7 @@
         flex-direction: column;
         align-items: center;
         gap: 5px;
-        transform: translateY(-60px);
+        transform: translateY(-40px);
       }
       #speedLabel {
         font-size: 18px;
@@ -365,6 +379,8 @@
     <div id="description">Guide your drone through hoops and safely return home.</div>
     <!-- Language Toggle Button -->
     <button id="langToggle" class="btn-green">繁體中文</button>
+    <!-- Back Button -->
+    <button id="backButton" class="btn-default">Back</button>
     <!-- General Message -->
     <div id="message"></div>
     
@@ -849,11 +865,11 @@
         const rInner = rOuter - 0.2;
         const shape = new THREE.Shape();
         const outerVertices = [];
-        for (let i = 0; i < 3; i++){
+        for(let i = 0; i < 3; i++){
           const theta = THREE.Math.degToRad(90 + i * 120);
           const x = rOuter * Math.cos(theta);
           const y = rOuter * Math.sin(theta);
-          outerVertices.push(new THREE.Vector2(x, y));
+          outerVertices.push(new THREE.Vector2(x,y));
         }
         shape.moveTo(outerVertices[0].x, outerVertices[0].y);
         shape.lineTo(outerVertices[1].x, outerVertices[1].y);
@@ -862,14 +878,14 @@
       
         const hole = new THREE.Path();
         const innerVertices = [];
-        for (let i = 0; i < 3; i++){
+        for(let i = 0; i < 3; i++){
           const theta = THREE.Math.degToRad(90 + i * 120);
           const x = rInner * Math.cos(theta);
           const y = rInner * Math.sin(theta);
-          innerVertices.push(new THREE.Vector2(x, y));
+          innerVertices.push(new THREE.Vector2(x,y));
         }
         hole.moveTo(innerVertices[innerVertices.length-1].x, innerVertices[innerVertices.length-1].y);
-        for (let i = innerVertices.length-2; i >= 0; i--){
+        for(let i = innerVertices.length-2; i >= 0; i--){
           hole.lineTo(innerVertices[i].x, innerVertices[i].y);
         }
         hole.closePath();
@@ -899,7 +915,7 @@
       // ------------------------------------
       const altitudes = [10,15,20,25,30,35,40,45,50,55];
       const hoops = [];
-      for (let i = 1; i <= 10; i++){
+      for(let i = 1; i <= 10; i++){
         let hoop;
         if(i <= 4){
           hoop = createCircularHoop(i);
@@ -995,6 +1011,13 @@
         }
       });
       
+      // ------------------------------------
+      // Back Button Event Listener
+      // ------------------------------------
+      document.getElementById("backButton").addEventListener("click", function(){
+        window.location.href = "002_control.html";
+      });
+      
       function syncJoystickWithKeyboard(){
         if(!leftJoystickInput.active){
           let leftKbDx = 0, leftKbDy = 0;
@@ -1054,7 +1077,8 @@
           rthInProgress: "Return-to-Home in Progress",
           automaticLanding: "Automatic Landing",
           returnToHome: "Return-to-Home (RTH)",
-          topHome: "Home"
+          topHome: "Home",
+          back: "Back"
         },
         zh: {
           title: "四軸無人機飛行模擬",
@@ -1082,7 +1106,8 @@
           rthInProgress: "正在返航",
           automaticLanding: "自動降落",
           returnToHome: "自動返航 (RTH)",
-          topHome: "原位"
+          topHome: "原位",
+          back: "返回"
         }
       };
       let currentLanguage = "en";
@@ -1090,6 +1115,8 @@
         document.getElementById("title").innerHTML = translations[currentLanguage].title;
         document.getElementById("description").innerHTML = translations[currentLanguage].description;
         document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
+        // Update the Back button text
+        document.getElementById("backButton").innerHTML = translations[currentLanguage].back;
         const flightToggle = document.getElementById("toggleFlightPath");
         if(flightToggle){
           flightToggle.innerHTML = flightPathActive
