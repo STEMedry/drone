@@ -445,15 +445,17 @@
       const land1Audio = new Audio("land1.mp3");
       let flyAudioPlaying = false;
       
-      // To unlock audio on iOS/iPad without playing sounds:
-      // On the first touch, temporarily set each target audio element's volume to 0 then play() and immediately pause() so that they are unlocked.
+      // iOS/iPad audio unlocking without audible playback.
+      // On the first touch, mute the audio elements, call play and then immediately pause and unmute.
       function initAudio() {
-        [flyAudio, bonusAudio, sweetAudio].forEach(audioElem => {
+        [flyAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio].forEach(audioElem => {
           const prevVolume = audioElem.volume;
-          audioElem.volume = 0;
+          audioElem.muted = true;
           audioElem.play().then(() => {
             audioElem.pause();
             audioElem.currentTime = 0;
+            audioElem.muted = false;
+            // Reset volume back to previous setting.
             audioElem.volume = prevVolume;
           }).catch(() => {});
         });
@@ -499,7 +501,9 @@
         return sprite;
       }
       
-      // Helper: Virtual Joystick
+      // ------------------------------------
+      // Virtual Joystick Helper
+      // ------------------------------------
       function attachJoystick(containerId, joystickObj) {
         const container = document.getElementById(containerId);
         const thumb = container.querySelector(".joystick-thumb");
