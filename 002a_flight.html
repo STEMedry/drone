@@ -438,6 +438,7 @@
       const flyAudio = new Audio("flysound.mp3");
       flyAudio.loop = true;
       flyAudio.volume = 0;
+      // Global bonusAudio is still defined but not used directly in hoop events.
       const bonusAudio = new Audio("bonus.mp3");
       bonusAudio.loop = false;
       const sweetAudio = new Audio("sweet.mp3");
@@ -1299,10 +1300,10 @@
             if (hoop.number === currentExpectedHoop) {
               hoop.passed = true;
               hoop.mesh.material.color.set(0x00ff00);
-              // Instead of reusing the bonusAudio, clone it to ensure consistent playback on iPad.
-              let bonusSound = bonusAudio.cloneNode(true);
+              // Instead of cloning bonusAudio, create a new Audio instance.
+              let bonusSound = new Audio("bonus.mp3");
               bonusSound.currentTime = 0;
-              bonusSound.play().catch(err => console.log("Error playing bonusAudio:", err));
+              bonusSound.play().catch(err => console.log("Error playing bonusSound:", err));
               currentExpectedHoop++;
               const cell = document.getElementById("hoopCell-" + hoop.number);
               if (cell) cell.classList.add("passed");
