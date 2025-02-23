@@ -222,7 +222,6 @@
             margin-top: 10px;
             margin-left: 10px; /* Space between Reset and Practice buttons */
         }
-
         #practice:hover {
             background-color: #2980b9;
         }
@@ -230,7 +229,7 @@
             visibility: hidden;
         }
         #instructions {
-            margin-bottom: 10px; /* Adjusted for new position */
+            margin-top: -10px; /* Adjusted for new position */
             font-size: 14px;
             text-align: left;
         }
@@ -322,6 +321,24 @@
         #down-label {
             left: 450px; /* Adjusted for new axis size */
             top: 10px;
+        }
+
+        /* New Flight Simulation Button Styles */
+        .flight-simulation-button {
+            background-color: DodgerBlue;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+        .flight-simulation-button:hover {
+            background-color: deepskyblue;
         }
 
         /* Responsive Design */
@@ -482,7 +499,7 @@
 .language-switch {
     position: fixed;
     top: 30px;
-    right: 150px;
+    right: 70px;
     padding: 8px 16px;
     background-color: #4CAF50;
     color: white;
@@ -537,6 +554,10 @@
                     <p><span class="green"><strong>Yaw Right</strong></span> + <span class="orange"><strong>Pitch Forward</strong></span> = Clockwise Circles</p>
                     <p><span class="orange"><strong>Pitch Forward</strong></span> + <span class="green"><strong>Yaw Left/Right</strong></span> = Figure 8</p>
                 </div>
+                <!-- New Flight Simulation Button at the end of the left column -->
+                <button id="flight-simulation-btn" class="flight-simulation-button" onclick="window.location.href='002a_flight.html'">
+                    Quadcopter Flight Simulation
+                </button>
             </div>
             <div class="center-side">
                 <div id="scene">
@@ -642,11 +663,11 @@
         const statusThrottle = document.getElementById('status-throttle');
         const propellers = document.querySelectorAll('.propeller');
 
-// References to specific propellers for pitch scaling
-const propA = document.getElementById('prop-A');
-const propB = document.getElementById('prop-B');
-const propC = document.getElementById('prop-C');
-const propD = document.getElementById('prop-D');
+        // References to specific propellers for pitch scaling
+        const propA = document.getElementById('prop-A');
+        const propB = document.getElementById('prop-B');
+        const propC = document.getElementById('prop-C');
+        const propD = document.getElementById('prop-D');
 
         // Initial state variables
         let yaw = 0;
@@ -753,26 +774,26 @@ const propD = document.getElementById('prop-D');
         }
 
         // Release transformations for smooth transitions
-function releasePitch() {
-const intervalId = setInterval(() => {
-if (pitch > 0) {
-pitch = Math.max(pitch - 2, 0);
-const angle = yaw * Math.PI / 180;
-y -= 4 * Math.cos(angle);
-x -= 4 * Math.sin(angle);
-}
-else if (pitch < 0) {
-pitch = Math.min(pitch + 2, 0);
-const angle = yaw * Math.PI / 180;
-y += 4 * Math.cos(angle);
-x += 4 * Math.sin(angle);
-}
-else {
-clearInterval(intervalId);
-}
-updateQuadcopterPosition();
-}, 50);
-}
+        function releasePitch() {
+            const intervalId = setInterval(() => {
+                if (pitch > 0) {
+                    pitch = Math.max(pitch - 2, 0);
+                    const angle = yaw * Math.PI / 180;
+                    y -= 4 * Math.cos(angle);
+                    x -= 4 * Math.sin(angle);
+                }
+                else if (pitch < 0) {
+                    pitch = Math.min(pitch + 2, 0);
+                    const angle = yaw * Math.PI / 180;
+                    y += 4 * Math.cos(angle);
+                    x += 4 * Math.sin(angle);
+                }
+                else {
+                    clearInterval(intervalId);
+                }
+                updateQuadcopterPosition();
+            }, 50);
+        }
 
         function releaseRoll() {
             const intervalId = setInterval(() => {
@@ -818,82 +839,82 @@ updateQuadcopterPosition();
             element.addEventListener('touchcancel', stopAction);
         }
 
-// Functions to handle scaling
-function scaleUp() {
-    propellers.forEach(p => p.classList.add('scale-up'));
-}
+        // Functions to handle scaling
+        function scaleUp() {
+            propellers.forEach(p => p.classList.add('scale-up'));
+        }
 
-function scaleDown() {
-    propellers.forEach(p => p.classList.add('scale-down'));
-}
+        function scaleDown() {
+            propellers.forEach(p => p.classList.add('scale-down'));
+        }
 
-function stopScaleUp() {
-    propellers.forEach(p => p.classList.remove('scale-up'));
-}
+        function stopScaleUp() {
+            propellers.forEach(p => p.classList.remove('scale-up'));
+        }
 
-function stopScaleDown() {
-    propellers.forEach(p => p.classList.remove('scale-down'));
-}
+        function stopScaleDown() {
+            propellers.forEach(p => p.classList.remove('scale-down'));
+        }
 
-function scalePitchForward() {
-propC.classList.add('scale-pitch-forward');
-propD.classList.add('scale-pitch-forward');
-}
+        function scalePitchForward() {
+            propC.classList.add('scale-pitch-forward');
+            propD.classList.add('scale-pitch-forward');
+        }
 
-function stopScalePitchForward() {
-propC.classList.remove('scale-pitch-forward');
-propD.classList.remove('scale-pitch-forward');
-}
+        function stopScalePitchForward() {
+            propC.classList.remove('scale-pitch-forward');
+            propD.classList.remove('scale-pitch-forward');
+        }
 
-function scalePitchBackward() {
-propA.classList.add('scale-pitch-backward');
-propB.classList.add('scale-pitch-backward');
-}
+        function scalePitchBackward() {
+            propA.classList.add('scale-pitch-backward');
+            propB.classList.add('scale-pitch-backward');
+        }
 
-function stopScalePitchBackward() {
-propA.classList.remove('scale-pitch-backward');
-propB.classList.remove('scale-pitch-backward');
-}
+        function stopScalePitchBackward() {
+            propA.classList.remove('scale-pitch-backward');
+            propB.classList.remove('scale-pitch-backward');
+        }
 
-function scaleRollLeft() {
-propB.classList.add('scale-roll-left');
-propD.classList.add('scale-roll-left');
-}
+        function scaleRollLeft() {
+            propB.classList.add('scale-roll-left');
+            propD.classList.add('scale-roll-left');
+        }
 
-function stopScaleRollLeft() {
-propB.classList.remove('scale-roll-left');
-propD.classList.remove('scale-roll-left');
-}
+        function stopScaleRollLeft() {
+            propB.classList.remove('scale-roll-left');
+            propD.classList.remove('scale-roll-left');
+        }
 
-function scaleRollRight() {
-propA.classList.add('scale-roll-right');
-propC.classList.add('scale-roll-right');
-}
+        function scaleRollRight() {
+            propA.classList.add('scale-roll-right');
+            propC.classList.add('scale-roll-right');
+        }
 
-function stopScaleRollRight() {
-propA.classList.remove('scale-roll-right');
-propC.classList.remove('scale-roll-right');
-}
+        function stopScaleRollRight() {
+            propA.classList.remove('scale-roll-right');
+            propC.classList.remove('scale-roll-right');
+        }
 
-function scaleYawLeft() {
-propA.classList.add('scale-yaw-left');
-propD.classList.add('scale-yaw-left');
-}
+        function scaleYawLeft() {
+            propA.classList.add('scale-yaw-left');
+            propD.classList.add('scale-yaw-left');
+        }
 
-function stopScaleYawLeft() {
-propA.classList.remove('scale-yaw-left');
-propD.classList.remove('scale-yaw-left');
-}
+        function stopScaleYawLeft() {
+            propA.classList.remove('scale-yaw-left');
+            propD.classList.remove('scale-yaw-left');
+        }
 
-function scaleYawRight() {
-propB.classList.add('scale-yaw-right');
-propC.classList.add('scale-yaw-right');
-}
+        function scaleYawRight() {
+            propB.classList.add('scale-yaw-right');
+            propC.classList.add('scale-yaw-right');
+        }
 
-function stopScaleYawRight() {
-propB.classList.remove('scale-yaw-right');
-propC.classList.remove('scale-yaw-right');
-}
+        function stopScaleYawRight() {
+            propB.classList.remove('scale-yaw-right');
+            propC.classList.remove('scale-yaw-right');
+        }
 
         // Reset Function
         function reset() {
@@ -909,17 +930,17 @@ propC.classList.remove('scale-yaw-right');
             viewAngleY = 30; // Reset to initial view angle
             updateQuadcopterPosition();
 
-    // Remove all scaling classes from propellers
-    propellers.forEach(p => {
-        p.classList.remove('scale-up');
-        p.classList.remove('scale-down');
-        p.classList.remove('scale-pitch-forward');
-        p.classList.remove('scale-pitch-backward');
-        p.classList.remove('scale-roll-left');
-p.classList.remove('scale-roll-right');
-p.classList.remove('scale-yaw-left');
-p.classList.remove('scale-yaw-right');
-    });
+            // Remove all scaling classes from propellers
+            propellers.forEach(p => {
+                p.classList.remove('scale-up');
+                p.classList.remove('scale-down');
+                p.classList.remove('scale-pitch-forward');
+                p.classList.remove('scale-pitch-backward');
+                p.classList.remove('scale-roll-left');
+                p.classList.remove('scale-roll-right');
+                p.classList.remove('scale-yaw-left');
+                p.classList.remove('scale-yaw-right');
+            });
         }
 
         // Adding event listeners to buttons for continuous actions
@@ -928,7 +949,7 @@ p.classList.remove('scale-yaw-right');
         addContinuousEventListener('yaw-left', yawLeft, stopScaleYawLeft, scaleYawLeft);
         addContinuousEventListener('yaw-right', yawRight, stopScaleYawRight, scaleYawRight);
         addContinuousEventListener('pitch-forward', pitchForward, () => { releasePitch(); stopScalePitchForward(); }, scalePitchForward);
-addContinuousEventListener('pitch-backward', pitchBackward, () => { releasePitch(); stopScalePitchBackward(); }, scalePitchBackward);
+        addContinuousEventListener('pitch-backward', pitchBackward, () => { releasePitch(); stopScalePitchBackward(); }, scalePitchBackward);
         addContinuousEventListener('roll-left', rollLeft, () => { releaseRoll(); stopScaleRollLeft(); }, scaleRollLeft);
         addContinuousEventListener('roll-right', rollRight, () => { releaseRoll(); stopScaleRollRight(); }, scaleRollRight);
 
@@ -951,16 +972,16 @@ addContinuousEventListener('pitch-backward', pitchBackward, () => { releasePitch
         };
 
         const keyReleaseMap = {
-    'arrowup': () => { releasePitch(); stopScalePitchForward(); },
-    'arrowdown': () => { releasePitch(); stopScalePitchBackward(); },    
-    'arrowleft': () => { releaseRoll(); stopScaleRollLeft(); },
-    'arrowright': () => { releaseRoll(); stopScaleRollRight(); },
-    // Adding release functions for throttle scaling
-    'w': stopScaleUp,
-    's': stopScaleDown,
-'a': stopScaleYawLeft,
-'d': stopScaleYawRight
-};
+            'arrowup': () => { releasePitch(); stopScalePitchForward(); },
+            'arrowdown': () => { releasePitch(); stopScalePitchBackward(); },    
+            'arrowleft': () => { releaseRoll(); stopScaleRollLeft(); },
+            'arrowright': () => { releaseRoll(); stopScaleRollRight(); },
+            // Adding release functions for throttle scaling
+            'w': stopScaleUp,
+            's': stopScaleDown,
+            'a': stopScaleYawLeft,
+            'd': stopScaleYawRight
+        };
         let keyIntervals = {};
 
         document.addEventListener('keydown', (e) => {
@@ -968,37 +989,34 @@ addContinuousEventListener('pitch-backward', pitchBackward, () => { releasePitch
             if (keyMap[key] && !keyIntervals[key]) {
                 keyMap[key]();
                 keyIntervals[key] = setInterval(keyMap[key], 50); // Smooth continuous action
-        // Handle scaling for throttle via keyboard
-        if (key === 'w') {
-            scaleUp();
-        }
-        if (key === 's') {
-            scaleDown();
-        }
-
-// Handle scaling for yaw via keyboard
-if (key === 'a') {
-scaleYawLeft();
-}
-if (key === 'd') {
-scaleYawRight();
-}
-
-       // Handle scaling for pitch via keyboard
-        if (key === 'arrowup') {
-            scalePitchForward();
-        }
-        if (key === 'arrowdown') {
-            scalePitchBackward();
-        }
-
-// Handle scaling for roll via keyboard
-if (key === 'arrowleft') {
-scaleRollLeft();
-}
-if (key === 'arrowright') {
-scaleRollRight();
-}
+                // Handle scaling for throttle via keyboard
+                if (key === 'w') {
+                    scaleUp();
+                }
+                if (key === 's') {
+                    scaleDown();
+                }
+                // Handle scaling for yaw via keyboard
+                if (key === 'a') {
+                    scaleYawLeft();
+                }
+                if (key === 'd') {
+                    scaleYawRight();
+                }
+                // Handle scaling for pitch via keyboard
+                if (key === 'arrowup') {
+                    scalePitchForward();
+                }
+                if (key === 'arrowdown') {
+                    scalePitchBackward();
+                }
+                // Handle scaling for roll via keyboard
+                if (key === 'arrowleft') {
+                    scaleRollLeft();
+                }
+                if (key === 'arrowright') {
+                    scaleRollRight();
+                }
             }
         });
 
@@ -1080,136 +1098,139 @@ scaleRollRight();
             }
         });
 
-// Language translations
-const translations = {
-    en: {
-        title: "Quadcopter Controls Simulator",
-        instructions: "Instructions:",
-        instructionsItems: [
-            "Use the on-screen buttons or keyboard keys to control the quadcopter.",
-            "Observe the status panel to monitor yaw, pitch, roll, and throttle values.",
-            "Experiment with different control combinations to perform piloting techniques.",
-            "Click and drag on the simulation area to change your view perspective.",
-            "Click the Reset button to bring the quadcopter back to its initial state."
-        ],
-        keyboardControls: "Keyboard Controls",
-        keyboardItems: {
-            throttle: "W / S = Throttle Up / Down",
-            yaw: "A / D = Yaw Left / Right",
-            pitch: "Up / Down Arrow = Pitch Forward / Backward",
-            roll: "Left / Right Arrow = Roll Left / Right",
-            reset: "R = Reset"
-        },
-        pilotingTechniques: "Piloting Techniques",
-        pilotingItems: {
-            orbit1: "Yaw Left + Roll Right = Anti-clockwise Orbit",
-            orbit2: "Yaw Right + Roll Left = Clockwise Orbit",
-            circle1: "Yaw Left + Pitch Forward = Anticlockwise Circles",
-            circle2: "Yaw Right + Pitch Forward = Clockwise Circles",
-            figure8: "Pitch Forward + Yaw Left/Right = Figure 8"
-        },
-        throttleUp: "Throttle Up",
-        throttleDown: "Throttle Down",
-        yawLeft: "Yaw Left",
-        yawRight: "Yaw Right",
-        pitchForward: "Pitch Forward",
-        pitchBackward: "Pitch Backward",
-        rollLeft: "Roll Left",
-        rollRight: "Roll Right",
-        reset: "Reset"
-    },
-    zh: {
-        title: "四旋翼飛行控制模擬器",
-        instructions: "使用說明：",
-        instructionsItems: [
-            "使用螢幕按鈕或鍵盤按鍵控制四旋翼飛行器。",
-            "觀察狀態面板以監控偏航、俯仰、橫滾和升降數值。",
-            "嘗試不同的控制組合來執行飛行技巧。",
-            "點擊並拖動模擬區域以改變視角。",
-            "點擊重置按鈕將四旋翼飛行器恢復到初始狀態。"
-        ],
-        keyboardControls: "鍵盤控制",
-        keyboardItems: {
-            throttle: "W / S = 上升 / 下降",
-            yaw: "A / D = 左偏航 / 右偏航",
-            pitch: "上 / 下方向鍵 = 前俯仰 / 後俯仰",
-            roll: "左 / 右方向鍵 = 左橫滾 / 右橫滾",
-            reset: "R = 重置"
-        },
-        pilotingTechniques: "飛行技巧",
-        pilotingItems: {
-            orbit1: "左偏航 + 右橫滾 = 逆時針軌道飛行",
-            orbit2: "右偏航 + 左橫滾 = 順時針軌道飛行",
-            circle1: "左偏航 + 前俯仰 = 逆時針畫圓",
-            circle2: "右偏航 + 前俯仰 = 順時針畫圓",
-            figure8: "前俯仰 + 左/右偏航 = 8字飛行"
-        },
-        throttleUp: "上升",
-        throttleDown: "下降",
-        yawLeft: "左偏航",
-        yawRight: "右偏航",
-        pitchForward: "前俯仰",
-        pitchBackward: "後俯仰",
-        rollLeft: "左橫滾",
-        rollRight: "右橫滾",
-        reset: "重置"
-    }
-};
+        // Language translations
+        const translations = {
+            en: {
+                title: "Quadcopter Controls Simulator",
+                instructions: "Instructions:",
+                instructionsItems: [
+                    "Use the on-screen buttons or keyboard keys to control the quadcopter.",
+                    "Observe the status panel to monitor yaw, pitch, roll, and throttle values.",
+                    "Experiment with different control combinations to perform piloting techniques.",
+                    "Click and drag on the simulation area to change your view perspective.",
+                    "Click the Reset button to bring the quadcopter back to its initial state."
+                ],
+                keyboardControls: "Keyboard Controls",
+                keyboardItems: {
+                    throttle: "W / S = Throttle Up / Down",
+                    yaw: "A / D = Yaw Left / Right",
+                    pitch: "Up / Down Arrow = Pitch Forward / Backward",
+                    roll: "Left / Right Arrow = Roll Left / Right",
+                    reset: "R = Reset"
+                },
+                pilotingTechniques: "Piloting Techniques",
+                pilotingItems: {
+                    orbit1: "Yaw Left + Roll Right = Anti-clockwise Orbit",
+                    orbit2: "Yaw Right + Roll Left = Clockwise Orbit",
+                    circle1: "Yaw Left + Pitch Forward = Anticlockwise Circles",
+                    circle2: "Yaw Right + Pitch Forward = Clockwise Circles",
+                    figure8: "Pitch Forward + Yaw Left/Right = Figure 8"
+                },
+                throttleUp: "Throttle Up",
+                throttleDown: "Throttle Down",
+                yawLeft: "Yaw Left",
+                yawRight: "Yaw Right",
+                pitchForward: "Pitch Forward",
+                pitchBackward: "Pitch Backward",
+                rollLeft: "Roll Left",
+                rollRight: "Roll Right",
+                reset: "Reset",
+                flightSimulation: "Quadcopter Flight Simulation"
+            },
+            zh: {
+                title: "四旋翼飛行控制模擬器",
+                instructions: "使用說明：",
+                instructionsItems: [
+                    "使用螢幕按鈕或鍵盤按鍵控制四旋翼飛行器。",
+                    "觀察狀態面板以監控偏航、俯仰、橫滾和升降數值。",
+                    "嘗試不同的控制組合來執行飛行技巧。",
+                    "點擊並拖動模擬區域以改變視角。",
+                    "點擊重置按鈕將四旋翼飛行器恢復到初始狀態。"
+                ],
+                keyboardControls: "鍵盤控制",
+                keyboardItems: {
+                    throttle: "W / S = 上升 / 下降",
+                    yaw: "A / D = 左偏航 / 右偏航",
+                    pitch: "上 / 下方向鍵 = 前俯仰 / 後俯仰",
+                    roll: "左 / 右方向鍵 = 左橫滾 / 右橫滾",
+                    reset: "R = 重置"
+                },
+                pilotingTechniques: "飛行技巧",
+                pilotingItems: {
+                    orbit1: "左偏航 + 右橫滾 = 逆時針軌道飛行",
+                    orbit2: "右偏航 + 左橫滾 = 順時針軌道飛行",
+                    circle1: "左偏航 + 前俯仰 = 逆時針畫圓",
+                    circle2: "右偏航 + 前俯仰 = 順時針畫圓",
+                    figure8: "前俯仰 + 左/右偏航 = 8字飛行"
+                },
+                throttleUp: "上升",
+                throttleDown: "下降",
+                yawLeft: "左偏航",
+                yawRight: "右偏航",
+                pitchForward: "前俯仰",
+                pitchBackward: "後俯仰",
+                rollLeft: "左橫滾",
+                rollRight: "右橫滾",
+                reset: "重置",
+                flightSimulation: "四軸無人機飛行模擬"
+            }
+        };
 
-let currentLanguage = 'en';
+        let currentLanguage = 'en';
 
-// Function to update all text content
-function updateLanguage() {
-    const t = translations[currentLanguage];
-    
-    // Update title
-    document.querySelector('.header h1').textContent = t.title;
-    
-    // Update instructions
-    document.querySelector('#instructions h3').textContent = t.instructions;
-    const instructionsList = document.querySelector('#instructions ol');
-    instructionsList.innerHTML = t.instructionsItems.map(item => `<li>${item}</li>`).join('');
-    
-    // Update section titles
-    document.querySelectorAll('.info-section h3')[0].textContent = t.keyboardControls;
-    document.querySelectorAll('.info-section h3')[1].textContent = t.pilotingTechniques;
-    
-    // Update keyboard controls
-    const keyboardSection = document.querySelectorAll('.info-section')[0];
-    const keyboardParagraphs = keyboardSection.querySelectorAll('p');
-    keyboardParagraphs[0].innerHTML = `<span class="green"><strong>${t.keyboardItems.throttle}</strong></span>`;
-    keyboardParagraphs[1].innerHTML = `<span class="green"><strong>${t.keyboardItems.yaw}</strong></span>`;
-    keyboardParagraphs[2].innerHTML = `<span class="orange"><strong>${t.keyboardItems.pitch}</strong></span>`;
-    keyboardParagraphs[3].innerHTML = `<span class="orange"><strong>${t.keyboardItems.roll}</strong></span>`;
-    keyboardParagraphs[4].innerHTML = `<span class="red"><strong>${t.keyboardItems.reset}</strong></span>`;
-    
-    // Update piloting techniques
-    const pilotingSection = document.querySelectorAll('.info-section')[1];
-    const pilotingParagraphs = pilotingSection.querySelectorAll('p');
-    pilotingParagraphs[0].innerHTML = `<span class="green"><strong>${t.yawLeft}</strong></span> + <span class="orange"><strong>${t.rollRight}</strong></span> = ${t.pilotingItems.orbit1}`;
-    pilotingParagraphs[1].innerHTML = `<span class="green"><strong>${t.yawRight}</strong></span> + <span class="orange"><strong>${t.rollLeft}</strong></span> = ${t.pilotingItems.orbit2}`;
-    pilotingParagraphs[2].innerHTML = `<span class="green"><strong>${t.yawLeft}</strong></span> + <span class="orange"><strong>${t.pitchForward}</strong></span> = ${t.pilotingItems.circle1}`;
-    pilotingParagraphs[3].innerHTML = `<span class="green"><strong>${t.yawRight}</strong></span> + <span class="orange"><strong>${t.pitchForward}</strong></span> = ${t.pilotingItems.circle2}`;
-    pilotingParagraphs[4].innerHTML = `<span class="orange"><strong>${t.pitchForward}</strong></span> + <span class="green"><strong>${t.yawLeft}/${t.yawRight}</strong></span> = ${t.pilotingItems.figure8}`;
-    
-    // Update buttons
-    document.getElementById('throttle-up').textContent = t.throttleUp;
-    document.getElementById('throttle-down').textContent = t.throttleDown;
-    document.getElementById('yaw-left').textContent = t.yawLeft;
-    document.getElementById('yaw-right').textContent = t.yawRight;
-    document.getElementById('pitch-forward').textContent = t.pitchForward;
-    document.getElementById('pitch-backward').textContent = t.pitchBackward;
-    document.getElementById('roll-left').textContent = t.rollLeft;
-    document.getElementById('roll-right').textContent = t.rollRight;
-    document.getElementById('reset').textContent = t.reset;
-}
+        // Function to update all text content
+        function updateLanguage() {
+            const t = translations[currentLanguage];
+            
+            // Update title
+            document.querySelector('.header h1').textContent = t.title;
+            
+            // Update instructions
+            document.querySelector('#instructions h3').textContent = t.instructions;
+            const instructionsList = document.querySelector('#instructions ol');
+            instructionsList.innerHTML = t.instructionsItems.map(item => `<li>${item}</li>`).join('');
+            
+            // Update section titles
+            document.querySelectorAll('.info-section h3')[0].textContent = t.keyboardControls;
+            document.querySelectorAll('.info-section h3')[1].textContent = t.pilotingTechniques;
+            
+            // Update keyboard controls
+            const keyboardSection = document.querySelectorAll('.info-section')[0];
+            const keyboardParagraphs = keyboardSection.querySelectorAll('p');
+            keyboardParagraphs[0].innerHTML = `<span class="green"><strong>${t.keyboardItems.throttle}</strong></span>`;
+            keyboardParagraphs[1].innerHTML = `<span class="green"><strong>${t.keyboardItems.yaw}</strong></span>`;
+            keyboardParagraphs[2].innerHTML = `<span class="orange"><strong>${t.keyboardItems.pitch}</strong></span>`;
+            keyboardParagraphs[3].innerHTML = `<span class="orange"><strong>${t.keyboardItems.roll}</strong></span>`;
+            keyboardParagraphs[4].innerHTML = `<span class="red"><strong>${t.keyboardItems.reset}</strong></span>`;
+            
+            // Update piloting techniques
+            const pilotingSection = document.querySelectorAll('.info-section')[1];
+            const pilotingParagraphs = pilotingSection.querySelectorAll('p');
+            pilotingParagraphs[0].innerHTML = `<span class="green"><strong>${t.yawLeft}</strong></span> + <span class="orange"><strong>${t.rollRight}</strong></span> = ${t.pilotingItems.orbit1}`;
+            pilotingParagraphs[1].innerHTML = `<span class="green"><strong>${t.yawRight}</strong></span> + <span class="orange"><strong>${t.rollLeft}</strong></span> = ${t.pilotingItems.orbit2}`;
+            pilotingParagraphs[2].innerHTML = `<span class="green"><strong>${t.yawLeft}</strong></span> + <span class="orange"><strong>${t.pitchForward}</strong></span> = ${t.pilotingItems.circle1}`;
+            pilotingParagraphs[3].innerHTML = `<span class="green"><strong>${t.yawRight}</strong></span> + <span class="orange"><strong>${t.pitchForward}</strong></span> = ${t.pilotingItems.circle2}`;
+            pilotingParagraphs[4].innerHTML = `<span class="orange"><strong>${t.pitchForward}</strong></span> + <span class="green"><strong>${t.yawLeft}/${t.yawRight}</strong></span> = ${t.pilotingItems.figure8}`;
+            
+            // Update buttons
+            document.getElementById('throttle-up').textContent = t.throttleUp;
+            document.getElementById('throttle-down').textContent = t.throttleDown;
+            document.getElementById('yaw-left').textContent = t.yawLeft;
+            document.getElementById('yaw-right').textContent = t.yawRight;
+            document.getElementById('pitch-forward').textContent = t.pitchForward;
+            document.getElementById('pitch-backward').textContent = t.pitchBackward;
+            document.getElementById('roll-left').textContent = t.rollLeft;
+            document.getElementById('roll-right').textContent = t.rollRight;
+            document.getElementById('reset').textContent = t.reset;
+            document.getElementById('flight-simulation-btn').textContent = t.flightSimulation;
+        }
 
-// Language switch button event listener
-document.getElementById('languageSwitch').addEventListener('click', () => {
-    currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
-    document.getElementById('languageSwitch').textContent = currentLanguage === 'en' ? '繁體中文' : 'English';
-    updateLanguage();
-});
+        // Language switch button event listener
+        document.getElementById('languageSwitch').addEventListener('click', () => {
+            currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+            document.getElementById('languageSwitch').textContent = currentLanguage === 'en' ? '繁體中文' : 'English';
+            updateLanguage();
+        });
 
     </script>
 </body>
