@@ -1130,6 +1130,7 @@
         topViewCamera.zoom /= 1.1;
         topViewCamera.updateProjectionMatrix();
       });
+      
       // Enable top view navigation buttons.
       const topArrowUp = document.getElementById("topArrowUp");
       const topArrowDown = document.getElementById("topArrowDown");
@@ -1153,7 +1154,7 @@
         topViewCamera.position.x += panStep;
         topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
       });
-      // Enable Home button to reset top view camera.
+      // Enable Home button to reset the top view camera.
       const homeView = document.getElementById("homeView");
       homeView.addEventListener("click", () => {
         topViewCamera.position.set(0, 1000, 0);
@@ -1388,6 +1389,7 @@
           sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
           land1Audio.pause();
           land1Audio.currentTime = 0;
+          // Attach the "New Game" button event listener.
           document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
         }
       
@@ -1461,7 +1463,10 @@
           drawHomeMarker(homeMarker.userData.ctx, "white");
           homeMarker.userData.texture.needsUpdate = true;
         }
-        document.getElementById("message").style.display = "none";
+        // Hide and clear the landing message.
+        const msgDiv = document.getElementById("message");
+        msgDiv.style.display = "none";
+        msgDiv.innerHTML = "";
         for (let i = 1; i <= hoops.length; i++) {
           const cell = document.getElementById("hoopCell-" + i);
           if (cell) cell.classList.remove("passed");
