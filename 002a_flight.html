@@ -1430,9 +1430,11 @@
         drone.yaw = 0;
         drone.pitch = 0;
         drone.roll = 0;
+        // Reset all state flags:
         takenOff = false;
         landedAtHome = false;
         allHoopsPassed = false;
+        rthActive = false;  // <--- Reset the rthActive flag.
         currentExpectedHoop = 1;
         flightPathPoints = [];
         if (flightPathLine) {
