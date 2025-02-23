@@ -438,7 +438,7 @@
       const flyAudio = new Audio("flysound.mp3");
       flyAudio.loop = true;
       flyAudio.volume = 0;
-      // bonusAudio is preloaded here, but now we rely on our setTimeout workaround in the hoop event.
+      // bonusAudio is preloaded here.
       const bonusAudio = new Audio("bonus.mp3");
       bonusAudio.loop = false;
       const sweetAudio = new Audio("sweet.mp3");
@@ -1121,7 +1121,7 @@
       topViewCamera.lookAt(new THREE.Vector3(0, 0, 0));
       topViewCamera.zoom = 5;
       topViewCamera.updateProjectionMatrix();
-      // Zoom in and out controls.
+      // Zoom controls.
       document.getElementById("zoomIn").addEventListener("click", () => {
         topViewCamera.zoom *= 1.1;
         topViewCamera.updateProjectionMatrix();
@@ -1130,7 +1130,6 @@
         topViewCamera.zoom /= 1.1;
         topViewCamera.updateProjectionMatrix();
       });
-      
       // Enable top view navigation buttons.
       const topArrowUp = document.getElementById("topArrowUp");
       const topArrowDown = document.getElementById("topArrowDown");
@@ -1139,7 +1138,6 @@
       const panStep = 20; // Amount to pan per click.
       
       topArrowUp.addEventListener("click", () => {
-        // Move the top-view camera closer in the Z direction (since looking down).
         topViewCamera.position.z -= panStep;
         topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
       });
@@ -1154,6 +1152,12 @@
       topArrowRight.addEventListener("click", () => {
         topViewCamera.position.x += panStep;
         topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+      });
+      // Enable Home button to reset top view camera.
+      const homeView = document.getElementById("homeView");
+      homeView.addEventListener("click", () => {
+        topViewCamera.position.set(0, 1000, 0);
+        topViewCamera.lookAt(new THREE.Vector3(0, 0, 0));
       });
       
       // ------------------------------------
