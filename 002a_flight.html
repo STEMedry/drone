@@ -1001,7 +1001,7 @@
         en: {
           title: "Quadcopter Flight Simulation",
           allHoopsPassed: "All hoops passed! Now fly back and land on the home point (marked with H).",
-          landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' class='btn-default'>New Game</button>",
+          landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
           reset: "Reset",
           showFlightPath: "Show Flight Path",
           hideFlightPath: "Hide Flight Path",
@@ -1026,7 +1026,7 @@
         zh: {
           title: "四軸無人機飛行模擬",
           allHoopsPassed: "所有環門已通過！請飛回並在以「H」標示的起飛點著陸。",
-          landingMessage: "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' class='btn-default'>新遊戲</button>",
+          landingMessage: "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>新遊戲</button>",
           reset: "重置",
           showFlightPath: "顯示飛行路徑",
           hideFlightPath: "隱藏飛行路徑",
@@ -1380,6 +1380,7 @@
           landedAtHome = true;
           flightEnded = true;
           const msgDiv = document.getElementById("message");
+          // The New Game button is generated using an inline onclick.
           msgDiv.innerHTML = translations[currentLanguage].landingMessage;
           if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
             drawHomeMarker(homeMarker.userData.ctx, "yellow");
@@ -1389,8 +1390,6 @@
           sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
           land1Audio.pause();
           land1Audio.currentTime = 0;
-          // Attach the "New Game" button event listener.
-          document.getElementById("newGameButton").addEventListener("click", () => { resetDrone(); });
         }
       
         const cameraOffset = new THREE.Vector3(0, 5, -15);
@@ -1430,11 +1429,11 @@
         drone.yaw = 0;
         drone.pitch = 0;
         drone.roll = 0;
-        // Reset all state flags:
+        // Reset state flags.
         takenOff = false;
         landedAtHome = false;
         allHoopsPassed = false;
-        rthActive = false;  // <--- Reset the rthActive flag.
+        rthActive = false;
         currentExpectedHoop = 1;
         flightPathPoints = [];
         if (flightPathLine) {
