@@ -6,10 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <title>Quadcopter Flight Simulation</title>
     <style>
-      /* Universal styles and Arial font */
-      * {
-        box-sizing: border-box;
-      }
+      /* Base & Universal Styles */
+      * { box-sizing: border-box; }
       html, body {
         margin: 0;
         padding: 0;
@@ -19,12 +17,10 @@
         font-family: Arial, sans-serif;
         touch-action: none;
         user-select: none;
-        -webkit-user-select: none;
       }
-      canvas {
-        display: block;
-      }
-      /* Title */
+      canvas { display: block; }
+      
+      /* Title & Description */
       #title {
         position: absolute;
         top: 10px;
@@ -32,10 +28,10 @@
         transform: translateX(-50%);
         font-size: 32px;
         font-weight: bold;
-        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
+        text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff,
+                     -1px 1px 0 #fff, 1px 1px 0 #fff;
         z-index: 100;
       }
-      /* Game Description below Title */
       #description {
         position: absolute;
         top: 50px;
@@ -45,35 +41,23 @@
         color: #333;
         z-index: 100;
       }
-      /* Language Toggle Button */
-      #langToggle {
+      
+      /* Top Right Buttons */
+      #langToggle, #backButton {
         position: absolute;
         top: 10px;
-        right: 120px;
         z-index: 110;
         padding: 8px 12px;
         font-size: 16px;
         border: none;
         border-radius: 5px;
         cursor: pointer;
-        background-color: #4caf50;
         color: white;
       }
-      /* Back Button */
-      #backButton {
-        position: absolute;
-        top: 10px;
-        right: 20px;
-        z-index: 110;
-        padding: 8px 20px;
-        font-size: 18px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        background-color: #2196f3;
-        color: white;
-      }
-      /* General message (for RTH, landing, etc.) */
+      #langToggle { right: 120px; background-color: #4caf50; }
+      #backButton { right: 20px; background-color: #2196f3; font-size: 18px; }
+      
+      /* General Message */
       #message {
         position: absolute;
         top: 40%;
@@ -92,10 +76,31 @@
         50% { opacity: 0; }
         100% { opacity: 1; }
       }
-      .blinking {
+      .blinking { animation: blinking 1s infinite; }
+      
+      /* Alert Message (for distance & altitude warnings) */
+      #alertMessage {
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        background-color: rgba(255, 0, 0, 0.9) !important;
+        color: #ffffff !important;
+        padding: 12px 24px;
+        font-size: 22px;
+        border: 2px solid #cc0000;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        z-index: 120;
+        display: none;
+        transition: background 0.3s ease;
+      }
+      /* Blinking Animation for the Alert */
+      #alertMessage.blinking {
         animation: blinking 1s infinite;
       }
-      /* Controls container */
+      
+      /* Controls Container */
       #controls {
         position: absolute;
         bottom: 10px;
@@ -112,7 +117,6 @@
         width: 1050px;
         height: 270px;
       }
-      /* Info box */
       #info {
         position: absolute;
         top: 20px;
@@ -134,13 +138,13 @@
         border: none;
         border-radius: 5px;
       }
-      /* Main control layout (slider and joysticks) */
+      
+      /* Main Control Layout */
       #main-controls {
         display: flex;
         align-items: center;
         gap: 100px;
       }
-      /* Speed slider container */
       #speedContainer {
         display: flex;
         flex-direction: column;
@@ -148,24 +152,15 @@
         gap: 5px;
         transform: translateY(-40px);
       }
-      #speedLabel {
-        font-size: 18px;
-        font-weight: bold;
-      }
-      #speedSlider {
-        width: 200px;
-      }
-      /* Toggle Flight Path & Return-to-Home Button */
-      #toggleFlightPath {
+      #speedLabel { font-size: 18px; font-weight: bold; }
+      #speedSlider { width: 200px; }
+      #toggleFlightPath, #rthBtn {
         font-size: 16px;
         padding: 10px 20px;
       }
-      #rthBtn {
-        font-size: 16px;
-        padding: 10px 10px;
-        margin-top: 5px;
-      }
-      /* Virtual Joystick Styles */
+      #rthBtn { margin-top: 5px; }
+      
+      /* Virtual Joysticks */
       .joystick-container {
         width: 300px;
         height: 300px;
@@ -176,7 +171,6 @@
       .joystick-base {
         width: 200px;
         height: 200px;
-        background: rgba(76, 175, 80, 0.5);
         border: 2px solid #aaa;
         border-radius: 50%;
         position: absolute;
@@ -184,7 +178,17 @@
         top: 40%;
         transform: translate(-50%, -50%);
       }
-      .joystick-thumb {
+      /* Left joystick base remains greenish */
+      #leftJoystick .joystick-base { 
+        background: rgba(76,175,80,0.5); 
+      }
+      /* Right joystick base now pale orange */
+      #rightJoystick .joystick-base { 
+        background: #FFDAB9; 
+      }
+      /* Joystick Thumbs */
+      /* Left joystick thumb: deep green */
+      #leftJoystick .joystick-thumb {
         width: 80px;
         height: 80px;
         border: 2px solid #555;
@@ -193,18 +197,25 @@
         left: 50%;
         top: 40%;
         transform: translate(-50%, -50%);
+        background-color: darkgreen;
         touch-action: none;
         -ms-touch-action: none;
       }
-      #leftJoystick .joystick-thumb {
-        background-color: #006400;
-      }
+      /* Right joystick thumb: deep orange */
       #rightJoystick .joystick-thumb {
-        background-color: #FF8C00;
+        width: 80px;
+        height: 80px;
+        border: 2px solid #555;
+        border-radius: 50%;
+        position: absolute;
+        left: 50%;
+        top: 40%;
+        transform: translate(-50%, -50%);
+        background-color: darkorange;
+        touch-action: none;
+        -ms-touch-action: none;
       }
-      #rightJoystick .joystick-base {
-        background: rgba(255, 152, 0, 0.5);
-      }
+      /* Joystick command labels -- default black */
       .joystick-label {
         position: absolute;
         font-size: 16px;
@@ -212,49 +223,18 @@
         font-weight: bold;
         pointer-events: none;
       }
-      /* Left joystick labels */
-      #leftJoystick .label-top {
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #leftJoystick .label-bottom {
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #leftJoystick .label-left {
-        left: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      #leftJoystick .label-right {
-        right: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      /* Right joystick labels */
-      #rightJoystick .label-top {
-        top: 0px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #rightJoystick .label-bottom {
-        bottom: 60px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #rightJoystick .label-left {
-        left: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      #rightJoystick .label-right {
-        right: 0px;
-        top: 40%;
-        transform: translateY(-50%);
-      }
-      /* Top View Container */
+      /* Left joystick label positions */
+      #leftJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
+      #leftJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+      #leftJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
+      #leftJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
+      /* Right joystick label positions */
+      #rightJoystick .label-top { top: 0px; left: 50%; transform: translateX(-50%); }
+      #rightJoystick .label-bottom { bottom: 60px; left: 50%; transform: translateX(-50%); }
+      #rightJoystick .label-left { left: 0px; top: 40%; transform: translateY(-50%); }
+      #rightJoystick .label-right { right: 0px; top: 40%; transform: translateY(-50%); }
+      
+      /* Top View Container & Navigation */
       #topViewContainer {
         position: absolute;
         top: 20px;
@@ -274,45 +254,76 @@
       }
       .arrow-btn {
         position: absolute;
-        background: rgba(200, 200, 200, 0.7);
+        background: rgba(200,200,200,0.7);
         border: 1px solid #666;
         border-radius: 3px;
         font-size: 18px;
         padding: 5px;
         cursor: pointer;
       }
-      #topArrowUp {
-        top: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #topArrowDown {
-        bottom: 5px;
-        left: 50%;
-        transform: translateX(-50%);
-      }
-      #topArrowLeft {
-        left: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
-      #topArrowRight {
-        right: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-      }
+      #topArrowUp { top: 5px; left: 50%; transform: translateX(-50%); }
+      #topArrowDown { bottom: 5px; left: 50%; transform: translateX(-50%); }
+      #topArrowLeft { left: 5px; top: 50%; transform: translateY(-50%); }
+      #topArrowRight { right: 5px; top: 50%; transform: translateY(-50%); }
       #zoomControls {
         margin-top: 5px;
         display: flex;
         gap: 10px;
       }
+      
+      /* Replay Box Styles */
+      #replayBox {
+        position: absolute;
+        top: 280px;
+        left: 20px;
+        width: 250px;
+        background: rgba(255,255,255,0.9);
+        border: 2px solid #ccc;
+        border-radius: 5px;
+        padding: 10px;
+        z-index: 30;
+      }
+      #replayBox h3 {
+        margin: 5px 0;
+        font-size: 18px;
+        text-align: center;
+      }
+      #replayCanvas {
+        width: 200px;
+        height: 200px;
+        background: #f0f0f0;
+        border: 1px solid #ccc;
+        display: block;
+        margin: 5px auto;
+        transform: rotate(180deg); /* The canvas remains rotated */
+      }
+      #replayInfo p {
+        margin: 2px 0;
+        font-size: 14px;
+        text-align: center;
+      }
+      #replayButtons {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+      }
+      #playReplay, #stopReplay {
+        padding: 5px 10px;
+        font-size: 14px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        background-color: #2196f3;
+        color: white;
+      }
+      
       /* Hoop Table */
       #hoopTable {
         position: absolute;
         top: 60px;
         right: 20px;
         z-index: 100;
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255,255,255,0.8);
         padding: 10px;
         border: 1px solid #ccc;
         display: grid;
@@ -328,16 +339,15 @@
         background: yellow;
         border: 1px solid #000;
       }
-      #hoopTable .hoopCell.passed {
-        background: grey;
-      }
+      #hoopTable .hoopCell.passed { background: grey; }
+      
       /* Stats Box */
       #statsBox {
         position: absolute;
         top: 160px;
         right: 20px;
         width: 220px;
-        background: rgba(255, 255, 255, 0.8);
+        background: rgba(255,255,255,0.8);
         padding: 10px;
         border: 1px solid #ccc;
         font-family: Arial, sans-serif;
@@ -346,6 +356,7 @@
         text-align: left;
         line-height: 1.8;
       }
+      
       /* New Game Button */
       #newGameButton {
         font-size: 24px;
@@ -357,47 +368,54 @@
         color: white;
         cursor: pointer;
       }
+      
       /* Button Classes */
-      .btn-green {
-        background-color: #4caf50;
-        color: white;
-      }
-      .btn-red {
-        background-color: #f44336;
-        color: white;
-      }
-      .btn-default {
-        background-color: #2196f3;
-        color: white;
-      }
+      .btn-green { background-color: #4caf50; color: white; }
+      .btn-red { background-color: #f44336; color: white; }
+      .btn-default { background-color: #2196f3; color: white; }
     </style>
   </head>
   <body>
-    <!-- Title -->
+    <!-- Title and Description -->
     <div id="title">Quadcopter Flight Simulation</div>
-    <!-- Game Description -->
     <div id="description">Guide your drone through hoops and safely return home.</div>
-    <!-- Language Toggle Button -->
+    
+    <!-- Top Right Buttons -->
     <button id="langToggle" class="btn-green">繁體中文</button>
-    <!-- Back Button -->
     <button id="backButton" class="btn-default">Back</button>
-    <!-- General Message -->
+    
+    <!-- General Message (for landing, RTH, etc.) -->
     <div id="message"></div>
+    
+    <!-- Alert Message (for distance & altitude warnings) -->
+    <div id="alertMessage"></div>
     
     <!-- Top View Container -->
     <div id="topViewContainer">
       <div id="topViewRenderer">
-        <!-- Arrow buttons inside top view renderer -->
         <button id="topArrowUp" class="arrow-btn">▲</button>
         <button id="topArrowDown" class="arrow-btn">▼</button>
         <button id="topArrowLeft" class="arrow-btn">◄</button>
         <button id="topArrowRight" class="arrow-btn">►</button>
       </div>
-      <!-- Zoom Controls with "Home" Button; text will be translated -->
       <div id="zoomControls">
         <button id="zoomIn">Zoom In</button>
         <button id="homeView">Home</button>
         <button id="zoomOut">Zoom Out</button>
+      </div>
+    </div>
+    
+    <!-- Replay Box -->
+    <div id="replayBox">
+      <h3>Replay</h3>
+      <canvas id="replayCanvas" width="300" height="200"></canvas>
+      <div id="replayInfo">
+        <p>Total Distance: <span id="replayDistance">0</span></p>
+        <p>Flight Time: <span id="replayTime">0 s</span></p>
+      </div>
+      <div id="replayButtons">
+        <button id="playReplay" class="btn-default">Play</button>
+        <button id="stopReplay" class="btn-default">Stop</button>
       </div>
     </div>
     
@@ -426,7 +444,7 @@
     <div id="controls">
       <div id="info">Altitude: 0 | Distance: 0</div>
       <div id="main-controls">
-        <!-- Left Virtual Joystick (Throttle & Yaw) -->
+        <!-- Left Virtual Joystick -->
         <div class="joystick-container" id="leftJoystick">
           <div class="joystick-base"></div>
           <div class="joystick-thumb"></div>
@@ -435,14 +453,14 @@
           <span class="joystick-label label-left">Yaw Left</span>
           <span class="joystick-label label-right">Yaw Right</span>
         </div>
-        <!-- Speed Slider, Flight Path Toggle, and Return-to-Home Button -->
+        <!-- Speed Slider & Flight Controls -->
         <div id="speedContainer">
           <div id="speedLabel">Speed</div>
           <input type="range" id="speedSlider" min="10" max="100" value="50" step="1" />
           <button id="toggleFlightPath" class="btn-default">Show Flight Path</button>
           <button id="rthBtn" class="btn-default">Return-to-Home (RTH)</button>
         </div>
-        <!-- Right Virtual Joystick (Pitch & Roll) -->
+        <!-- Right Virtual Joystick -->
         <div class="joystick-container" id="rightJoystick">
           <div class="joystick-base"></div>
           <div class="joystick-thumb"></div>
@@ -455,1121 +473,1235 @@
       <button id="btn-reset" class="btn-red">Reset</button>
     </div>
     
-    <!-- Include Three.js from CDN -->
+    <!-- Include Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-      // ------------------------------------
-      // Global Variables and Helper Functions
-      // ------------------------------------
-      function lerp(a, b, t) {
-        return a + (b - a) * t;
+/***********************
+ * Global Variables
+ ***********************/
+function lerp(a, b, t) { return a + (b - a) * t; }
+
+// Flags and flight state variables
+let disableDroneControls = false, flightEnded = false, takenOff = false, rthActive = false;
+let manualRTH = false;
+let currentExpectedHoop = 1, landedAtHome = false, allHoopsPassed = false;
+let totalDistance = 0, totalFlightTime = 0;
+let previousPosition = null;
+
+// Flight recording for replay
+let recordedFlightPath = [];
+let recordedDistance = 0, recordedTime = 0;
+
+// Replay control variables
+let replayAnimationId, replayPaused = false, replayIndexGlobalLocal = 0;
+
+// Get context for replay canvas
+const replayCanvas = document.getElementById("replayCanvas");
+const replayCtx = replayCanvas.getContext("2d");
+
+// Live flight path for top view
+let flightPathPoints = [];
+let flightPathLine = null;
+
+// Global variables to fix top view zoom and center when landing.
+let fixedTopViewZoom = null;
+let fixedTopViewCenter = new THREE.Vector3();
+
+// Flag to indicate landing status
+let isLanding = false;
+
+// Audio objects
+const flyAudio = new Audio("flysound.mp3"); flyAudio.loop = true; flyAudio.volume = 0;
+const bonusAudio = new Audio("bonus.mp3"); bonusAudio.loop = false;
+const sweetAudio = new Audio("sweet.mp3");
+const rth12Audio = new Audio("rth12.mp3");
+const land1Audio = new Audio("land1.mp3");
+let flyAudioPlaying = false;
+
+// iOS Audio Unlock
+function initAudio() {
+  [flyAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio].forEach(audioElem => {
+    const prevVolume = audioElem.volume;
+    audioElem.muted = true;
+    audioElem.play().then(() => {
+      audioElem.pause();
+      audioElem.currentTime = 0;
+      audioElem.muted = false;
+      audioElem.volume = prevVolume;
+    }).catch(() => {});
+  });
+  document.removeEventListener("touchstart", initAudio);
+}
+document.addEventListener("touchstart", initAudio, false);
+      
+// ------------------------------------
+// Helper Functions
+// ------------------------------------
+function createDirectionSprite(text, color="black") {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = color;
+  ctx.font = "bold 90px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+  sprite.scale.set(250, 250, 1);
+  return sprite;
+}
+      
+function createHoopLabel(number) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "yellow";
+  ctx.font = "Bold 120px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(number.toString(), canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+  sprite.scale.set(4, 4, 1);
+  return sprite;
+}
+      
+// ------------------------------------
+// Virtual Joystick Helper
+// ------------------------------------
+function attachJoystick(containerId, joystickObj) {
+  const container = document.getElementById(containerId);
+  const thumb = container.querySelector(".joystick-thumb");
+  let dragging = false, pointerId = null, activeTouchId = null;
+  let center = { x: 0, y: 0 };
+  const maxDist = 40;
+  joystickObj.active = false;
+  function updateThumb(dx, dy) {
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > maxDist) { dx = (dx / dist) * maxDist; dy = (dy / dist) * maxDist; }
+    joystickObj.dx = dx / maxDist;
+    joystickObj.dy = dy / maxDist;
+    thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
+  }
+  function resetThumb() {
+    dragging = false;
+    joystickObj.active = false;
+    activeTouchId = null;
+    joystickObj.dx = 0;
+    joystickObj.dy = 0;
+    thumb.style.transform = "translate(-50%, -50%)";
+  }
+  function onPointerDown(e) {
+    if (e.pointerType === "mouse" && e.button !== 0) return;
+    dragging = true;
+    joystickObj.active = true;
+    pointerId = e.pointerId;
+    const rect = container.getBoundingClientRect();
+    center.x = rect.left + rect.width / 2;
+    center.y = rect.top + rect.height / 2;
+    updateThumb(e.clientX - center.x, e.clientY - center.y);
+    container.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+  function onPointerMove(e) {
+    if (!dragging || e.pointerId !== pointerId) return;
+    updateThumb(e.clientX - center.x, e.clientY - center.y);
+    e.preventDefault();
+  }
+  function onPointerUp(e) {
+    if (e.pointerId !== pointerId) return;
+    resetThumb();
+    container.releasePointerCapture(e.pointerId);
+    e.preventDefault();
+  }
+  function onTouchStart(e) {
+    if (e.targetTouches.length > 0) {
+      dragging = true;
+      joystickObj.active = true;
+      const touch = e.targetTouches[0];
+      activeTouchId = touch.identifier;
+      const rect = container.getBoundingClientRect();
+      center.x = rect.left + rect.width / 2;
+      center.y = rect.top + rect.height / 2;
+      updateThumb(touch.clientX - center.x, touch.clientY - center.y);
+      e.preventDefault();
+    }
+  }
+  function onTouchMove(e) {
+    if (!dragging || activeTouchId === null) return;
+    let targetTouch = null;
+    for (let i = 0; i < e.touches.length; i++) {
+      if (e.touches[i].identifier === activeTouchId) {
+        targetTouch = e.touches[i];
+        break;
       }
-      
-      let disableDroneControls = false;
-      let flightEnded = false;
-      let takenOff = false;
-      let rthActive = false;
-      let currentExpectedHoop = 1;
-      let landedAtHome = false;
-      let allHoopsPassed = false;
-      let totalDistance = 0;
-      let totalFlightTime = 0;
-      let previousPosition = null;
-      
-      // Audio objects for flight sounds
-      const flyAudio = new Audio("flysound.mp3");
-      flyAudio.loop = true;
-      flyAudio.volume = 0;
-      const bonusAudio = new Audio("bonus.mp3");
-      bonusAudio.loop = false;
-      const sweetAudio = new Audio("sweet.mp3");
-      const rth12Audio = new Audio("rth12.mp3");
-      const land1Audio = new Audio("land1.mp3");
-      let flyAudioPlaying = false;
-      
-      // iOS/iPad audio unlock without audible playback.
-      function initAudio() {
-        [flyAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio].forEach(audioElem => {
-          const prevVolume = audioElem.volume;
-          audioElem.muted = true;
-          audioElem.play().then(() => {
-            audioElem.pause();
-            audioElem.currentTime = 0;
-            audioElem.muted = false;
-            audioElem.volume = prevVolume;
-          }).catch(() => {});
-        });
-        document.removeEventListener("touchstart", initAudio);
+    }
+    if (targetTouch) { updateThumb(targetTouch.clientX - center.x, targetTouch.clientY - center.y); }
+    e.preventDefault();
+  }
+  function onTouchEnd(e) {
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === activeTouchId) {
+        resetThumb();
+        break;
       }
-      document.addEventListener("touchstart", initAudio, false);
+    }
+    e.preventDefault();
+  }
+  container.addEventListener("touchcancel", onTouchEnd, { passive: false });
+  if (window.PointerEvent) {
+    container.addEventListener("pointerdown", onPointerDown, { passive: false });
+    container.addEventListener("pointermove", onPointerMove, { passive: false });
+    container.addEventListener("pointerup", onPointerUp, { passive: false });
+    container.addEventListener("pointercancel", onPointerUp, { passive: false });
+  }
+  container.addEventListener("touchstart", onTouchStart, { passive: false });
+  container.addEventListener("touchmove", onTouchMove, { passive: false });
+  container.addEventListener("touchend", onTouchEnd, { passive: false });
+}
       
-      // Helper: createDirectionSprite
-      function createDirectionSprite(text, color = "black") {
-        const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 512;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = color;
-        ctx.font = "bold 90px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(250, 250, 1);
-        return sprite;
+// ------------------------------------
+// Three.js Scene Setup
+// ------------------------------------
+const scene = new THREE.Scene();
+const northSprite = createDirectionSprite("NORTH");
+northSprite.position.set(0, 8, 540);
+scene.add(northSprite);
+const eastSprite = createDirectionSprite("EAST");
+eastSprite.position.set(-540, 8, 0);
+scene.add(eastSprite);
+const southSprite = createDirectionSprite("SOUTH");
+southSprite.position.set(0, 8, -540);
+scene.add(southSprite);
+const westSprite = createDirectionSprite("WEST");
+westSprite.position.set(540, 8, 0);
+scene.add(westSprite);
+      
+// ------------------------------------
+// Home Marker
+// ------------------------------------
+function drawHomeMarker(ctx, padColor) {
+  ctx.clearRect(0, 0, 256, 256);
+  ctx.fillStyle = padColor;
+  ctx.beginPath();
+  ctx.arc(128, 128, 120, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = "black";
+  ctx.lineWidth = 10;
+  ctx.stroke();
+  ctx.fillStyle = "black";
+  ctx.font = "bold 100px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText("H", 128, 128);
+}
+function createHomeMarker() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext("2d");
+  drawHomeMarker(ctx, "white");
+  const texture = new THREE.CanvasTexture(canvas);
+  const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true });
+  const geometry = new THREE.CircleGeometry(5, 32);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(0, 0.01, 0);
+  mesh.userData = { canvas, ctx, texture };
+  return mesh;
+}
+const homeMarker = createHomeMarker();
+scene.add(homeMarker);
+      
+// ------------------------------------
+// Lighting
+// ------------------------------------
+const ambientLight = new THREE.AmbientLight(0x404040);
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+directionalLight.position.set(100, 200, 100);
+directionalLight.castShadow = true;
+directionalLight.shadow.mapSize.width = 2048;
+directionalLight.shadow.mapSize.height = 2048;
+directionalLight.shadow.camera.near = 0.5;
+directionalLight.shadow.camera.far = 500;
+directionalLight.shadow.bias = -0.001;
+scene.add(directionalLight);
+      
+// ------------------------------------
+// Drone Setup
+// ------------------------------------
+const droneGroup = new THREE.Group();
+droneGroup.rotation.order = "YXZ";
+scene.add(droneGroup);
+const drone = { position: new THREE.Vector3(0, 0.45, 0), yaw: 0, pitch: 0, roll: 0 };
+const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
+const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff });
+const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
+droneGroup.add(droneBody);
+function createDroneLabel(text) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = "bold 150px Arial";
+  ctx.fillStyle = "white";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.center = new THREE.Vector2(0.5, 0.5);
+  texture.rotation = Math.PI;
+  texture.needsUpdate = true;
+  const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+  const geometry = new THREE.PlaneGeometry(0.9, 0.3);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.rotation.x = -Math.PI / 2;
+  mesh.position.set(0, 0.16, 0);
+  return mesh;
+}
+const label = createDroneLabel("EdUHK");
+droneGroup.add(label);
+      
+// ------------------------------------
+// Drone Propellers Setup
+// ------------------------------------
+const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
+const propellers = [];
+const frontLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+frontLeft.position.set(-0.50, 0.2, 0.55);
+droneGroup.add(frontLeft);
+propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
+const frontRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
+frontRight.position.set(0.50, 0.2, 0.55);
+droneGroup.add(frontRight);
+propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
+const rearLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
+rearLeft.position.set(-0.50, 0.2, -0.55);
+droneGroup.add(rearLeft);
+propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
+const rearRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
+rearRight.position.set(0.50, 0.2, -0.55);
+droneGroup.add(rearRight);
+propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
+droneGroup.scale.set(3, 3, 3);
+droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
+const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
+propellers.forEach((prop, index) => {
+  const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+  const blinkSpot = new THREE.Mesh(blinkSphereGeometry, mat);
+  blinkSpot.position.set(0, 0, 0);
+  prop.mesh.add(blinkSpot);
+  prop.blinkOffset = index * (Math.PI / 2);
+  prop.blinkSpot = blinkSpot;
+});
+      
+// ------------------------------------
+// Hoop Creation Functions
+// ------------------------------------
+function createCircularHoop(number) {
+  const mainRadius = 9, tubeRadius = 0.2;
+  const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, 16, 100);
+  const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
+  const hoopMesh = new THREE.Mesh(geometry, material);
+  const labelSprite = createHoopLabel(number);
+  labelSprite.position.set(0, mainRadius + 2, 0);
+  hoopMesh.add(labelSprite);
+  return { mesh: hoopMesh, mainRadius, tubeRadius, entered: false, passed: false, number, labelSprite, type: "circular", originalColor: 0xffa500 };
+}
+function createSquareHoop(number) {
+  const outer = 9, inner = outer - 0.2;
+  const shape = new THREE.Shape();
+  shape.moveTo(-outer, -outer);
+  shape.lineTo(outer, -outer);
+  shape.lineTo(outer, outer);
+  shape.lineTo(-outer, outer);
+  shape.lineTo(-outer, -outer);
+  const hole = new THREE.Path();
+  hole.moveTo(-inner, -inner);
+  hole.lineTo(-inner, inner);
+  hole.lineTo(inner, inner);
+  hole.lineTo(inner, -inner);
+  hole.lineTo(-inner, -inner);
+  shape.holes.push(hole);
+  const geometry = new THREE.ShapeGeometry(shape);
+  const material = new THREE.MeshLambertMaterial({ color: 0xff69b4, side: THREE.DoubleSide });
+  const hoopMesh = new THREE.Mesh(geometry, material);
+  const labelSprite = createHoopLabel(number);
+  labelSprite.position.set(0, outer + 2, 0);
+  hoopMesh.add(labelSprite);
+  return { mesh: hoopMesh, mainRadius: outer, tubeRadius: outer - inner, entered: false, passed: false, number, labelSprite, type: "square", originalColor: 0xff69b4 };
+}
+function createTriangleHoop(number) {
+  const rOuter = 9, rInner = rOuter - 0.2;
+  const shape = new THREE.Shape();
+  const outerVertices = [];
+  for (let i = 0; i < 3; i++) {
+    const theta = THREE.Math.degToRad(90 + i * 120);
+    outerVertices.push(new THREE.Vector2(rOuter * Math.cos(theta), rOuter * Math.sin(theta)));
+  }
+  shape.moveTo(outerVertices[0].x, outerVertices[0].y);
+  shape.lineTo(outerVertices[1].x, outerVertices[1].y);
+  shape.lineTo(outerVertices[2].x, outerVertices[2].y);
+  shape.closePath();
+  const hole = new THREE.Path();
+  const innerVertices = [];
+  for (let i = 0; i < 3; i++) {
+    const theta = THREE.Math.degToRad(90 + i * 120);
+    innerVertices.push(new THREE.Vector2(rInner * Math.cos(theta), rInner * Math.sin(theta)));
+  }
+  hole.moveTo(innerVertices[innerVertices.length - 1].x, innerVertices[innerVertices.length - 1].y);
+  for (let i = innerVertices.length - 2; i >= 0; i--) {
+    hole.lineTo(innerVertices[i].x, innerVertices[i].y);
+  }
+  hole.closePath();
+  shape.holes.push(hole);
+  const geometry = new THREE.ShapeGeometry(shape);
+  const material = new THREE.MeshLambertMaterial({ color: 0x800080, side: THREE.DoubleSide });
+  const hoopMesh = new THREE.Mesh(geometry, material);
+  const labelSprite = createHoopLabel(number);
+  labelSprite.position.set(0, rOuter + 2, 0);
+  hoopMesh.add(labelSprite);
+  return { mesh: hoopMesh, mainRadius: rOuter, tubeRadius: rOuter - rInner, entered: false, passed: false, number, labelSprite, type: "triangle", originalColor: 0x800080 };
+}
+      
+// ------------------------------------
+// Hoops Setup
+// ------------------------------------
+const altitudes = [10,15,20,25,30,35,40,45,50,55];
+const hoops = [];
+for (let i = 1; i <= 10; i++) {
+  let hoop;
+  if (i <= 4) hoop = createCircularHoop(i);
+  else if (i <= 7) hoop = createSquareHoop(i);
+  else hoop = createTriangleHoop(i);
+  hoop.mesh.position.set((Math.random()-0.5)*160, altitudes[i-1], (Math.random()-0.5)*160);
+  scene.add(hoop.mesh);
+  hoops.push(hoop);
+}
+      
+// ------------------------------------
+// User Input Handling
+// ------------------------------------
+let translationSpeed = 50;
+const yawSpeed = 1.0, throttleSpeed = 10;
+const maxTilt = 0.5 * Math.PI / 6, throttleDeadZone = 0.2;
+const leftJoystickInput = { dx: 0, dy: 0 };
+const rightJoystickInput = { dx: 0, dy: 0 };
+attachJoystick("leftJoystick", leftJoystickInput);
+attachJoystick("rightJoystick", rightJoystickInput);
+const keys = {};
+document.addEventListener("keydown", e => { keys[e.code] = true; });
+document.addEventListener("keyup", e => { keys[e.code] = false; });
+document.addEventListener("keydown", event => {
+  if (event.code === "KeyH") { document.getElementById("rthBtn").click(); }
+  else if (event.code === "KeyP") { document.getElementById("toggleFlightPath").click(); }
+  else if (event.code === "KeyR") { document.getElementById("btn-reset").click(); }
+});
+const speedSlider = document.getElementById("speedSlider");
+speedSlider.addEventListener("input", function(){ translationSpeed = parseFloat(this.value); });
+      
+let flightPathActive = false;
+const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
+toggleFlightPathBtn.addEventListener("click", function(){
+  flightPathActive = !flightPathActive;
+  if (flightPathActive) {
+    toggleFlightPathBtn.innerHTML = translations[currentLanguage].hideFlightPath;
+    flightPathPoints = [];
+  } else {
+    toggleFlightPathBtn.innerHTML = translations[currentLanguage].showFlightPath;
+    if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+  }
+});
+      
+const rthBtn = document.getElementById("rthBtn");
+rthBtn.addEventListener("click", function(){
+  if (drone.position.y < 1) return;
+  // Manual RTH: set flag.
+  manualRTH = true;
+  rthActive = true;
+  this.style.backgroundColor = "grey";
+  // Reset both joysticks.
+  leftJoystickInput.dx = 0;
+  leftJoystickInput.dy = 0;
+  document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+  rightJoystickInput.dx = 0;
+  rightJoystickInput.dy = 0;
+  document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+  const msgDiv = document.getElementById("message");
+  // Change message box background to green.
+  msgDiv.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
+  msgDiv.style.display = "block";
+  msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
+  if (rth12Audio.paused) {
+    rth12Audio.currentTime = 0;
+    rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
+  }
+  if (flyAudioPlaying) {
+    flyAudio.pause();
+    flyAudio.currentTime = 0;
+    flyAudioPlaying = false;
+  }
+});
+      
+document.getElementById("backButton").addEventListener("click", function(){
+  window.location.href = "002_control.html";
+});
+      
+// ------------------------------------
+// Translations Setup
+// ------------------------------------
+const translations = {
+  en: {
+    title: "Quadcopter Flight Simulation",
+    description: "Guide your drone through hoops and safely return home.",
+    allHoopsPassed: "All hoops passed! Now fly back and land on the home point (marked with H).",
+    landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
+    automaticLanding: "Automatic Landing",
+    reset: "Reset",
+    showFlightPath: "Show Flight Path",
+    hideFlightPath: "Hide Flight Path",
+    throttleUp: "Throttle Up",
+    throttleDown: "Throttle Down",
+    yawLeft: "Yaw Left",
+    yawRight: "Yaw Right",
+    pitchForward: "Pitch Forward",
+    pitchBackward: "Pitch Backward",
+    rollLeft: "Roll Left",
+    rollRight: "Roll Right",
+    zoomIn: "Zoom In",
+    zoomOut: "Zoom Out",
+    altitude: "Altitude",
+    distance: "Distance",
+    totalFlightDistance: "Total Flight Distance: ",
+    flightSpeed: "Horizontal Speed: ",
+    flightTime: "Flight Time: ",
+    rthInProgress: "Return-to-Home in Progress",
+    returnToHome: "Return-to-Home (RTH)",
+    topHome: "Home",
+    back: "Back"
+  },
+  zh: {
+    title: "四軸無人機飛行模擬",
+    description: "操控無人機穿越環門並安全降落於起飛點。",
+    allHoopsPassed: "所有環門已通過！請飛回並在以「H」標示的起飛點著陸。",
+    landingMessage: "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>新遊戲</button>",
+    automaticLanding: "自動降落",
+    reset: "重置",
+    showFlightPath: "顯示飛行路徑",
+    hideFlightPath: "隱藏飛行路徑",
+    throttleUp: "上升",
+    throttleDown: "下降",
+    yawLeft: "左轉",
+    yawRight: "右轉",
+    pitchForward: "前飛",
+    pitchBackward: "後飛",
+    rollLeft: "左飛",
+    rollRight: "右飛",
+    zoomIn: "放大",
+    zoomOut: "縮小",
+    altitude: "高度",
+    distance: "距離",
+    totalFlightDistance: "飛行總距離：",
+    flightSpeed: "飛行速度：",
+    flightTime: "飛行時間：",
+    rthInProgress: "正在返航",
+    returnToHome: "自動返航 (RTH)",
+    topHome: "原位",
+    back: "返回"
+  }
+};
+let currentLanguage = "en";
+function updateUIText(){
+  document.getElementById("title").innerHTML = translations[currentLanguage].title;
+  document.getElementById("description").innerHTML = translations[currentLanguage].description;
+  document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
+  document.getElementById("backButton").innerHTML = translations[currentLanguage].back;
+  const flightToggle = document.getElementById("toggleFlightPath");
+  if (flightToggle) {
+    flightToggle.innerHTML = flightPathActive ? translations[currentLanguage].hideFlightPath : translations[currentLanguage].showFlightPath;
+  }
+  document.querySelector("#leftJoystick .label-top").textContent = translations[currentLanguage].throttleUp;
+  document.querySelector("#leftJoystick .label-bottom").textContent = translations[currentLanguage].throttleDown;
+  document.querySelector("#leftJoystick .label-left").textContent = translations[currentLanguage].yawLeft;
+  document.querySelector("#leftJoystick .label-right").textContent = translations[currentLanguage].yawRight;
+  document.querySelector("#rightJoystick .label-top").textContent = translations[currentLanguage].pitchForward;
+  document.querySelector("#rightJoystick .label-bottom").textContent = translations[currentLanguage].pitchBackward;
+  document.querySelector("#rightJoystick .label-left").textContent = translations[currentLanguage].rollLeft;
+  document.querySelector("#rightJoystick .label-right").textContent = translations[currentLanguage].rollRight;
+  document.getElementById("zoomIn").innerHTML = translations[currentLanguage].zoomIn;
+  document.getElementById("zoomOut").innerHTML = translations[currentLanguage].zoomOut;
+  document.getElementById("rthBtn").innerHTML = translations[currentLanguage].returnToHome;
+  document.getElementById("homeView").innerHTML = translations[currentLanguage].topHome;
+}
+document.getElementById("langToggle").addEventListener("click", function(){
+  if (currentLanguage==="en") { currentLanguage = "zh"; this.innerHTML = "English"; } 
+  else { currentLanguage = "en"; this.innerHTML = "繁體中文"; }
+  updateUIText();
+});
+      
+// ------------------------------------
+// Main Renderer Setup
+// ------------------------------------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setClearColor(0x87ceeb);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth/window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+      
+// ------------------------------------
+// Top View Renderer & Orthographic Camera
+// ------------------------------------
+const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+topViewRenderer.setSize(200, 200);
+topViewRenderer.setClearColor(0x000000, 0);
+const topViewDiv = document.getElementById("topViewRenderer");
+topViewDiv.appendChild(topViewRenderer.domElement);
+const d = 400;
+/* Define a constant so that the default zoom (limit for "zoom in") is never exceeded */
+const DEFAULT_TOP_VIEW_ZOOM = 5;
+const topViewCamera = new THREE.OrthographicCamera(-d, d, d, -d, 0.1, 2000);
+topViewCamera.position.set(0, 1000, 0);
+topViewCamera.lookAt(new THREE.Vector3(0, 0, 0));
+topViewCamera.zoom = DEFAULT_TOP_VIEW_ZOOM;
+topViewCamera.updateProjectionMatrix();
+// Save initial zoom and center
+fixedTopViewZoom = topViewCamera.zoom;
+fixedTopViewCenter.copy(topViewCamera.position);
+document.getElementById("zoomIn").addEventListener("click", () => {
+  // Force zoom in to the default value
+  topViewCamera.zoom = DEFAULT_TOP_VIEW_ZOOM;
+  topViewCamera.updateProjectionMatrix();
+  fixedTopViewZoom = topViewCamera.zoom;
+});
+document.getElementById("zoomOut").addEventListener("click", () => {
+  topViewCamera.zoom /= 1.1;
+  topViewCamera.updateProjectionMatrix();
+  fixedTopViewZoom = topViewCamera.zoom;
+});
+      
+// Top view navigation buttons
+const topArrowUp = document.getElementById("topArrowUp");
+const topArrowDown = document.getElementById("topArrowDown");
+const topArrowLeft = document.getElementById("topArrowLeft");
+const topArrowRight = document.getElementById("topArrowRight");
+const panStep = 20;
+topArrowUp.addEventListener("click", () => {
+  topViewCamera.position.z -= panStep;
+  topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+});
+topArrowDown.addEventListener("click", () => {
+  topViewCamera.position.z += panStep;
+  topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+});
+topArrowLeft.addEventListener("click", () => {
+  topViewCamera.position.x -= panStep;
+  topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+});
+topArrowRight.addEventListener("click", () => {
+  topViewCamera.position.x += panStep;
+  topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
+});
+const homeView = document.getElementById("homeView");
+homeView.addEventListener("click", () => {
+  topViewCamera.position.set(0, 1000, 0);
+  topViewCamera.lookAt(new THREE.Vector3(0, 0, 0));
+});
+      
+// ------------------------------------
+// Ground & Grid
+// ------------------------------------
+const groundGeometry = new THREE.PlaneGeometry(1000, 1000);
+const groundMaterial = new THREE.MeshLambertMaterial({ color: 0xededed });
+const ground = new THREE.Mesh(groundGeometry, groundMaterial);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+const grid = new THREE.GridHelper(1000, 50, 0x000000, 0x000000);
+scene.add(grid);
+      
+// ------------------------------------
+// Global Clock
+// ------------------------------------
+const clock = new THREE.Clock();
+      
+// ------------------------------------
+// Replay Functions
+// ------------------------------------
+function computeReplayTransform(points) {
+  let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+  points.forEach(pt => {
+    if (pt.x < minX) minX = pt.x;
+    if (pt.x > maxX) maxX = pt.x;
+    if (pt.z < minZ) minZ = pt.z;
+    if (pt.z > maxZ) maxZ = pt.z;
+  });
+  const width = maxX - minX, height = maxZ - minZ;
+  const marginFactor = 1.2;
+  const scaleX = replayCanvas.width / (width * marginFactor || 1);
+  const scaleY = replayCanvas.height / (height * marginFactor || 1);
+  const scale = Math.min(scaleX, scaleY);
+  const centerX = (minX + maxX) / 2;
+  const centerZ = (minZ + maxZ) / 2;
+  const offsetX = replayCanvas.width / 2 - centerX * scale;
+  const offsetY = replayCanvas.height / 2 - centerZ * scale;
+  return { scale, offsetX, offsetY };
+}
+      
+function animateReplay() {
+  if (!replayPaused) { replayCtx.clearRect(0, 0, replayCanvas.width, replayCanvas.height); }
+  if (recordedFlightPath.length === 0) {
+    replayCtx.save();
+    replayCtx.translate(replayCanvas.width / 2, replayCanvas.height / 2);
+    replayCtx.rotate(Math.PI);
+    replayCtx.fillStyle = "#000";
+    replayCtx.font = "14px Arial";
+    replayCtx.textAlign = "center";
+    replayCtx.fillText("No Flight Data", 0, 0);
+    replayCtx.restore();
+    return;
+  }
+  const { scale, offsetX, offsetY } = computeReplayTransform(recordedFlightPath);
+  replayCtx.strokeStyle = "#ff0000";
+  replayCtx.lineWidth = 2;
+  replayCtx.beginPath();
+  replayCtx.moveTo(recordedFlightPath[0].x * scale + offsetX, recordedFlightPath[0].z * scale + offsetY);
+  recordedFlightPath.forEach(pt => {
+    replayCtx.lineTo(pt.x * scale + offsetX, pt.z * scale + offsetY);
+  });
+  replayCtx.stroke();
+  if (!replayPaused && replayIndexGlobalLocal < recordedFlightPath.length) {
+    const currentPt = recordedFlightPath[replayIndexGlobalLocal];
+    replayCtx.fillStyle = "#0000ff";
+    replayCtx.beginPath();
+    replayCtx.arc(currentPt.x * scale + offsetX, currentPt.z * scale + offsetY, 4, 0, Math.PI * 2);
+    replayCtx.fill();
+    replayIndexGlobalLocal++;
+  }
+  if (replayIndexGlobalLocal >= recordedFlightPath.length) {
+    if (!flightEnded) { replayIndexGlobalLocal = 0; }
+  }
+  replayAnimationId = requestAnimationFrame(animateReplay);
+}
+      
+document.getElementById("playReplay").addEventListener("click", function () {
+  if (recordedFlightPath.length === 0) {
+    replayCtx.clearRect(0, 0, replayCanvas.width, replayCanvas.height);
+    replayCtx.save();
+    replayCtx.translate(replayCanvas.width / 2, replayCanvas.height / 2);
+    replayCtx.rotate(Math.PI);
+    replayCtx.fillStyle = "#000";
+    replayCtx.font = "14px Arial";
+    replayCtx.textAlign = "center";
+    replayCtx.fillText("No Flight Data", 0, 0);
+    replayCtx.restore();
+    return;
+  }
+  document.getElementById("replayDistance").textContent = recordedDistance.toFixed(1);
+  document.getElementById("replayTime").textContent = recordedTime.toFixed(1) + " s";
+  if (this.textContent === "Play") { replayIndexGlobalLocal = 0; }
+  replayPaused = false;
+  this.textContent = "Play";
+  cancelAnimationFrame(replayAnimationId);
+  animateReplay();
+});
+      
+document.getElementById("stopReplay").addEventListener("click", function () {
+  cancelAnimationFrame(replayAnimationId);
+  replayPaused = true;
+  document.getElementById("playReplay").textContent = "Continue";
+});
+      
+// ------------------------------------
+// Live Flight Path in Top View
+// ------------------------------------
+function updateLiveFlightPath() {
+  if (flightPathActive && takenOff) {
+    flightPathPoints.push(drone.position.clone());
+    if (flightPathPoints.length > 500) { flightPathPoints.shift(); }
+    if (flightPathLine) { scene.remove(flightPathLine); }
+    const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
+    const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
+    flightPathLine = new THREE.Line(geometry, material);
+    scene.add(flightPathLine);
+    
+    // If RTH is active and altitude is low, fix the top-view camera.
+    if (rthActive && drone.position.y < 2) {
+      if (!isLanding) {
+        isLanding = true;
+        fixedTopViewZoom = topViewCamera.zoom;
+        fixedTopViewCenter.copy(topViewCamera.position);
       }
-      
-      // Helper: createHoopLabel
-      function createHoopLabel(number) {
-        const canvas = document.createElement("canvas");
-        canvas.width = 128;
-        canvas.height = 128;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "yellow";
-        ctx.font = "Bold 120px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(number.toString(), canvas.width / 2, canvas.height / 2);
-        const texture = new THREE.CanvasTexture(canvas);
-        const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
-        const sprite = new THREE.Sprite(spriteMaterial);
-        sprite.scale.set(4, 4, 1);
-        return sprite;
-      }
-      
-      // ------------------------------------
-      // Virtual Joystick Helper
-      // ------------------------------------
-      function attachJoystick(containerId, joystickObj) {
-        const container = document.getElementById(containerId);
-        const thumb = container.querySelector(".joystick-thumb");
-        let dragging = false, pointerId = null, activeTouchId = null;
-        let center = { x: 0, y: 0 };
-        const maxDist = 40;
-        joystickObj.active = false;
-        function updateThumb(dx, dy) {
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist > maxDist) {
-            dx = (dx / dist) * maxDist;
-            dy = (dy / dist) * maxDist;
-          }
-          joystickObj.dx = dx / maxDist;
-          joystickObj.dy = dy / maxDist;
-          thumb.style.transform = `translate(${dx - 40}px, ${dy - 40}px)`;
-        }
-        function resetThumb() {
-          dragging = false;
-          joystickObj.active = false;
-          activeTouchId = null;
-          joystickObj.dx = 0;
-          joystickObj.dy = 0;
-          thumb.style.transform = "translate(-50%, -50%)";
-        }
-        function onPointerDown(e) {
-          if (e.pointerType === "mouse" && e.button !== 0) return;
-          dragging = true;
-          joystickObj.active = true;
-          pointerId = e.pointerId;
-          const rect = container.getBoundingClientRect();
-          center.x = rect.left + rect.width / 2;
-          center.y = rect.top + rect.height / 2;
-          updateThumb(e.clientX - center.x, e.clientY - center.y);
-          container.setPointerCapture(e.pointerId);
-          e.preventDefault();
-        }
-        function onPointerMove(e) {
-          if (!dragging || e.pointerId !== pointerId) return;
-          updateThumb(e.clientX - center.x, e.clientY - center.y);
-          e.preventDefault();
-        }
-        function onPointerUp(e) {
-          if (e.pointerId !== pointerId) return;
-          resetThumb();
-          container.releasePointerCapture(e.pointerId);
-          e.preventDefault();
-        }
-        function onTouchStart(e) {
-          if (e.targetTouches.length > 0) {
-            dragging = true;
-            joystickObj.active = true;
-            const touch = e.targetTouches[0];
-            activeTouchId = touch.identifier;
-            const rect = container.getBoundingClientRect();
-            center.x = rect.left + rect.width / 2;
-            center.y = rect.top + rect.height / 2;
-            updateThumb(touch.clientX - center.x, touch.clientY - center.y);
-            e.preventDefault();
-          }
-        }
-        function onTouchMove(e) {
-          if (!dragging || activeTouchId === null) return;
-          let targetTouch = null;
-          for (let i = 0; i < e.touches.length; i++) {
-            if (e.touches[i].identifier === activeTouchId) {
-              targetTouch = e.touches[i];
-              break;
-            }
-          }
-          if (targetTouch) {
-            updateThumb(targetTouch.clientX - center.x, targetTouch.clientY - center.y);
-          }
-          e.preventDefault();
-        }
-        function onTouchEnd(e) {
-          for (let i = 0; i < e.changedTouches.length; i++) {
-            if (e.changedTouches[i].identifier === activeTouchId) {
-              resetThumb();
-              break;
-            }
-          }
-          e.preventDefault();
-        }
-        container.addEventListener("touchcancel", onTouchEnd, { passive: false });
-        if (window.PointerEvent) {
-          container.addEventListener("pointerdown", onPointerDown, { passive: false });
-          container.addEventListener("pointermove", onPointerMove, { passive: false });
-          container.addEventListener("pointerup", onPointerUp, { passive: false });
-          container.addEventListener("pointercancel", onPointerUp, { passive: false });
-        }
-        container.addEventListener("touchstart", onTouchStart, { passive: false });
-        container.addEventListener("touchmove", onTouchMove, { passive: false });
-        container.addEventListener("touchend", onTouchEnd, { passive: false });
-      }
-      
-      // ------------------------------------
-      // Three.js Scene Setup
-      // ------------------------------------
-      const scene = new THREE.Scene();
-      const northSprite = createDirectionSprite("NORTH");
-      northSprite.position.set(0, 8, 540);
-      scene.add(northSprite);
-      const eastSprite = createDirectionSprite("EAST");
-      eastSprite.position.set(-540, 8, 0);
-      scene.add(eastSprite);
-      const southSprite = createDirectionSprite("SOUTH");
-      southSprite.position.set(0, 8, -540);
-      scene.add(southSprite);
-      const westSprite = createDirectionSprite("WEST");
-      westSprite.position.set(540, 8, 0);
-      scene.add(westSprite);
-      
-      // ------------------------------------
-      // Home Marker Creation
-      // ------------------------------------
-      function drawHomeMarker(ctx, padColor) {
-        ctx.clearRect(0, 0, 256, 256);
-        ctx.fillStyle = padColor;
-        ctx.beginPath();
-        ctx.arc(128, 128, 120, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 10;
-        ctx.stroke();
-        ctx.fillStyle = "black";
-        ctx.font = "bold 100px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText("H", 128, 128);
-      }
-      function createHomeMarker() {
-        const canvas = document.createElement("canvas");
-        canvas.width = 256;
-        canvas.height = 256;
-        const ctx = canvas.getContext("2d");
-        drawHomeMarker(ctx, "white");
-        const texture = new THREE.CanvasTexture(canvas);
-        const material = new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide, transparent: true });
-        const geometry = new THREE.CircleGeometry(5, 32);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(0, 0.01, 0);
-        mesh.userData = { canvas, ctx, texture };
-        return mesh;
-      }
-      const homeMarker = createHomeMarker();
-      scene.add(homeMarker);
-      
-      // ------------------------------------
-      // Lighting
-      // ------------------------------------
-      const ambientLight = new THREE.AmbientLight(0x404040);
-      scene.add(ambientLight);
-      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-      directionalLight.position.set(100, 200, 100);
-      directionalLight.castShadow = true;
-      directionalLight.shadow.mapSize.width = 2048;
-      directionalLight.shadow.mapSize.height = 2048;
-      directionalLight.shadow.camera.near = 0.5;
-      directionalLight.shadow.camera.far = 500;
-      directionalLight.shadow.bias = -0.001;
-      scene.add(directionalLight);
-      
-      // ------------------------------------
-      // Drone Setup
-      // ------------------------------------
-      const droneGroup = new THREE.Group();
-      droneGroup.rotation.order = "YXZ";
-      scene.add(droneGroup);
-      const drone = {
-        position: new THREE.Vector3(0, 0.45, 0),
-        yaw: 0,
-        pitch: 0,
-        roll: 0
-      };
-      const droneBodyGeometry = new THREE.BoxGeometry(1, 0.3, 1);
-      const droneBodyMaterial = new THREE.MeshLambertMaterial({ color: 0x0000ff });
-      const droneBody = new THREE.Mesh(droneBodyGeometry, droneBodyMaterial);
-      droneGroup.add(droneBody);
-      function createDroneLabel(text) {
-        const canvas = document.createElement("canvas");
-        canvas.width = 512;
-        canvas.height = 128;
-        const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = "bold 150px Arial";
-        ctx.fillStyle = "white";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-        const texture = new THREE.CanvasTexture(canvas);
-        texture.center = new THREE.Vector2(0.5, 0.5);
-        texture.rotation = Math.PI;
-        texture.needsUpdate = true;
-        const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
-        const geometry = new THREE.PlaneGeometry(0.9, 0.3);
-        const mesh = new THREE.Mesh(geometry, material);
-        mesh.rotation.x = -Math.PI / 2;
-        mesh.position.set(0, 0.15 + 0.01, 0);
-        return mesh;
-      }
-      const label = createDroneLabel("EdUHK");
-      droneGroup.add(label);
-      
-      // ------------------------------------
-      // Drone Propellers Setup
-      // ------------------------------------
-      const propellerGeometry = new THREE.BoxGeometry(0.2, 0.05, 0.9);
-      const propellers = [];
-      
-      // Front Left Propeller
-      const frontLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-      frontLeft.position.set(-0.50, 0.2, 0.55);
-      droneGroup.add(frontLeft);
-      propellers.push({ mesh: frontLeft, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
-      
-      // Front Right Propeller
-      const frontRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0xff0000 }));
-      frontRight.position.set(0.50, 0.2, 0.55);
-      droneGroup.add(frontRight);
-      propellers.push({ mesh: frontRight, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
-      
-      // Rear Left Propeller
-      const rearLeft = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
-      rearLeft.position.set(-0.50, 0.2, -0.55);
-      droneGroup.add(rearLeft);
-      propellers.push({ mesh: rearLeft, spinSpeed: -10, defaultAngle: THREE.Math.degToRad(135), currentSpinSpeed: -10 });
-      
-      // Rear Right Propeller
-      const rearRight = new THREE.Mesh(propellerGeometry, new THREE.MeshLambertMaterial({ color: 0x00ff00 }));
-      rearRight.position.set(0.50, 0.2, -0.55);
-      droneGroup.add(rearRight);
-      propellers.push({ mesh: rearRight, spinSpeed: +10, defaultAngle: THREE.Math.degToRad(45), currentSpinSpeed: +10 });
-      
-      // Scale the drone group.
-      droneGroup.scale.set(3, 3, 3);
-      droneGroup.traverse(child => {
-        if(child instanceof THREE.Mesh) child.castShadow = true;
-      });
-      
-      // Add blinking spots on each propeller.
-      const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-      propellers.forEach((prop, index) => {
-        const mat = new THREE.MeshBasicMaterial({ color: 0xffff00 });
-        const blinkSpot = new THREE.Mesh(blinkSphereGeometry, mat);
-        blinkSpot.position.set(0, 0, 0);
-        prop.mesh.add(blinkSpot);
-        prop.blinkOffset = index * (Math.PI / 2);
-        prop.blinkSpot = blinkSpot;
-      });
-      
-      // ------------------------------------
-      // Hoop Creation Functions
-      // ------------------------------------
-      
-      // Circular Hoop
-      function createCircularHoop(number) {
-        const mainRadius = 9;
-        const tubeRadius = 0.2;
-        const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, 16, 100);
-        const material = new THREE.MeshLambertMaterial({ color: 0xffa500 });
-        const hoopMesh = new THREE.Mesh(geometry, material);
-        const labelSprite = createHoopLabel(number);
-        labelSprite.position.set(0, mainRadius + 2, 0);
-        hoopMesh.add(labelSprite);
-        return {
-          mesh: hoopMesh,
-          mainRadius: mainRadius,
-          tubeRadius: tubeRadius,
-          entered: false,
-          passed: false,
-          number: number,
-          labelSprite: labelSprite,
-          type: "circular",
-          originalColor: 0xffa500
-        };
-      }
-      
-      // Square Hoop
-      function createSquareHoop(number) {
-        const outer = 9;
-        const inner = outer - 0.2;
-        const shape = new THREE.Shape();
-        shape.moveTo(-outer, -outer);
-        shape.lineTo(outer, -outer);
-        shape.lineTo(outer, outer);
-        shape.lineTo(-outer, outer);
-        shape.lineTo(-outer, -outer);
-        const hole = new THREE.Path();
-        hole.moveTo(-inner, -inner);
-        hole.lineTo(-inner, inner);
-        hole.lineTo(inner, inner);
-        hole.lineTo(inner, -inner);
-        hole.lineTo(-inner, -inner);
-        shape.holes.push(hole);
-        const geometry = new THREE.ShapeGeometry(shape);
-        const material = new THREE.MeshLambertMaterial({ color: 0xff69b4, side: THREE.DoubleSide });
-        const hoopMesh = new THREE.Mesh(geometry, material);
-        const labelSprite = createHoopLabel(number);
-        labelSprite.position.set(0, outer + 2, 0);
-        hoopMesh.add(labelSprite);
-        return {
-          mesh: hoopMesh,
-          mainRadius: outer,
-          tubeRadius: outer - inner,
-          entered: false,
-          passed: false,
-          number: number,
-          labelSprite: labelSprite,
-          type: "square",
-          originalColor: 0xff69b4
-        };
-      }
-      
-      // Triangular Hoop
-      function createTriangleHoop(number) {
-        const rOuter = 9;
-        const rInner = rOuter - 0.2;
-        const shape = new THREE.Shape();
-        const outerVertices = [];
-        for(let i = 0; i < 3; i++){
-          const theta = THREE.Math.degToRad(90 + i * 120);
-          const x = rOuter * Math.cos(theta);
-          const y = rOuter * Math.sin(theta);
-          outerVertices.push(new THREE.Vector2(x,y));
-        }
-        shape.moveTo(outerVertices[0].x, outerVertices[0].y);
-        shape.lineTo(outerVertices[1].x, outerVertices[1].y);
-        shape.lineTo(outerVertices[2].x, outerVertices[2].y);
-        shape.closePath();
-      
-        const hole = new THREE.Path();
-        const innerVertices = [];
-        for(let i = 0; i < 3; i++){
-          const theta = THREE.Math.degToRad(90 + i * 120);
-          const x = rInner * Math.cos(theta);
-          const y = rInner * Math.sin(theta);
-          innerVertices.push(new THREE.Vector2(x,y));
-        }
-        hole.moveTo(innerVertices[innerVertices.length-1].x, innerVertices[innerVertices.length-1].y);
-        for(let i = innerVertices.length-2; i >= 0; i--){
-          hole.lineTo(innerVertices[i].x, innerVertices[i].y);
-        }
-        hole.closePath();
-        shape.holes.push(hole);
-      
-        const geometry = new THREE.ShapeGeometry(shape);
-        const material = new THREE.MeshLambertMaterial({ color: 0x800080, side: THREE.DoubleSide });
-        const hoopMesh = new THREE.Mesh(geometry, material);
-        const labelSprite = createHoopLabel(number);
-        labelSprite.position.set(0, rOuter + 2, 0);
-        hoopMesh.add(labelSprite);
-        return {
-          mesh: hoopMesh,
-          mainRadius: rOuter,
-          tubeRadius: rOuter - rInner,
-          entered: false,
-          passed: false,
-          number: number,
-          labelSprite: labelSprite,
-          type: "triangle",
-          originalColor: 0x800080
-        };
-      }
-      
-      // ------------------------------------
-      // Hoops Setup (10 hoops: 4 circular, 3 square, 3 triangle)
-      // ------------------------------------
-      const altitudes = [10,15,20,25,30,35,40,45,50,55];
-      const hoops = [];
-      for(let i = 1; i <= 10; i++){
-        let hoop;
-        if(i <= 4){
-          hoop = createCircularHoop(i);
-        }
-        else if(i <= 7){
-          hoop = createSquareHoop(i);
-        }
-        else{
-          hoop = createTriangleHoop(i);
-        }
-        hoop.mesh.position.set((Math.random()-0.5)*160, altitudes[i-1], (Math.random()-0.5)*160);
-        scene.add(hoop.mesh);
-        hoops.push(hoop);
-      }
-      
-      // ------------------------------------
-      // User Input Handling 
-      // ------------------------------------
-      let translationSpeed = 50;
-      const yawSpeed = 1.0;
-      const throttleSpeed = 10;
-      const maxTilt = 0.5 * Math.PI / 6;
-      const throttleDeadZone = 0.2;
-      const leftJoystickInput = { dx: 0, dy: 0 };
-      const rightJoystickInput = { dx: 0, dy: 0 };
-      attachJoystick("leftJoystick", leftJoystickInput);
-      attachJoystick("rightJoystick", rightJoystickInput);
-      
-      const keys = {};
-      document.addEventListener("keydown", e => { keys[e.code] = true; });
-      document.addEventListener("keyup", e => { keys[e.code] = false; });
-      
-      // Keyboard shortcuts for RTH ("H"), Flight Path ("P") and Reset ("R")
-      document.addEventListener("keydown", event => {
-        if(event.code === "KeyH"){
-          document.getElementById("rthBtn").click();
-        }
-        else if(event.code === "KeyP"){
-          document.getElementById("toggleFlightPath").click();
-        }
-        else if(event.code === "KeyR"){
-          document.getElementById("btn-reset").click();
-        }
-      });
-      
-      const speedSlider = document.getElementById("speedSlider");
-      speedSlider.addEventListener("input", function(){
-        translationSpeed = parseFloat(this.value);
-      });
-      
-      let flightPathActive = false;
-      let flightPathPoints = [];
-      let flightPathLine = null;
-      const toggleFlightPathBtn = document.getElementById("toggleFlightPath");
-      toggleFlightPathBtn.addEventListener("click", function(){
-        flightPathActive = !flightPathActive;
-        if(flightPathActive){
-          toggleFlightPathBtn.innerHTML = translations[currentLanguage].hideFlightPath;
-          flightPathPoints = [];
-          if(flightPathLine){
-            scene.remove(flightPathLine);
-            flightPathLine = null;
-          }
-        }
-        else{
-          toggleFlightPathBtn.innerHTML = translations[currentLanguage].showFlightPath;
-          if(flightPathLine){
-            scene.remove(flightPathLine);
-            flightPathLine = null;
-          }
-        }
-      });
-      
-      // ------------------------------------
-      // RTH Button and Audio
-      // ------------------------------------
-      document.getElementById("rthBtn").addEventListener("click", function(){
-        if(drone.position.y < 1) return;
-        rthActive = true;
-        this.style.backgroundColor = "grey";
-        const msgDiv = document.getElementById("message");
-        msgDiv.style.display = "block";
-        msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
-        msgDiv.classList.add("blinking");
-        if(rth12Audio.paused){
-          rth12Audio.currentTime = 0;
-          rth12Audio.play().catch(err=>console.log("Error playing rth12Audio:",err));
-        }
-        if(flyAudioPlaying){
-          flyAudio.pause();
-          flyAudio.currentTime = 0;
-          flyAudioPlaying = false;
-        }
-      });
-      
-      // ------------------------------------
-      // Back Button Event Listener
-      // ------------------------------------
-      document.getElementById("backButton").addEventListener("click", function(){
-        window.location.href = "002_control.html";
-      });
-      
-      function syncJoystickWithKeyboard(){
-        if(!leftJoystickInput.active){
-          let leftKbDx = 0, leftKbDy = 0;
-          if(keys["KeyW"]) leftKbDy = -1;
-          if(keys["KeyS"]) leftKbDy = 1;
-          if(keys["KeyA"]) leftKbDx = -1;
-          if(keys["KeyD"]) leftKbDx = 1;
-          leftJoystickInput.dx = leftKbDx;
-          leftJoystickInput.dy = leftKbDy;
-          const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
-          leftThumb.style.transform = (leftKbDx !== 0 || leftKbDy !== 0)
-            ? `translate(${(leftKbDx*40)-40}px, ${(leftKbDy*40)-40}px)`
-            : "translate(-50%, -50%)";
-        }
-        if(!rightJoystickInput.active){
-          let rightKbDx = 0, rightKbDy = 0;
-          if(keys["ArrowUp"]) rightKbDy = -1;
-          if(keys["ArrowDown"]) rightKbDy = 1;
-          if(keys["ArrowLeft"]) rightKbDx = -1;
-          if(keys["ArrowRight"]) rightKbDx = 1;
-          rightJoystickInput.dx = rightKbDx;
-          rightJoystickInput.dy = rightKbDy;
-          const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
-          rightThumb.style.transform = (rightKbDx !== 0 || rightKbDy !== 0)
-            ? `translate(${(rightKbDx*40)-40}px, ${(rightKbDy*40)-40}px)`
-            : "translate(-50%, -50%)";
-        }
-      }
-      
-      // ------------------------------------
-      // Translations
-      // ------------------------------------
-      const translations = {
-        en: {
-          title: "Quadcopter Flight Simulation",
-          description: "Guide your drone through hoops and safely return home.",
-          allHoopsPassed: "All hoops passed! Now fly back and land on the home point (marked with H).",
-          landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
-          reset: "Reset",
-          showFlightPath: "Show Flight Path",
-          hideFlightPath: "Hide Flight Path",
-          throttleUp: "Throttle Up",
-          throttleDown: "Throttle Down",
-          yawLeft: "Yaw Left",
-          yawRight: "Yaw Right",
-          pitchForward: "Pitch Forward",
-          pitchBackward: "Pitch Backward",
-          rollLeft: "Roll Left",
-          rollRight: "Roll Right",
-          zoomIn: "Zoom In",
-          zoomOut: "Zoom Out",
-          altitude: "Altitude",
-          distance: "Distance",
-          totalFlightDistance: "Total Flight Distance: ",
-          flightSpeed: "Horizontal Speed: ",
-          flightTime: "Flight Time: ",
-          rthInProgress: "Return-to-Home in Progress",
-          automaticLanding: "Automatic Landing",
-          returnToHome: "Return-to-Home (RTH)",
-          topHome: "Home",
-          back: "Back"
-        },
-        zh: {
-          title: "四軸無人機飛行模擬",
-          description: "操控無人機穿越環門並安全降落於起飛點。",
-          allHoopsPassed: "所有環門已通過！請飛回並在以「H」標示的起飛點著陸。",
-          landingMessage: "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>新遊戲</button>",
-          reset: "重置",
-          showFlightPath: "顯示飛行路徑",
-          hideFlightPath: "隱藏飛行路徑",
-          throttleUp: "上升",
-          throttleDown: "下降",
-          yawLeft: "左轉",
-          yawRight: "右轉",
-          pitchForward: "前飛",
-          pitchBackward: "後飛",
-          rollLeft: "左飛",
-          rollRight: "右飛",
-          zoomIn: "放大",
-          zoomOut: "縮小",
-          altitude: "高度",
-          distance: "距離",
-          totalFlightDistance: "飛行總距離：",
-          flightSpeed: "飛行速度：",
-          flightTime: "飛行時間：",
-          rthInProgress: "正在返航",
-          automaticLanding: "自動降落",
-          returnToHome: "自動返航 (RTH)",
-          topHome: "原位",
-          back: "返回"
-        }
-      };
-      let currentLanguage = "en";
-      function updateUIText(){
-        document.getElementById("title").innerHTML = translations[currentLanguage].title;
-        document.getElementById("description").innerHTML = translations[currentLanguage].description;
-        document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
-        // Update the Back button text
-        document.getElementById("backButton").innerHTML = translations[currentLanguage].back;
-        const flightToggle = document.getElementById("toggleFlightPath");
-        if(flightToggle){
-          flightToggle.innerHTML = flightPathActive
-               ? translations[currentLanguage].hideFlightPath
-               : translations[currentLanguage].showFlightPath;
-        }
-        document.querySelector("#leftJoystick .label-top").textContent =
-          translations[currentLanguage].throttleUp;
-        document.querySelector("#leftJoystick .label-bottom").textContent =
-          translations[currentLanguage].throttleDown;
-        document.querySelector("#leftJoystick .label-left").textContent =
-          translations[currentLanguage].yawLeft;
-        document.querySelector("#leftJoystick .label-right").textContent =
-          translations[currentLanguage].yawRight;
-        document.querySelector("#rightJoystick .label-top").textContent =
-          translations[currentLanguage].pitchForward;
-        document.querySelector("#rightJoystick .label-bottom").textContent =
-          translations[currentLanguage].pitchBackward;
-        document.querySelector("#rightJoystick .label-left").textContent =
-          translations[currentLanguage].rollLeft;
-        document.querySelector("#rightJoystick .label-right").textContent =
-          translations[currentLanguage].rollRight;
-        document.getElementById("zoomIn").innerHTML =
-          translations[currentLanguage].zoomIn;
-        document.getElementById("zoomOut").innerHTML =
-          translations[currentLanguage].zoomOut;
-        document.getElementById("rthBtn").innerHTML = translations[currentLanguage].returnToHome;
-        document.getElementById("homeView").innerHTML = translations[currentLanguage].topHome;
-      }
-      document.getElementById("langToggle").addEventListener("click", function(){
-        if(currentLanguage==="en"){
-          currentLanguage = "zh";
-          this.innerHTML = "English";
-        } else {
-          currentLanguage = "en";
-          this.innerHTML = "繁體中文";
-        }
-        updateUIText();
-      });
-      
-      // ------------------------------------
-      // Main Renderer Setup
-      // ------------------------------------
-      const renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setClearColor(0x87ceeb);
-      renderer.shadowMap.enabled = true;
-      document.body.appendChild(renderer.domElement);
-      const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth/window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-      
-      // ------------------------------------
-      // Top View Renderer & Orthographic Camera
-      // ------------------------------------
-      const topViewRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-      topViewRenderer.setSize(200,200);
-      topViewRenderer.setClearColor(0x000000,0);
-      const topViewDiv = document.getElementById("topViewRenderer");
-      topViewDiv.appendChild(topViewRenderer.domElement);
-      const d = 400;
-      const topViewCamera = new THREE.OrthographicCamera(-d,d,d,-d,0.1,2000);
-      // Initially position the top-view camera directly above the origin.
-      topViewCamera.position.set(0,1000,0);
-      topViewCamera.lookAt(new THREE.Vector3(0,0,0));
-      topViewCamera.zoom = 5;
+      // Force zoom to default after landing.
+      topViewCamera.zoom = DEFAULT_TOP_VIEW_ZOOM;
+      topViewCamera.position.copy(fixedTopViewCenter);
       topViewCamera.updateProjectionMatrix();
-      // Zoom controls.
-      document.getElementById("zoomIn").addEventListener("click", () => {
-        topViewCamera.zoom *= 1.1;
-        topViewCamera.updateProjectionMatrix();
+    } else if (!isLanding) {
+      let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
+      flightPathPoints.forEach(pt => {
+        if (pt.x < minX) minX = pt.x;
+        if (pt.x > maxX) maxX = pt.x;
+        if (pt.z < minZ) minZ = pt.z;
+        if (pt.z > maxZ) maxZ = pt.z;
       });
-      document.getElementById("zoomOut").addEventListener("click", () => {
-        topViewCamera.zoom /= 1.1;
-        topViewCamera.updateProjectionMatrix();
-      });
+      const L = Math.max(maxX - minX, maxZ - minZ) || 1;
+      const marginFactor = 2.0;
+      let desiredZoom;
+      if (L < 10) {
+         desiredZoom = DEFAULT_TOP_VIEW_ZOOM;
+      } else {
+         desiredZoom = (2 * d) / (L * marginFactor);
+      }
+      topViewCamera.zoom = desiredZoom;
+      fixedTopViewZoom = desiredZoom;
+      let centerX = (minX + maxX) / 2;
+      let centerZ = (minZ + maxZ) / 2;
+      topViewCamera.position.x = centerX;
+      topViewCamera.position.z = centerZ;
+      fixedTopViewCenter.set(centerX, topViewCamera.position.y, centerZ);
+      topViewCamera.updateProjectionMatrix();
+    }
+  }
+}
       
-      // Enable top view navigation buttons.
-      const topArrowUp = document.getElementById("topArrowUp");
-      const topArrowDown = document.getElementById("topArrowDown");
-      const topArrowLeft = document.getElementById("topArrowLeft");
-      const topArrowRight = document.getElementById("topArrowRight");
-      const panStep = 20;
-      
-      topArrowUp.addEventListener("click", () => {
-        topViewCamera.position.z -= panStep;
-        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
-      });
-      topArrowDown.addEventListener("click", () => {
-        topViewCamera.position.z += panStep;
-        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
-      });
-      topArrowLeft.addEventListener("click", () => {
-        topViewCamera.position.x -= panStep;
-        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
-      });
-      topArrowRight.addEventListener("click", () => {
-        topViewCamera.position.x += panStep;
-        topViewCamera.lookAt(new THREE.Vector3(topViewCamera.position.x, 0, topViewCamera.position.z));
-      });
-      // Enable Home button to reset the top view camera.
-      const homeView = document.getElementById("homeView");
-      homeView.addEventListener("click", () => {
-        topViewCamera.position.set(0,1000,0);
-        topViewCamera.lookAt(new THREE.Vector3(0,0,0));
-      });
-      
-      // ------------------------------------
-      // Ground & Grid
-      // ------------------------------------
-      const groundGeometry = new THREE.PlaneGeometry(1000,1000);
-      const groundMaterial = new THREE.MeshLambertMaterial({color:0xededed});
-      const ground = new THREE.Mesh(groundGeometry, groundMaterial);
-      ground.rotation.x = -Math.PI/2;
-      ground.receiveShadow = true;
-      scene.add(ground);
-      const grid = new THREE.GridHelper(1000,50,0x000000,0x000000);
-      scene.add(grid);
-      
-      // ------------------------------------
-      // Global Clock
-      // ------------------------------------
-      const clock = new THREE.Clock();
-      
-      // ------------------------------------
-      // Animation Loop
-      // ------------------------------------
-      function animate(){
-        requestAnimationFrame(animate);
-        const delta = clock.getDelta();
-      
-        // Update flight time only while flight is active.
-        if(takenOff && !flightEnded){
-          totalFlightTime += delta;
+// ------------------------------------
+// Main Animation Loop
+// ------------------------------------
+let horizontalSpeed = 0;
+function animate() {
+  requestAnimationFrame(animate);
+  const delta = clock.getDelta();
+
+  if (previousPosition) {
+    const dx = drone.position.x - previousPosition.x;
+    const dz = drone.position.z - previousPosition.z;
+    horizontalSpeed = Math.sqrt(dx * dx + dz * dz) / delta;
+  }
+  // Count flight time only when the drone is flying and flight is not ended.
+  if (takenOff && !flightEnded) { totalFlightTime += delta; }
+  if (previousPosition) {
+    const dx = drone.position.x - previousPosition.x;
+    const dz = drone.position.z - previousPosition.z;
+    const dHoriz = Math.sqrt(dx * dx + dz * dz);
+    totalDistance += dHoriz;
+  } else { previousPosition = drone.position.clone(); }
+  previousPosition = drone.position.clone();
+
+  document.getElementById("statsBox").innerHTML =
+    translations[currentLanguage].totalFlightDistance + totalDistance.toFixed(1) + "<br>" +
+    translations[currentLanguage].flightSpeed + horizontalSpeed.toFixed(1) + "<br>" +
+    translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s";
+
+  if (takenOff) { recordedFlightPath.push(drone.position.clone()); }
+  if (flightEnded && recordedFlightPath.length > 0 && recordedDistance === 0 && recordedTime === 0) {
+    recordedDistance = totalDistance;
+    recordedTime = totalFlightTime;
+    document.getElementById("replayDistance").textContent = recordedDistance.toFixed(1);
+    document.getElementById("replayTime").textContent = recordedTime.toFixed(1) + " s";
+  }
+
+  // --- Altitude and Distance Warnings ---
+  const alertMessages = [];
+  if (drone.position.y >= 250) {
+    drone.position.y = 250;
+    alertMessages.push("Height Limit Reached!");
+  }
+  const homeDistance = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z);
+  if (homeDistance >= 500 && !manualRTH) {
+    rthActive = true;
+    leftJoystickInput.dx = 0;
+    leftJoystickInput.dy = 0;
+    document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+    rightJoystickInput.dx = 0;
+    rightJoystickInput.dy = 0;
+    document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+    alertMessages.push("Distance Limit Reached! RTH activated.");
+  }
+
+  const alertEl = document.getElementById("alertMessage");
+  if (alertMessages.length > 0) {
+    alertEl.innerHTML = alertMessages.join("<br>");
+    alertEl.style.backgroundColor = "rgba(255, 0, 0, 0.9)";
+    alertEl.style.display = "block";
+    alertEl.classList.add("blinking");
+  } else {
+    alertEl.style.display = "none";
+    alertEl.classList.remove("blinking");
+  }
+
+  if (!disableDroneControls && !flightEnded) {
+    if (rthActive) {
+      const hDist = new THREE.Vector2(drone.position.x, drone.position.z).length();
+      if (hDist > 1) {
+        const msgDiv = document.getElementById("message");
+        // Change background to green for landing messages.
+        msgDiv.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
+        msgDiv.style.display = "block";
+        msgDiv.innerHTML = manualRTH ? translations[currentLanguage].rthInProgress : (translations[currentLanguage].rthInProgress + "<br>Distance Limit Reached!");
+        if (rth12Audio.paused) {
+          rth12Audio.currentTime = 0;
+          rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
         }
-      
-        if(previousPosition){
-          let dx = drone.position.x - previousPosition.x;
-          let dz = drone.position.z - previousPosition.z;
-          let dHoriz = Math.sqrt(dx*dx + dz*dz);
-          totalDistance += dHoriz;
-          var flightSpeed = dHoriz/delta;
-        } else {
-          previousPosition = drone.position.clone();
-          var flightSpeed = 0;
-        }
-        previousPosition = drone.position.clone();
-        document.getElementById("statsBox").innerHTML =
-          translations[currentLanguage].totalFlightDistance + totalDistance.toFixed(1) + "<br>" +
-          translations[currentLanguage].flightSpeed + flightSpeed.toFixed(1) + "<br>" +
-          translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s";
-      
-        if(!disableDroneControls && !flightEnded){
-          if(rthActive){
-            const msgDiv = document.getElementById("message");
-            const hDist = new THREE.Vector2(drone.position.x,drone.position.z).length();
-            if(hDist > 1){
-              msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
-              if(rth12Audio.paused){
-                rth12Audio.currentTime = 0;
-                rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
-              }
-              if(!land1Audio.paused){
-                land1Audio.pause();
-                land1Audio.currentTime = 0;
-              }
-              const dir = new THREE.Vector3(-drone.position.x,0,-drone.position.z).normalize();
-              const desiredYaw = Math.atan2(dir.x,dir.z);
-              drone.yaw = lerp(drone.yaw, desiredYaw, 0.05);
-              drone.position.x += dir.x*30*delta;
-              drone.position.z += dir.z*30*delta;
-            } else {
-              const msgDiv = document.getElementById("message");
-              msgDiv.innerHTML = translations[currentLanguage].automaticLanding;
-              if(!rth12Audio.paused){
-                rth12Audio.pause();
-                rth12Audio.currentTime = 0;
-              }
-              if(land1Audio.paused){
-                land1Audio.currentTime = 0;
-                land1Audio.play().catch(err => console.log("Error playing land1Audio:", err));
-              }
-              if(drone.position.y > 0.45){
-                drone.position.y -= 5*delta;
-              }
-              drone.yaw = lerp(drone.yaw,0,0.05);
-              drone.pitch = lerp(drone.pitch,0,0.1);
-              drone.roll = lerp(drone.roll,0,0.1);
-              if(drone.position.y <= 0.45+0.01){
-                drone.position.y = 0.45;
-                land1Audio.pause();
-                land1Audio.currentTime = 0;
-                rthActive = false;
-                flightEnded = true;  // Landed automatically at home.
-                document.getElementById("message").style.display = "none";
-                rthBtn.style.backgroundColor = "#2196f3";
-                disableDroneControls = true;
-              }
-            }
-          } else {
-            syncJoystickWithKeyboard();
-            let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
-            let throttleInput = Math.abs(rawThrottle) >= throttleDeadZone ? rawThrottle : 0;
-            drone.position.y += throttleInput * throttleSpeed * delta;
-            if(drone.position.y < 0.45) drone.position.y = 0.45;
-            if(!takenOff && throttleInput !== 0 && drone.position.y > 1.0){
-              takenOff = true;
-            }
-            if(drone.position.y > 0.45){
-              let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
-              drone.yaw += yawSpeed * yawInput * delta;
-              let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
-              let desiredPitch = pitchInput * maxTilt;
-              drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
-              let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
-              let desiredRoll = -rollInput * maxTilt;
-              drone.roll = lerp(drone.roll, desiredRoll, 0.1);
-              const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
-              const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
-              const horizontalDisplacement = new THREE.Vector3();
-              horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
-                                     .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
-              horizontalDisplacement.multiplyScalar(translationSpeed * delta);
-              drone.position.add(horizontalDisplacement);
-            } else {
-              drone.yaw = 0;
-              drone.pitch = 0;
-              drone.roll = 0;
-            }
-            if(drone.position.y > 1.0 && takenOff){
-              if(!flyAudioPlaying){
-                flyAudio.currentTime = 0;
-                flyAudio.play().catch(err => console.log("Error playing flyAudio:", err));
-                flyAudioPlaying = true;
-                flyAudio.volume = 0;
-              }
-              if(flyAudio.volume < 1.0){
-                flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
-              }
-            } else {
-              if(flyAudioPlaying){
-                flyAudio.pause();
-                flyAudio.currentTime = 0;
-                flyAudioPlaying = false;
-              }
-            }
-          }
-        } else {
-          if(flyAudioPlaying){
-            flyAudio.pause();
-            flyAudio.currentTime = 0;
-            flyAudioPlaying = false;
-          }
-        }
-      
-        // ---- Check for landing on home (manual landing) ----
-        if(!flightEnded && takenOff && drone.position.y <= 0.46) {
-          const horizDist = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z);
-          if(horizDist < 10) {
-            flightEnded = true;
-            disableDroneControls = true;
-          }
-        }
-      
-        droneGroup.position.copy(drone.position);
-        droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
-      
-        // Update propellers.
-        propellers.forEach(prop=>{
-          if(drone.position.y > 0.45){
-            prop.currentSpinSpeed = prop.spinSpeed;
-          } else {
-            prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta);
-          }
-          prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
-          let blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
-          prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
-        });
-      
-        // Hoop collision detection.
-        hoops.forEach(hoop=>{
-          const dToHoop = drone.position.distanceTo(hoop.mesh.position);
-          if(!hoop.entered && dToHoop < hoop.mainRadius){
-            hoop.entered = true;
-          }
-          if(hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff){
-            if(hoop.number === currentExpectedHoop){
-              hoop.passed = true;
-              hoop.mesh.material.color.set(0x00ff00);
-              bonusAudio.pause();
-              bonusAudio.currentTime = 0;
-              setTimeout(()=>{
-                bonusAudio.play().catch(err=>console.log("Error playing bonusAudio:", err));
-              },10);
-              currentExpectedHoop++;
-              const cell = document.getElementById("hoopCell-" + hoop.number);
-              if(cell) cell.classList.add("passed");
-              const canvas = hoop.labelSprite.material.map.image;
-              const ctx = canvas.getContext("2d");
-              ctx.clearRect(0,0,canvas.width,canvas.height);
-              ctx.fillStyle = "green";
-              ctx.font = "Bold 80px Arial";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
-              hoop.labelSprite.material.map.needsUpdate = true;
-            }
-            hoop.entered = false;
-          }
-        });
-      
-        // Rotate square and triangular hoops.
-        hoops.forEach(hoop=>{
-          if(hoop.type === "square" || hoop.type === "triangle"){
-            hoop.mesh.rotation.z += delta;
-          }
-        });
-      
-        if(!allHoopsPassed){
-          let passedCount = 0;
-          hoops.forEach(hoop=>{ if(hoop.passed) passedCount++; });
-          if(passedCount===hoops.length){
-            allHoopsPassed = true;
-            const msgDiv = document.getElementById("message");
-            msgDiv.style.display = "block";
-            msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
-          }
-        }
-      
-        const dX = drone.position.x;
-        const dZ = drone.position.z;
-        const distToHome = Math.sqrt(dX*dX+dZ*dZ);
-        if(allHoopsPassed && !landedAtHome && distToHome < 10 && drone.position.y < 1 && takenOff){
-          landedAtHome = true;
-          flightEnded = true;
-          const msgDiv = document.getElementById("message");
-          msgDiv.innerHTML = translations[currentLanguage].landingMessage;
-          if(homeMarker && homeMarker.userData && homeMarker.userData.ctx){
-            drawHomeMarker(homeMarker.userData.ctx,"yellow");
-            homeMarker.userData.texture.needsUpdate = true;
-          }
-          sweetAudio.currentTime = 0;
-          sweetAudio.play().catch(err=>console.log("Error playing sweetAudio:", err));
+        if (!land1Audio.paused) {
           land1Audio.pause();
           land1Audio.currentTime = 0;
         }
-      
-        const cameraOffset = new THREE.Vector3(0,5,-15);
-        const quat = new THREE.Quaternion();
-        quat.setFromEuler(new THREE.Euler(0,drone.yaw,0));
-        const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
-        camera.position.copy(drone.position.clone().add(rotatedOffset));
-        camera.lookAt(drone.position);
-        const alt = (drone.position.y-0.45).toFixed(1);
-        const dist = Math.sqrt(drone.position.x*drone.position.x+drone.position.z*drone.position.z).toFixed(1);
-        document.getElementById("info").textContent =
-          translations[currentLanguage].altitude + ": " + alt + " | " +
-          translations[currentLanguage].distance + ": " + dist;
-        if(flightPathActive && takenOff){
-          flightPathPoints.push(drone.position.clone());
-          if(flightPathPoints.length>500){
-            flightPathPoints.shift();
-          }
-          if(flightPathLine){
-            scene.remove(flightPathLine);
-          }
-          const geometry = new THREE.BufferGeometry().setFromPoints(flightPathPoints);
-          const material = new THREE.LineBasicMaterial({ color: 0xff0000 });
-          flightPathLine = new THREE.Line(geometry, material);
-          scene.add(flightPathLine);
+        const dir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
+        drone.yaw = lerp(drone.yaw, Math.atan2(dir.x, dir.z), 0.05);
+        drone.position.x += dir.x * 30 * delta;
+        drone.position.z += dir.z * 30 * delta;
+      } else {
+        const msgDiv = document.getElementById("message");
+        // During landing, set message background to green.
+        msgDiv.style.display = "block";
+        msgDiv.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
+        msgDiv.innerHTML = translations[currentLanguage].automaticLanding;
+        if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
+        if (land1Audio.paused) {
+          land1Audio.currentTime = 0;
+          land1Audio.play().catch(err => console.log("Error playing land1Audio:", err));
         }
-        renderer.render(scene,camera);
-        topViewRenderer.render(scene, topViewCamera);
+        if (drone.position.y > 0.45) { drone.position.y -= 5 * delta; }
+        drone.yaw = lerp(drone.yaw, 0, 0.05);
+        drone.pitch = lerp(drone.pitch, 0, 0.1);
+        drone.roll = lerp(drone.roll, 0, 0.1);
+        // When landing is complete (drone at minimum altitude)
+        if (drone.position.y <= 0.45 + 0.01) {
+          drone.position.y = 0.45;
+          land1Audio.pause(); 
+          land1Audio.currentTime = 0;
+          if (homeDistance < 10) {
+            flightEnded = true;
+            disableDroneControls = true;
+            rthActive = false;
+            manualRTH = false;
+            if (allHoopsPassed) {
+              // Change to congratulatory message and set background to green.
+              msgDiv.innerHTML = translations[currentLanguage].landingMessage;
+            }
+            setTimeout(() => { msgDiv.style.display = "none"; }, 3000);
+            // Reset joystick inputs.
+            leftJoystickInput.dx = 0;
+            leftJoystickInput.dy = 0;
+          } else {
+            takenOff = false;
+            msgDiv.style.display = "none";
+          }
+          // Always reset both joystick thumb positions after landing.
+          document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+          document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+        }
       }
-      animate();
-      
-      // ------------------------------------
-      // Reset Function
-      // ------------------------------------
-      function resetDrone(){
-        drone.position.set(0,0.45,0);
+    } else {
+      syncJoystickWithKeyboard();
+      let rawThrottle = (-leftJoystickInput.dy) + ((keys["KeyW"] ? 1 : 0) - (keys["KeyS"] ? 1 : 0));
+      let throttleInput = (Math.abs(rawThrottle) >= throttleDeadZone) ? rawThrottle : 0;
+      drone.position.y += throttleInput * throttleSpeed * delta;
+      if (drone.position.y < 0.45) { drone.position.y = 0.45; }
+      if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
+        takenOff = true;
+        recordedFlightPath = [];
+        recordedDistance = 0;
+        recordedTime = 0;
+      }
+      if (drone.position.y > 0.45) {
+        let yawInput = (-leftJoystickInput.dx) + ((keys["KeyA"] ? 1 : 0) - (keys["KeyD"] ? 1 : 0));
+        drone.yaw += yawSpeed * yawInput * delta;
+        let pitchInput = (-rightJoystickInput.dy) + ((keys["ArrowUp"] ? 1 : 0) - (keys["ArrowDown"] ? 1 : 0));
+        let desiredPitch = pitchInput * maxTilt;
+        drone.pitch = lerp(drone.pitch, desiredPitch, 0.1);
+        let rollInput = rightJoystickInput.dx + ((keys["ArrowRight"] ? 1 : 0) - (keys["ArrowLeft"] ? 1 : 0));
+        let desiredRoll = -rollInput * maxTilt;
+        drone.roll = lerp(drone.roll, desiredRoll, 0.1);
+        const forwardDir = new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw));
+        const rightDir = new THREE.Vector3(Math.cos(drone.yaw), 0, -Math.sin(drone.yaw));
+        const horizontalDisplacement = new THREE.Vector3();
+        horizontalDisplacement.add(forwardDir.multiplyScalar(Math.sin(drone.pitch)))
+                               .add(rightDir.multiplyScalar(Math.sin(drone.roll)));
+        horizontalDisplacement.multiplyScalar(translationSpeed * delta);
+        drone.position.add(horizontalDisplacement);
+      } else {
         drone.yaw = 0;
         drone.pitch = 0;
         drone.roll = 0;
-        takenOff = false;
-        landedAtHome = false;
-        allHoopsPassed = false;
-        rthActive = false;
-        currentExpectedHoop = 1;
-        flightPathPoints = [];
-        if(flightPathLine){
-          scene.remove(flightPathLine);
-          flightPathLine = null;
-        }
-        leftJoystickInput.dx = 0;
-        leftJoystickInput.dy = 0;
-        document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-        rightJoystickInput.dx = 0;
-        rightJoystickInput.dy = 0;
-        document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-        hoops.forEach(hoop=>{
-          hoop.entered = false;
-          hoop.passed = false;
-          hoop.mesh.material.color.setHex(hoop.originalColor);
-          const canvas = hoop.labelSprite.material.map.image;
-          const ctx = canvas.getContext("2d");
-          ctx.clearRect(0,0,canvas.width,canvas.height);
-          ctx.fillStyle="yellow";
-          ctx.font = "Bold 80px Arial";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
-          hoop.labelSprite.material.map.needsUpdate = true;
-        });
-        if(homeMarker && homeMarker.userData && homeMarker.userData.ctx){
-          drawHomeMarker(homeMarker.userData.ctx,"white");
-          homeMarker.userData.texture.needsUpdate = true;
-        }
-        const msgDiv = document.getElementById("message");
-        msgDiv.style.display = "none";
-        msgDiv.innerHTML = "";
-        for(let i=1;i<=hoops.length;i++){
-          const cell = document.getElementById("hoopCell-"+i);
-          if(cell) cell.classList.remove("passed");
-        }
-        rthBtn.style.backgroundColor = "#2196f3";
-        disableDroneControls = false;
-        flightEnded = false;
-        totalDistance = 0;
-        totalFlightTime = 0;
-        previousPosition = null;
-        if(flyAudioPlaying){
-          flyAudio.pause();
-          flyAudio.currentTime = 0;
-          flyAudio.volume = 0;
-          flyAudioPlaying = false;
-        }
-        if(!rth12Audio.paused){
-          rth12Audio.pause();
-          rth12Audio.currentTime = 0;
-        }
-        if(!land1Audio.paused){
-          land1Audio.pause();
-          land1Audio.currentTime = 0;
-        }
-        updateUIText();
       }
-      document.getElementById("btn-reset").addEventListener("click", resetDrone);
+      if (drone.position.y > 1.0 && takenOff) {
+        if (!flyAudioPlaying) {
+          flyAudio.currentTime = 0;
+          flyAudio.play().catch(err => console.log("Error playing flyAudio:", err));
+          flyAudioPlaying = true;
+          flyAudio.volume = 0;
+        }
+        if (flyAudio.volume < 1.0) { flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5); }
+      } else {
+        if (flyAudioPlaying) { flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false; }
+      }
+    }
+  } else {
+    if (flyAudioPlaying) { flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false; }
+  }
+  
+  // If the drone is on the ground and nearly stationary, check landing.
+  if (takenOff && drone.position.y <= 0.46) {
+    const ddx = drone.position.x - previousPosition.x;
+    const ddz = drone.position.z - previousPosition.z;
+    const horizDistLanding = Math.sqrt(ddx * ddx + ddz * ddz);
+    if (horizDistLanding < 10) {
+      if (homeDistance < 10) {
+        flightEnded = true;
+        disableDroneControls = true;
+      } else {
+        takenOff = false;
+      }
+      // Reset both joystick inputs and thumb positions.
+      leftJoystickInput.dx = 0;
+      leftJoystickInput.dy = 0;
+      rightJoystickInput.dx = 0;
+      rightJoystickInput.dy = 0;
+      const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
+      const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
+      if (leftThumb) leftThumb.style.transform = "translate(-50%, -50%)";
+      if (rightThumb) rightThumb.style.transform = "translate(-50%, -50%)";
+    }
+  }
+  
+  droneGroup.position.copy(drone.position);
+  droneGroup.rotation.set(drone.pitch, drone.yaw, -drone.roll);
+  
+  propellers.forEach(prop => {
+    if (drone.position.y > 0.45) { prop.currentSpinSpeed = prop.spinSpeed; }
+    else { prop.currentSpinSpeed = lerp(prop.currentSpinSpeed, 0, 2.0 * delta); }
+    prop.mesh.rotation.y += prop.currentSpinSpeed * delta;
+    const blinkTime = clock.getElapsedTime() * 5 + prop.blinkOffset;
+    prop.blinkSpot.visible = Math.sin(blinkTime) > 0;
+  });
+  
+  hoops.forEach(hoop => {
+    const dToHoop = drone.position.distanceTo(hoop.mesh.position);
+    if (!hoop.entered && dToHoop < hoop.mainRadius) { hoop.entered = true; }
+    if (hoop.entered && !hoop.passed && dToHoop > hoop.mainRadius * 1.1 && takenOff) {
+      if (hoop.number === currentExpectedHoop) {
+        hoop.passed = true;
+        hoop.mesh.material.color.set(0x00ff00);
+        bonusAudio.pause();
+        bonusAudio.currentTime = 0;
+        setTimeout(() => { bonusAudio.play().catch(err => console.log("Error playing bonusAudio:", err)); }, 10);
+        currentExpectedHoop++;
+        const cell = document.getElementById("hoopCell-" + hoop.number);
+        if (cell) cell.classList.add("passed");
+        const canvas = hoop.labelSprite.material.map.image;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "green";
+        ctx.font = "Bold 80px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+        hoop.labelSprite.material.map.needsUpdate = true;
+      }
+      hoop.entered = false;
+    }
+  });
+  
+  hoops.forEach(hoop => {
+    if (hoop.type === "square" || hoop.type === "triangle") {
+      hoop.mesh.rotation.z += delta;
+    }
+  });
+  
+  if (!allHoopsPassed) {
+    let count = 0;
+    hoops.forEach(hoop => { if (hoop.passed) count++; });
+    if (count === hoops.length) { allHoopsPassed = true; 
+      const msgDiv = document.getElementById("message");
+      msgDiv.style.display = "block";
+      msgDiv.innerHTML = translations[currentLanguage].allHoopsPassed;
+    }
+  }
+  
+  // Automatic congratulation when all hoops are passed and drone lands at home.
+  if (allHoopsPassed && !landedAtHome && homeDistance < 10 && drone.position.y < 1 && takenOff) {
+    landedAtHome = true;
+    flightEnded = true;
+    const msgDiv = document.getElementById("message");
+    msgDiv.style.display = "block";
+    msgDiv.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
+    msgDiv.innerHTML = translations[currentLanguage].landingMessage;
+    document.getElementById("alertMessage").style.display = "none";
+    if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+      drawHomeMarker(homeMarker.userData.ctx, "yellow");
+      homeMarker.userData.texture.needsUpdate = true;
+    }
+    sweetAudio.currentTime = 0;
+    sweetAudio.play().catch(err => console.log("Error playing sweetAudio:", err));
+    land1Audio.pause();
+    land1Audio.currentTime = 0;
+    // Reset both joystick inputs after landing.
+    leftJoystickInput.dx = 0;
+    leftJoystickInput.dy = 0;
+    rightJoystickInput.dx = 0;
+    rightJoystickInput.dy = 0;
+    document.querySelector("#leftJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+    document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
+  }
+  
+  const cameraOffset = new THREE.Vector3(0, 5, -15);
+  const quat = new THREE.Quaternion();
+  quat.setFromEuler(new THREE.Euler(0, drone.yaw, 0));
+  const rotatedOffset = cameraOffset.clone().applyQuaternion(quat);
+  camera.position.copy(drone.position.clone().add(rotatedOffset));
+  camera.lookAt(drone.position);
+  const altDisplay = (drone.position.y - 0.45).toFixed(1);
+  document.getElementById("info").textContent =
+    translations[currentLanguage].altitude + ": " + altDisplay + " | " +
+    translations[currentLanguage].distance + ": " + homeDistance.toFixed(1);
+  
+  // Update Joystick Command Label Colors
+  let leftActiveCommand = "";
+  if (keys["KeyW"] || (leftJoystickInput.dy < -0.2 && Math.abs(leftJoystickInput.dy) >= Math.abs(leftJoystickInput.dx))) { leftActiveCommand = "top"; }
+  else if (keys["KeyS"] || (leftJoystickInput.dy > 0.2 && Math.abs(leftJoystickInput.dy) >= Math.abs(leftJoystickInput.dx))) { leftActiveCommand = "bottom"; }
+  else if (keys["KeyA"] || (leftJoystickInput.dx < -0.2 && Math.abs(leftJoystickInput.dx) >= Math.abs(leftJoystickInput.dy))) { leftActiveCommand = "left"; }
+  else if (keys["KeyD"] || (leftJoystickInput.dx > 0.2 && Math.abs(leftJoystickInput.dx) >= Math.abs(leftJoystickInput.dy))) { leftActiveCommand = "right"; }
+  document.querySelectorAll("#leftJoystick .joystick-label").forEach(el => {
+    el.style.color = el.classList.contains("label-" + leftActiveCommand) ? "green" : "black";
+  });
+  
+  let rightActiveCommand = "";
+  if (keys["ArrowUp"] || (rightJoystickInput.dy < -0.2 && Math.abs(rightJoystickInput.dy) >= Math.abs(rightJoystickInput.dx))) { rightActiveCommand = "top"; }
+  else if (keys["ArrowDown"] || (rightJoystickInput.dy > 0.2 && Math.abs(rightJoystickInput.dy) >= Math.abs(rightJoystickInput.dx))) { rightActiveCommand = "bottom"; }
+  else if (keys["ArrowLeft"] || (rightJoystickInput.dx < -0.2 && Math.abs(rightJoystickInput.dx) >= Math.abs(rightJoystickInput.dy))) { rightActiveCommand = "left"; }
+  else if (keys["ArrowRight"] || (rightJoystickInput.dx > 0.2 && Math.abs(rightJoystickInput.dx) >= Math.abs(rightJoystickInput.dy))) { rightActiveCommand = "right"; }
+  document.querySelectorAll("#rightJoystick .joystick-label").forEach(el => {
+    el.style.color = el.classList.contains("label-" + rightActiveCommand) ? "orange" : "black";
+  });
+  
+  if (takenOff) { updateLiveFlightPath(); }
+  
+  renderer.render(scene, camera);
+  topViewRenderer.render(scene, topViewCamera);
+}
+animate();
       
-      updateUIText();
+// ------------------------------------
+// Reset Function
+// ------------------------------------
+function resetDrone() {
+  drone.position.set(0, 0.45, 0);
+  drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
+  takenOff = false; landedAtHome = false; allHoopsPassed = false; rthActive = false; manualRTH = false;
+  currentExpectedHoop = 1;
+  recordedFlightPath = []; recordedDistance = 0; recordedTime = 0;
+  flightPathPoints = [];
+  if (flightPathLine) { scene.remove(flightPathLine); flightPathLine = null; }
+  leftJoystickInput.dx = 0; leftJoystickInput.dy = 0;
+  const leftThumbReset = document.querySelector("#leftJoystick .joystick-thumb");
+  if (leftThumbReset) {
+    leftThumbReset.style.transform = "translate(-50%, -50%)";
+  }
+  rightJoystickInput.dx = 0; rightJoystickInput.dy = 0;
+  const rightThumbReset = document.querySelector("#rightJoystick .joystick-thumb");
+  if (rightThumbReset) {
+    rightThumbReset.style.transform = "translate(-50%, -50%)";
+  }
+  hoops.forEach(hoop => {
+    hoop.entered = false; hoop.passed = false;
+    hoop.mesh.material.color.setHex(hoop.originalColor);
+    const canvas = hoop.labelSprite.material.map.image;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "yellow";
+    ctx.font = "Bold 80px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(hoop.number.toString(), canvas.width / 2, canvas.height / 2);
+    hoop.labelSprite.material.map.needsUpdate = true;
+  });
+  if (homeMarker && homeMarker.userData && homeMarker.userData.ctx) {
+    drawHomeMarker(homeMarker.userData.ctx, "white");
+    homeMarker.userData.texture.needsUpdate = true;
+  }
+  const msgDiv = document.getElementById("message");
+  if (msgDiv) {
+    msgDiv.style.display = "none";
+    msgDiv.innerHTML = "";
+  }
+  const alertElReset = document.getElementById("alertMessage");
+  if (alertElReset) {
+    alertElReset.style.display = "none";
+    alertElReset.classList.remove("blinking");
+  }
+  for (let i = 1; i <= hoops.length; i++) {
+    const cell = document.getElementById("hoopCell-" + i);
+    if (cell) cell.classList.remove("passed");
+  }
+  const rthBtn = document.getElementById("rthBtn");
+  if (rthBtn) {
+    rthBtn.style.backgroundColor = "#2196f3";
+  }
+  disableDroneControls = false; flightEnded = false;
+  totalDistance = 0; totalFlightTime = 0; previousPosition = null;
+  if (flyAudioPlaying) {
+    flyAudio.pause();
+    flyAudio.currentTime = 0;
+    flyAudio.volume = 0;
+    flyAudioPlaying = false;
+  }
+  if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
+  if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
+  updateUIText();
+  fixedTopViewZoom = topViewCamera.zoom;
+  fixedTopViewCenter.copy(topViewCamera.position);
+}
+document.getElementById("btn-reset").addEventListener("click", resetDrone);
+updateUIText();
+      
+// ------------------------------------
+// Keyboard - Joystick Sync
+// ------------------------------------
+function syncJoystickWithKeyboard() {
+  if (!leftJoystickInput.active) {
+    let leftKbDx = 0, leftKbDy = 0;
+    if (keys["KeyW"]) leftKbDy = -1;
+    if (keys["KeyS"]) leftKbDy = 1;
+    if (keys["KeyA"]) leftKbDx = -1;
+    if (keys["KeyD"]) leftKbDx = 1;
+    leftJoystickInput.dx = leftKbDx;
+    leftJoystickInput.dy = leftKbDy;
+    const leftThumb = document.querySelector("#leftJoystick .joystick-thumb");
+    if (leftThumb) {
+      leftThumb.style.transform = (leftKbDx !== 0 || leftKbDy !== 0)
+        ? `translate(${(leftKbDx * 40) - 40}px, ${(leftKbDy * 40) - 40}px)`
+        : "translate(-50%, -50%)";
+    }
+  }
+  if (!rightJoystickInput.active) {
+    let rightKbDx = 0, rightKbDy = 0;
+    if (keys["ArrowUp"]) rightKbDy = -1;
+    if (keys["ArrowDown"]) rightKbDy = 1;
+    if (keys["ArrowLeft"]) rightKbDx = -1;
+    if (keys["ArrowRight"]) rightKbDx = 1;
+    rightJoystickInput.dx = rightKbDx;
+    rightJoystickInput.dy = rightKbDy;
+    const rightThumb = document.querySelector("#rightJoystick .joystick-thumb");
+    if (rightThumb) {
+      rightThumb.style.transform = (rightKbDx !== 0 || rightKbDy !== 0)
+        ? `translate(${(rightKbDx * 40) - 40}px, ${(rightKbDy * 40) - 40}px)`
+        : "translate(-50%, -50%)";
+    }
+  }
+}
     </script>
   </body>
 </html>
