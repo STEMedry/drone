@@ -254,6 +254,38 @@
         position: relative;
       }
       
+      /* Hoop Table Container with Hoop Status Title */
+      #hoopTableContainer {
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        z-index: 100;
+        background: rgba(255,255,255,0.8);
+        padding: 10px;
+        border: 1px solid #ccc;
+      }
+      #hoopStatusTitle {
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 5px;
+      }
+      #hoopTable {
+        display: grid;
+        grid-template-columns: repeat(5, 30px);
+        gap: 5px;
+      }
+      #hoopTable .hoopCell {
+        width: 30px;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        font-weight: bold;
+        background: yellow;
+        border: 1px solid #000;
+      }
+      #hoopTable .hoopCell.passed { background: grey; }
+      
       /* Replay Box Styles */
       #replayBox {
         position: absolute;
@@ -288,34 +320,10 @@
         color: white;
       }
       
-      /* Hoop Table */
-      #hoopTable {
-        position: absolute;
-        top: 60px;
-        right: 20px;
-        z-index: 100;
-        background: rgba(255,255,255,0.8);
-        padding: 10px;
-        border: 1px solid #ccc;
-        display: grid;
-        grid-template-columns: repeat(5, 30px);
-        gap: 5px;
-      }
-      #hoopTable .hoopCell {
-        width: 30px;
-        height: 30px;
-        line-height: 30px;
-        text-align: center;
-        font-weight: bold;
-        background: yellow;
-        border: 1px solid #000;
-      }
-      #hoopTable .hoopCell.passed { background: grey; }
-      
       /* Stats Box */
       #statsBox {
         position: absolute;
-        top: 160px;
+        top: 180px;
         right: 20px;
         width: 220px;
         background: rgba(255,255,255,0.8);
@@ -385,18 +393,21 @@
       </div>
     </div>
     
-    <!-- Hoop Table -->
-    <div id="hoopTable">
-      <div class="hoopCell" id="hoopCell-1">1</div>
-      <div class="hoopCell" id="hoopCell-2">2</div>
-      <div class="hoopCell" id="hoopCell-3">3</div>
-      <div class="hoopCell" id="hoopCell-4">4</div>
-      <div class="hoopCell" id="hoopCell-5">5</div>
-      <div class="hoopCell" id="hoopCell-6">6</div>
-      <div class="hoopCell" id="hoopCell-7">7</div>
-      <div class="hoopCell" id="hoopCell-8">8</div>
-      <div class="hoopCell" id="hoopCell-9">9</div>
-      <div class="hoopCell" id="hoopCell-10">10</div>
+    <!-- Hoop Table Container (with Hoop Status title) -->
+    <div id="hoopTableContainer">
+      <div id="hoopStatusTitle"></div>
+      <div id="hoopTable">
+        <div class="hoopCell" id="hoopCell-1">1</div>
+        <div class="hoopCell" id="hoopCell-2">2</div>
+        <div class="hoopCell" id="hoopCell-3">3</div>
+        <div class="hoopCell" id="hoopCell-4">4</div>
+        <div class="hoopCell" id="hoopCell-5">5</div>
+        <div class="hoopCell" id="hoopCell-6">6</div>
+        <div class="hoopCell" id="hoopCell-7">7</div>
+        <div class="hoopCell" id="hoopCell-8">8</div>
+        <div class="hoopCell" id="hoopCell-9">9</div>
+        <div class="hoopCell" id="hoopCell-10">10</div>
+      </div>
     </div>
     
     <!-- Stats Box -->
@@ -978,7 +989,8 @@
               west: "WEST",
               heightAlert: "Altitude limit reached",
               distanceAlert: "Distance limit reached - initiating RTH",
-              navigationTopview: "Flight Path Topview"
+              navigationTopview: "Flight Path Topview",
+              hoopStatus: "Hoop Status"
           },
           zh: {
               title: "四軸無人機飛行模擬",
@@ -1024,7 +1036,8 @@
               west: "西",
               heightAlert: "高度限制已達",
               distanceAlert: "距離限制已達 - 啟動自動返航",
-              navigationTopview: "飛行路徑頂視圖"
+              navigationTopview: "飛行路徑頂視圖",
+              hoopStatus: "環門狀態"
           }
       };
       let currentLanguage = "en";
@@ -1058,6 +1071,8 @@
           updateDirectionSprite(westSprite, translations[currentLanguage].west);
           // Update title on top view container
           document.getElementById("topviewTitle").textContent = translations[currentLanguage].navigationTopview;
+          // Update title above hoop table
+          document.getElementById("hoopStatusTitle").textContent = translations[currentLanguage].hoopStatus;
       }
       document.getElementById("langToggle").addEventListener("click", function(){
           if(currentLanguage==="en"){ currentLanguage="zh"; this.innerHTML="English"; }
@@ -1465,7 +1480,7 @@
               } else {
                   syncJoystickWithKeyboard();
                   let rawThrottle = (-leftJoystickInput.dy)+((keys["KeyW"]?1:0)-(keys["KeyS"]?1:0));
-                  let throttleInput = (Math.abs(rawThrottle)>=throttleDeadZone)? rawThrottle : 0;
+                  let throttleInput = (Math.abs(rawThrottle)>= throttleDeadZone)? rawThrottle : 0;
                   drone.position.y += throttleInput * throttleSpeed * delta;
                   if(drone.position.y < 0.45){ drone.position.y = 0.45; }
                   if(!takenOff && throttleInput!==0 && drone.position.y>1.0){
@@ -1695,8 +1710,13 @@
           // Clear event times
           rthActivationTime = null; landingStartTime = null; landingCompleteTime = null;
           updateUIText();
+          // Reset the top view camera to its default zoom and position and also clear landing flag
+          topViewCamera.zoom = DEFAULT_TOP_VIEW_ZOOM;
+          topViewCamera.position.set(0, 1000, 0);
+          topViewCamera.updateProjectionMatrix();
           fixedTopViewZoom = topViewCamera.zoom;
           fixedTopViewCenter.copy(topViewCamera.position);
+          isLanding = false;
       }
       document.getElementById("btn-reset").addEventListener("click", resetDrone);
       updateUIText();
