@@ -249,6 +249,7 @@
         width: 200px;
         height: 200px;
         border: 2px solid black;
+        /* rotation applied to flip the flight path for a desired orientation */
         transform: rotate(180deg);
         background: none;
         position: relative;
@@ -662,18 +663,52 @@
       // Three.js Scene Setup
       // ------------------------------------
       const scene = new THREE.Scene();
-      const northSprite = createDirectionSprite("NORTH");
-      northSprite.position.set(0,8,540);
-      scene.add(northSprite);
-      const eastSprite = createDirectionSprite("EAST");
-      eastSprite.position.set(-540,8,0);
-      scene.add(eastSprite);
-      const southSprite = createDirectionSprite("SOUTH");
-      southSprite.position.set(0,8,-540);
-      scene.add(southSprite);
-      const westSprite = createDirectionSprite("WEST");
-      westSprite.position.set(540,8,0);
-      scene.add(westSprite);
+      
+      /* 
+         Instead of one set of directional sprites, we now create two sets.
+         
+         • The set used in the flight simulation (main view) is assigned to layer 2.
+         • The set used in the top view (navigation) is assigned to layer 1 and is rotated 180°.
+         This way the top view (which is rotated 180° via CSS) will show non-inverted labels,
+         while the main simulation view shows the original labels.
+      */
+      
+      // Directional sprites for the flight simulation view
+      const mainNorthSprite = createDirectionSprite("NORTH");
+      mainNorthSprite.position.set(0,8,540);
+      mainNorthSprite.layers.set(2);
+      scene.add(mainNorthSprite);
+      const mainEastSprite = createDirectionSprite("EAST");
+      mainEastSprite.position.set(-540,8,0);
+      mainEastSprite.layers.set(2);
+      scene.add(mainEastSprite);
+      const mainSouthSprite = createDirectionSprite("SOUTH");
+      mainSouthSprite.position.set(0,8,-540);
+      mainSouthSprite.layers.set(2);
+      scene.add(mainSouthSprite);
+      const mainWestSprite = createDirectionSprite("WEST");
+      mainWestSprite.position.set(540,8,0);
+      mainWestSprite.layers.set(2);
+      scene.add(mainWestSprite);
+      
+      // Directional sprites for the top view navigation (rotated 180° to cancel the CSS rotation)
+      const tvNorthSprite = createDirectionSprite("NORTH");
+      tvNorthSprite.position.set(0,8,540);
+      tvNorthSprite.layers.set(1);
+      tvNorthSprite.material.rotation = Math.PI;
+      const tvEastSprite = createDirectionSprite("EAST");
+      tvEastSprite.position.set(-540,8,0);
+      tvEastSprite.layers.set(1);
+      tvEastSprite.material.rotation = Math.PI;
+      const tvSouthSprite = createDirectionSprite("SOUTH");
+      tvSouthSprite.position.set(0,8,-540);
+      tvSouthSprite.layers.set(1);
+      tvSouthSprite.material.rotation = Math.PI;
+      const tvWestSprite = createDirectionSprite("WEST");
+      tvWestSprite.position.set(540,8,0);
+      tvWestSprite.layers.set(1);
+      tvWestSprite.material.rotation = Math.PI;
+      scene.add(tvNorthSprite, tvEastSprite, tvSouthSprite, tvWestSprite);
       
       // ------------------------------------
       // Home Marker
@@ -1065,10 +1100,22 @@
           document.getElementById("stopReplay").innerHTML = translations[currentLanguage].stopReplay;
           document.getElementById("replayTotalDistanceLabel").textContent = translations[currentLanguage].replayTotalDistance;
           document.getElementById("replayFlightTimeLabel").textContent = translations[currentLanguage].replayFlightTime;
-          updateDirectionSprite(northSprite, translations[currentLanguage].north);
-          updateDirectionSprite(eastSprite, translations[currentLanguage].east);
-          updateDirectionSprite(southSprite, translations[currentLanguage].south);
-          updateDirectionSprite(westSprite, translations[currentLanguage].west);
+          
+          // Update directional sprites in both views.
+          updateDirectionSprite(mainNorthSprite, translations[currentLanguage].north);
+          updateDirectionSprite(mainEastSprite, translations[currentLanguage].east);
+          updateDirectionSprite(mainSouthSprite, translations[currentLanguage].south);
+          updateDirectionSprite(mainWestSprite, translations[currentLanguage].west);
+          
+          updateDirectionSprite(tvNorthSprite, translations[currentLanguage].north);
+          tvNorthSprite.material.rotation = Math.PI;
+          updateDirectionSprite(tvEastSprite, translations[currentLanguage].east);
+          tvEastSprite.material.rotation = Math.PI;
+          updateDirectionSprite(tvSouthSprite, translations[currentLanguage].south);
+          tvSouthSprite.material.rotation = Math.PI;
+          updateDirectionSprite(tvWestSprite, translations[currentLanguage].west);
+          tvWestSprite.material.rotation = Math.PI;
+          
           // Update title on top view container
           document.getElementById("topviewTitle").textContent = translations[currentLanguage].navigationTopview;
           // Update title above hoop table
@@ -1089,6 +1136,10 @@
       renderer.shadowMap.enabled = true;
       document.body.appendChild(renderer.domElement);
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
+      // Make sure the main camera sees default objects (layer 0) and the main directional sprites (layer 2)
+      camera.layers.disableAll();
+      camera.layers.enable(0);
+      camera.layers.enable(2);
       window.addEventListener("resize", () => {
           camera.aspect = window.innerWidth/window.innerHeight;
           camera.updateProjectionMatrix();
@@ -1112,7 +1163,10 @@
       topViewCamera.updateProjectionMatrix();
       fixedTopViewZoom = topViewCamera.zoom;
       fixedTopViewCenter.copy(topViewCamera.position);
-      // Note: The zoom and navigation controls have been removed per specifications.
+      // Set top view camera to see default (layer 0) and top view directional sprites (layer 1)
+      topViewCamera.layers.disableAll();
+      topViewCamera.layers.enable(0);
+      topViewCamera.layers.enable(1);
       
       // ------------------------------------
       // Ground & Grid
