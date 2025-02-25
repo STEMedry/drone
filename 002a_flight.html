@@ -283,7 +283,8 @@
         padding: 10px;
         z-index: 30;
       }
-      #replayBox h3 {
+      /* Note: The replay box title now has an ID for translation */
+      #replayTitle {
         margin: 5px 0;
         font-size: 18px;
         text-align: center;
@@ -297,11 +298,13 @@
         margin: 5px auto;
         transform: rotate(180deg); /* The canvas remains rotated */
       }
+      /* The replay information now has separate span elements so that the labels can be updated by translation */
       #replayInfo p {
         margin: 2px 0;
         font-size: 14px;
         text-align: center;
       }
+      /* Replay Buttons */
       #replayButtons {
         display: flex;
         justify-content: center;
@@ -407,11 +410,15 @@
     
     <!-- Replay Box -->
     <div id="replayBox">
-      <h3>Replay</h3>
+      <h3 id="replayTitle">Replay</h3>
       <canvas id="replayCanvas" width="300" height="200"></canvas>
       <div id="replayInfo">
-        <p>Total Distance: <span id="replayDistance">0</span></p>
-        <p>Flight Time: <span id="replayTime">0 s</span></p>
+        <p>
+          <span id="replayTotalDistanceLabel"></span><span id="replayDistance">0</span>
+        </p>
+        <p>
+          <span id="replayFlightTimeLabel"></span><span id="replayTime">0 s</span>
+        </p>
       </div>
       <div id="replayButtons">
         <button id="playReplay" class="btn-default">Play</button>
@@ -553,7 +560,23 @@ function createDirectionSprite(text, color="black") {
   sprite.scale.set(250, 250, 1);
   return sprite;
 }
-      
+
+function updateDirectionSprite(sprite, text) {
+  // Create a new canvas to update the sprite texture for direction labels.
+  const canvas = document.createElement("canvas");
+  canvas.width = 512;
+  canvas.height = 512;
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = "black";
+  ctx.font = "bold 90px Arial";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+  sprite.material.map.image = canvas;
+  sprite.material.map.needsUpdate = true;
+}
+
 function createHoopLabel(number) {
   const canvas = document.createElement("canvas");
   canvas.width = 128;
@@ -985,7 +1008,19 @@ const translations = {
     rthInProgress: "Return-to-Home in Progress",
     returnToHome: "Return-to-Home (RTH)",
     topHome: "Home",
-    back: "Back"
+    back: "Back",
+    speed: "Speed",
+    replayTitle: "Replay",
+    playReplay: "Play",
+    stopReplay: "Stop",
+    heightAlert: "Height Limit Reached!",
+    distanceAlert: "Distance Limit Reached! RTH activated.",
+    replayTotalDistance: "Total Distance: ",
+    replayFlightTime: "Flight Time: ",
+    north: "NORTH",
+    east: "EAST",
+    south: "SOUTH",
+    west: "WEST"
   },
   zh: {
     title: "四軸無人機飛行模擬",
@@ -1014,7 +1049,19 @@ const translations = {
     rthInProgress: "正在返航",
     returnToHome: "自動返航 (RTH)",
     topHome: "原位",
-    back: "返回"
+    back: "返回",
+    speed: "速度",
+    replayTitle: "回放",
+    playReplay: "播放",
+    stopReplay: "停止",
+    heightAlert: "高度限制已達！",
+    distanceAlert: "距離限制已達！自動返航已啟動。",
+    replayTotalDistance: "總距離：",
+    replayFlightTime: "飛行時間：",
+    north: "北",
+    east: "東",
+    south: "南",
+    west: "西"
   }
 };
 let currentLanguage = "en";
@@ -1039,6 +1086,20 @@ function updateUIText(){
   document.getElementById("zoomOut").innerHTML = translations[currentLanguage].zoomOut;
   document.getElementById("rthBtn").innerHTML = translations[currentLanguage].returnToHome;
   document.getElementById("homeView").innerHTML = translations[currentLanguage].topHome;
+  // Update speed label and replay box texts:
+  document.getElementById("speedLabel").innerHTML = translations[currentLanguage].speed;
+  document.getElementById("replayTitle").innerHTML = translations[currentLanguage].replayTitle;
+  document.getElementById("playReplay").innerHTML = translations[currentLanguage].playReplay;
+  document.getElementById("stopReplay").innerHTML = translations[currentLanguage].stopReplay;
+  // Update replay box info labels
+  document.getElementById("replayTotalDistanceLabel").textContent = translations[currentLanguage].replayTotalDistance;
+  document.getElementById("replayFlightTimeLabel").textContent = translations[currentLanguage].replayFlightTime;
+
+  // Update the four direction sprites with the translated text.
+  updateDirectionSprite(northSprite, translations[currentLanguage].north);
+  updateDirectionSprite(eastSprite, translations[currentLanguage].east);
+  updateDirectionSprite(southSprite, translations[currentLanguage].south);
+  updateDirectionSprite(westSprite, translations[currentLanguage].west);
 }
 document.getElementById("langToggle").addEventListener("click", function(){
   if (currentLanguage==="en") { currentLanguage = "zh"; this.innerHTML = "English"; } 
@@ -1169,7 +1230,7 @@ function animateReplay() {
     replayCtx.fillStyle = "#000";
     replayCtx.font = "14px Arial";
     replayCtx.textAlign = "center";
-    replayCtx.fillText("No Flight Data", 0, 0);
+    replayCtx.fillText(translations[currentLanguage].noFlightData || "No Flight Data", 0, 0);
     replayCtx.restore();
     return;
   }
@@ -1205,15 +1266,15 @@ document.getElementById("playReplay").addEventListener("click", function () {
     replayCtx.fillStyle = "#000";
     replayCtx.font = "14px Arial";
     replayCtx.textAlign = "center";
-    replayCtx.fillText("No Flight Data", 0, 0);
+    replayCtx.fillText(translations[currentLanguage].noFlightData || "No Flight Data", 0, 0);
     replayCtx.restore();
     return;
   }
   document.getElementById("replayDistance").textContent = recordedDistance.toFixed(1);
   document.getElementById("replayTime").textContent = recordedTime.toFixed(1) + " s";
-  if (this.textContent === "Play") { replayIndexGlobalLocal = 0; }
+  if (this.textContent === translations[currentLanguage].playReplay) { replayIndexGlobalLocal = 0; }
   replayPaused = false;
-  this.textContent = "Play";
+  this.textContent = translations[currentLanguage].playReplay;
   cancelAnimationFrame(replayAnimationId);
   animateReplay();
 });
@@ -1221,7 +1282,7 @@ document.getElementById("playReplay").addEventListener("click", function () {
 document.getElementById("stopReplay").addEventListener("click", function () {
   cancelAnimationFrame(replayAnimationId);
   replayPaused = true;
-  document.getElementById("playReplay").textContent = "Continue";
+  document.getElementById("playReplay").textContent = translations[currentLanguage].playReplay;
 });
       
 // ------------------------------------
@@ -1316,7 +1377,7 @@ function animate() {
   const alertMessages = [];
   if (drone.position.y >= 250) {
     drone.position.y = 250;
-    alertMessages.push("Height Limit Reached!");
+    alertMessages.push(translations[currentLanguage].heightAlert);
   }
   const homeDistance = Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z);
   if (homeDistance >= 500 && !manualRTH) {
@@ -1327,7 +1388,7 @@ function animate() {
     rightJoystickInput.dx = 0;
     rightJoystickInput.dy = 0;
     document.querySelector("#rightJoystick .joystick-thumb").style.transform = "translate(-50%, -50%)";
-    alertMessages.push("Distance Limit Reached! RTH activated.");
+    alertMessages.push(translations[currentLanguage].distanceAlert);
   }
 
   const alertEl = document.getElementById("alertMessage");
@@ -1349,7 +1410,7 @@ function animate() {
         // Change background to green for landing messages.
         msgDiv.style.backgroundColor = "rgba(0, 128, 0, 0.9)";
         msgDiv.style.display = "block";
-        msgDiv.innerHTML = manualRTH ? translations[currentLanguage].rthInProgress : (translations[currentLanguage].rthInProgress + "<br>Distance Limit Reached!");
+        msgDiv.innerHTML = manualRTH ? translations[currentLanguage].rthInProgress : (translations[currentLanguage].rthInProgress + "<br>" + translations[currentLanguage].distanceAlert);
         if (rth12Audio.paused) {
           rth12Audio.currentTime = 0;
           rth12Audio.play().catch(err => console.log("Error playing rth12Audio:", err));
