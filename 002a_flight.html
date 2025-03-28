@@ -43,7 +43,7 @@
       }
       
       /* Top Right Buttons */
-      #langToggle, #backButton {
+      #langToggle, #backButton, #tutorialButton {
         position: absolute;
         top: 10px;
         z-index: 110;
@@ -54,7 +54,8 @@
         cursor: pointer;
         color: white;
       }
-      #langToggle { right: 120px; background-color: #4caf50; }
+      #langToggle { right: 220px; background-color: #4caf50; }
+      #tutorialButton { right: 120px; background-color: #ff9800; }
       #backButton { right: 20px; background-color: #2196f3; font-size: 18px; }
       
       /* General Message */
@@ -292,28 +293,28 @@
         position: absolute;
         top: 280px;
         left: 20px;
-        width: 250px;
+        width: 200px; /* Reduced width */
         background: rgba(255,255,255,0.9);
         border: 2px solid #ccc;
         border-radius: 5px;
         padding: 10px;
         z-index: 30;
       }
-      #replayTitle { margin: 5px 0; font-size: 18px; text-align: center; }
+      #replayTitle { margin: 5px 0; font-size: 16px; text-align: center; }
       #replayCanvas {
-        width: 200px;
-        height: 200px;
+        width: 150px; /* Reduced width */
+        height: 150px; /* Reduced height */
         background: #f0f0f0;
         border: 1px solid #ccc;
         display: block;
         margin: 5px auto;
         transform: rotate(180deg);
       }
-      #replayInfo p { margin: 2px 0; font-size: 14px; text-align: center; }
-      #replayButtons { display: flex; justify-content: center; gap: 10px; }
+      #replayInfo p { margin: 2px 0; font-size: 12px; text-align: center; } /* Reduced font size */
+      #replayButtons { display: flex; justify-content: center; gap: 5px; } /* Reduced gap */
       #playReplay, #stopReplay {
         padding: 5px 10px;
-        font-size: 14px;
+        font-size: 12px; /* Reduced font size */
         border: none;
         border-radius: 5px;
         cursor: pointer;
@@ -353,6 +354,98 @@
       .btn-green { background-color: #4caf50; color: white; }
       .btn-red { background-color: #f44336; color: white; }
       .btn-default { background-color: #2196f3; color: white; }
+      
+      /* Tutorial Modal Styles */
+      #tutorialModal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 200; /* Sit on top */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+      }
+      
+      #tutorialContent {
+        background-color: #fefefe;
+        margin: 5% auto; /* 5% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%; /* Could be more or less, depending on screen size */
+        max-width: 800px;
+        border-radius: 10px;
+        position: relative;
+      }
+      
+      /* Close Button */
+      .closeTutorial {
+        color: #aaa;
+        position: absolute;
+        top: 10px;
+        right: 25px;
+        font-size: 30px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .closeTutorial:hover,
+      .closeTutorial:focus {
+        color: black;
+        text-decoration: none;
+      }
+      
+      /* Tutorial Images */
+      .tutorial-image {
+        width: 100%;
+        height: auto;
+        margin: 10px 0;
+      }
+      
+      /* Tutorial Sections */
+      .tutorial-section {
+        margin-bottom: 20px;
+      }
+      .tutorial-section h2 {
+        margin-bottom: 10px;
+        color: #2196f3;
+      }
+      .tutorial-section p, .tutorial-section ul {
+        line-height: 1.6;
+      }
+      .tutorial-section ul {
+        padding-left: 20px;
+      }
+      .tutorial-section li {
+        margin-bottom: 5px;
+      }
+      .tutorial-section img {
+        margin-top: 10px;
+      }
+      
+      /* Responsive Adjustments for iPad */
+      @media only screen and (max-width: 768px) {
+        #controls {
+          width: 90%;
+          height: auto;
+        }
+        #replayBox {
+          top: 220px;
+          left: 10px;
+          width: 180px; /* Further reduced width */
+        }
+        #replayCanvas {
+          width: 120px; /* Further reduced width */
+          height: 120px; /* Further reduced height */
+        }
+        #replayTitle { font-size: 14px; }
+        #replayInfo p { font-size: 10px; }
+        #replayButtons { gap: 3px; }
+        #playReplay, #stopReplay {
+          padding: 4px 8px;
+          font-size: 10px; /* Further reduced font size */
+        }
+      }
     </style>
   </head>
   <body>
@@ -362,6 +455,7 @@
     
     <!-- Top Right Buttons -->
     <button id="langToggle" class="btn-green">繁體中文</button>
+    <button id="tutorialButton" class="btn-default">Tutorial</button>
     <button id="backButton" class="btn-default">Back</button>
     
     <!-- General Message -->
@@ -379,7 +473,7 @@
     <!-- Replay Box -->
     <div id="replayBox">
       <h3 id="replayTitle">Replay</h3>
-      <canvas id="replayCanvas" width="300" height="200"></canvas>
+      <canvas id="replayCanvas" width="150" height="150"></canvas> <!-- Reduced size -->
       <div id="replayInfo">
         <p>
           <span id="replayTotalDistanceLabel"></span><span id="replayDistance">0</span>
@@ -448,6 +542,99 @@
       <button id="btn-reset" class="btn-red">Reset</button>
     </div>
     
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal">
+      <div id="tutorialContent">
+        <span class="closeTutorial">&times;</span>
+        <h1>Quadcopter Flight Simulation Tutorial</h1>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_intro_title">Introduction</h2>
+          <p data-key="tutorial_intro_text">
+            Welcome to the Quadcopter Flight Simulation! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.
+          </p>
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_spatial_title">Understanding 3D Spatial Concepts</h2>
+          <p data-key="tutorial_spatial_text">
+            In a 3D environment, objects have three spatial dimensions: X (horizontal), Y (depth), and Z (vertical). Understanding these axes is crucial for maneuvering your drone accurately.
+          </p>
+          <img src="F01.jpg" alt="3D Axes" class="tutorial-image">
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_movement_title">The Eight Dimensions of Movement</h2>
+          <p data-key="tutorial_movement_intro">
+            Your drone can move in eight distinct ways, allowing for precise control:
+          </p>
+          <ul>
+            <li><strong data-key="tutorial_movement_throttle_up">Throttle Up:</strong> Increases altitude.</li>
+            <li><strong data-key="tutorial_movement_throttle_down">Throttle Down:</strong> Decreases altitude.</li>
+            <li><strong data-key="tutorial_movement_yaw_left">Yaw Left:</strong> Rotates the drone to the left around its vertical axis.</li>
+            <li><strong data-key="tutorial_movement_yaw_right">Yaw Right:</strong> Rotates the drone to the right around its vertical axis.</li>
+            <li><strong data-key="tutorial_movement_pitch_forward">Pitch Forward:</strong> Tilts the drone forward, causing it to move forward.</li>
+            <li><strong data-key="tutorial_movement_pitch_backward">Pitch Backward:</strong> Tilts the drone backward, causing it to move backward.</li>
+            <li><strong data-key="tutorial_movement_roll_left">Roll Left:</strong> Tilts the drone to the left, causing lateral movement.</li>
+            <li><strong data-key="tutorial_movement_roll_right">Roll Right:</strong> Tilts the drone to the right, causing lateral movement.</li>
+          </ul>
+          <img src="F02.jpg" alt="Drone Movements" class="tutorial-image">
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_controls_title">Controls Overview</h2>
+          <p data-key="tutorial_controls_text">
+            Use the virtual joysticks on the screen or your keyboard to control the drone:
+          </p>
+          <ul>
+            <li><strong data-key="tutorial_controls_left_joystick">Left Joystick:</strong> Controls Throttle and Yaw.</li>
+            <li><strong data-key="tutorial_controls_right_joystick">Right Joystick:</strong> Controls Pitch and Roll.</li>
+            <li><strong data-key="tutorial_controls_keyboard">Keyboard Controls:</strong> 
+              <ul>
+                <li><strong>W/S:</strong> Throttle Up/Down</li>
+                <li><strong>A/D:</strong> Yaw Left/Right</li>
+                <li><strong>Arrow Up/Down:</strong> Pitch Forward/Backward</li>
+                <li><strong>Arrow Left/Right:</strong> Roll Left/Right</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_flightpath_title">Flight Path and Hoops</h2>
+          <p data-key="tutorial_flightpath_text">
+            Navigate your drone through the hoops scattered around the environment. Successfully passing through all hoops will enable you to return home safely.
+          </p>
+          <img src="F03.jpg" class="tutorial-image" alt="Flight Path and Hoops">
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_rth_title">Return-to-Home (RTH)</h2>
+          <p data-key="tutorial_rth_text">
+            If you lose control or reach the maximum distance, activate the Return-to-Home (RTH) feature to automate the drone's return to its starting point.
+          </p>
+          <img src="F04.jpg" class="tutorial-image" alt="Return-to-Home">
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_safety_title">Safety Tips</h2>
+          <ul>
+            <li data-key="tutorial_safety_tip1">Always maintain awareness of your drone's altitude and distance.</li>
+            <li data-key="tutorial_safety_tip2">Gradually practice each movement dimension to build confidence.</li>
+            <li data-key="tutorial_safety_tip3">Avoid sudden or extreme movements to prevent crashes.</li>
+            <li data-key="tutorial_safety_tip4">Use the tutorial to familiarize yourself with the controls before attempting challenging maneuvers.</li>
+          </ul>
+        </div>
+        
+        <div class="tutorial-section">
+          <h2 data-key="tutorial_conclusion_title">Conclusion</h2>
+          <p data-key="tutorial_conclusion_text">
+            Mastering these controls and understanding 3D spatial relationships will enhance your piloting skills, ensuring safe and efficient navigation through the simulation and real-world scenarios.
+          </p>
+        </div>
+      </div>
+    </div>
+    
     <!-- Include Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
@@ -467,16 +654,15 @@
       let totalDistance = 0, totalFlightTime = 0;
       let previousPosition = null;
       
-      // Instead of just storing positions, we now store timestamped positions:
+      // Store timestamped positions
       let recordedFlightPath = []; // Each element: { pos: THREE.Vector3, t: <time> }
       let recordedDistance = 0, recordedTime = 0;
       
       let replayAnimationId,
           replayPaused = false,
-          replayStartTime = 0, // in ms, when replay began (accounting for any resume adjustments)
-          replayElapsedOffset = 0; // amount of simulated time before pause
+          replayStartTime = 0, // in ms
+          replayElapsedOffset = 0;
       
-      // Event times (in simulation seconds)
       let rthActivationTime = null,
           landingStartTime = null,
           landingCompleteTime = null;
@@ -492,7 +678,7 @@
       
       let isLanding = false;
       
-      const flyAudio = new Audio("flysound.mp3"); flyAudio.loop = true; flyAudio.volume = 0;
+      const flyAudio = new Audio("flysound.mp3"); flyAudio.loop = true;
       const bonusAudio = new Audio("bonus.mp3"); bonusAudio.loop = false;
       const sweetAudio = new Audio("sweet.mp3");
       const rth12Audio = new Audio("rth12.mp3");
@@ -549,21 +735,49 @@
           sprite.material.map.needsUpdate = true;
       }
       
-      function createHoopLabel(number) {
-          const canvas = document.createElement("canvas");
-          canvas.width = 128;
-          canvas.height = 128;
-          const ctx = canvas.getContext("2d");
-          ctx.clearRect(0,0,canvas.width,canvas.height);
-          ctx.fillStyle = "yellow";
-          ctx.font = "Bold 120px Arial";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText(number.toString(), canvas.width/2, canvas.height/2);
-          const texture = new THREE.CanvasTexture(canvas);
-          const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-          sprite.scale.set(4,4,1);
-          return sprite;
+      // New helper to create two hoop label sprites:
+      function createHoopLabels(number) {
+          function createSprite() {
+              const canvas = document.createElement("canvas");
+              canvas.width = 128;
+              canvas.height = 128;
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0,0,canvas.width,canvas.height);
+              ctx.fillStyle = "yellow";
+              ctx.font = "Bold 120px Arial";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(number.toString(), canvas.width/2, canvas.height/2);
+              const texture = new THREE.CanvasTexture(canvas);
+              const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+              sprite.scale.set(4,4,1);
+              return sprite;
+          }
+          const mainSprite = createSprite();  // for main view
+          const tvSprite = createSprite();    // for top view
+          tvSprite.material.rotation = Math.PI; // rotate 180° to cancel the topview canvas rotation
+          mainSprite.layers.set(2);
+          tvSprite.layers.set(1);
+          return { main: mainSprite, tv: tvSprite };
+      }
+      
+      function createHoopLabel_UpdateSprites(spriteObj, number, color, fontSize) {
+          [spriteObj.main, spriteObj.tv].forEach(sprite => {
+              const canvas = sprite.material.map.image;
+              const ctx = canvas.getContext("2d");
+              ctx.clearRect(0,0,canvas.width,canvas.height);
+              ctx.fillStyle = color;
+              ctx.font = "Bold " + fontSize + "px Arial";
+              ctx.textAlign = "center";
+              ctx.textBaseline = "middle";
+              ctx.fillText(number.toString(), canvas.width/2, canvas.height/2);
+              sprite.material.map.needsUpdate = true;
+          });
+      }
+      
+      function createHoopLabel_Reset(spriteObj, number) {
+          // Reset to yellow with a larger font.
+          createHoopLabel_UpdateSprites(spriteObj, number, "yellow", 120);
       }
       
       // ------------------------------------
@@ -587,7 +801,8 @@
               dragging = false;
               joystickObj.active = false;
               activeTouchId = null;
-              joystickObj.dx = 0; joystickObj.dy = 0;
+              joystickObj.dx = 0;
+              joystickObj.dy = 0;
               thumb.style.transform = "translate(-50%, -50%)";
           }
           function onPointerDown(e) {
@@ -665,15 +880,11 @@
       const scene = new THREE.Scene();
       
       /* 
-         Instead of one set of directional sprites, we now create two sets.
-         
-         • The set used in the flight simulation (main view) is assigned to layer 2.
-         • The set used in the top view (navigation) is assigned to layer 1 and is rotated 180°.
-         This way the top view (which is rotated 180° via CSS) will show non-inverted labels,
-         while the main simulation view shows the original labels.
+         Two sets of directional sprites:
+           • Main set (layer 2): used in flight simulation view.
+           • Top-view set (layer 1): rotated 180° by setting material.rotation=Math.PI.
       */
       
-      // Directional sprites for the flight simulation view
       const mainNorthSprite = createDirectionSprite("NORTH");
       mainNorthSprite.position.set(0,8,540);
       mainNorthSprite.layers.set(2);
@@ -691,7 +902,6 @@
       mainWestSprite.layers.set(2);
       scene.add(mainWestSprite);
       
-      // Directional sprites for the top view navigation (rotated 180° to cancel the CSS rotation)
       const tvNorthSprite = createDirectionSprite("NORTH");
       tvNorthSprite.position.set(0,8,540);
       tvNorthSprite.layers.set(1);
@@ -836,10 +1046,13 @@
           const geometry = new THREE.TorusGeometry(mainRadius, tubeRadius, 16, 100);
           const material = new THREE.MeshLambertMaterial({ color:0xffa500 });
           const hoopMesh = new THREE.Mesh(geometry, material);
-          const labelSprite = createHoopLabel(number);
-          labelSprite.position.set(0, mainRadius+2, 0);
-          hoopMesh.add(labelSprite);
-          return { mesh: hoopMesh, mainRadius, tubeRadius, entered: false, passed: false, number, labelSprite, type:"circular", originalColor:0xffa500 };
+          // Create two hoop label sprites and add both to the hoop
+          const labelSprites = createHoopLabels(number);
+          labelSprites.main.position.set(0, mainRadius+2, 0);
+          labelSprites.tv.position.copy(labelSprites.main.position);
+          hoopMesh.add(labelSprites.main);
+          hoopMesh.add(labelSprites.tv);
+          return { mesh: hoopMesh, mainRadius, tubeRadius, entered: false, passed: false, number, labelSprites, type:"circular", originalColor:0xffa500 };
       }
       function createSquareHoop(number) {
           const outer = 9, inner = outer-0.2;
@@ -859,10 +1072,12 @@
           const geometry = new THREE.ShapeGeometry(shape);
           const material = new THREE.MeshLambertMaterial({ color:0xff69b4, side: THREE.DoubleSide });
           const hoopMesh = new THREE.Mesh(geometry, material);
-          const labelSprite = createHoopLabel(number);
-          labelSprite.position.set(0, outer+2, 0);
-          hoopMesh.add(labelSprite);
-          return { mesh: hoopMesh, mainRadius: outer, tubeRadius: outer-inner, entered: false, passed: false, number, labelSprite, type:"square", originalColor:0xff69b4 };
+          const labelSprites = createHoopLabels(number);
+          labelSprites.main.position.set(0, outer+2, 0);
+          labelSprites.tv.position.copy(labelSprites.main.position);
+          hoopMesh.add(labelSprites.main);
+          hoopMesh.add(labelSprites.tv);
+          return { mesh: hoopMesh, mainRadius: outer, tubeRadius: outer-inner, entered: false, passed: false, number, labelSprites, type:"square", originalColor:0xff69b4 };
       }
       function createTriangleHoop(number) {
           const rOuter = 9, rInner = rOuter - 0.2;
@@ -891,10 +1106,12 @@
           const geometry = new THREE.ShapeGeometry(shape);
           const material = new THREE.MeshLambertMaterial({ color:0x800080, side: THREE.DoubleSide });
           const hoopMesh = new THREE.Mesh(geometry, material);
-          const labelSprite = createHoopLabel(number);
-          labelSprite.position.set(0, rOuter+2, 0);
-          hoopMesh.add(labelSprite);
-          return { mesh: hoopMesh, mainRadius: rOuter, tubeRadius: rOuter-rInner, entered: false, passed: false, number, labelSprite, type:"triangle", originalColor:0x800080 };
+          const labelSprites = createHoopLabels(number);
+          labelSprites.main.position.set(0, rOuter+2, 0);
+          labelSprites.tv.position.copy(labelSprites.main.position);
+          hoopMesh.add(labelSprites.main);
+          hoopMesh.add(labelSprites.tv);
+          return { mesh: hoopMesh, mainRadius: rOuter, tubeRadius: rOuter-rInner, entered: false, passed: false, number, labelSprites, type:"triangle", originalColor:0x800080 };
       }
       
       // ------------------------------------
@@ -1025,7 +1242,40 @@
               heightAlert: "Altitude limit reached",
               distanceAlert: "Distance limit reached - initiating RTH",
               navigationTopview: "Flight Path Topview",
-              hoopStatus: "Hoop Status"
+              hoopStatus: "Hoop Status",
+              tutorialTitle: "Tutorial",
+              closeTutorial: "Close",
+              /* Tutorial Translations */
+              tutorial_intro_title: "Introduction",
+              tutorial_intro_text: "Welcome to the Quadcopter Flight Simulation! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.",
+              tutorial_spatial_title: "Understanding 3D Spatial Concepts",
+              tutorial_spatial_text: "In a 3D environment, objects have three spatial dimensions: X (horizontal), Y (depth), and Z (vertical). Understanding these axes is crucial for maneuvering your drone accurately.",
+              tutorial_movement_title: "The Eight Dimensions of Movement",
+              tutorial_movement_intro: "Your drone can move in eight distinct ways, allowing for precise control:",
+              tutorial_movement_throttle_up: "Throttle Up",
+              tutorial_movement_throttle_down: "Throttle Down",
+              tutorial_movement_yaw_left: "Yaw Left",
+              tutorial_movement_yaw_right: "Yaw Right",
+              tutorial_movement_pitch_forward: "Pitch Forward",
+              tutorial_movement_pitch_backward: "Pitch Backward",
+              tutorial_movement_roll_left: "Roll Left",
+              tutorial_movement_roll_right: "Roll Right",
+              tutorial_controls_title: "Controls Overview",
+              tutorial_controls_text: "Use the virtual joysticks on the screen or your keyboard to control the drone:",
+              tutorial_controls_left_joystick: "Left Joystick",
+              tutorial_controls_right_joystick: "Right Joystick",
+              tutorial_controls_keyboard: "Keyboard Controls",
+              tutorial_flightpath_title: "Flight Path and Hoops",
+              tutorial_flightpath_text: "Navigate your drone through the hoops scattered around the environment. Successfully passing through all hoops will enable you to return home safely.",
+              tutorial_rth_title: "Return-to-Home (RTH)",
+              tutorial_rth_text: "If you lose control or reach the maximum distance, activate the Return-to-Home (RTH) feature to automate the drone's return to its starting point.",
+              tutorial_safety_title: "Safety Tips",
+              tutorial_safety_tip1: "Always maintain awareness of your drone's altitude and distance.",
+              tutorial_safety_tip2: "Gradually practice each movement dimension to build confidence.",
+              tutorial_safety_tip3: "Avoid sudden or extreme movements to prevent crashes.",
+              tutorial_safety_tip4: "Use the tutorial to familiarize yourself with the controls before attempting challenging maneuvers.",
+              tutorial_conclusion_title: "Conclusion",
+              tutorial_conclusion_text: "Mastering these controls and understanding 3D spatial relationships will enhance your piloting skills, ensuring safe and efficient navigation through the simulation and real-world scenarios."
           },
           zh: {
               title: "四軸無人機飛行模擬",
@@ -1072,7 +1322,40 @@
               heightAlert: "高度限制已達",
               distanceAlert: "距離限制已達 - 啟動自動返航",
               navigationTopview: "飛行路徑頂視圖",
-              hoopStatus: "環門狀態"
+              hoopStatus: "環門狀態",
+              tutorialTitle: "教程",
+              closeTutorial: "關閉",
+              /* Tutorial Translations */
+              tutorial_intro_title: "介紹",
+              tutorial_intro_text: "歡迎使用四軸無人機飛行模擬！本教程將指導您瞭解操控無人機的基礎知識、3D 空間概念以及掌握八個運動維度。",
+              tutorial_spatial_title: "理解3D空間概念",
+              tutorial_spatial_text: "在3D環境中，物體具有三個空間維度：X（水平）、Y（深度）和Z（垂直）。理解這些軸對於精確操控無人機至關重要。",
+              tutorial_movement_title: "八個運動維度",
+              tutorial_movement_intro: "您的無人機可以在八個不同的方向移動，以實現精確控制：",
+              tutorial_movement_throttle_up: "上升",
+              tutorial_movement_throttle_down: "下降",
+              tutorial_movement_yaw_left: "左轉",
+              tutorial_movement_yaw_right: "右轉",
+              tutorial_movement_pitch_forward: "前飛",
+              tutorial_movement_pitch_backward: "後飛",
+              tutorial_movement_roll_left: "左飛",
+              tutorial_movement_roll_right: "右飛",
+              tutorial_controls_title: "控制概覽",
+              tutorial_controls_text: "使用屏幕上的虛擬搖桿或鍵盤來控制無人機：",
+              tutorial_controls_left_joystick: "左搖桿",
+              tutorial_controls_right_joystick: "右搖桿",
+              tutorial_controls_keyboard: "鍵盤控制",
+              tutorial_flightpath_title: "飛行路徑與環門",
+              tutorial_flightpath_text: "導航您的無人機穿越環境中散布的環門。成功通過所有環門後，您將能安全返回家中。",
+              tutorial_rth_title: "自動返航 (RTH)",
+              tutorial_rth_text: "如果您失去控制或達到最大距離，啟動自動返航(RTH)功能，無人機將自動返回起始點。",
+              tutorial_safety_title: "安全提示",
+              tutorial_safety_tip1: "始終保持對無人機的高度和距離的警覺。",
+              tutorial_safety_tip2: "逐漸練習每個運動維度以建立信心。",
+              tutorial_safety_tip3: "避免突然或劇烈的動作以防止墜落。",
+              tutorial_safety_tip4: "使用教程熟悉控制方式，再嘗試具挑戰性的操作。",
+              tutorial_conclusion_title: "結論",
+              tutorial_conclusion_text: "掌握這些控制方式並理解3D空間關係將提升您的飛行技能，確保在模擬和現實情境中的安全高效導航。"
           }
       };
       let currentLanguage = "en";
@@ -1101,7 +1384,7 @@
           document.getElementById("replayTotalDistanceLabel").textContent = translations[currentLanguage].replayTotalDistance;
           document.getElementById("replayFlightTimeLabel").textContent = translations[currentLanguage].replayFlightTime;
           
-          // Update directional sprites in both views.
+          // Update directional sprites for both views.
           updateDirectionSprite(mainNorthSprite, translations[currentLanguage].north);
           updateDirectionSprite(mainEastSprite, translations[currentLanguage].east);
           updateDirectionSprite(mainSouthSprite, translations[currentLanguage].south);
@@ -1120,12 +1403,62 @@
           document.getElementById("topviewTitle").textContent = translations[currentLanguage].navigationTopview;
           // Update title above hoop table
           document.getElementById("hoopStatusTitle").textContent = translations[currentLanguage].hoopStatus;
+          
+          // Update tutorial button text
+          document.getElementById("tutorialButton").textContent = translations[currentLanguage].tutorialTitle;
+          
+          // Update Tutorial Modal Content
+          const tutorialContent = document.getElementById("tutorialContent");
+          const sections = tutorialContent.getElementsByClassName("tutorial-section");
+          for(let i=0; i<sections.length; i++){
+              const section = sections[i];
+              const header = section.querySelector("h2");
+              const paragraphs = section.querySelectorAll("p, ul, li");
+              const headingKey = header.getAttribute("data-key");
+              if (translations[currentLanguage][headingKey]) {
+                  header.textContent = translations[currentLanguage][headingKey];
+              }
+              paragraphs.forEach(element => {
+                  const key = element.getAttribute("data-key");
+                  if (key && translations[currentLanguage][key]) {
+                      if(element.tagName.toLowerCase() === 'strong'){
+                          element.textContent = translations[currentLanguage][key] + ":";
+                      } else {
+                          element.textContent = translations[currentLanguage][key];
+                      }
+                  }
+              });
+          }
       }
       document.getElementById("langToggle").addEventListener("click", function(){
           if(currentLanguage==="en"){ currentLanguage="zh"; this.innerHTML="English"; }
           else { currentLanguage="en"; this.innerHTML="繁體中文"; }
           updateUIText();
       });
+      
+      // ------------------------------------
+      // Tutorial Modal Functionality
+      // ------------------------------------
+      const tutorialModal = document.getElementById("tutorialModal");
+      const tutorialButton = document.getElementById("tutorialButton");
+      const closeTutorial = document.querySelector(".closeTutorial");
+      
+      // Open the modal
+      tutorialButton.onclick = function() {
+          tutorialModal.style.display = "block";
+      }
+      
+      // Close the modal
+      closeTutorial.onclick = function() {
+          tutorialModal.style.display = "none";
+      }
+      
+      // Close the modal when clicking outside of the content
+      window.onclick = function(event) {
+          if (event.target == tutorialModal) {
+              tutorialModal.style.display = "none";
+          }
+      }
       
       // ------------------------------------
       // Main Renderer Setup
@@ -1136,7 +1469,7 @@
       renderer.shadowMap.enabled = true;
       document.body.appendChild(renderer.domElement);
       const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 2000);
-      // Make sure the main camera sees default objects (layer 0) and the main directional sprites (layer 2)
+      // Main camera sees default (layer 0) and main directional sprites (layer 2)
       camera.layers.disableAll();
       camera.layers.enable(0);
       camera.layers.enable(2);
@@ -1163,7 +1496,7 @@
       topViewCamera.updateProjectionMatrix();
       fixedTopViewZoom = topViewCamera.zoom;
       fixedTopViewCenter.copy(topViewCamera.position);
-      // Set top view camera to see default (layer 0) and top view directional sprites (layer 1)
+      // Top view camera sees default (layer 0) and top view directional sprites (layer 1)
       topViewCamera.layers.disableAll();
       topViewCamera.layers.enable(0);
       topViewCamera.layers.enable(1);
@@ -1209,19 +1542,14 @@
           return { scale, offsetX, offsetY };
       }
       
-      // Given currentReplayTime (simulation time in seconds),
-      // interpolate between recordedFlightPath samples.
       function getInterpolatedPosition(currentReplayTime) {
-          // If before first sample:
           if(recordedFlightPath.length === 0) return null;
           if(currentReplayTime <= recordedFlightPath[0].t) {
               return recordedFlightPath[0].pos.clone();
           }
-          // If after last sample:
           if(currentReplayTime >= recordedFlightPath[recordedFlightPath.length-1].t) {
               return recordedFlightPath[recordedFlightPath.length-1].pos.clone();
           }
-          // Otherwise, find interval:
           for(let i=0; i<recordedFlightPath.length-1; i++){
               let a = recordedFlightPath[i];
               let b = recordedFlightPath[i+1];
@@ -1251,7 +1579,6 @@
           }
           const { scale, offsetX, offsetY } = computeReplayTransform(recordedFlightPath);
           
-          // Draw red flight path.
           replayCtx.strokeStyle = "#ff0000";
           replayCtx.lineWidth = 2;
           replayCtx.beginPath();
@@ -1261,12 +1588,9 @@
           });
           replayCtx.stroke();
           
-          // Compute current replay simulation time.
           let elapsed = (performance.now() - replayStartTime)/1000 + replayElapsedOffset;
-          // Clamp to total simulation time:
           let currentReplayTime = Math.min(elapsed, recordedTime);
           
-          // Get blue dot position from interpolation.
           let currentPos = getInterpolatedPosition(currentReplayTime);
           if(currentPos){
               replayCtx.fillStyle = "#0000ff";
@@ -1275,7 +1599,6 @@
               replayCtx.fill();
           }
           
-          // Draw rotated hoop numbers.
           hoops.forEach(hoop=>{
               const hoopPos = hoop.mesh.position;
               const x = hoopPos.x*scale+offsetX;
@@ -1291,9 +1614,7 @@
               replayCtx.restore();
           });
           
-          // Draw overlay: timer and event message.
           replayCtx.save();
-          // Rotate overlay text 180° about canvas center.
           replayCtx.setTransform(1,0,0,1,0,0);
           replayCtx.translate(replayCanvas.width/2, replayCanvas.height/2);
           replayCtx.rotate(Math.PI);
@@ -1303,7 +1624,6 @@
           replayCtx.textAlign = "right";
           replayCtx.fillText(translations[currentLanguage].timeLabel + currentReplayTime.toFixed(1) + " s", replayCanvas.width-10, 20);
           
-          // Determine which overlay message to show:
           if(rthActivationTime !== null && currentReplayTime >= rthActivationTime &&
              (landingStartTime === null || currentReplayTime < landingStartTime)){
               replayCtx.fillStyle = "red";
@@ -1314,7 +1634,6 @@
           }
           replayCtx.restore();
           
-          // Continue as long as simulation time hasn't surpassed recordedTime.
           if(elapsed < recordedTime){
               replayAnimationId = requestAnimationFrame(animateReplay);
           } else {
@@ -1337,7 +1656,6 @@
           }
           document.getElementById("replayDistance").textContent = recordedDistance.toFixed(1);
           document.getElementById("replayTime").textContent = recordedTime.toFixed(1) + " s";
-          // Reset replay variables
           replayElapsedOffset = 0;
           replayStartTime = performance.now();
           replayPaused = false;
@@ -1350,7 +1668,7 @@
               replayElapsedOffset += (performance.now() - replayStartTime)/1000;
               cancelAnimationFrame(replayAnimationId);
               replayPaused = true;
-              this.textContent = "Continue";
+              this.textContent = translations[currentLanguage].playReplay;
           } else {
               replayStartTime = performance.now();
               replayPaused = false;
@@ -1375,7 +1693,6 @@
               if(rthActive && drone.position.y < 2) {
                   if(!isLanding) {
                       isLanding = true;
-                      // Record landing start time if not already set.
                       if(landingStartTime === null) landingStartTime = totalFlightTime;
                       fixedTopViewZoom = topViewCamera.zoom;
                       fixedTopViewCenter.copy(topViewCamera.position);
@@ -1432,7 +1749,6 @@
               translations[currentLanguage].flightSpeed + horizontalSpeed.toFixed(1) + "<br>" +
               translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s";
       
-          // Record timestamped flight position
           if(takenOff){
               recordedFlightPath.push({ pos: drone.position.clone(), t: totalFlightTime });
           }
@@ -1440,13 +1756,11 @@
           if(flightEnded && recordedFlightPath.length>0 && recordedDistance===0 && recordedTime===0){
               recordedDistance = totalDistance;
               recordedTime = totalFlightTime;
-              // Also record landingCompleteTime
               if(landingCompleteTime === null) landingCompleteTime = totalFlightTime;
               document.getElementById("replayDistance").textContent = recordedDistance.toFixed(1);
               document.getElementById("replayTime").textContent = recordedTime.toFixed(1) + " s";
           }
       
-          // --- Altitude and Distance Warnings ---
           const alertMessages = [];
           if(drone.position.y >= 250){
               drone.position.y = 250;
@@ -1488,7 +1802,7 @@
                       }
                       if(!land1Audio.paused){
                           land1Audio.pause();
-                          land1Audio.currentTime=0;
+                          land1Audio.currentTime = 0;
                       }
                       const dir = new THREE.Vector3(-drone.position.x,0,-drone.position.z).normalize();
                       drone.yaw = lerp(drone.yaw, Math.atan2(dir.x,dir.z), 0.05);
@@ -1508,10 +1822,8 @@
                       drone.yaw = lerp(drone.yaw, 0, 0.05);
                       drone.pitch = lerp(drone.pitch, 0, 0.1);
                       drone.roll = lerp(drone.roll, 0, 0.1);
-                      // When landing starts, record landingStartTime once.
                       if(landingStartTime === null) { landingStartTime = totalFlightTime; }
                       if(drone.position.y <= 0.45+0.01){
-                          // Set final landing altitude
                           drone.position.y = 0.45;
                           land1Audio.pause();
                           land1Audio.currentTime = 0;
@@ -1521,7 +1833,6 @@
                               rthActive = false;
                               manualRTH = false;
                               if(landingCompleteTime === null) { landingCompleteTime = totalFlightTime; }
-                              // Hide the automatic landing message after landing completed
                               document.getElementById("message").style.display = "none";
                           } else {
                               takenOff = false;
@@ -1581,7 +1892,7 @@
           if(takenOff && drone.position.y <= 0.46){
               const ddx = drone.position.x - previousPosition.x;
               const ddz = drone.position.z - previousPosition.z;
-              const horizDistLanding = Math.sqrt(ddx*ddx+ddz*ddz);
+              const horizDistLanding = Math.sqrt(ddx*ddx+ddz*dz*z);
               if(horizDistLanding < 10){
                   if(homeDistance < 10){
                       flightEnded = true;
@@ -1622,15 +1933,18 @@
                       currentExpectedHoop++;
                       const cell = document.getElementById("hoopCell-"+hoop.number);
                       if(cell) cell.classList.add("passed");
-                      const canvas = hoop.labelSprite.material.map.image;
-                      const ctx = canvas.getContext("2d");
-                      ctx.clearRect(0,0,canvas.width,canvas.height);
-                      ctx.fillStyle = "green";
-                      ctx.font = "Bold 80px Arial";
-                      ctx.textAlign = "center";
-                      ctx.textBaseline = "middle";
-                      ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
-                      hoop.labelSprite.material.map.needsUpdate = true;
+                      // Update both the main and topview hoop label sprites
+                      [hoop.labelSprites.main, hoop.labelSprites.tv].forEach(sprite => {
+                          const canvas = sprite.material.map.image;
+                          const ctx = canvas.getContext("2d");
+                          ctx.clearRect(0,0,canvas.width,canvas.height);
+                          ctx.fillStyle = "green";
+                          ctx.font = "Bold 80px Arial";
+                          ctx.textAlign = "center";
+                          ctx.textBaseline = "middle";
+                          ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
+                          sprite.material.map.needsUpdate = true;
+                      });
                   }
                   hoop.entered = false;
               }
@@ -1683,7 +1997,8 @@
           camera.lookAt(drone.position);
           const altDisplay = (drone.position.y-0.45).toFixed(1);
           document.getElementById("info").textContent =
-              translations[currentLanguage].altitude+": "+altDisplay+" | "+ translations[currentLanguage].distance+": "+homeDistance.toFixed(1);
+              translations[currentLanguage].altitude + ": " + altDisplay + " | " +
+              translations[currentLanguage].distance + ": " + homeDistance.toFixed(1);
       
           let leftActiveCommand = "";
           if(keys["KeyW"] || (leftJoystickInput.dy < -0.2 && Math.abs(leftJoystickInput.dy)>= Math.abs(leftJoystickInput.dx))) { leftActiveCommand = "top"; }
@@ -1730,15 +2045,17 @@
           hoops.forEach(hoop=>{
               hoop.entered = false; hoop.passed = false;
               hoop.mesh.material.color.setHex(hoop.originalColor);
-              const canvas = hoop.labelSprite.material.map.image;
-              const ctx = canvas.getContext("2d");
-              ctx.clearRect(0,0,canvas.width,canvas.height);
-              ctx.fillStyle = "yellow";
-              ctx.font = "Bold 80px Arial";
-              ctx.textAlign = "center";
-              ctx.textBaseline = "middle";
-              ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
-              hoop.labelSprite.material.map.needsUpdate = true;
+              [hoop.labelSprites.main, hoop.labelSprites.tv].forEach(sprite => {
+                  const canvas = sprite.material.map.image;
+                  const ctx = canvas.getContext("2d");
+                  ctx.clearRect(0,0,canvas.width,canvas.height);
+                  ctx.fillStyle = "yellow";
+                  ctx.font = "Bold 80px Arial";
+                  ctx.textAlign = "center";
+                  ctx.textBaseline = "middle";
+                  ctx.fillText(hoop.number.toString(), canvas.width/2, canvas.height/2);
+                  sprite.material.map.needsUpdate = true;
+              });
           });
           if(homeMarker && homeMarker.userData && homeMarker.userData.ctx){
               drawHomeMarker(homeMarker.userData.ctx,"white");
@@ -1761,10 +2078,8 @@
           }
           if(!rth12Audio.paused){ rth12Audio.pause(); rth12Audio.currentTime = 0; }
           if(!land1Audio.paused){ land1Audio.pause(); land1Audio.currentTime = 0; }
-          // Clear event times
           rthActivationTime = null; landingStartTime = null; landingCompleteTime = null;
           updateUIText();
-          // Reset the top view camera to its default zoom and position and also clear landing flag
           topViewCamera.zoom = DEFAULT_TOP_VIEW_ZOOM;
           topViewCamera.position.set(0, 1000, 0);
           topViewCamera.updateProjectionMatrix();
