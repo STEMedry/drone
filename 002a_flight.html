@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <!-- Meta viewport for responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-    <title>Quadcopter Flight Simulation</title>
+    <title>Virtual Flight Simulator</title>
     <style>
       /* Base & Universal Styles */
       * { box-sizing: border-box; }
@@ -42,21 +42,26 @@
         z-index: 100;
       }
       
-      /* Top Right Buttons */
-      #langToggle, #backButton, #tutorialButton {
-        position: absolute;
-        top: 10px;
-        z-index: 110;
-        padding: 8px 12px;
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        color: white;
-      }
-      #langToggle { right: 220px; background-color: #4caf50; }
-      #tutorialButton { right: 120px; background-color: #ff9800; }
-      #backButton { right: 20px; background-color: #2196f3; font-size: 18px; }
+/* Top Right Buttons */
+#langToggle, #tutorialButton {
+  position: absolute;
+  top: 10px;
+  z-index: 110;
+  padding: 8px 12px;
+  font-size: 16px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  color: white;
+}
+#langToggle { 
+  right: 20px; /* Moved to occupy the "Back" button's position */
+  background-color: #4caf50; 
+}
+#tutorialButton { 
+  right: 120px; /* Adjust as needed for spacing */
+  background-color: #ff9800; 
+}
       
       /* General Message */
       #message {
@@ -450,13 +455,12 @@
   </head>
   <body>
     <!-- Title and Description -->
-    <div id="title">Quadcopter Flight Simulation</div>
+    <div id="title">Virtual Flight Simulator</div>
     <div id="description">Guide your drone through hoops and safely return home.</div>
     
     <!-- Top Right Buttons -->
     <button id="langToggle" class="btn-green">繁體中文</button>
     <button id="tutorialButton" class="btn-default">Tutorial</button>
-    <button id="backButton" class="btn-default">Back</button>
     
     <!-- General Message -->
     <div id="message"></div>
@@ -546,12 +550,12 @@
     <div id="tutorialModal">
       <div id="tutorialContent">
         <span class="closeTutorial">&times;</span>
-        <h1>Quadcopter Flight Simulation Tutorial</h1>
+        <h1>Virtual Flight Simulator Tutorial</h1>
         
         <div class="tutorial-section">
           <h2 data-key="tutorial_intro_title">Introduction</h2>
           <p data-key="tutorial_intro_text">
-            Welcome to the Quadcopter Flight Simulation! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.
+            Welcome to the Virtual Flight Simulator! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.
           </p>
         </div>
         
@@ -1189,16 +1193,13 @@
           }
       });
       
-      document.getElementById("backButton").addEventListener("click", function(){
-          window.location.href = "002_control.html";
-      });
-      
+     
       // ------------------------------------
       // Translations Setup
       // ------------------------------------
       const translations = {
           en: {
-              title: "Quadcopter Flight Simulation",
+              title: "Virtual Flight Simulator",
               description: "Guide your drone through hoops and safely return home.",
               allHoopsPassed: "All hoops passed! Now fly back and land on the home point (marked with H).",
               landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
@@ -1247,7 +1248,7 @@
               closeTutorial: "Close",
               /* Tutorial Translations */
               tutorial_intro_title: "Introduction",
-              tutorial_intro_text: "Welcome to the Quadcopter Flight Simulation! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.",
+              tutorial_intro_text: "Welcome to the Virtual Flight Simulator! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.",
               tutorial_spatial_title: "Understanding 3D Spatial Concepts",
               tutorial_spatial_text: "In a 3D environment, objects have three spatial dimensions: X (horizontal), Y (depth), and Z (vertical). Understanding these axes is crucial for maneuvering your drone accurately.",
               tutorial_movement_title: "The Eight Dimensions of Movement",
