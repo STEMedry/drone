@@ -42,6 +42,21 @@
         z-index: 100;
       }
       
+      /* Top Left "Back" Button */
+      #backBtn {
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        z-index: 110;
+        padding: 8px 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+        background-color: #2196f3;
+      }
+      
       /* Top Right Buttons */
       #langToggle, #tutorialButton {
         position: absolute;
@@ -55,11 +70,11 @@
         color: white;
       }
       #langToggle { 
-        right: 20px; /* Moved to occupy the "Back" button's position */
+        right: 85px; /* Moved to occupy the "Back" button's position */
         background-color: #4caf50; 
       }
       #tutorialButton { 
-        right: 120px; /* Adjust as needed for spacing */
+        right: 180px; /* Adjust as needed for spacing */
         background-color: #ff9800; 
       }
             
@@ -307,19 +322,19 @@
       }
       #replayTitle { margin: 5px 0; font-size: 16px; text-align: center; }
       #replayCanvas {
-        width: 150px; /* Reduced width */
-        height: 150px; /* Reduced height */
+        width: 150px; /* Reduced size */
+        height: 150px; /* Reduced size */
         background: #f0f0f0;
         border: 1px solid #ccc;
         display: block;
         margin: 5px auto;
         transform: rotate(180deg);
       }
-      #replayInfo p { margin: 2px 0; font-size: 12px; text-align: center; } /* Reduced font size */
-      #replayButtons { display: flex; justify-content: center; gap: 5px; } /* Reduced gap */
+      #replayInfo p { margin: 2px 0; font-size: 12px; text-align: center; } 
+      #replayButtons { display: flex; justify-content: center; gap: 5px; } 
       #playReplay, #stopReplay {
         padding: 5px 10px;
-        font-size: 12px; /* Reduced font size */
+        font-size: 12px; 
         border: none;
         border-radius: 5px;
         cursor: pointer;
@@ -454,6 +469,9 @@
     </style>
   </head>
   <body>
+    <!-- Back Button -->
+    <button id="backBtn" class="btn-default">Back</button>
+
     <!-- Title and Description -->
     <div id="title">Virtual Flight Simulator</div>
     <div id="description">Guide your drone through hoops and safely return home.</div>
@@ -477,7 +495,7 @@
     <!-- Replay Box -->
     <div id="replayBox">
       <h3 id="replayTitle">Replay</h3>
-      <canvas id="replayCanvas" width="150" height="150"></canvas> <!-- Reduced size -->
+      <canvas id="replayCanvas" width="150" height="150"></canvas>
       <div id="replayInfo">
         <p>
           <span id="replayTotalDistanceLabel"></span><span id="replayDistance">0</span>
@@ -488,7 +506,7 @@
       </div>
       <div id="replayButtons">
         <button id="playReplay" class="btn-default">Play</button>
-        <button id="stopReplay" class="btn-default">Pause</button> <!-- Changed initial text to "Pause" -->
+        <button id="stopReplay" class="btn-default">Pause</button>
       </div>
     </div>
     
@@ -1193,7 +1211,6 @@
           }
       });
       
-     
       // ------------------------------------
       // Translations Setup
       // ------------------------------------
@@ -1447,6 +1464,9 @@
           
           // Update 'stopReplay' button text based on playback state
           document.getElementById("stopReplay").innerHTML = replayPaused ? translations[currentLanguage].resumeReplay : translations[currentLanguage].pauseReplay;
+          
+          // Update Back button text
+          document.getElementById("backBtn").innerHTML = translations[currentLanguage].back;
       }
       document.getElementById("langToggle").addEventListener("click", function(){
           if(currentLanguage==="en"){ currentLanguage="zh"; this.innerHTML="English"; }
@@ -1477,6 +1497,13 @@
               tutorialModal.style.display = "none";
           }
       }
+      
+      // ------------------------------------
+      // Back Button Functionality
+      // ------------------------------------
+      document.getElementById("backBtn").addEventListener("click", function(){
+          window.location.href = "002_control.html";
+      });
       
       // ------------------------------------
       // Main Renderer Setup
