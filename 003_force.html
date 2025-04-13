@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>FlyHigh: Quadcopter Physics Explorer</title>
+    <title>QuadPhysics: Quadcopter Flight Explorer</title>
     <style>
         body { 
             margin: 0; 
@@ -27,11 +26,28 @@
             z-index: 10;
         }
 
+        /* Tutorial Button Styling */
+        #tutorial-button {
+            background-color: #4CAF50; /* Green background */
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px; /* Space from previous elements */
+        }
+
+        #tutorial-button:hover {
+            background-color: #45a049;
+        }
+
         #language-switch {
             position: absolute;
-            top: 50px;
-            right: 50px;
-            background: #4CAF50;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.7);
             color: white;
             padding: 10px 20px;
             border-radius: 5px;
@@ -51,25 +67,6 @@
             align-items: flex-start;
             user-select: none;
         }
-
-#nextPageButton {
-    background-color: #4CAF50;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    font-size: 18px;
-    cursor: pointer;
-    margin-top: 10px;
-    transition: background-color 0.3s;
-    /* Position it below the dat.GUI panel */
-    align-self: flex-start;
-    margin-left: 0;
-}
-
-#nextPageButton:hover {
-    background-color: #45a049;
-}
 
         /* Status Box Above Control Panel */
         #statusBox {
@@ -228,43 +225,130 @@
             background: #FFA07A !important;
         }
 
-* {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 100; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.8); /* Black w/ opacity */
+        }
 
-input, textarea {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
-}
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 5% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 10px;
+            color: #000;
+            font-size: 18px;
+            position: relative;
+        }
 
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .modal-navigation button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50; /* Green background */
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        .modal-navigation button:hover {
+            background-color: #45a049;
+        }
+
+        .modal-navigation button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        /* Responsive Modal Content */
+        @media screen and (max-width: 600px) {
+            .modal-content {
+                width: 95%;
+            }
+        }
+
+        * {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        input, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
     </style>
 </head>
 <body>
-    <h1 id="title">Quadcopter Physics Simulator</h1>
-<button id="language-switch">繁體中文</button>
+    <h1 id="title">QuadPhysics: Quadcopter Flight Explorer</h1>
+    <button id="language-switch">繁體中文</button>
 
     <!-- Container for Controls and Status -->
     <div id="controls-container">
-<button id="nextPageButton" onclick="window.location.href='003a_forcepair.html'">
-    Conceptual Challenge
-</button>
+        <!-- Tutorial Button Placed Here with Green Styling -->
+        <button id="tutorial-button">Tutorial</button>
 
-        <!-- New Status Box -->
+        <!-- Status Box -->
         <div id="statusBox">
             <div id="force">Force: N/A</div>
             <div id="statusMessage">Status: N/A</div>
-            <div id="hoverRotorSpeed">Hover Rotor Speed: N/A</div> <!-- New Element -->
+            <div id="hoverRotorSpeed">Hover Rotor Speed: N/A</div>
         </div>
 
         <!-- Informational Message Below Control Panel -->
         <div id="relativeScaleMessage">All values are on relative scales and not real precise values.</div><p></p>
         <!-- dat.GUI will be injected here by dat.GUI library -->
+    </div>
 
+    <!-- Tutorial Modal -->
+    <div id="tutorialModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="tutorialContent">
+                <!-- Tutorial steps will be injected here -->
+            </div>
+            <div class="modal-navigation">
+                <button id="prevButton">Previous</button>
+                <button id="nextButton">Next</button>
+            </div>
+        </div>
     </div>
 
     <!-- Three.js Library -->
@@ -272,19 +356,18 @@ input, textarea {
     <!-- OrbitControls Library -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
     <!-- dat.GUI Library -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js">
-
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
     <script>
+        // Global Variables
         let scene, camera, renderer, quadcopter, ground;
-        let orbitControls; // Added OrbitControls
+        let orbitControls;
         let blinkingBalls = [];
         let blinkInterval = 1000;
         let lastBlinkTime = 0;
         let isBlinkVisible = true;
-        let isHovering = false; // Flag for hovering
-        let hoverStartY = 0; // Base Y position when hover starts
-        let hoverTime = 0; // Time accumulator for hover animation
+        let isHovering = false;
+        let hoverStartY = 0;
+        let hoverTime = 0;
         const hoverFrequency = 1; // Hz
         const hoverAmplitude = 0.2; // Amplitude of hover oscillation
 
@@ -295,21 +378,23 @@ input, textarea {
             y: 0
         };
 
-        let guiControls = { // Renamed to avoid conflict with OrbitControls
+        // GUI Controls
+        let guiControls = {
             weight: 5,
             rotorSpeed: 0,
             gravity: 5,
             pressure: 5,
             reset: function() {
-                guiControls.weight = 5;
-                guiControls.rotorSpeed = 0;
-                guiControls.gravity = 5;
-                guiControls.pressure = 5;
+                this.weight = 5;
+                this.rotorSpeed = 0;
+                this.gravity = 5;
+                this.pressure = 5;
                 quadcopter.position.set(0, 0, 0);
                 quadcopter.scale.set(1, 1, 1); // Reset scale based on weight
                 scene.rotation.y = 0;
                 velocity.y = 0; // Reset velocity
                 updateQuadcopter();
+                // Update dat.GUI display
                 for (let i in gui.__controllers) {
                     gui.__controllers[i].updateDisplay();
                 }
@@ -339,14 +424,60 @@ input, textarea {
         let rotorAudio;
         let djiAudio;
         let takeoffAudio;
-        let hoveringAudio; // New Audio
-        let hasTakenOff = false; // Flag to ensure takeoff sound plays only once
-        let isHoveringSoundPlayed = false; // Flag to track if hovering sound has been played in current hover
+        let hoveringAudio;
+        let hasTakenOff = false;
+        let isHoveringSoundPlayed = false;
 
+        // Tutorial Steps Content Array
+        const tutorialSteps = [
+            {
+                titleKey: 'tutorial-step-1-title',
+                contentKey: 'tutorial-step-1-content'
+            },
+            {
+                titleKey: 'tutorial-step-2-title',
+                contentKey: 'tutorial-step-2-content'
+            },
+            {
+                titleKey: 'tutorial-step-3-title',
+                contentKey: 'tutorial-step-3-content'
+            },
+            {
+                titleKey: 'tutorial-step-4-title',
+                contentKey: 'tutorial-step-4-content'
+            },
+            {
+                titleKey: 'tutorial-step-5-title',
+                contentKey: 'tutorial-step-5-content'
+            },
+            {
+                titleKey: 'tutorial-step-6-title',
+                contentKey: 'tutorial-step-6-content'
+            },
+            {
+                titleKey: 'tutorial-step-7-title',
+                contentKey: 'tutorial-step-7-content'
+            },
+            {
+                titleKey: 'tutorial-step-8-title',
+                contentKey: 'tutorial-step-8-content'
+            },
+            {
+                titleKey: 'tutorial-step-9-title',
+                contentKey: 'tutorial-step-9-content'
+            },
+            {
+                titleKey: 'tutorial-step-10-title',
+                contentKey: 'tutorial-step-10-content'
+            }
+        ];
+
+        // Initialize the simulation
         init();
         animate();
 
         function init() {
+            // Scene Setup
             scene = new THREE.Scene();
             camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
             camera.position.set(5, 5, 5);
@@ -358,13 +489,14 @@ input, textarea {
 
             // Initialize OrbitControls
             orbitControls = new THREE.OrbitControls(camera, renderer.domElement);
-            orbitControls.enableDamping = true; // Optional: for smoother controls
+            orbitControls.enableDamping = true;
             orbitControls.dampingFactor = 0.05;
             orbitControls.screenSpacePanning = false;
             orbitControls.minDistance = 2;
             orbitControls.maxDistance = 50;
-            orbitControls.maxPolarAngle = Math.PI / 2; // Limit to prevent flipping
+            orbitControls.maxPolarAngle = Math.PI / 2;
 
+            // Lighting
             const ambientLight = new THREE.AmbientLight(0x404040, 1.5);
             scene.add(ambientLight);
 
@@ -372,6 +504,7 @@ input, textarea {
             directionalLight.position.set(10, 20, 10);
             scene.add(directionalLight);
 
+            // Create Ground, Grid, and Quadcopter
             createGround();
             createGrid();
             createQuadcopter();
@@ -382,7 +515,6 @@ input, textarea {
             rotorAudio.volume = 0;
             rotorAudio.preload = 'auto';
 
-            // Initialize DJI Sound Effect
             djiAudio = new Audio('dji.mp3');
             djiAudio.loop = false;
             djiAudio.volume = 0.1;
@@ -392,40 +524,32 @@ input, textarea {
                 console.warn('Autoplay blocked for dji.mp3. User interaction required to play sound.');
             });
 
-            // Initialize Takeoff Sound Effect
             takeoffAudio = new Audio('takeoff.mp3');
             takeoffAudio.loop = false;
             takeoffAudio.volume = 0.5;
             takeoffAudio.preload = 'auto';
 
-            // Initialize Hovering Sound Effect
             hoveringAudio = new Audio('hovering.mp3');
-            hoveringAudio.loop = false; // Play only once per hover
-            hoveringAudio.volume = 1.0; // Maximum volume (cannot exceed 1.0)
+            hoveringAudio.loop = false;
+            hoveringAudio.volume = 1.0;
             hoveringAudio.preload = 'auto';
 
-// Initialize GUI
-gui = new dat.GUI({ autoPlace: false, width: 450 }); // Adjusted width
+            // Initialize GUI
+            gui = new dat.GUI({ autoPlace: false, width: 450 });
 
-// Create a wrapper div for GUI and button
-const controlWrapper = document.createElement('div');
-controlWrapper.style.display = 'flex';
-controlWrapper.style.flexDirection = 'column';
-controlWrapper.style.gap = '10px';
+            // Create a wrapper div for GUI
+            const guiWrapper = document.createElement('div');
+            guiWrapper.style.display = 'flex';
+            guiWrapper.style.flexDirection = 'column';
+            guiWrapper.style.gap = '10px';
 
-// Append GUI to wrapper
-controlWrapper.appendChild(gui.domElement);
+            // Append GUI to wrapper
+            guiWrapper.appendChild(gui.domElement);
 
-// Get the next page button and append it to wrapper
-const nextPageButton = document.getElementById('nextPageButton');
-controlWrapper.appendChild(nextPageButton);
+            // Append wrapper to controls container
+            document.getElementById('controls-container').appendChild(guiWrapper);
 
-// Append wrapper to controls container
-document.getElementById('controls-container').appendChild(controlWrapper);
-
-
-
-            // Add controllers
+            // Add Controllers
             const weightController = gui.add(guiControls, 'weight', 1, 20).step(0.1).name('Weight').onChange(updateQuadcopter).listen();
             const rotorSpeedController = gui.add(guiControls, 'rotorSpeed', 0, 20).step(0.1).name('Rotor Speed').onChange(updateQuadcopter).listen();
             const gravityController = gui.add(guiControls, 'gravity', 0.1, 20).step(0.1).name('Gravity').onChange(updateQuadcopter).listen();
@@ -439,12 +563,13 @@ document.getElementById('controls-container').appendChild(controlWrapper);
             gui.domElement.style.fontSize = '18px'; // Increased font size
             gui.domElement.style.marginBottom = '20px'; // Space between GUI and Status Box
 
+            // Add Scales to Sliders
             addScales(weightController);
             addScales(rotorSpeedController);
             addScales(gravityController);
             addScales(pressureController);
 
-            // Remove 'title' attribute from all range inputs to prevent tooltip text like "be selected"
+            // Remove 'title' attribute from all range inputs to prevent tooltip text
             const rangeInputs = document.querySelectorAll('.dg .slider input[type=range]');
             rangeInputs.forEach(input => {
                 input.removeAttribute('title');
@@ -453,9 +578,11 @@ document.getElementById('controls-container').appendChild(controlWrapper);
             // Initialize Particle System
             createParticles();
 
+            // Event Listener for Window Resize
             window.addEventListener('resize', onWindowResize, false);
         }
 
+        // Function to Create Ground
         function createGround() {
             const geometry = new THREE.PlaneGeometry(10, 10, 100, 100);
             const vertices = geometry.attributes.position;
@@ -491,6 +618,7 @@ document.getElementById('controls-container').appendChild(controlWrapper);
             scene.add(ground);
         }
 
+        // Function to Create Grid
         function createGrid() {
             const gridHelper = new THREE.GridHelper(10, 10, 0xffffff, 0xffffff);
             gridHelper.position.y = 0;
@@ -499,6 +627,7 @@ document.getElementById('controls-container').appendChild(controlWrapper);
             scene.add(gridHelper);
         }
 
+        // Function to Create Quadcopter
         function createQuadcopter() {
             quadcopter = new THREE.Group();
 
@@ -585,13 +714,14 @@ document.getElementById('controls-container').appendChild(controlWrapper);
             return Math.floor(num * 10) / 10;
         }
 
+        // Function to Update Quadcopter State
         function updateQuadcopter() {
             let netForce;
             let hoverRotorSpeed;
 
             const gravityForce = (guiControls.weight * guiControls.gravity) / 10;
 
-            // **Modified Condition to Handle Gravity = 0**
+            // Handle Gravity or Pressure = 0
             if (guiControls.pressure === 0 || guiControls.gravity === 0) {
                 // When pressure or gravity is zero, the quadcopter should stay on the ground
                 netForce = 0;
@@ -627,7 +757,7 @@ document.getElementById('controls-container').appendChild(controlWrapper);
             }
 
             if (!isHovering) {
-                // **Prevent Updating Position with NaN**
+                // Prevent Updating Position with NaN
                 if (!isNaN(netForce)) {
                     // Update velocity based on net force
                     velocity.y += netForce * 0.016; // Assuming ~60fps, deltaTime ~0.016 seconds
@@ -638,7 +768,7 @@ document.getElementById('controls-container').appendChild(controlWrapper);
                     // Update quadcopter's Y position based on velocity
                     quadcopter.position.y += velocity.y * 0.016;
 
-                    // Optionally, apply damping to velocity for smoother motion
+                    // Apply damping to velocity for smoother motion
                     velocity.y *= 0.98;
                 }
             }
@@ -654,6 +784,7 @@ document.getElementById('controls-container').appendChild(controlWrapper);
                 velocity.y = 0;
             }
 
+            // Rotate Propellers
             quadcopter.children.forEach(child => {
                 if (child.geometry instanceof THREE.BoxGeometry && child.geometry.parameters.height === 0.02) {
                     const rotationDir = child.userData.rotationDirection || 1;
@@ -661,60 +792,81 @@ document.getElementById('controls-container').appendChild(controlWrapper);
                 }
             });
 
+            // Update Status and Audio
             updateStatus(hoverRotorSpeed, netForce);
             handleAudio();
 
-            // Update ground color based on gravity
+            // Update Ground Color based on Gravity
             updateGroundColor();
             
-            // Update quadcopter scale based on weight
+            // Update Quadcopter Scale based on Weight
             updateQuadcopterScale();
         }
 
-function updateStatus(hoverRotorSpeed, netForce) {
-    let forceStatus, statusStatus;
-    const languageSwitch = document.getElementById('language-switch');
-    const isChineseLanguage = languageSwitch.textContent.includes('English');
+        // Function to Update Status Indicators and Colors
+        function updateStatus(hoverRotorSpeed, netForce) {
+            let forceStatus, statusStatus;
+            const languageSwitch = document.getElementById('language-switch');
+            const isChineseLanguage = languageSwitch.textContent.includes('English');
 
-    const forceLabel = isChineseLanguage ? '力：' : 'Force: ';
-    const statusLabel = isChineseLanguage ? '狀態：' : 'Status: ';
-    const hoverRotorSpeedLabel = isChineseLanguage ? '懸停旋翼速度：' : 'Hover Rotor Speed: ';
+            const translations = getTranslations(isChineseLanguage);
 
-    if (guiControls.pressure === 0 || guiControls.gravity === 0) {
-        forceStatus = `${forceLabel}${isChineseLanguage ? '不適用' : 'N/A'}`;
-        statusStatus = `${statusLabel}${isChineseLanguage ? '在地面' : 'On Ground'}`;
-        isHovering = false;
-    } else if (Math.abs(netForce) < 0.0001) {
-        forceStatus = `${forceLabel}${isChineseLanguage ? '升力 = 重力' : 'Lift = Gravity'}`;
-        statusStatus = `${statusLabel}${isChineseLanguage ? '懸停' : 'Hovering'}`;
-        if (!isHovering) {
-            hoverStartY = quadcopter.position.y;
-            hoverTime = 0;
-        }
-        isHovering = true;
-    } else if (netForce > 0) {
-        forceStatus = `${forceLabel}${isChineseLanguage ? '升力 > 重力' : 'Lift > Gravity'}`;
-        statusStatus = `${statusLabel}${isChineseLanguage ? '上升' : 'Throttle Up'}`;
-        if (!hasTakenOff) {
-            takeoffAudio.play().catch((error) => {
-                console.warn('Takeoff audio play failed:', error);
-            });
-            hasTakenOff = true;
-        }
-        isHovering = false;
-    } else {
-        forceStatus = `${forceLabel}${isChineseLanguage ? '升力 < 重力' : 'Lift < Gravity'}`;
-        statusStatus = `${statusLabel}${isChineseLanguage ? '下降' : 'Throttle Down'}`;
-        hasTakenOff = false;
-        isHovering = false;
-    }
+            const forceLabel = translations['forceLabel'];
+            const statusLabel = translations['statusLabel'];
+            const hoverRotorSpeedLabel = translations['hoverRotorSpeedLabel'];
 
-    document.getElementById('force').innerText = forceStatus;
-    document.getElementById('statusMessage').innerText = statusStatus;
+            // Get status elements
+            const forceElement = document.getElementById('force');
+            const statusElement = document.getElementById('statusMessage');
 
-    const formattedHoverRotorSpeed = isNaN(hoverRotorSpeed) ? (isChineseLanguage ? '不適用' : 'N/A') : hoverRotorSpeed.toFixed(1);
-    document.getElementById('hoverRotorSpeed').innerText = `${hoverRotorSpeedLabel}${formattedHoverRotorSpeed}`;
+            // Reset colors to default (gold) before applying new colors
+            forceElement.style.color = 'gold';
+            statusElement.style.color = 'gold';
 
+            if (guiControls.pressure === 0 || guiControls.gravity === 0) {
+                forceStatus = `${forceLabel}${translations['forceNA']}`;
+                statusStatus = `${statusLabel}${translations['statusOnGround']}`;
+                isHovering = false;
+            } else if (Math.abs(netForce) < 0.0001) {
+                forceStatus = `${forceLabel}${translations['forceLiftEqualsGravity']}`;
+                statusStatus = `${statusLabel}${translations['statusHovering']}`;
+                if (!isHovering) {
+                    hoverStartY = quadcopter.position.y;
+                    hoverTime = 0;
+                }
+                isHovering = true;
+
+                // Change colors to light green
+                forceElement.style.color = '#90EE90'; // Light Green
+                statusElement.style.color = '#90EE90'; // Light Green
+            } else if (netForce > 0) {
+                forceStatus = `${forceLabel}${translations['forceLiftGreaterGravity']}`;
+                statusStatus = `${translations['statusThrottleUp']}`;
+                if (!hasTakenOff) {
+                    takeoffAudio.play().catch((error) => {
+                        console.warn('Takeoff audio play failed:', error);
+                    });
+                    hasTakenOff = true;
+                }
+                isHovering = false;
+
+                // Change colors to pink
+                forceElement.style.color = 'pink';
+                statusElement.style.color = 'pink';
+            } else {
+                forceStatus = `${forceLabel}${translations['forceLiftLessGravity']}`;
+                statusStatus = `${translations['statusThrottleDown']}`;
+                hasTakenOff = false;
+                isHovering = false;
+            }
+
+            forceElement.innerText = forceStatus;
+            statusElement.innerText = statusStatus;
+
+            const formattedHoverRotorSpeed = isNaN(hoverRotorSpeed) ? translations['hoverRotorSpeedNA'] : hoverRotorSpeed.toFixed(1);
+            document.getElementById('hoverRotorSpeed').innerText = `${hoverRotorSpeedLabel}${formattedHoverRotorSpeed}`;
+
+            // Handle Blinking Balls Visibility
             const currentTime = Date.now();
             if (currentTime - lastBlinkTime > blinkInterval) {
                 isBlinkVisible = !isBlinkVisible;
@@ -741,6 +893,7 @@ function updateStatus(hoverRotorSpeed, netForce) {
             }
         }
 
+        // Function to Add Scales to Sliders
         function addScales(controller) {
             const slider = controller.__li.querySelector('.slider');
             
@@ -758,6 +911,7 @@ function updateStatus(hoverRotorSpeed, netForce) {
             slider.appendChild(ticksContainer);
         }
 
+        // Function to Handle Audio Playback
         function handleAudio() {
             if (guiControls.rotorSpeed > 0 && guiControls.pressure > 0) {
                 if (rotorAudio.paused) {
@@ -835,6 +989,7 @@ function updateStatus(hoverRotorSpeed, netForce) {
             createParticles();
         }
 
+        // Animation Loop
         function animate() {
             requestAnimationFrame(animate);
             updateQuadcopter();
@@ -850,26 +1005,347 @@ function updateStatus(hoverRotorSpeed, netForce) {
             renderer.render(scene, camera);
         }
 
+        // Function to Handle Window Resize
         function onWindowResize() {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
-        // Function to update ground color based on gravity
+        // Language Translation Functionality
+        let isChineseLanguage = false; // Default language is English
+
+        // Function to Get Translations Based on Language
+        function getTranslations(isChinese) {
+            return {
+                'title': isChinese ? '四旋翼飛行器物理模擬' : 'QuadPhysics: Quadcopter Flight Explorer',
+                'language-switch': isChinese ? 'English' : '繁體中文',
+                'relativeScaleMessage': isChinese ? '所有數值都是相對尺度，而不是實際精確值。' : 'All values are on relative scales and not real precise values.',
+
+                'forceLabel': isChinese ? '力：' : 'Force: ',
+                'statusLabel': isChinese ? '狀態：' : 'Status: ',
+                'hoverRotorSpeedLabel': isChinese ? '懸停旋翼速度：' : 'Hover Rotor Speed: ',
+
+                'forceNA': isChinese ? '不適用' : 'N/A',
+                'statusOnGround': isChinese ? '著陸' : 'On Ground',
+                'forceLiftEqualsGravity': isChinese ? '升力 = 重力' : 'Lift = Gravity',
+                'statusHovering': isChinese ? '懸停中' : 'Hovering',
+                'forceLiftGreaterGravity': isChinese ? '升力 > 重力' : 'Lift > Gravity',
+                'statusThrottleUp': isChinese ? '油門上升' : 'Throttle Up',
+                'forceLiftLessGravity': isChinese ? '升力 < 重力' : 'Lift < Gravity',
+                'statusThrottleDown': isChinese ? '油門下降' : 'Throttle Down',
+                'hoverRotorSpeedNA': isChinese ? '不適用' : 'N/A',
+
+                'reset': isChinese ? '重置' : 'Reset',
+                'tutorial-button': isChinese ? '教程' : 'Tutorial',
+
+                // GUI Labels
+                'weight': isChinese ? '重量' : 'Weight',
+                'rotorSpeed': isChinese ? '旋翼速度' : 'Rotor Speed',
+                'gravity': isChinese ? '重力' : 'Gravity',
+                'pressure': isChinese ? '大氣壓力' : 'Atm. Pressure',
+
+                // Tutorial content translations
+                'tutorial-step-1-title': isChinese ? '教程 - 步驟 1' : 'Tutorial - Step 1',
+                'tutorial-step-1-content': isChinese ? '歡迎來到四旋翼飛行器物理模擬教程！在這個模擬中，你將學習如何調節旋翼速度、重力和大氣壓力，並觀察這些因素如何影響飛行器的起飛和懸停。' : 'Welcome to the Quadcopter Physics Simulator Tutorial! In this simulation, you will learn how to adjust rotor speed, gravity, and atmospheric pressure, and observe how these factors affect the quadcopter\'s takeoff and hovering.',
+
+                'tutorial-step-2-title': isChinese ? '教程 - 步驟 2' : 'Tutorial - Step 2',
+                'tutorial-step-2-content': isChinese ? '使用滑桿來調節四旋翼的重量、旋翼速度、重力和大氣壓力。每個滑桿下方都有數值顯示，讓你可以精確控制每個變數。' : 'Use the sliders to adjust the quadcopter\'s weight, rotor speed, gravity, and atmospheric pressure. Each slider has a value display below it, allowing you to precisely control each variable.',
+
+                'tutorial-step-3-title': isChinese ? '教程 - 步驟 3' : 'Tutorial - Step 3',
+                'tutorial-step-3-content': isChinese ? '調節旋翼速度會影響升力。增加旋翼速度可以提高升力，使飛行器上升；減少旋翼速度則會降低升力，使飛行器下降。' : 'Adjusting the rotor speed affects lift. Increasing the rotor speed can increase lift, causing the quadcopter to ascend; decreasing the rotor speed will reduce lift, causing it to descend.',
+
+                'tutorial-step-4-title': isChinese ? '教程 - 步驟 4' : 'Tutorial - Step 4',
+                'tutorial-step-4-content': isChinese ? '重力的強度決定了飛行器需要多少升力才能懸停或起飛。增加重力需要更高的旋翼速度來克服重力。' : 'The strength of gravity determines how much lift the quadcopter needs to hover or take off. Increasing gravity requires higher rotor speeds to overcome it.',
+
+                'tutorial-step-5-title': isChinese ? '教程 - 步驟 5' : 'Tutorial - Step 5',
+                'tutorial-step-5-content': isChinese ? '大氣壓力影響飛行器的空氣動力學。高大氣壓力下，飛行器需要更高的旋翼速度來產生足夠的升力。' : 'Atmospheric pressure affects the quadcopter\'s aerodynamics. Under high atmospheric pressure, the quadcopter requires higher rotor speeds to generate sufficient lift.',
+
+                'tutorial-step-6-title': isChinese ? '教程 - 步驟 6' : 'Tutorial - Step 6',
+                'tutorial-step-6-content': isChinese ? '觀察模擬中的粒子系統，它反映了當前的大氣壓力。大氣壓力越高，粒子越多。' : 'Observe the particle system in the simulation, which reflects the current atmospheric pressure. Higher atmospheric pressure results in more particles.',
+
+                'tutorial-step-7-title': isChinese ? '教程 - 步驟 7' : 'Tutorial - Step 7',
+                'tutorial-step-7-content': isChinese ? '當飛行器達到懸停狀態時，旋翼速度正好產生與重力相等的升力，此時飛行器會穩定懸停在空中。' : 'When the quadcopter reaches a hovering state, the rotor speed generates lift equal to the gravitational force, causing the quadcopter to stabilize and hover in the air.',
+
+                'tutorial-step-8-title': isChinese ? '教程 - 步驟 8' : 'Tutorial - Step 8',
+                'tutorial-step-8-content': isChinese ? '利用這個模擬來探索不同條件下四旋翼飛行器的行為，並理解物理原理如何應用於實際情境。' : 'Use this simulation to explore the behavior of quadcopters under different conditions and understand how physical principles apply in real-world scenarios.',
+
+                'tutorial-step-9-title': isChinese ? '案例研究：機智號 - 火星直升機' : 'Case Study: Ingenuity - Mars Helicopter',
+                'tutorial-step-9-content': isChinese ? `
+                    <p>機智號是一款專為火星探索設計的直升機，其重量為1.80 kg。由於火星大氣壓力僅僅是地球的0.1%，重力則是地球的38%，機智號有效地利用了這些條件進行飛行。</p>
+                    <img src="mars_drone.jpg" alt="Mars Helicopter 'Ingenuity' (機智號)" style="width:100%; height:auto; border-radius:8px;">
+                ` : `
+                    <p>The Ingenuity Mars Helicopter is a specially designed drone for Mars exploration, weighing 1.80 kg. With atmospheric pressure only 0.1% of Earth's and gravity at 38% of Earth, Ingenuity effectively utilizes these conditions to achieve flight.</p>
+                    <img src="mars_drone.jpg" alt="Mars Helicopter 'Ingenuity'" style="width:100%; height:auto; border-radius:8px;">
+                `,
+
+                'tutorial-step-10-title': isChinese ? '案例研究：蜻蜓號 - 土衛六八足飛機' : 'Case Study: Dragonfly - Titan Octocopter',
+                'tutorial-step-10-content': isChinese ? `
+                    <p>蜻蜓號是一台為土衛六設計的八足飛機，重量達450 kg。其大氣壓力為地球的145%，重力僅為地球的14%，這使得蜻蜓號能夠在濃密的大氣中穩定飛行，執行長時間的科學任務。</p>
+                    <img src="titan_drone.jpg" alt="Titan Octocopter 'Dragonfly' (蜻蜓號)" style="width:100%; height:auto; border-radius:8px;">
+                ` : `
+                    <p>The Dragonfly Titan Octocopter is an eight-legged drone designed for Titan exploration, weighing 450 kg. With atmospheric pressure at 145% of Earth's and gravity at only 14% of Earth, Dragonfly can stabilize and conduct long-duration scientific missions in Titan's dense atmosphere.</p>
+                    <img src="titan_drone.jpg" alt="Titan Octocopter 'Dragonfly'" style="width:100%; height:auto; border-radius:8px;">
+                `,
+
+                // Navigation buttons
+                'previous': isChinese ? '上一頁' : 'Previous',
+                'next': isChinese ? '下一頁' : 'Next',
+                'close': isChinese ? '關閉' : 'Close'
+            };
+        }
+
+        function switchLanguage() {
+            // Toggle the language state
+            isChineseLanguage = !isChineseLanguage;
+
+            const translations = getTranslations(isChineseLanguage);
+
+            // Update main elements
+            document.getElementById('title').textContent = translations['title'];
+            document.getElementById('language-switch').textContent = translations['language-switch'];
+            document.getElementById('relativeScaleMessage').textContent = translations['relativeScaleMessage'];
+
+            // Update Tutorial button text
+            document.getElementById('tutorial-button').textContent = translations['tutorial-button'];
+
+            // Update dat.GUI labels
+            if (gui) {
+                gui.__controllers.forEach(controller => {
+                    if (translations[controller.property]) {
+                        controller.name(translations[controller.property]);
+                    }
+                });
+                gui.updateDisplay();
+            }
+
+            // Update status elements
+            const forceElement = document.getElementById('force');
+            const statusElement = document.getElementById('statusMessage');
+            const hoverRotorSpeedElement = document.getElementById('hoverRotorSpeed');
+
+            // Replace existing text with translated text
+            forceElement.textContent = replaceTextForce(forceElement.textContent, translations['forceLabel']);
+            statusElement.textContent = replaceTextStatus(statusElement.textContent, translations['statusLabel']);
+            hoverRotorSpeedElement.textContent = replaceTextHoverRotorSpeed(hoverRotorSpeedElement.textContent, translations['hoverRotorSpeedLabel']);
+
+            // Ensure the quadcopter is updated with new language
+            updateQuadcopter();
+
+            // Update Tutorial content if modal is open
+            if (modalElement.style.display === 'block') {
+                updateTutorialContent(tutorialCurrentStep, translations);
+                updateNavigationButtons(tutorialCurrentStep, translations);
+            }
+        }
+
+        // Function to Replace Force Text
+        function replaceTextForce(originalText, forceLabel) {
+            const regex = /^Force: .*/;
+            if (isChineseLanguage) {
+                const value = originalText.split(/:\s+/)[1] || '';
+                return `${forceLabel}${value}`;
+            } else {
+                return `Force: ${originalText.split(/:\s+/)[1] || ''}`;
+            }
+        }
+
+        // Function to Replace Status Text
+        function replaceTextStatus(originalText, statusLabel) {
+            const regex = /^Status: .*/;
+            if (isChineseLanguage) {
+                const value = originalText.split(/:\s+/)[1] || '';
+                return `${statusLabel}${value}`;
+            } else {
+                return `Status: ${originalText.split(/:\s+/)[1] || ''}`;
+            }
+        }
+
+        // Function to Replace Hover Rotor Speed Text
+        function replaceTextHoverRotorSpeed(originalText, hoverRotorSpeedLabel) {
+            const regex = /^Hover Rotor Speed: .*/;
+            if (isChineseLanguage) {
+                const value = originalText.split(/:\s+/)[1] || '';
+                return `${hoverRotorSpeedLabel}${value}`;
+            } else {
+                return `Hover Rotor Speed: ${originalText.split(/:\s+/)[1] || ''}`;
+            }
+        }
+
+        let tutorialCurrentStep = 0; // Start from the first step
+
+        // Function to Update Tutorial Content
+        function updateTutorialContent(step, translations) {
+            const tutorialContent = document.getElementById('tutorialContent');
+            if (step < 0 || step >= tutorialSteps.length) return;
+
+            const currentStep = tutorialSteps[step];
+            const title = translations[currentStep.titleKey];
+            const content = translations[currentStep.contentKey];
+
+            tutorialContent.innerHTML = `<h2>${title}</h2><p>${content}</p>`;
+        }
+
+        // Modal Functionality
+        const modalElement = document.getElementById('tutorialModal');
+        const closeModalSpan = document.querySelector('.close-modal');
+        const prevButtonElement = document.getElementById('prevButton');
+        const nextButtonElement = document.getElementById('nextButton');
+        const tutorialButton = document.getElementById('tutorial-button');
+
+        // Event Listener to Open Modal
+        tutorialButton.onclick = function() {
+            modalElement.style.display = 'block';
+            tutorialCurrentStep = 0;
+            const translations = getTranslations(isChineseLanguage);
+            updateTutorialContent(tutorialCurrentStep, translations);
+            updateNavigationButtons(tutorialCurrentStep, translations);
+        }
+
+        // Event Listener to Close Modal
+        closeModalSpan.onclick = function() {
+            modalElement.style.display = 'none';
+        }
+
+        // Event Listener to Close Modal by Clicking Outside
+        window.onclick = function(event) {
+            if (event.target == modalElement) {
+                modalElement.style.display = 'none';
+            }
+        }
+
+        // Event Listener for Previous Button
+        prevButtonElement.onclick = function() {
+            if (tutorialCurrentStep > 0) {
+                tutorialCurrentStep--;
+                const translations = getTranslations(isChineseLanguage);
+                updateTutorialContent(tutorialCurrentStep, translations);
+                updateNavigationButtons(tutorialCurrentStep, translations);
+            }
+        }
+
+        // Event Listener for Next Button
+        nextButtonElement.onclick = function() {
+            const translations = getTranslations(isChineseLanguage);
+
+            if (tutorialCurrentStep < tutorialSteps.length - 1) {
+                tutorialCurrentStep++;
+                updateTutorialContent(tutorialCurrentStep, translations);
+                updateNavigationButtons(tutorialCurrentStep, translations);
+            } else {
+                // Last step, close the modal
+                modalElement.style.display = 'none';
+            }
+        }
+
+        // Function to Update Navigation Buttons Text and Disable State
+        function updateNavigationButtons(step, translations) {
+            // Update the "Previous" button text
+            prevButtonElement.textContent = translations['previous'];
+            
+            // Enable or disable the "Previous" button based on the current step
+            prevButtonElement.disabled = step === 0;
+
+            // Update the "Next" button text
+            if (step === tutorialSteps.length - 1) {
+                nextButtonElement.textContent = translations['close'];
+            } else {
+                nextButtonElement.textContent = translations['next'];
+            }
+        }
+
+        // Function to Handle Audio Playback
+        function handleAudio() {
+            if (guiControls.rotorSpeed > 0 && guiControls.pressure > 0) {
+                if (rotorAudio.paused) {
+                    rotorAudio.play().catch((error) => {
+                        console.warn('Rotor audio play failed:', error);
+                    });
+                }
+                // Volume proportional to rotor speed (assuming max rotorSpeed =20)
+                rotorAudio.volume = Math.min(guiControls.rotorSpeed / 20, 1); // Corrected max volume to 1
+            } else {
+                if (!rotorAudio.paused) {
+                    rotorAudio.pause();
+                    rotorAudio.currentTime = 0;
+                }
+            }
+        }
+
+        // Function to Create Particle System
+        function createParticles() {
+            const maxPressure = 20;
+            const maxParticles = 10000;
+
+            // Calculate current particle count based on pressure
+            const currentPressure = guiControls.pressure;
+            const particleCount = Math.floor((currentPressure / maxPressure) * maxParticles);
+
+            if (particles) {
+                scene.remove(particles);
+            }
+
+            if (particleCount === 0) return; // No particles to display
+
+            const geometry = new THREE.BufferGeometry();
+            const positions = [];
+
+            const simulationArea = 10; // Define the range for particles (±10 units in each direction)
+
+            for (let i = 0; i < particleCount; i++) {
+                const x = (Math.random() - 0.5) * simulationArea * 2;
+                const y = (Math.random() - 0.5) * simulationArea * 2;
+                const z = (Math.random() - 0.5) * simulationArea * 2;
+                positions.push(x, y, z);
+            }
+
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+
+            // Create a circular texture for particles
+            const circleCanvas = document.createElement('canvas');
+            circleCanvas.width = 64;
+            circleCanvas.height = 64;
+            const circleCtx = circleCanvas.getContext('2d');
+            circleCtx.beginPath();
+            circleCtx.arc(32, 32, 30, 0, 2 * Math.PI);
+            circleCtx.fillStyle = 'white';
+            circleCtx.fill();
+
+            const circleTexture = new THREE.CanvasTexture(circleCanvas);
+            circleTexture.needsUpdate = true;
+
+            const material = new THREE.PointsMaterial({ 
+                color: 0xFFFFFF, 
+                size: 0.1, 
+                transparent: true, 
+                opacity: 0.5,
+                map: circleTexture,
+                alphaTest: 0.5,
+                depthWrite: false,
+                blending: THREE.AdditiveBlending
+            });
+            particles = new THREE.Points(geometry, material);
+            scene.add(particles);
+        }
+
+        function updateParticles() {
+            createParticles();
+        }
+
+        // Function to Update Background Colors Based on Gravity
         function updateGroundColor() {
             // Map gravity (1 to 20) to color intensity (lighter to deeper brown)
-            const gravity = guiControls.gravity; // 0 to 20
+            const gravity = guiControls.gravity; // 1 to 20
             const minColor = new THREE.Color(0xC49E7F); // Lighter brown
             const maxColor = new THREE.Color(0x4E342E); // Deeper brown
 
-            // Handle gravity = 0 by clamping
-            const t = gravity > 0 ? THREE.MathUtils.clamp((gravity - 1) / 19, 0, 1) : 0;
+            // Handle gravity <=1 to avoid negative t
+            const t = gravity > 1 ? THREE.MathUtils.clamp((gravity - 1) / 19, 0, 1) : 0;
             const newColor = minColor.clone().lerp(maxColor, t);
             ground.material.color.set(newColor);
         }
 
-        // Function to update quadcopter scale based on weight
+        // Function to Update Quadcopter Scale Based on Weight
         function updateQuadcopterScale() {
             // Map weight (1 to 20) to scale factor (0.5 to 2.0)
             const weight = guiControls.weight; // 1 to 20
@@ -880,85 +1356,23 @@ function updateStatus(hoverRotorSpeed, netForce) {
             quadcopter.scale.set(scaleFactor, scaleFactor, scaleFactor);
         }
 
-
-// Global variable to track the current language
-let isChineseLanguage = false;
-
-function switchLanguage() {
-    // Toggle the language state
-    isChineseLanguage = !isChineseLanguage;
-
-    const translations = {
-        'title': isChineseLanguage ? '四旋翼飛行器物理模擬' : 'Quadcopter Physics Simulator',
-        'language-switch': isChineseLanguage ? 'English' : '繁體中文',
-        'relativeScaleMessage': isChineseLanguage ? '所有數值都是相對尺度，而不是實際精確值。' : 'All values are on relative scales and not real precise values.',
-
-        'weight': isChineseLanguage ? '重量' : 'Weight',
-        'rotorSpeed': isChineseLanguage ? '旋翼速度' : 'Rotor Speed',
-        'gravity': isChineseLanguage ? '重力' : 'Gravity',
-        'pressure': isChineseLanguage ? '大氣壓力' : 'Atm. Pressure',
-        'reset': isChineseLanguage ? '重置' : 'Reset',
-	  'nextPageButton': isChineseLanguage ? '概念挑戰' : 'Conceptual Challenge'
-    };
-
-    // Update main elements
-    for (const [id, translation] of Object.entries(translations)) {
-        const element = document.getElementById(id);
-        if (element) {
-            element.textContent = translation;
-        }
-    }
-
-    // Update dat.GUI labels
-    if (gui) {
-        gui.__controllers.forEach(controller => {
-            if (translations[controller.property]) {
-                controller.name(translations[controller.property]);
-            }
-        });
-        gui.updateDisplay();
-    }
-
-
-    // Update other dynamic text
-    const forceElement = document.getElementById('force');
-    const statusElement = document.getElementById('statusMessage');
-    const hoverRotorSpeedElement = document.getElementById('hoverRotorSpeed');
-
-    if (isChineseLanguage) {
-        forceElement.textContent = forceElement.textContent.replace('Force:', '力：');
-        statusElement.textContent = statusElement.textContent.replace('Status:', '狀態：');
-        hoverRotorSpeedElement.textContent = hoverRotorSpeedElement.textContent.replace('Hover Rotor Speed:', '懸停旋翼速度：');
-    } else {
-        forceElement.textContent = forceElement.textContent.replace('力：', 'Force:');
-        statusElement.textContent = statusElement.textContent.replace('狀態：', 'Status:');
-        hoverRotorSpeedElement.textContent = hoverRotorSpeedElement.textContent.replace('懸停旋翼速度：', 'Hover Rotor Speed:');
-    }
-
-    // Ensure the quadcopter is updated with new language
-    updateQuadcopter();
-}
-
-// Add this to your initialization code
-document.addEventListener('DOMContentLoaded', () => {
-    const languageSwitch = document.getElementById('language-switch');
-    languageSwitch.addEventListener('click', switchLanguage);
-});
+        // Language Translation Functionality
         document.getElementById('language-switch').addEventListener('click', switchLanguage);
 
-    // Update status messages
-    updateStatus(hoverRotorSpeed, netForce);
+        // Initial Tutorial Content
+        updateTutorialContent(tutorialCurrentStep, getTranslations(isChineseLanguage));
+        updateNavigationButtons(tutorialCurrentStep, getTranslations(isChineseLanguage));
 
-document.addEventListener('contextmenu', function(e) {
-    e.preventDefault();
-});
+        // Prevent Context Menu and Multi-Touch Issues
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
 
-document.addEventListener('touchstart', function(e) {
-    if (e.touches.length > 1) {
-        e.preventDefault();
-    }
-}, { passive: false });
-
+        document.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
     </script>
 </body>
 </html>
