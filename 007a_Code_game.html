@@ -1,0 +1,1584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Obstacle Skirting Path Design</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 5px;
+      margin: 3px;
+      background-color: #f0f0f0;
+    }
+    #game-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: left;
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+    #obstacle-course {
+      width: 600px;
+      height: 500px; /* Reduced height to match code area */
+      border: 2px solid #000;
+      background-color: #fff;
+      position: relative;
+    }
+    #code-area {
+      width: 400px;
+      height: 480px; 
+      border: 2px solid #000;
+      padding: 10px;
+      background-color: #fff;
+      position: relative;
+    }
+    /* New styling to position the Back and Tutorial buttons at the top-right corner */
+    .top-button-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 5px;
+      margin-bottom: 0px;
+    }
+    /* Update Back and Tutorial buttons to purple */
+    #back-button, #tutorial-button {
+      background-color: purple;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    #command-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 5px;
+    }
+    .button-row {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .button-row input {
+      width: 50px;
+      padding: 3px;
+    }
+    button {
+      padding: 5px 5px;
+      cursor: pointer;
+      font-size: 16px;
+      color: white;
+      border: none;
+      border-radius: 3px;
+    }
+    .green-button {
+      background-color: #4CAF50;
+    }
+    .orange-button {
+      background-color: #FFA500;
+    }
+    #run-button, #reset-button, #path-preview-button, #centre-button, #level-select {
+      margin-top: 10px;
+      padding: 10px 10px;
+      font-size: 16px;
+    }
+    #run-button {
+      background-color: #FF0000;
+    }
+    #reset-button {
+      background-color: #FFC0CB;
+    }
+    #path-preview-button {
+      background-color: #0000FF;
+      color: white;
+    }
+    #centre-button {
+      background-color: #008CBA;
+      color: white;
+    }
+    #level-select {
+      background-color: #0000FF;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+    #code-input {
+      width: 90%;
+      height: 180px;  /* Increased height for better placement of buttons and counters */
+      resize: vertical;
+    }
+    #message {
+      margin-top: 5px;
+      font-weight: bold;
+      text-align: left;
+      min-height: 10px;
+    }
+    #view-controls {
+      margin-top: 0px;
+      display: flex;
+      gap: 10px;
+    }
+    #instructions {
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+    #view-controls button {
+      color: #8B4513;
+      font-size: 16px;
+      font-weight: bold;
+      border: 2px solid #8B4513;
+      background-color: white;
+    }
+    @keyframes blink {
+      0% { opacity: 1; }
+      50% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .blink {
+      animation: blink 1s infinite;
+    }
+    @keyframes colorChange {
+      0% { color: red; }
+      33% { color: green; }
+      66% { color: blue; }
+      100% { color: red; }
+    }
+    .color-change {
+      animation: colorChange 3s infinite;
+    }
+    /* Additional styles for Level Select */
+    #level-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    #counters {
+      margin-top: 10px;
+      display: flex;
+      gap: 20px;
+    }
+    #counters span {
+      font-weight: bold;
+    }
+    /* Style for the language switch button */
+    #language-switch {
+      position: fixed;
+      font-size: 18px;
+      top: 10px;
+      right: 10px;
+      padding: 5px 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <button id="language-switch" onclick="toggleLanguage()">繁體中文</button>
+  <h2 data-translate="title">Obstacle Skirting Path Design</h2>
+  <!-- Removed the instruction statement as per request -->
+
+  <div id="game-container">
+    <div id="obstacle-course"></div>
+    <div id="code-area">
+      <!-- New top-row with Back and Tutorial buttons at top right -->
+      <div id="command-buttons">
+        <div class="top-button-row">
+          <button id="back-button" onclick="window.location.href='05_Code.html'" data-translate="back">Back</button>
+          <button id="tutorial-button" onclick="openTutorial()" data-translate="tutorial">Tutorial</button>
+        </div>
+        <div class="button-row">
+          <button class="green-button" onclick="addCommand('throttleUp')" data-translate="throttleUp">Throttle Up</button>
+          <input type="number" id="throttle-distance-up" placeholder="units" min="0">
+          <button class="green-button" onclick="addCommand('throttleDown')" data-translate="throttleDown">Throttle Down</button>
+          <input type="number" id="throttle-distance-down" placeholder="units" min="0">
+        </div>
+        <div class="button-row">
+          <button class="green-button" onclick="addCommand('yawLeft')" data-translate="yawLeft">Yaw Left</button>
+          <input type="number" id="yaw-angle" placeholder="°" min="0" max="360">
+          <button class="green-button" onclick="addCommand('yawRight')" data-translate="yawRight">Yaw Right</button>
+          <input type="number" id="yaw-angle-right" placeholder="°" min="0" max="360">
+        </div>
+        <div class="button-row">
+          <button class="orange-button" onclick="addCommand('pitchForward')" data-translate="pitchForward">Pitch Forward</button>
+          <input type="number" id="pitch-distance" placeholder="units" min="10">
+          <button class="orange-button" onclick="addCommand('pitchBackward')" data-translate="pitchBackward">Pitch Backward</button>
+          <input type="number" id="pitch-distance-back" placeholder="units" min="10">
+        </div>
+        <div class="button-row">
+          <button class="orange-button" onclick="addCommand('rollLeft')" data-translate="rollLeft">Roll Left</button>
+          <input type="number" id="roll-distance" placeholder="units" min="10">
+          <button class="orange-button" onclick="addCommand('rollRight')" data-translate="rollRight">Roll Right</button>
+          <input type="number" id="roll-distance-right" placeholder="units" min="10">
+        </div>
+      </div>
+      <textarea id="code-input"></textarea>
+      <br>
+      <div class="button-row">
+        <!-- Renamed Run button to "Run Code" -->
+        <button id="run-button" onclick="runCode()" data-translate="runCode">Run Code</button>
+        <button id="reset-button" onclick="homePosition()" data-translate="reset">Reset</button>
+        <button id="path-preview-button" onclick="previewPath()" data-translate="pathPreview">Path Preview</button>
+        <button id="centre-button" onclick="centreView()" data-translate="centre">Centre</button>
+        <select id="level-select" onchange="changeLevel()">
+          <option value="1" selected data-translate="level1">Level 1</option>
+          <option value="2" data-translate="level2">Level 2</option>
+          <option value="3" data-translate="level3">Level 3</option>
+        </select>
+      </div>
+      <div id="counters">
+        <span data-translate="attemptsLabel">No. of Attempts:</span> <span id="attempts-count">0</span>
+        <span data-translate="stepsLabel">No. of Steps:</span> <span id="steps-count">0</span>
+      </div>
+    </div>
+  </div>
+  <div id="message"></div>
+  <div id="view-controls">
+    <button onclick="rotateView('right')" data-translate="rotateLeft">Rotate Left</button>
+    <button onclick="rotateView('left')" data-translate="rotateRight">Rotate Right</button>
+    <button onclick="moveViewUp()" data-translate="up">Up</button>
+    <button onclick="moveViewDown()" data-translate="down">Down</button>
+    <button onclick="zoom('in')" data-translate="zoomIn">Zoom In</button>
+    <button onclick="zoom('out')" data-translate="zoomOut">Zoom Out</button>
+    <button onclick="centreView()" data-translate="centre">Centre</button>
+  </div>
+
+  <!-- Audio Elements -->
+  <script>
+    // Preload audio files with explicit preload attribute
+    const hoopSound = document.createElement('audio');
+    hoopSound.src = 'bonus.mp3';
+    hoopSound.preload = 'auto';
+    hoopSound.volume = 0.5;
+
+    const goalSound = document.createElement('audio');
+    goalSound.src = 'sweet.mp3';
+    goalSound.preload = 'auto';
+    goalSound.volume = 0.5;
+
+    const warn1Sound = document.createElement('audio');
+    warn1Sound.src = 'warn1.mp3';
+    warn1Sound.preload = 'auto';
+    warn1Sound.volume = 0.5;
+
+    const warn2Sound = document.createElement('audio');
+    warn2Sound.src = 'warn2.mp3';
+    warn2Sound.preload = 'auto';
+    warn2Sound.volume = 0.5;
+
+    const startSound = document.createElement('audio');
+    startSound.src = 'start.mp3';
+    startSound.preload = 'auto';
+    startSound.volume = 0.5;
+
+    // Add event listeners to log loading status
+    [hoopSound, goalSound, warn1Sound, warn2Sound, startSound].forEach((audio, index) => {
+      audio.addEventListener('canplaythrough', () => {
+        console.log(`${audio.src} loaded successfully.`);
+      }, { once: true });
+
+      audio.addEventListener('error', (e) => {
+        console.error(`Error loading ${audio.src}:`, e);
+      }, { once: true });
+    });
+
+    // Unlock audio on first user interaction to ensure sounds play on iPad
+    function unlockAudio() {
+      // Play each audio silently to unlock their ability to play
+      [hoopSound, goalSound, warn1Sound, warn2Sound, startSound].forEach(audio => {
+        audio.muted = true;
+        const playPromise = audio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.muted = false;
+          }).catch((error) => {
+            console.warn(`Audio unlock failed for ${audio.src}:`, error);
+          });
+        }
+      });
+
+      // Remove the event listeners after unlocking
+      document.body.removeEventListener('click', unlockAudio);
+      document.body.removeEventListener('touchstart', unlockAudio);
+    }
+
+    // Add event listeners to unlock audio on user interaction
+    document.body.addEventListener('click', unlockAudio, { once: true });
+    document.body.addEventListener('touchstart', unlockAudio, { once: true });
+
+    // Array to track cloned sounds
+    const clonedSounds = [];
+
+    // Helper function to play sounds with cloning
+    function playSound(audio, track=true) {
+      const clone = audio.cloneNode();
+      clone.play().catch((error) => {
+        console.warn(`Playback failed for ${audio.src}:`, error);
+      });
+      if (track) {
+        clonedSounds.push(clone);
+        clone.addEventListener('ended', () => {
+          const index = clonedSounds.indexOf(clone);
+          if (index > -1) {
+            clonedSounds.splice(index, 1);
+          }
+        });
+      }
+    }
+  </script>
+
+  <!-- Three.js Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- OrbitControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+  <script>
+    // Initialize variables
+    let scene, camera, renderer, drone, obstacles = [], axesHelper;
+    let goalMarker;
+    const codeInput = document.getElementById('code-input');
+    const messageDiv = document.getElementById('message');
+
+    let dronePosition = new THREE.Vector3(0, 0, 0);
+    let droneRotation = new THREE.Euler(0, 0, 0, 'XYZ'); // Upright
+    let goalPosition = new THREE.Vector3(0, 0, 0); // Will be set in generateGoalPosition()
+    let currentHoop = 1;
+
+    // Global variables to manage timeouts and intervals
+    let commandTimeouts = [];
+    let blinkIntervals = {};
+
+    // Counters for Attempts and Steps
+    let attemptsCount = 0;
+    let stepsCount = 0;
+    let attemptsDisplay;
+    let stepsDisplay;
+
+    // Current Level
+    let currentLevel = 1;
+
+    // Alert flag to ensure alert message is shown only once per out-of-order pass
+    let alertShown = false;
+
+    // Level configurations
+    const levelConfigs = {
+      1: { vertical: 1, horizontal: 0 },
+      2: { vertical: 1, horizontal: 1 },
+      3: { vertical: 2, horizontal: 1 }
+    };
+
+    // Constants for minimum distances
+    const MIN_DISTANCE_FROM_HOOPS = 4;
+    const MIN_DISTANCE_FROM_START = 5;
+    const MIN_DISTANCE_TO_GOAL_FOR_HOOP = 5;
+
+    // Blinking variables
+    let frontCircles = [];
+    let rearCircles = [];
+    let lastBlinkTime = 0;
+    const blinkDuration = 500; // milliseconds
+    let blinkState = true;
+
+    // Command Queue
+    let commandQueue = [];
+    let isExecuting = false;
+
+    // Throttle Animation Variables
+    let isThrottling = false;
+
+    // Yaw Animation Variables
+    let isYawing = false;
+    const yawDuration = 500; // milliseconds per 90 degrees
+
+    // Path Preview Variables
+    let pathLine = null;
+    let pathLineBlinkState = true;
+    let lastPathBlinkToggle = 0;
+    const pathBlinkInterval = 500; // milliseconds
+
+    // OrbitControls
+    let controls;
+
+    // Array of stored positions for Path Preview
+    let pathPositions = [];
+    let isPathPreviewShown = false; // Flag to track Path Preview visibility
+
+    function initGame() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0xf0f0f0);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(600, 500); /* Updated height to match obstacle-course */
+      const obstacleCourse = document.getElementById('obstacle-course');
+      obstacleCourse.innerHTML = '';
+      obstacleCourse.appendChild(renderer.domElement);
+
+      // Set default camera position
+      camera = new THREE.PerspectiveCamera(75, 600 / 500, 0.1, 1000);
+      camera.position.set(10, 7, 10);
+      camera.lookAt(dronePosition);
+
+      // Initialize OrbitControls
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+      scene.add(ambientLight);
+
+      const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      directionalLight.position.set(10, 10, 10);
+      scene.add(directionalLight);
+
+      createDrone();
+      createHulaHoops(currentLevel);
+      createCoordinatePlane();
+      addDirectionIndicators();
+      addWatermark();
+      addWatermarkSTEM();
+      addVerticalLines();
+
+      axesHelper = new THREE.AxesHelper(10);
+      scene.add(axesHelper);
+
+      // Assign the counter display elements
+      attemptsDisplay = document.getElementById('attempts-count');
+      stepsDisplay = document.getElementById('steps-count');
+
+      attemptsDisplay.textContent = attemptsCount;
+      stepsDisplay.textContent = stepsCount;
+
+      // Start blinking the first hoop
+      if (obstacles.length > 0) {
+        blinkHoop(obstacles[0]);
+      }
+
+      animate();
+
+      playSound(startSound, false);
+
+      codeInput.addEventListener('input', updateStepsCount);
+    }
+
+    function createDrone() {
+      const droneGroup = new THREE.Group();
+
+      const cubeWidth = 1.5;
+      const cubeHeight = 0.5;
+      const cubeDepth = 1.5;
+      const cubeGeometry = new THREE.BoxGeometry(cubeWidth, cubeHeight, cubeDepth);
+      const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff, transparent: true, opacity: 0.5 });
+      const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+      droneGroup.add(cube);
+
+      const circleRadius = 0.225;
+      const circleHeight = cubeHeight / 2 + 0.01;
+
+      const frontCircleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 1 });
+      const rearCircleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 1 });
+
+      const circleGeometry = new THREE.CylinderGeometry(circleRadius, circleRadius, 0.02, 32);
+
+      const frontLeft = new THREE.Mesh(circleGeometry, frontCircleMaterial.clone());
+      frontLeft.position.set(-cubeWidth / 2, circleHeight, cubeDepth / 2);
+      droneGroup.add(frontLeft);
+
+      const frontRight = new THREE.Mesh(circleGeometry, frontCircleMaterial.clone());
+      frontRight.position.set(cubeWidth / 2, circleHeight, cubeDepth / 2);
+      droneGroup.add(frontRight);
+
+      const rearLeft = new THREE.Mesh(circleGeometry, rearCircleMaterial.clone());
+      rearLeft.position.set(-cubeWidth / 2, circleHeight, -cubeDepth / 2);
+      droneGroup.add(rearLeft);
+
+      const rearRight = new THREE.Mesh(circleGeometry, rearCircleMaterial.clone());
+      rearRight.position.set(cubeWidth / 2, circleHeight, -cubeDepth / 2);
+      droneGroup.add(rearRight);
+
+      frontCircles = [frontLeft, frontRight];
+      rearCircles = [rearLeft, rearRight];
+
+      const triangleGeometry = new THREE.ConeGeometry(1, 2, 3);
+      const triangleMaterial = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+      const triangle = new THREE.Mesh(triangleGeometry, triangleMaterial);
+      triangle.rotation.x = -Math.PI / 2;
+      triangle.position.set(0, circleHeight + 0, -cubeDepth / 2);
+      droneGroup.add(triangle);
+
+      const startGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+      const startMaterial = new THREE.MeshPhongMaterial({ color: 0x00ff00 });
+      const startMarker = new THREE.Mesh(startGeometry, startMaterial);
+      startMarker.position.set(0, circleHeight + 0.25, 0);
+      droneGroup.add(startMarker);
+
+      addLabel(startMarker, 'S', 0, 0.8, 0, 'green');
+      addShadow(startMarker);
+
+      droneGroup.rotation.x = 0;
+
+      scene.add(droneGroup);
+      drone = droneGroup;
+    }
+
+    function createHulaHoops(level) {
+      obstacles = [];
+      for (let i = 1; i <= levelConfigs[level].vertical; i++) {
+        const position = generateNonOverlappingPosition();
+        const radius = getRandomRadius(2, 3);
+        createHulaHoop(position.x, position.y, position.z, radius, i, 'vertical');
+      }
+      for (let i = 1; i <= levelConfigs[level].horizontal; i++) {
+        const position = generateNonOverlappingPosition();
+        const radius = getRandomRadius(1.5, 2.5);
+        createHulaHoop(position.x, position.y, position.z, radius, levelConfigs[level].vertical + i, 'horizontal');
+      }
+      createGoalMarker();
+    }
+
+    // Updated generateNonOverlappingPosition to use a wider spread in levels 2 and 3.
+    function generateNonOverlappingPosition() {
+      const spread = currentLevel > 1 ? 20 : 14;
+      const maxAttempts = 100;
+      let attempt = 0;
+      let position;
+      while (attempt < maxAttempts) {
+        const x = THREE.MathUtils.randFloatSpread(spread);
+        const y = THREE.MathUtils.randFloat(2, 5);
+        const z = THREE.MathUtils.randFloatSpread(spread);
+        position = new THREE.Vector3(x, y, z);
+        if (Math.abs(x) > 10 || Math.abs(z) > 10) continue;
+        let overlapping = false;
+        for (let hoop of obstacles) {
+          if (position.distanceTo(hoop.position) < MIN_DISTANCE_FROM_HOOPS) {
+            overlapping = true;
+            break;
+          }
+        }
+        if (position.distanceTo(new THREE.Vector3(0, 0, 0)) < MIN_DISTANCE_FROM_START) {
+          overlapping = true;
+        }
+        if (goalMarker && position.distanceTo(goalMarker.position) < MIN_DISTANCE_TO_GOAL_FOR_HOOP) {
+          overlapping = true;
+        }
+        if (!overlapping) {
+          return position;
+        }
+        attempt++;
+      }
+      return new THREE.Vector3(0, 2, 0);
+    }
+
+    function getRandomRadius(min, max) {
+      return THREE.MathUtils.randFloat(min, max);
+    }
+
+    function createHulaHoop(x, y, z, radius, number, orientation) {
+      const hoopGroup = new THREE.Group();
+      const hoopGeometry = new THREE.TorusGeometry(radius, 0.1, 16, 100);
+      const hoopMaterial = new THREE.MeshPhongMaterial({ color: 0xff8c00, transparent: true, opacity: 0.7 });
+      const hoop = new THREE.Mesh(hoopGeometry, hoopMaterial);
+      if (orientation === 'vertical') {
+        hoop.rotation.x = Math.PI / 2;
+      } else if (orientation === 'horizontal') {
+        hoop.rotation.x = 0;
+      }
+      hoopGroup.add(hoop);
+      hoopGroup.position.set(x, y, z);
+      scene.add(hoopGroup);
+      obstacles.push(hoopGroup);
+
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = 128;
+      canvas.height = 128;
+      context.fillStyle = 'white';
+      context.fillRect(0, 0, 128, 128);
+      context.fillStyle = 'black';
+      context.font = 'Bold 64px Arial';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(number.toString(), 64, 64);
+
+      const numberTexture = new THREE.CanvasTexture(canvas);
+      const numberMaterial = new THREE.SpriteMaterial({ map: numberTexture });
+      const numberSprite = new THREE.Sprite(numberMaterial);
+      numberSprite.scale.set(1, 1, 1);
+      numberSprite.position.set(0, radius + 0.5, 0);
+      hoopGroup.add(numberSprite);
+    }
+
+    function createCoordinatePlane() {
+      const size = 60;
+      const divisions = 6;
+      const gridHelper = new THREE.GridHelper(size, divisions, 0xcccccc, 0xcccccc);
+      scene.add(gridHelper);
+
+      const fontLoader = new THREE.FontLoader();
+      fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+        for (let i = -30; i <= 30; i += 10) {
+          if (i !== 0) {
+            createText(font, textMaterial, i.toString(), i, 0, -30);
+            createText(font, textMaterial, i.toString(), -30, 0, i);
+          }
+        }
+        createText(font, textMaterial, 'X', 35, 0, 0);
+        createText(font, textMaterial, 'Z', 0, 0, 35);
+        createText(font, textMaterial, 'Y', 0, 35, 0);
+      });
+    }
+
+    function createText(font, material, text, x, y, z) {
+      const textGeometry = new THREE.TextGeometry(text, {
+        font: font,
+        size: 0.5,
+        height: 0.1,
+      });
+      const textMesh = new THREE.Mesh(textGeometry, material);
+      textMesh.position.set(x, y, z);
+      scene.add(textMesh);
+    }
+
+    function addDirectionIndicators() {
+      addDirectionIndicator(new THREE.Vector3(42, 0, 0), 'Right', 0xff0000);
+      addDirectionIndicator(new THREE.Vector3(-42, 0, 0), 'Left', 0xff0000);
+      addDirectionIndicator(new THREE.Vector3(0, 42, 0), 'Up', 0x00ff00);
+      addDirectionIndicator(new THREE.Vector3(0, -42, 0), 'Down', 0x00ff00);
+      addDirectionIndicator(new THREE.Vector3(0, 0, 42), 'Rear', 0x0000ff);
+      addDirectionIndicator(new THREE.Vector3(0, 0, -42), 'Front', 0x0000ff);
+    }
+
+    function addDirectionIndicator(position, text, color) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = 256;
+      canvas.height = 256;
+      context.fillStyle = `rgb(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255})`;
+      context.font = 'Bold 40px Arial';
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(text, 128, 128);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.position.copy(position);
+      sprite.scale.set(2, 2, 2);
+      scene.add(sprite);
+    }
+
+    function createStartAndGoalMarkers() {
+      createGoalMarker();
+    }
+
+    function createGoalMarker() {
+      if (goalMarker) {
+        scene.remove(goalMarker);
+        goalMarker = null;
+      }
+      let position = generateGoalPosition(currentLevel);
+      goalPosition.copy(position);
+      const goalGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+      const goalMaterial = new THREE.MeshPhongMaterial({ color: 0xff8c00, transparent: true, opacity: 0.5 });
+      goalMarker = new THREE.Mesh(goalGeometry, goalMaterial);
+      goalMarker.position.copy(position);
+      scene.add(goalMarker);
+      addLabel(goalMarker, 'G', 0, 0.8, 0.5, 'orange');
+      addShadow(goalMarker);
+    }
+
+    function addShadow(object) {
+      const shadowGeometry = new THREE.CircleGeometry(0.5, 32);
+      const shadowMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.3 });
+      const shadow = new THREE.Mesh(shadowGeometry, shadowMaterial);
+      shadow.rotation.x = -Math.PI / 2;
+      shadow.position.y = 0.01;
+      object.add(shadow);
+    }
+
+    function addLabel(object, text, x, y, z, color) {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      canvas.width = 256;
+      canvas.height = 256;
+      context.fillStyle = 'transparent';
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      context.fillStyle = color;
+      context.font = `Bold 200px Arial`;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+      context.fillText(text, 128, 128);
+      const texture = new THREE.CanvasTexture(canvas);
+      const spriteMaterial = new THREE.SpriteMaterial({ map: texture, transparent: true });
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.position.set(x, y, z);
+      sprite.scale.set(1, 1, 1);
+      object.add(sprite);
+    }
+
+    function addWatermark() {
+      const fontLoader = new THREE.FontLoader();
+      fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xd3d3d3 });
+        const watermarkGeometry = new THREE.TextGeometry('EdUHK', {
+          font: font,
+          size: 1,
+          height: 0.05,
+        });
+        const watermarkMesh = new THREE.Mesh(watermarkGeometry, textMaterial);
+        watermarkMesh.rotation.x = -Math.PI / 2;
+        watermarkMesh.position.set(5, 0.1, 0);
+        scene.add(watermarkMesh);
+      });
+    }
+
+    function addWatermarkSTEM() {
+      const fontLoader = new THREE.FontLoader();
+      fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xd3d3d3 });
+        const stemTextGeometry = new THREE.TextGeometry('STEM Education', {
+          font: font,
+          size: 0.7,
+          height: 0.05,
+        });
+        const stemWatermarkMesh = new THREE.Mesh(stemTextGeometry, textMaterial);
+        stemWatermarkMesh.rotation.y = Math.PI / 2;
+        stemWatermarkMesh.position.set(0, 0.1, 10);
+        scene.add(stemWatermarkMesh);
+      });
+    }
+
+    function addVerticalLines() {
+      const material = new THREE.LineBasicMaterial({ color: 0xcccccc });
+      for (let y = 10; y <= 30; y += 10) {
+        const points = [];
+        points.push(new THREE.Vector3(-30, y, -30));
+        points.push(new THREE.Vector3(30, y, -30));
+        points.push(new THREE.Vector3(30, y, 30));
+        points.push(new THREE.Vector3(-30, y, 30));
+        points.push(new THREE.Vector3(-30, y, -30));
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        scene.add(line);
+      }
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const now = Date.now();
+      if (now - lastBlinkTime > blinkDuration) {
+        blinkState = !blinkState;
+        lastBlinkTime = now;
+        frontCircles.forEach(circle => {
+          circle.material.opacity = blinkState ? 1 : 0;
+        });
+        rearCircles.forEach(circle => {
+          circle.material.opacity = blinkState ? 1 : 0;
+        });
+      }
+      if (pathLine) {
+        if (now - lastPathBlinkToggle > pathBlinkInterval) {
+          pathLine.visible = pathLineBlinkState;
+          pathLineBlinkState = !pathLineBlinkState;
+          lastPathBlinkToggle = now;
+        }
+      }
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    // Modify addCommand to insert command at the cursor
+    function addCommand(commandType) {
+      let command = commandType;
+      let parameter = '';
+
+      switch (commandType) {
+        case 'yawLeft':
+          parameter = document.getElementById('yaw-angle').value;
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `yawLeft ${parameter}`;
+          break;
+        case 'yawRight':
+          parameter = document.getElementById('yaw-angle-right').value;
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `yawRight ${parameter}`;
+          break;
+        case 'pitchForward':
+          parameter = parseFloat(document.getElementById('pitch-distance').value);
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `pitchForward ${parameter}`;
+          break;
+        case 'pitchBackward':
+          parameter = parseFloat(document.getElementById('pitch-distance-back').value);
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `pitchBackward ${parameter}`;
+          break;
+        case 'rollLeft':
+          parameter = parseFloat(document.getElementById('roll-distance').value);
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `rollLeft ${parameter}`;
+          break;
+        case 'rollRight':
+          parameter = parseFloat(document.getElementById('roll-distance-right').value);
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `rollRight ${parameter}`;
+          break;
+        case 'throttleUp':
+          parameter = document.getElementById('throttle-distance-up').value;
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `throttleUp ${parameter}`;
+          break;
+        case 'throttleDown':
+          parameter = document.getElementById('throttle-distance-down').value;
+          if (!parameter) {
+            alert(translations[currentLanguage].missingParam);
+            return;
+          }
+          command = `throttleDown ${parameter}`;
+          break;
+        default:
+          console.warn(`Unknown command type: ${commandType}`);
+          return;
+      }
+
+      addCommandAtCursor(command);
+    }
+
+    function addCommandAtCursor(command) {
+      const start = codeInput.selectionStart;
+      const end = codeInput.selectionEnd;
+      const before = codeInput.value.substring(0, start);
+      const after = codeInput.value.substring(end, codeInput.value.length);
+      codeInput.value = before + command + '\n' + after;
+      const newCursorPosition = start + command.length + 1;
+      codeInput.selectionStart = codeInput.selectionEnd = newCursorPosition;
+      codeInput.focus();
+      updateStepsCount();
+    }
+
+    // Modified runCode to disable both Run and Reset buttons when running.
+    // After execution, Run remains disabled until Reset is pressed.
+    async function runCode() {
+      if (isExecuting) return;
+      isExecuting = true;
+
+      attemptsCount++;
+      attemptsDisplay.textContent = attemptsCount;
+      console.log(`Run Code pressed. Attempt #${attemptsCount}`);
+
+      document.getElementById('run-button').disabled = true;
+      document.getElementById('reset-button').disabled = true;
+
+      commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+      commandTimeouts = [];
+
+      const commands = codeInput.value.trim().split('\n').filter(cmd => cmd.trim() !== '');
+      console.log(`Executing ${commands.length} commands.`);
+
+      for (const command of commands) {
+        await executeSingleCommand(command.trim());
+      }
+
+      checkGoal();
+      isExecuting = false;
+      // Re-enable the Reset button only. The Run button remains disabled until reset.
+      document.getElementById('reset-button').disabled = false;
+    }
+
+    async function executeSingleCommand(command) {
+      return new Promise((resolve) => {
+        const parts = command.split(' ');
+        const baseCommand = parts[0];
+        const param = parts[1] ? parseFloat(parts[1]) : null;
+
+        switch (baseCommand) {
+          case 'pitchForward':
+            if (param !== null) {
+              pitchDrone('forward', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'pitchBackward':
+            if (param !== null) {
+              pitchDrone('backward', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'rollLeft':
+            if (param !== null) {
+              rollDrone('left', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'rollRight':
+            if (param !== null) {
+              rollDrone('right', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'throttleUp':
+            if (param !== null) {
+              throttleDrone('up', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'throttleDown':
+            if (param !== null) {
+              throttleDrone('down', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'yawLeft':
+            if (param !== null) {
+              yawDrone('left', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          case 'yawRight':
+            if (param !== null) {
+              yawDrone('right', param).then(() => { resolve(); });
+            } else {
+              console.warn(`Missing parameter for command: ${command}`);
+              resolve();
+            }
+            break;
+          default:
+            console.warn(`Unknown command: ${command}`);
+            resolve();
+        }
+      });
+    }
+
+    function pitchDrone(direction, distance) {
+      return new Promise((resolve) => {
+        const steps = 20;
+        const stepDuration = 50;
+        let currentStep = 0;
+        const deltaZ = (distance / steps) * (direction === 'forward' ? -1 : 1);
+        const pitchInterval = setInterval(() => {
+          if (currentStep < steps) {
+            moveDrone(0, 0, deltaZ, () => {});
+            currentStep++;
+          } else {
+            clearInterval(pitchInterval);
+            resolve();
+          }
+        }, stepDuration);
+      });
+    }
+
+    function rollDrone(direction, distance) {
+      return new Promise((resolve) => {
+        const steps = 20;
+        const stepDuration = 50;
+        let currentStep = 0;
+        const deltaX = (distance / steps) * (direction === 'left' ? -1 : 1);
+        const rollInterval = setInterval(() => {
+          if (currentStep < steps) {
+            moveDrone(deltaX, 0, 0, () => {});
+            currentStep++;
+          } else {
+            clearInterval(rollInterval);
+            resolve();
+          }
+        }, stepDuration);
+      });
+    }
+
+    function throttleDrone(direction, distance) {
+      return new Promise((resolve) => {
+        if (isThrottling) {
+          resolve();
+          return;
+        }
+        isThrottling = true;
+        const duration = 1000;
+        const steps = 20;
+        const stepDuration = duration / steps;
+        let currentStep = 0;
+        const deltaY = direction === 'up' ? (distance / steps) : (-distance / steps);
+        const throttleInterval = setInterval(() => {
+          if (currentStep < steps) {
+            moveDrone(0, deltaY, 0, () => {});
+            currentStep++;
+          } else {
+            clearInterval(throttleInterval);
+            isThrottling = false;
+            resolve();
+          }
+        }, stepDuration);
+      });
+    }
+
+    function yawDrone(direction, angle) {
+      return new Promise((resolve) => {
+        if (isYawing) {
+          resolve();
+          return;
+        }
+        isYawing = true;
+        const steps = 30;
+        const stepDuration = yawDuration / steps;
+        let currentStep = 0;
+        const deltaAngle = direction === 'left' ? (angle * Math.PI / 180) / steps : -(angle * Math.PI / 180) / steps;
+        const yawInterval = setInterval(() => {
+          if (currentStep < steps) {
+            drone.rotation.y += deltaAngle;
+            currentStep++;
+          } else {
+            clearInterval(yawInterval);
+            isYawing = false;
+            resolve();
+          }
+        }, stepDuration);
+      });
+    }
+
+    function moveDrone(x, y, z, callback) {
+      const movement = new THREE.Vector3(x, y, z);
+      movement.applyEuler(drone.rotation);
+      dronePosition.add(movement);
+      drone.position.copy(dronePosition);
+      checkHulaHoops();
+      if (callback) callback();
+    }
+
+    function checkHulaHoops() {
+      obstacles.forEach((hoop, index) => {
+        const distance = dronePosition.distanceTo(hoop.position);
+        const requiredDistance = (hoop.children[0].geometry.parameters.radius + 0.5);
+        if (distance < requiredDistance) {
+          if (index + 1 === currentHoop) {
+            hoop.children[0].material.color.setHex(0x00ff00);
+            hoop.children[0].material.opacity = 0.7;
+            if (blinkIntervals[index]) {
+              clearInterval(blinkIntervals[index]);
+              delete blinkIntervals[index];
+            }
+            messageDiv.textContent = translations[currentLanguage].congratsHoop + currentHoop;
+            messageDiv.classList.add('blink');
+            playSound(hoopSound);
+            setTimeout(() => {
+              messageDiv.classList.remove('blink');
+            }, 3000);
+            currentHoop++;
+            alertShown = false;
+            if (currentHoop <= obstacles.length) {
+              obstacles[currentHoop - 1].children[0].material.transparent = true;
+              obstacles[currentHoop - 1].children[0].material.opacity = 0.7;
+              blinkHoop(obstacles[currentHoop -1]);
+            }
+          } else {
+            const hoopNumber = index + 1;
+            if (hoopNumber > currentHoop && !alertShown) {
+              alert(translations[currentLanguage].warnWrongHoop + currentHoop + translations[currentLanguage].warnWrongHoopFirst);
+              playSound(warn1Sound);
+              alertShown = true;
+            }
+          }
+        }
+      });
+    }
+
+    function blinkHoop(hoop) {
+      const hoopId = obstacles.indexOf(hoop);
+      if (blinkIntervals[hoopId]) return;
+      blinkIntervals[hoopId] = setInterval(() => {
+        if (hoop.children[0].material.opacity === 0.7) {
+          hoop.children[0].material.opacity = 0.3;
+        } else {
+          hoop.children[0].material.opacity = 0.7;
+        }
+      }, 500);
+    }
+
+    function checkGoal() {
+      if (dronePosition.distanceTo(goalPosition) < 1.5) {
+        if (currentHoop <= obstacles.length) {
+          alert(translations[currentLanguage].warnGoalWithoutHoops);
+          playSound(warn2Sound);
+        } else {
+          messageDiv.textContent = translations[currentLanguage].congratsFinal;
+          messageDiv.classList.add('blink', 'color-change');
+          goalMarker.material.color.setHex(0x00ff00);
+          playSound(goalSound);
+          blinkGoal();
+          setTimeout(() => {
+            messageDiv.classList.remove('blink', 'color-change');
+          }, 5000);
+        }
+      } else {
+        messageDiv.textContent = translations[currentLanguage].aimForGoal;
+      }
+    }
+
+    function blinkGoal() {
+      let blinkCount = 0;
+      const maxBlinks = 10;
+      const originalColor = goalMarker.material.color.getHex();
+      const blinkInterval = setInterval(() => {
+        goalMarker.material.color.setHex(goalMarker.material.color.getHex() === 0x00ff00 ? 0xff0000 : 0x00ff00);
+        blinkCount++;
+        if (blinkCount >= maxBlinks) {
+          clearInterval(blinkInterval);
+          goalMarker.material.color.setHex(originalColor);
+        }
+      }, 300);
+    }
+
+    function homePosition() {
+      commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+      commandTimeouts = [];
+      Object.values(blinkIntervals).forEach(intervalId => clearInterval(intervalId));
+      blinkIntervals = {};
+      if (pathLine) {
+        scene.remove(pathLine);
+        pathLine = null;
+        isPathPreviewShown = false;
+      }
+      commandQueue = [];
+      isExecuting = false;
+      document.getElementById('run-button').disabled = false;
+      dronePosition.set(0, 0, 0);
+      drone.rotation.set(0, 0, 0, 'XYZ');
+      drone.position.copy(dronePosition);
+      drone.quaternion.setFromEuler(drone.rotation);
+      camera.position.set(10, 7, 10);
+      camera.lookAt(drone.position);
+      messageDiv.textContent = '';
+      messageDiv.classList.remove('blink', 'color-change');
+      obstacles.forEach(hoop => {
+        hoop.children[0].material.color.setHex(0xff8c00);
+        hoop.children[0].material.opacity = 0.7;
+      });
+      currentHoop = 1;
+      alertShown = false;
+      if (goalMarker) {
+        goalMarker.material.color.setHex(0xff8c00);
+      }
+      // Attempts and Steps counters are not reset here.
+      clonedSounds.forEach(clone => {
+        clone.pause();
+      });
+      clonedSounds.length = 0;
+      if (obstacles.length > 0) {
+        blinkHoop(obstacles[0]);
+      }
+    }
+
+    function rotateView(direction) {
+      const rotationAngle = direction === 'left' ? Math.PI / 18 : -Math.PI / 18;
+      const currentPosition = camera.position.clone().sub(dronePosition);
+      currentPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationAngle);
+      camera.position.copy(dronePosition).add(currentPosition);
+      camera.lookAt(dronePosition);
+    }
+
+    function moveViewUp() {
+      camera.position.y += 1;
+      camera.lookAt(dronePosition);
+    }
+
+    function moveViewDown() {
+      if (camera.position.y > 1) {
+        camera.position.y -= 1;
+        camera.lookAt(dronePosition);
+      }
+    }
+
+    function zoom(direction) {
+      const zoomFactor = direction === 'in' ? 0.9 : 1.1;
+      const currentPosition = camera.position.clone().sub(dronePosition);
+      currentPosition.multiplyScalar(zoomFactor);
+      camera.position.copy(dronePosition).add(currentPosition);
+      camera.lookAt(dronePosition);
+    }
+
+    function centreView() {
+      camera.position.set(10, 7, 10);
+      camera.lookAt(dronePosition);
+      controls.target.copy(dronePosition);
+      controls.update();
+    }
+
+    function changeLevel() {
+      const levelSelect = document.getElementById('level-select');
+      const selectedLevel = parseInt(levelSelect.value);
+      if (selectedLevel !== currentLevel) {
+        currentLevel = selectedLevel;
+        codeInput.value = '';
+        updateStepsCount();
+        resetGameForNewLevel();
+        document.getElementById('run-button').disabled = false;
+        playSound(startSound, false);
+      }
+    }
+
+    function resetGameForNewLevel() {
+      commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+      commandTimeouts = [];
+      Object.values(blinkIntervals).forEach(intervalId => clearInterval(intervalId));
+      blinkIntervals = {};
+      obstacles.forEach(hoop => scene.remove(hoop));
+      obstacles = [];
+      if (goalMarker) {
+        scene.remove(goalMarker);
+        goalMarker = null;
+      }
+      if (pathLine) {
+        scene.remove(pathLine);
+        pathLine = null;
+        isPathPreviewShown = false;
+      }
+      createHulaHoops(currentLevel);
+      createGoalMarker();
+      dronePosition.set(0, 0, 0);
+      drone.rotation.set(0, 0, 0, 'XYZ');
+      drone.position.copy(dronePosition);
+      drone.quaternion.setFromEuler(drone.rotation);
+      camera.position.set(10, 7, 10);
+      camera.lookAt(drone.position);
+      messageDiv.textContent = '';
+      messageDiv.classList.remove('blink', 'color-change');
+      obstacles.forEach(hoop => {
+        hoop.children[0].material.color.setHex(0xff8c00);
+        hoop.children[0].material.opacity = 0.7;
+      });
+      currentHoop = 1;
+      alertShown = false;
+      if (goalMarker) {
+        goalMarker.material.color.setHex(0xff8c00);
+      }
+      attemptsCount = 0;
+      attemptsDisplay.textContent = attemptsCount;
+      stepsCount = 0;
+      stepsDisplay.textContent = stepsCount;
+      if (obstacles.length > 0) {
+        blinkHoop(obstacles[0]);
+      }
+    }
+
+    function generateGoalPosition(level) {
+      const predefinedGoals = {
+        1: new THREE.Vector3(20, 3, 20),
+        2: new THREE.Vector3(-20, 3, 20),
+        3: new THREE.Vector3(20, 3, -20)
+      };
+      if (predefinedGoals[level]) {
+        const position = predefinedGoals[level].clone();
+        let tooClose = false;
+        const minDistanceToHoop = MIN_DISTANCE_TO_GOAL_FOR_HOOP;
+        obstacles.forEach(hoop => {
+          if (position.distanceTo(hoop.position) < minDistanceToHoop) {
+            tooClose = true;
+          }
+        });
+        if (!tooClose) {
+          return position;
+        }
+      }
+      const maxAttempts = 100;
+      let attempt = 0;
+      let position;
+      const minDistanceToHoop = MIN_DISTANCE_TO_GOAL_FOR_HOOP;
+      while (attempt < maxAttempts) {
+        const x = THREE.MathUtils.randFloatSpread(60);
+        const y = THREE.MathUtils.randFloat(2, 5);
+        const z = THREE.MathUtils.randFloatSpread(60);
+        position = new THREE.Vector3(x, y, z);
+        let tooClose = false;
+        for (let hoop of obstacles) {
+          if (position.distanceTo(hoop.position) < minDistanceToHoop) {
+            tooClose = true;
+            break;
+          }
+        }
+        if (position.distanceTo(new THREE.Vector3(0, 0, 0)) < MIN_DISTANCE_FROM_START) {
+          tooClose = true;
+        }
+        if (!tooClose) {
+          return position;
+        }
+        attempt++;
+      }
+      return new THREE.Vector3(0, 3, 30);
+    }
+
+    initGame();
+
+    function updateStepsCount() {
+      const commands = codeInput.value.trim().split('\n').filter(cmd => cmd.trim() !== '');
+      stepsCount = commands.length;
+      stepsDisplay.textContent = stepsCount;
+      console.log(`Steps updated. Total steps: ${stepsCount}`);
+    }
+
+    codeInput.addEventListener('input', updateStepsCount);
+
+    function previewPath() {
+      if (isPathPreviewShown) {
+        if (pathLine) {
+          scene.remove(pathLine);
+          pathLine = null;
+        }
+        isPathPreviewShown = false;
+      } else {
+        if (pathLine) {
+          scene.remove(pathLine);
+          pathLine = null;
+        }
+        const commands = codeInput.value.trim().split('\n').filter(cmd => cmd.trim() !== '');
+        let simulatedPosition = new THREE.Vector3(0, 0, 0);
+        let simulatedRotation = new THREE.Euler(0, 0, 0, 'XYZ');
+        const positions = [simulatedPosition.clone()];
+        commands.forEach(commandLine => {
+          const parts = commandLine.trim().split(' ');
+          const command = parts[0];
+          const param = parts[1] ? parseFloat(parts[1]) : null;
+          switch (command) {
+            case 'throttleUp':
+              if (param !== null) {
+                simulatedPosition.y += param;
+              }
+              break;
+            case 'throttleDown':
+              if (param !== null) {
+                simulatedPosition.y -= param;
+              }
+              break;
+            case 'yawLeft':
+              if (param !== null) {
+                simulatedRotation.y += THREE.MathUtils.degToRad(param);
+              }
+              break;
+            case 'yawRight':
+              if (param !== null) {
+                simulatedRotation.y -= THREE.MathUtils.degToRad(param);
+              }
+              break;
+            case 'pitchForward':
+              if (param !== null) {
+                const forward = new THREE.Vector3(0, 0, -param);
+                forward.applyEuler(simulatedRotation);
+                simulatedPosition.add(forward);
+              }
+              break;
+            case 'pitchBackward':
+              if (param !== null) {
+                const backward = new THREE.Vector3(0, 0, param);
+                backward.applyEuler(simulatedRotation);
+                simulatedPosition.add(backward);
+              }
+              break;
+            case 'rollLeft':
+              if (param !== null) {
+                const left = new THREE.Vector3(-param, 0, 0);
+                left.applyEuler(simulatedRotation);
+                simulatedPosition.add(left);
+              }
+              break;
+            case 'rollRight':
+              if (param !== null) {
+                const right = new THREE.Vector3(param, 0, 0);
+                right.applyEuler(simulatedRotation);
+                simulatedPosition.add(right);
+              }
+              break;
+            default:
+              console.warn(`Unknown command: ${command}`);
+              break;
+          }
+          positions.push(simulatedPosition.clone());
+        });
+
+        if (positions.length < 2) {
+          alert(translations[currentLanguage].noValidCommands);
+          return;
+        }
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(positions);
+        const material = new THREE.LineDashedMaterial({
+          color: 0x0000ff,
+          dashSize: 0.5,
+          gapSize: 0.3,
+          linewidth: 2,
+        });
+        const line = new THREE.Line(geometry, material);
+        line.computeLineDistances();
+        scene.add(line);
+        pathLine = line;
+        isPathPreviewShown = true;
+      }
+    }
+
+    const translations = {
+      en: {
+        title: "Obstacle Skirting Path Design",
+        instruction: "",
+        throttleUp: "Throttle Up",
+        throttleDown: "Throttle Down",
+        yawLeft: "Yaw Left",
+        yawRight: "Yaw Right",
+        pitchForward: "Pitch Forward",
+        pitchBackward: "Pitch Backward",
+        rollLeft: "Roll Left",
+        rollRight: "Roll Right",
+        runCode: "Run Code",
+        reset: "Reset",
+        pathPreview: "Path Preview",
+        centre: "Centre",
+        level1: "Level 1",
+        level2: "Level 2",
+        level3: "Level 3",
+        attemptsLabel: "No. of Attempts:",
+        stepsLabel: "No. of Steps:",
+        back: "Back",
+        tutorial: "Tutorial",
+        simulationButton: "Code Performance Simulation",
+        rotateLeft: "Rotate Left",
+        rotateRight: "Rotate Right",
+        up: "Up",
+        down: "Down",
+        zoomIn: "Zoom In",
+        zoomOut: "Zoom Out",
+        congratsHoop: "Congratulations! You've passed through hoop ",
+        warnWrongHoop: "Please pass through hoop ",
+        warnWrongHoopFirst: " first!",
+        warnGoalWithoutHoops: "You've reached the goal without passing all hoops! Please complete all hoops first.",
+        congratsFinal: "🎉 Congratulations! You've successfully navigated all hoops and reached the goal! 🎉",
+        aimForGoal: "🛸 Aim for the goal! Navigate carefully through all the hoops.",
+        noValidCommands: "No valid commands to preview the path.",
+        minValueAlert: "Please enter a value of at least 10.",
+        missingParam: "Please enter a valid parameter.",
+        tutorialContent: "Welcome to the Obstacle Skirting Path Design game! Use the command buttons to program the drone's movements and navigate through all the hoops to reach the goal. Make sure to pass through each hoop in order and avoid missing any. Good luck!"
+      },
+      zh: {
+        title: "障礙物繞行路徑設計",
+        instruction: "",
+        throttleUp: "上升",
+        throttleDown: "下降",
+        yawLeft: "左偏航",
+        yawRight: "右偏航",
+        pitchForward: "前俯仰",
+        pitchBackward: "後俯仰",
+        rollLeft: "左滾轉",
+        rollRight: "右滾轉",
+        runCode: "執行程式",
+        reset: "重置",
+        pathPreview: "路徑預覽",
+        centre: "居中",
+        level1: "第一關",
+        level2: "第二關",
+        level3: "第三關",
+        attemptsLabel: "嘗試次數：",
+        stepsLabel: "步驟數目：",
+        back: "返回",
+        tutorial: "教學",
+        simulationButton: "編程表現模擬",
+        rotateLeft: "向左旋轉",
+        rotateRight: "向右旋轉",
+        up: "向上",
+        down: "向下",
+        zoomIn: "放大",
+        zoomOut: "縮小",
+        congratsHoop: "恭喜！你已經通過了圈圈 ",
+        warnWrongHoop: "請先通過圈圈 ",
+        warnWrongHoopFirst: "！",
+        warnGoalWithoutHoops: "你到達了終點但沒有通過所有圈圈！請先完成所有圈圈。",
+        congratsFinal: "🎉 恭喜！你已成功通過所有圈圈並到達終點！🎉",
+        aimForGoal: "🛸 瞄準終點！小心通過所有圈圈。",
+        noValidCommands: "沒有有效的指令來預覽路徑。",
+        minValueAlert: "請輸入至少10的值。",
+        missingParam: "請輸入有效的參數。",
+        tutorialContent: "歡迎來到障礙物繞行路徑設計遊戲！使用命令按鈕來編程無人機的移動，並導航無人機通過所有圈圈以到達終點。確保按順序通過每個圈圈，避免錯過任何一個。祝你好運！"
+      }
+    };
+
+    let currentLanguage = 'en';
+
+    function toggleLanguage() {
+      currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+      updateLanguage();
+    }
+
+    function updateLanguage() {
+      const elements = document.querySelectorAll('[data-translate]');
+      elements.forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[currentLanguage][key]) {
+          element.textContent = translations[currentLanguage][key];
+        }
+      });
+      const languageSwitch = document.getElementById('language-switch');
+      languageSwitch.textContent = currentLanguage === 'en' ? '繁體中文' : 'English';
+
+      if (messageDiv.textContent.includes("Congratulations") || messageDiv.textContent.includes("恭喜")) {
+        if (messageDiv.textContent.includes("goal") || messageDiv.textContent.includes("終點")) {
+          messageDiv.textContent = translations[currentLanguage].congratsFinal;
+        } else {
+          const hoopNumber = messageDiv.textContent.match(/\d+/);
+          if (hoopNumber) {
+            messageDiv.textContent = translations[currentLanguage].congratsHoop + hoopNumber[0];
+          }
+        }
+      } else if (messageDiv.textContent.includes("Aim for the goal") || messageDiv.textContent.includes("瞄準終點")) {
+        messageDiv.textContent = translations[currentLanguage].aimForGoal;
+      }
+    }
+
+    function openTutorial() {
+      alert(translations[currentLanguage].tutorialContent);
+    }
+
+    updateLanguage();
+  </script>
+</body>
+</html>
