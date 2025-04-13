@@ -42,27 +42,27 @@
         z-index: 100;
       }
       
-/* Top Right Buttons */
-#langToggle, #tutorialButton {
-  position: absolute;
-  top: 10px;
-  z-index: 110;
-  padding: 8px 12px;
-  font-size: 16px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  color: white;
-}
-#langToggle { 
-  right: 20px; /* Moved to occupy the "Back" button's position */
-  background-color: #4caf50; 
-}
-#tutorialButton { 
-  right: 120px; /* Adjust as needed for spacing */
-  background-color: #ff9800; 
-}
-      
+      /* Top Right Buttons */
+      #langToggle, #tutorialButton {
+        position: absolute;
+        top: 10px;
+        z-index: 110;
+        padding: 8px 12px;
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        color: white;
+      }
+      #langToggle { 
+        right: 20px; /* Moved to occupy the "Back" button's position */
+        background-color: #4caf50; 
+      }
+      #tutorialButton { 
+        right: 120px; /* Adjust as needed for spacing */
+        background-color: #ff9800; 
+      }
+            
       /* General Message */
       #message {
         position: absolute;
@@ -488,7 +488,7 @@
       </div>
       <div id="replayButtons">
         <button id="playReplay" class="btn-default">Play</button>
-        <button id="stopReplay" class="btn-default">Stop</button>
+        <button id="stopReplay" class="btn-default">Pause</button> <!-- Changed initial text to "Pause" -->
       </div>
     </div>
     
@@ -1229,7 +1229,8 @@
               speed: "Speed",
               replayTitle: "Replay",
               playReplay: "Play",
-              stopReplay: "Stop",
+              pauseReplay: "Pause",
+              resumeReplay: "Resume",
               noFlightData: "No Flight Data",
               replayTotalDistance: "Total Distance: ",
               replayFlightTime: "Flight Time: ",
@@ -1291,10 +1292,10 @@
               throttleDown: "下降",
               yawLeft: "左轉",
               yawRight: "右轉",
-              pitchForward: "前飛",
-              pitchBackward: "後飛",
-              rollLeft: "左飛",
-              rollRight: "右飛",
+              pitchForward: "前進",
+              pitchBackward: "後退",
+              rollLeft: "左移",
+              rollRight: "右移",
               zoomIn: "放大",
               zoomOut: "縮小",
               altitude: "高度",
@@ -1309,7 +1310,8 @@
               speed: "速度",
               replayTitle: "回放",
               playReplay: "播放",
-              stopReplay: "停止",
+              pauseReplay: "暫停",
+              resumeReplay: "繼續",
               noFlightData: "沒有飛行數據",
               replayTotalDistance: "總距離：",
               replayFlightTime: "飛行時間：",
@@ -1337,10 +1339,10 @@
               tutorial_movement_throttle_down: "下降",
               tutorial_movement_yaw_left: "左轉",
               tutorial_movement_yaw_right: "右轉",
-              tutorial_movement_pitch_forward: "前飛",
-              tutorial_movement_pitch_backward: "後飛",
-              tutorial_movement_roll_left: "左飛",
-              tutorial_movement_roll_right: "右飛",
+              tutorial_movement_pitch_forward: "前進",
+              tutorial_movement_pitch_backward: "後退",
+              tutorial_movement_roll_left: "左移",
+              tutorial_movement_roll_right: "右移",
               tutorial_controls_title: "控制概覽",
               tutorial_controls_text: "使用屏幕上的虛擬搖桿或鍵盤來控制無人機：",
               tutorial_controls_left_joystick: "左搖桿",
@@ -1364,11 +1366,14 @@
           document.getElementById("title").innerHTML = translations[currentLanguage].title;
           document.getElementById("description").innerHTML = translations[currentLanguage].description;
           document.getElementById("btn-reset").innerHTML = translations[currentLanguage].reset;
-          document.getElementById("backButton").innerHTML = translations[currentLanguage].back;
+          
+          // Update toggleFlightPath button text
           const flightToggle = document.getElementById("toggleFlightPath");
           if (flightToggle) {
               flightToggle.innerHTML = flightPathActive ? translations[currentLanguage].hideFlightPath : translations[currentLanguage].showFlightPath;
           }
+          
+          // Update joystick labels
           document.querySelector("#leftJoystick .label-top").textContent = translations[currentLanguage].throttleUp;
           document.querySelector("#leftJoystick .label-bottom").textContent = translations[currentLanguage].throttleDown;
           document.querySelector("#leftJoystick .label-left").textContent = translations[currentLanguage].yawLeft;
@@ -1377,11 +1382,20 @@
           document.querySelector("#rightJoystick .label-bottom").textContent = translations[currentLanguage].pitchBackward;
           document.querySelector("#rightJoystick .label-left").textContent = translations[currentLanguage].rollLeft;
           document.querySelector("#rightJoystick .label-right").textContent = translations[currentLanguage].rollRight;
+          
+          // Update RTH button text
           document.getElementById("rthBtn").innerHTML = translations[currentLanguage].returnToHome;
+          
+          // Update speed label
           document.getElementById("speedLabel").innerHTML = translations[currentLanguage].speed;
+          
+          // Update Replay panel texts
           document.getElementById("replayTitle").innerHTML = translations[currentLanguage].replayTitle;
           document.getElementById("playReplay").innerHTML = translations[currentLanguage].playReplay;
-          document.getElementById("stopReplay").innerHTML = translations[currentLanguage].stopReplay;
+          
+          // Update the 'stopReplay' button based on current replayPaused state
+          document.getElementById("stopReplay").innerHTML = replayPaused ? translations[currentLanguage].resumeReplay : translations[currentLanguage].pauseReplay;
+          
           document.getElementById("replayTotalDistanceLabel").textContent = translations[currentLanguage].replayTotalDistance;
           document.getElementById("replayFlightTimeLabel").textContent = translations[currentLanguage].replayFlightTime;
           
@@ -1430,6 +1444,9 @@
                   }
               });
           }
+          
+          // Update 'stopReplay' button text based on playback state
+          document.getElementById("stopReplay").innerHTML = replayPaused ? translations[currentLanguage].resumeReplay : translations[currentLanguage].pauseReplay;
       }
       document.getElementById("langToggle").addEventListener("click", function(){
           if(currentLanguage==="en"){ currentLanguage="zh"; this.innerHTML="English"; }
@@ -1669,11 +1686,11 @@
               replayElapsedOffset += (performance.now() - replayStartTime)/1000;
               cancelAnimationFrame(replayAnimationId);
               replayPaused = true;
-              this.textContent = translations[currentLanguage].playReplay;
+              this.textContent = translations[currentLanguage].resumeReplay;
           } else {
               replayStartTime = performance.now();
               replayPaused = false;
-              this.textContent = translations[currentLanguage].stopReplay;
+              this.textContent = translations[currentLanguage].pauseReplay;
               animateReplay();
           }
       });
@@ -1892,8 +1909,8 @@
           
           if(takenOff && drone.position.y <= 0.46){
               const ddx = drone.position.x - previousPosition.x;
-              const ddz = drone.position.z - previousPosition.z;
-              const horizDistLanding = Math.sqrt(ddx*ddx+ddz*dz*z);
+              const dz = drone.position.z - previousPosition.z;
+              const horizDistLanding = Math.sqrt(ddx*ddx+dz*dz);
               if(horizDistLanding < 10){
                   if(homeDistance < 10){
                       flightEnded = true;
