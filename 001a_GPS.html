@@ -5,23 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GNSS Satellite Positioning of Drone</title>
     <style>
-        /* [Existing CSS styles remain unchanged] */
+        /* Ensure full height for html and body */
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body as a flex container */
         body {
             font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 10px;
             display: flex;
             flex-direction: column;
             align-items: center;  /* Center horizontally */
-            min-height: 100vh;  /* Full viewport height */
+            min-height: 100vh;    /* Full viewport height */
+            padding: 10px;
             box-sizing: border-box;
         }
+
         h1 {
             text-align: center;
             margin: 0 0 5px 0;
             width: 100%;
             font-size: 24px;
         }
+
         .header-container {
             display: flex;
             justify-content: space-between;
@@ -38,44 +47,57 @@
             align-items: center;
         }
 
+        /* Main container */
         .container {
             display: flex;
-            flex-direction: row; /* Keep left and right side by side */
+            flex-direction: row; /* Side by side layout */
             gap: 10px;
             align-items: flex-start;
-            width: 100%;  /* Full width */
-            max-width: 1200px;  /* Set a maximum width */
-            margin: 0 auto;  /* Center container */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
             box-sizing: border-box;
+            flex: 1; /* Allow to grow and fill available space */
         }
+
+        /* Left panel */
         .left-panel {
             display: flex;
             flex-direction: column;
-            flex: 2;  /* Adjust as needed */
+            flex: 2;            /* Adjust relative to .right-panel */
             gap: 10px;
             box-sizing: border-box;
         }
+
+        /* Visualization area */
         .visualization {
             position: relative;
-            height: 600px; 
+            flex: 1;            /* Allow it to grow and fill space */
             width: 100%;
             box-sizing: border-box;
+            aspect-ratio: 1 / 1; /* Maintain square aspect ratio */
         }
+
+        /* Canvas styling */
         canvas {
             border: 1px solid #000;
             cursor: grab;
             touch-action: none;
-            height: 100%;  /* Fill the container */
-            width: 100%;  /* Fill the container */
+            height: 100%;       /* Fill the container */
+            width: 100%;        /* Fill the container */
         }
+
         canvas:active {
             cursor: grabbing;
         }
+
+        /* Table Styling */
         table {
             border-collapse: collapse;
             width: 100%;
             table-layout: fixed;
         }
+
         th, td {
             border: 1px solid #ddd;
             padding: 2px;  /* Reduced padding */
@@ -87,13 +109,16 @@
             white-space: nowrap;
             box-sizing: border-box;
         }
+
         th {
             background-color: #f2f2f2;
         }
+
         .sat-x, .sat-y {
             width: 50px;
             text-align: center;
         }
+
         .distance-display {
             background-color: #f8f8f8;
             padding: 5px;
@@ -105,14 +130,17 @@
             white-space: nowrap;
             box-sizing: border-box;
         }
+
+        /* Right panel */
         .right-panel {
-            flex: 1;  /* Allocate appropriate space */
+            flex: 1;            /* Allocate appropriate space */
             display: flex;
             flex-direction: column;
             gap: 10px;
             box-sizing: border-box;
         }
 
+        /* Button Styling */
         button {
             padding: 5px 10px;
             cursor: pointer;
@@ -170,6 +198,7 @@
             font-size: 12px;
             box-sizing: border-box;
         }
+
         .button-row {
             display: flex;
             gap: 10px;
@@ -177,11 +206,13 @@
             flex-wrap: wrap;
             box-sizing: border-box;
         }
+
         .satellite-table {
             max-height: none;
             overflow-y: visible;
             box-sizing: border-box;
         }
+
         .signal-counter {
             position: absolute;
             top: 5px;
@@ -193,6 +224,7 @@
             font-size: 14px;
             box-sizing: border-box;
         }
+
         @media (max-width: 1200px) {
             .container {
                 flex-direction: column;
@@ -207,15 +239,19 @@
                 width: 100%;
             }
         }
+
         .satellite-detected {
             background-color: yellow;
         }
+
         .triangle-detected {
             background-color: lightgreen;
         }
+
         .triangle-detected.clicked {
             background-color: orange !important;
         }
+
         .langButton {
             background-color: #4CAF50;
             font-weight: bold;
@@ -227,11 +263,11 @@
             border-radius: 4px;
             transition: background-color 0.3s;
         }
-        
+
         .langButton:hover {
             background-color: #90EE90;
         }
-        
+
         .back-button {
             background-color: #0750ed;
             font-weight: bold;
@@ -248,7 +284,7 @@
             box-sizing: border-box;
             transition: background-color 0.3s;
         }
-        
+
         .back-button:hover {
             background-color: #0f28b8;
         }
@@ -273,16 +309,16 @@
             background-color: #c82333; /* Darker red on hover */
         }
 
-/* Style the "Show All Satellites" button to match orange buttons */
-#showAllSatellitesButton {
-    background-color: orange; /* Orange background */
-    color: white; /* White text for contrast */
-    transition: background-color 0.3s; /* Smooth transition */
-}
+        /* Style the "Show All Satellites" button to match orange buttons */
+        #showAllSatellitesButton {
+            background-color: orange; /* Orange background */
+            color: white; /* White text for contrast */
+            transition: background-color 0.3s; /* Smooth transition */
+        }
 
-#showAllSatellitesButton:hover {
-    background-color: darkorange; /* Darker orange on hover */
-}
+        #showAllSatellitesButton:hover {
+            background-color: darkorange; /* Darker orange on hover */
+        }
 
         /* Modal Styles for Tutorial */
         .modal {
@@ -371,20 +407,20 @@
             animation: blink 1s infinite;
         }
 
-/* Reduce font size and cell height for the satellite table */
-.satellite-table table th, 
-.satellite-table table td {
-    font-size: 12px; /* Reduce font size from 14px to 12px */
-    padding: 2px; /* Reduce padding from 5px to 4px */
-    height: 10px; /* Reduce cell height from 17px to 20px for better readability */
-    line-height: 10px; /* Align text vertically within the cell */
-}
+        /* Reduce font size and cell height for the satellite table */
+        .satellite-table table th, 
+        .satellite-table table td {
+            font-size: 12px; /* Reduce font size from 14px to 12px */
+            padding: 2px; /* Reduce padding from 5px to 2px */
+            height: 10px; /* Reduce cell height for better readability */
+            line-height: 10px; /* Align text vertically within the cell */
+        }
 
-/* Optional: Adjust the header background for better contrast */
-.satellite-table table th {
-    background-color: #f2f2f2; /* Light gray background */
-    font-weight: bold; /* Bold text for headers */
-}
+        /* Optional: Adjust the header background for better contrast */
+        .satellite-table table th {
+            background-color: #f2f2f2; /* Light gray background */
+            font-weight: bold; /* Bold text for headers */
+        }
 
     </style>
 </head>
@@ -393,15 +429,13 @@
 <div class="header-container">
     <h1 id="mainTitle">GNSS Satellite Positioning of Drone <span style="font-size: 16px; font-weight: normal;">(simplified 2D simulation)</span></h1>
     <div class="header-buttons">
-        <a href="001_gallery.html" class="back-button" id="backButton">Back</a>
         <button id="langButton" class="langButton">繁體中文</button>
     </div>
 </div>
-
 <div class="container">
     <div class="left-panel">
         <div class="visualization">
-            <canvas id="trilaterationCanvas" width="800" height="800"></canvas>
+            <canvas id="trilaterationCanvas"></canvas>
             <div class="signal-counter" id="signalCounter">Satellites in range: 0</div>
         </div>
         
@@ -437,113 +471,113 @@
                 <tr>
                     <td>1 (Red)</td>
                     <td><span class="distance-display" id="sat1r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="1">Sat 1</button></td>
+                    <td><button class="triangleButton" data-sat="1">Triangle 1</button></td>
                 </tr>
                 <tr>
                     <td>2 (Green)</td>
                     <td><span class="distance-display" id="sat2r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="2">Sat 2</button></td>
+                    <td><button class="triangleButton" data-sat="2">Triangle 2</button></td>
                 </tr>
                 <tr>
                     <td>3 (Blue)</td>
                     <td><span class="distance-display" id="sat3r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="3">Sat 3</button></td>
+                    <td><button class="triangleButton" data-sat="3">Triangle 3</button></td>
                 </tr>
                 <tr>
                     <td>4 (Purple)</td>
                     <td><span class="distance-display" id="sat4r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="4">Sat 4</button></td>
+                    <td><button class="triangleButton" data-sat="4">Triangle 4</button></td>
                 </tr>
                 <tr>
                     <td>5 (Orange)</td>
                     <td><span class="distance-display" id="sat5r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="5">Sat 5</button></td>
+                    <td><button class="triangleButton" data-sat="5">Triangle 5</button></td>
                 </tr>
                 <tr>
                     <td>6 (Brown)</td>
                     <td><span class="distance-display" id="sat6r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="6">Sat 6</button></td>
+                    <td><button class="triangleButton" data-sat="6">Triangle 6</button></td>
                 </tr>
                 <tr>
                     <td>7 (Pink)</td>
                     <td><span class="distance-display" id="sat7r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="7">Sat 7</button></td>
+                    <td><button class="triangleButton" data-sat="7">Triangle 7</button></td>
                 </tr>
                 <tr>
                     <td>8 (Gray)</td>
                     <td><span class="distance-display" id="sat8r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="8">Sat 8</button></td>
+                    <td><button class="triangleButton" data-sat="8">Triangle 8</button></td>
                 </tr>
                 <tr>
                     <td>9 (Cyan)</td>
                     <td><span class="distance-display" id="sat9r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="9">Sat 9</button></td>
+                    <td><button class="triangleButton" data-sat="9">Triangle 9</button></td>
                 </tr>
                 <tr>
                     <td>10 (DarkGreen)</td>
                     <td><span class="distance-display" id="sat10r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="10">Sat 10</button></td>
+                    <td><button class="triangleButton" data-sat="10">Triangle 10</button></td>
                 </tr>
                 <tr>
                     <td>11 (Magenta)</td>
                     <td><span class="distance-display" id="sat11r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="11">Sat 11</button></td>
+                    <td><button class="triangleButton" data-sat="11">Triangle 11</button></td>
                 </tr>
                 <tr>
                     <td>12 (Teal)</td>
                     <td><span class="distance-display" id="sat12r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="12">Sat 12</button></td>
+                    <td><button class="triangleButton" data-sat="12">Triangle 12</button></td>
                 </tr>
                 <tr>
                     <td>13 (Gold)</td>
                     <td><span class="distance-display" id="sat13r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="13">Sat 13</button></td>
+                    <td><button class="triangleButton" data-sat="13">Triangle 13</button></td>
                 </tr>
                 <tr>
                     <td>14 (Indigo)</td>
                     <td><span class="distance-display" id="sat14r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="14">Sat 14</button></td>
+                    <td><button class="triangleButton" data-sat="14">Triangle 14</button></td>
                 </tr>
                 <tr>
                     <td>15 (Coral)</td>
                     <td><span class="distance-display" id="sat15r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="15">Sat 15</button></td>
+                    <td><button class="triangleButton" data-sat="15">Triangle 15</button></td>
                 </tr>
                 <tr>
                     <td>16 (SkyBlue)</td>
                     <td><span class="distance-display" id="sat16r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="16">Sat 16</button></td>
+                    <td><button class="triangleButton" data-sat="16">Triangle 16</button></td>
                 </tr>
                 <tr>
                     <td>17 (Maroon)</td>
                     <td><span class="distance-display" id="sat17r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="17">Sat 17</button></td>
+                    <td><button class="triangleButton" data-sat="17">Triangle 17</button></td>
                 </tr>
                 <tr>
                     <td>18 (Olive)</td>
                     <td><span class="distance-display" id="sat18r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="18">Sat 18</button></td>
+                    <td><button class="triangleButton" data-sat="18">Triangle 18</button></td>
                 </tr>
                 <!-- New Satellites Added Below -->
                 <tr>
                     <td>19 (Navy)</td>
                     <td><span class="distance-display" id="sat19r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="19">Sat 19</button></td>
+                    <td><button class="triangleButton" data-sat="19">Triangle 19</button></td>
                 </tr>
                 <tr>
                     <td>20 (DarkBlue)</td>
                     <td><span class="distance-display" id="sat20r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="20">Sat 20</button></td>
+                    <td><button class="triangleButton" data-sat="20">Triangle 20</button></td>
                 </tr>
                 <tr>
                     <td>21 (DarkRed)</td>
                     <td><span class="distance-display" id="sat21r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="21">Sat 21</button></td>
+                    <td><button class="triangleButton" data-sat="21">Triangle 21</button></td>
                 </tr>
                 <tr>
                     <td>22 (DarkCyan)</td>
                     <td><span class="distance-display" id="sat22r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="22">Sat 22</button></td>
+                    <td><button class="triangleButton" data-sat="22">Triangle 22</button></td>
                 </tr>
             </table>
         </div>
@@ -567,9 +601,9 @@
             const ctx = canvas.getContext('2d');
             let droneX = 0, droneY = 0;
             let isDragging = false;
-            let scale = canvas.width / 100;
-            let offsetX = canvas.width / 2;
-            let offsetY = canvas.height / 2;
+            let scale = 1; // Will be updated based on canvas size
+            let offsetX = 0;
+            let offsetY = 0;
 
             const DEFAULT_STATES = {
                 dronePosition: {
@@ -891,7 +925,7 @@
                     isDragging = true;
                     canvas.style.cursor = 'grabbing';
                 }
-            });
+            }, { passive: false });
 
             function handleMove(e) {
                 if (isDragging) {
@@ -1100,60 +1134,60 @@
                 tutorialSteps: {
                     en: [
                         {
-                            title: 'Introduction to GNSS',
-                            content: 'Global Navigation Satellite Systems (GNSS) allow drones to determine their precise location by receiving signals from multiple satellites.'
+                            title: 'Welcome to the GNSS Tutorial',
+                            content: 'Discover how Global Navigation Satellite Systems (GNSS) empower drones with precise location capabilities.'
                         },
                         {
-                            title: 'How GNSS Positioning Works',
-                            content: 'The drone calculates its position by measuring the distance to at least three satellites and using trilateration to determine its exact coordinates.'
+                            title: 'How GNSS Determines Location',
+                            content: 'Learn the magic behind GNSS positioning: trilateration using signals from multiple satellites.'
                         },
                         {
-                            title: 'Importance of Multiple Satellites',
-                            content: 'Having at least three satellites in range ensures accurate positioning. More satellites can improve precision and reliability.'
+                            title: 'Why Multiple Satellites Matter',
+                            content: 'Find out why receiving signals from three or more satellites enhances accuracy and reliability.'
                         },
                         {
-                            title: 'Maximizing Satellite Coverage',
-                            content: 'To achieve the best positioning accuracy, position the drone where it can receive signals from the maximum number of satellites.'
+                            title: 'Maximizing Your Satellite Coverage',
+                            content: 'Tips and tricks to position your drone for optimal satellite signal reception.'
                         },
                         {
-                            title: 'Interacting with the Simulation',
-                            content: 'Drag the drone within the canvas to change its position. Observe how the number of satellites in range affects the drone\'s positioning accuracy.'
+                            title: 'Explore the Simulation',
+                            content: 'Interact with the simulation by dragging the drone. See in real-time how satellite coverage changes your position accuracy.'
                         },
                         {
-                            title: 'Conclusion',
-                            content: 'Understanding GNSS and satellite coverage is crucial for effective and accurate drone navigation.'
+                            title: 'Dive Deeper',
+                            content: 'For more insights, visit the <a href="https://novatel.com/tech-talk/an-introduction-to-gnss/what-are-global-navigation-satellite-systems-gnss" target="_blank">NovAtel GNSS Introduction</a>.'
                         }
                     ],
                     zh: [
                         {
-                            title: 'GNSS 介紹',
-                            content: '全球導航衛星系統（GNSS）使無人機能夠通過接收多顆衛星的信號來確定其精確位置。'
+                            title: '歡迎來到 GNSS 教學',
+                            content: '了解全球導航衛星系統（GNSS）如何賦予無人機精確的位置定位能力。'
                         },
                         {
-                            title: 'GNSS 定位原理',
-                            content: '無人機通過測量與至少三顆衛星的距離，並使用三邊測量法來確定其精確坐標，從而計算出其位置。'
+                            title: 'GNSS 如何確定位置',
+                            content: '探索 GNSS 定位的原理：利用多顆衛星的信號進行三邊測量法定位。'
                         },
                         {
-                            title: '多顆衛星的重要性',
-                            content: '至少有三顆衛星在範圍內可確保定位準確。更多的衛星可以提高精確度和可靠性。'
+                            title: '為什麼需要多顆衛星',
+                            content: '了解接收多顆衛星信號對提升定位準確性和可靠性的原因。'
                         },
                         {
                             title: '最大化衛星覆蓋',
-                            content: '為了實現最佳的定位精度，應將無人機定位在能夠接收最多衛星信號的地方。'
+                            content: '提供實用的技巧和建議，幫助您最佳化無人機的位置以獲取更多衛星信號。'
                         },
                         {
-                            title: '與模擬互動',
-                            content: '拖動畫布內的無人機以改變其位置。觀察範圍內衛星數量如何影響無人機的定位精度。'
+                            title: '探索模擬',
+                            content: '通過拖動無人機與模擬互動。實時觀察衛星覆蓋如何影響您位置的準確性。'
                         },
                         {
-                            title: '結論',
-                            content: '了解 GNSS 和衛星覆蓋對於有效和精確的無人機導航至關重要。'
+                            title: '深入了解',
+                            content: '如需更多資訊，請訪問 <a href="https://novatel.com/tech-talk/an-introduction-to-gnss/what-are-global-navigation-satellite-systems-gnss" target="_blank">NovAtel GNSS 介紹</a>。'
                         }
                     ]
                 },
                 previous: {
                     en: 'Previous',
-                    zh: '上一步'
+                    zh: '上一頁'
                 },
                 finish: {
                     en: 'Finish',
@@ -1161,7 +1195,7 @@
                 },
                 next: {
                     en: 'Next',
-                    zh: '下一步'
+                    zh: '下一頁'
                 },
                 pauseDroneMove: {
                     en: 'Pause Drone Move',
@@ -1182,7 +1216,11 @@
                 document.getElementById('mainTitle').innerHTML = `${translations.pageTitle[isEnglish ? 'en' : 'zh']} <span style="font-size: 16px; font-weight: normal;">${translations.subtitle[isEnglish ? 'en' : 'zh']}</span>`;
                 document.title = translations.pageTitle[isEnglish ? 'en' : 'zh'];
 
-                document.getElementById('backButton').textContent = translations.back[isEnglish ? 'en' : 'zh'];
+                // Update back button if exists
+                const backButton = document.getElementById('backButton');
+                if (backButton) {
+                    backButton.textContent = translations.back[isEnglish ? 'en' : 'zh'];
+                }
                 
                 // Update buttons
                 document.getElementById('resetButton').textContent = translations.reset[isEnglish ? 'en' : 'zh'];
@@ -1228,7 +1266,7 @@
                 // Update triangle buttons
                 const triangleButtons = document.querySelectorAll('.triangleButton');
                 triangleButtons.forEach((button, index) => {
-                    button.textContent = `${translations.sat[isEnglish ? 'en' : 'zh']} ${index + 1}`;
+                    button.textContent = `${translations.triangle[isEnglish ? 'en' : 'zh']} ${index + 1}`;
                 });
 
                 // Update tutorial buttons if open
@@ -1403,10 +1441,17 @@
             function renderTutorialStep() {
                 const step = translations.tutorialSteps[isEnglish ? 'en' : 'zh'][currentTutorialStep];
                 tutorialContent.innerHTML = `<h2>${step.title}</h2><p>${step.content}</p>`;
+                
+                // Control "Previous" button visibility
                 prevTutorial.style.display = currentTutorialStep === 0 ? 'none' : 'inline-block';
-                nextTutorial.textContent = currentTutorialStep === totalTutorialSteps -1 ? 
+                
+                // Update "Next" button text
+                nextTutorial.textContent = (currentTutorialStep === totalTutorialSteps -1) ? 
                     translations.finish[isEnglish ? 'en' : 'zh'] : 
                     translations.next[isEnglish ? 'en' : 'zh'];
+                
+                // Update "Previous" button text
+                prevTutorial.textContent = translations.previous[isEnglish ? 'en' : 'zh'];
             }
 
             // Adjust drag functionality for full-screen
