@@ -1,0 +1,1595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Code Simulation</title>
+<style>
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 5px;
+    margin: 3px;
+    background-color: #f0f0f0;
+}
+
+/* Reduce the bottom margin of the title */
+h2[data-translate="title"] {
+    margin-top: 5px;
+    margin-bottom: 5px; /* Adjust the value as needed */
+}
+
+/* Reduce the top margin of the instruction paragraph */
+p[data-translate="instruction"] {
+    margin-top: 2px; /* Adjust the value as needed */
+    margin-bottom: 5px; /* Adjust the value as needed */
+}
+
+#game-container {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch; /* Ensure both sides stretch to the same height */
+    justify-content: flex-start;
+    gap: 5px;
+    margin-bottom: 5px;
+    height: 600px; /* Fixed height to match simulation canvas */
+}
+#obstacle-course {
+    width: 800px; /* Increased width */
+    height: 600px; /* Increased height to match game-container */
+    border: 2px solid #000;
+    background-color: #fff;
+    position: relative;
+}
+#code-area {
+    width: 400px;
+    border: 2px solid #000;
+    padding: 10px;
+    background-color: #fff;
+    position: relative; /* For positioning the Help button */
+    overflow: auto; /* Enable scroll if content exceeds height */
+}
+#command-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 5px;
+}
+.button-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.button-row input, .button-row select {
+    width: 50px;
+    padding: 3px;
+}
+button {
+    padding: 5px 5px;
+    cursor: pointer;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 3px;
+}
+.green-button {
+    background-color: #4CAF50;
+}
+.orange-button {
+    background-color: #FFA500;
+}
+.blue-button {
+    background-color: #0000FF;
+}
+#run-button, #reset-button, #path-preview-button, #centre-button {
+    margin-top: 10px;
+    padding: 10px 10px;
+    font-size: 16px;
+}
+#run-button {
+    background-color: #FF0000;
+}
+#reset-button {
+    background-color: #FFC0CB;
+}
+#path-preview-button {
+    background-color: #0000FF;
+    color: white;
+}
+#centre-button {
+    background-color: #008CBA;
+    color: white;
+}
+#help-button {
+    background-color: #6A5ACD;
+    color: white;
+    padding: 8px 14px;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+/* New Game button style */
+#game-button {
+    background-color: #6A5ACD;
+    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 90px; /* Positioned near the Tutorial button */
+}
+#code-input {
+    width: 95%;
+    height: 285px;
+    resize: vertical;
+}
+#message {
+    margin-top: 5px;
+    font-weight: bold;
+    text-align: left;
+    min-height: 10px;
+}
+#view-controls {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap; /* Allow wrapping if necessary */
+    gap: 10px;
+}
+#view-controls button {
+    color: #8B4513;
+    font-size: 16px;
+    font-weight: bold;
+    border: 2px solid #8B4513;
+    background-color: white;
+}
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+.blink {
+    animation: blink 1s infinite;
+}
+@keyframes colorChange {
+    0% { color: red; }
+    33% { color: green; }
+    66% { color: blue; }
+    100% { color: red; }
+}
+.color-change {
+    animation: colorChange 3s infinite;
+}
+#language-switch {
+    position: fixed;
+    font-size: 18px;
+    top: 10px;
+    right: 80px; /* Adjusted to accommodate Help button */
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+#help-button {
+    /* Already positioned absolutely within #code-area */
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1000; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; /* 5% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%; /* Could be more or less, depending on screen size */
+    max-width: 600px;
+    border-radius: 8px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-body {
+    margin-top: 10px;
+    white-space: pre-wrap; /* Preserve line breaks */
+}
+
+.modal-footer {
+    margin-top: 20px;
+    text-align: right;
+}
+
+.button {
+    padding: 8px 16px;
+    margin: 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.next-button, .prev-button {
+    background-color: #008CBA;
+    color: white;
+}
+
+.close-button {
+    background-color: #f44336;
+    color: white;
+}
+</style>
+</head>
+<body>
+<button id="language-switch" onclick="toggleLanguage()">繁體中文</button>
+<h2 data-translate="title">Code Performance Simulation</h2>
+<p data-translate="instruction">Use the blocks to create a flight path for the drone, then click 'Run / Pause' to execute the instructions.</p>
+<div id="game-container">
+    <div style="display: flex; flex-direction: column; align-items: flex-start;">
+        <div id="obstacle-course"></div>
+        <!-- Removed the 3D Drone Obstacle Course Challenge button -->
+    </div>
+
+    <div id="code-area">
+        <button id="help-button" onclick="openTutorial()" data-translate="helpButton">Tutorial</button>
+        <!-- New Game button -->
+        <button id="game-button" onclick="window.location.href='05_Code_Game.html'">Game</button>
+
+        <div id="command-buttons">
+            <div class="button-row">
+                <button class="green-button" onclick="addCommand('takeOff')" data-translate="takeOff">Take Off</button>
+                <button class="green-button" onclick="addCommand('land')" data-translate="land">Land</button>
+            </div>
+        <div class="button-row">
+            <button class="green-button" onclick="addCommand('throttleUp')" data-translate="throttleUp">Throttle Up</button>
+            <input type="text" id="throttle-distance-up" placeholder="value/var">
+            <button class="green-button" onclick="addCommand('throttleDown')" data-translate="throttleDown">Throttle Down</button>
+            <input type="text" id="throttle-distance-down" placeholder="value/var">
+        </div>
+        <div class="button-row">
+            <button class="green-button" onclick="addCommand('yawLeft')" data-translate="yawLeft">Yaw Left</button>
+            <input type="text" id="yaw-angle" placeholder="value/var">
+            <button class="green-button" onclick="addCommand('yawRight')" data-translate="yawRight">Yaw Right</button>
+            <input type="text" id="yaw-angle-right" placeholder="value/var">
+        </div>
+        <div class="button-row">
+            <button class="orange-button" onclick="addCommand('pitchForward')" data-translate="pitchForward">Pitch Forward</button>
+            <input type="text" id="pitch-distance" placeholder="value/var">
+            <button class="orange-button" onclick="addCommand('pitchBackward')" data-translate="pitchBackward">Pitch Backward</button>
+            <input type="text" id="pitch-distance-back" placeholder="value/var">
+        </div>
+        <div class="button-row">
+            <button class="orange-button" onclick="addCommand('rollLeft')" data-translate="rollLeft">Roll Left</button>
+            <input type="text" id="roll-distance" placeholder="value/var">
+            <button class="orange-button" onclick="addCommand('rollRight')" data-translate="rollRight">Roll Right</button>
+            <input type="text" id="roll-distance-right" placeholder="value/var">
+        </div>
+            <div class="button-row">
+                <button class="blue-button" onclick="addCommand('repeat')" data-translate="repeat">Repeat</button>
+                <input type="text" id="repeat-times" placeholder="number or variable">
+                <button class="blue-button" onclick="addCommand('setVariable')" data-translate="setVariable">Set</button>
+                <input type="text" id="var-name" placeholder="variable name">
+                <span>to</span>
+                <input type="text" id="var-value" placeholder="value">
+            </div>
+        </div>
+
+        <textarea id="code-input"></textarea>
+        <br>
+        <div class="button-row">
+            <button id="run-button" onclick="runCode()" data-translate="runPauseCode">Run / Pause</button>
+            <button id="reset-button" onclick="resetSimulation()" data-translate="reset">Reset</button>
+            <button id="path-preview-button" onclick="previewPath()" data-translate="pathPreview">Path Preview</button>
+            <button id="centre-button" onclick="centreView()" data-translate="centre">Centre</button>
+        </div>
+    </div>
+</div>
+<div id="message"></div>
+<div id="view-controls">
+    <button onclick="rotateView('left')" data-translate="rotateLeft">Rotate Left</button>
+    <button onclick="rotateView('right')" data-translate="rotateRight">Rotate Right</button>
+    <button onclick="moveViewUp()" data-translate="up">Up</button>
+    <button onclick="moveViewDown()" data-translate="down">Down</button>
+    <button onclick="zoom('in')" data-translate="zoomIn">Zoom In</button>
+    <button onclick="zoom('out')" data-translate="zoomOut">Zoom Out</button>
+    <button onclick="centreView()" data-translate="centre">Centre</button>
+</div>
+
+<!-- Tutorial Modal -->
+<div id="tutorial-modal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 data-translate="tutorialTitle">Tutorial</h2>
+      <span class="close" onclick="closeTutorial()">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div id="tutorial-content">
+        <!-- Tutorial steps will be injected here -->
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="prev-button" class="button prev-button" onclick="prevStep()" data-translate="prevButton">Previous</button>
+      <button id="next-button" class="button next-button" onclick="nextStep()" data-translate="nextButton">Next</button>
+      <button id="close-button" class="button close-button" onclick="closeTutorial()" data-translate="closeButton">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+let isResetPressed = false;
+let isPaused = false;
+let pausePromiseResolver = null;
+let isExecuting = false;
+let scene, camera, renderer, drone, obstacles = [], axesHelper, gridHelper;
+let goalMarker;
+const codeInput = document.getElementById('code-input');
+const messageDiv = document.getElementById('message');
+const DEFAULT_DRONE_STATE = {
+    position: new THREE.Vector3(0, 0, 0),
+    rotation: new THREE.Euler(0, 0, 0, 'XYZ'),
+    scale: new THREE.Vector3(1, 1, 1)
+};
+
+
+let dronePosition = new THREE.Vector3(0, 0, 0);
+let droneRotation = new THREE.Euler(0, 0, 0, 'XYZ');
+let goalPosition = new THREE.Vector3(0, 0, 0);
+
+let commandTimeouts = [];
+let blinkIntervals = {};
+
+let frontCircles = [];
+let rearCircles = [];
+let lastBlinkTime = 0;
+const blinkDuration = 500;
+let blinkState = true;
+
+let commandQueue = [];
+
+let isThrottling = false;
+let isYawing = false;
+const yawDuration = 500;
+
+let pathLine = null;
+let pathLineBlinkState = true;
+let lastPathBlinkToggle = 0;
+const pathBlinkInterval = 500;
+
+let controls;
+
+let pathPositions = [];
+let isPathPreviewShown = false;
+
+function initGame() {
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xf0f0f0);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(800, 600); // Adjusted size to match #obstacle-course
+    const obstacleCourse = document.getElementById('obstacle-course');
+    obstacleCourse.innerHTML = '';
+    obstacleCourse.appendChild(renderer.domElement);
+
+    camera = new THREE.PerspectiveCamera(75, 800 / 600, 0.1, 1000); // Adjusted aspect ratio
+    camera.position.set(100, 70, 100);
+    camera.lookAt(dronePosition);
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    scene.add(ambientLight);
+
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    directionalLight.position.set(10, 10, 10);
+    scene.add(directionalLight);
+
+    createDrone();
+    createCoordinatePlane();
+    addDirectionIndicators();
+    addWatermark();
+    addWatermarkSTEM();
+    addVerticalLines();
+
+    axesHelper = new THREE.AxesHelper(100);
+    scene.add(axesHelper);
+
+    animate();
+}
+
+function createDrone() {
+    const droneGroup = new THREE.Group();
+
+    const cubeWidth = 15;
+    const cubeHeight = 5;
+    const cubeDepth = 15;
+    const cubeGeometry = new THREE.BoxGeometry(cubeWidth, cubeHeight, cubeDepth);
+    const cubeMaterial = new THREE.MeshPhongMaterial({ color: 0x0000ff, transparent: true, opacity: 0.5 });
+    const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+    droneGroup.add(cube);
+
+    const circleRadius = 2.25;
+    const circleHeight = cubeHeight / 2 + 0.1;
+
+    const frontCircleMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, transparent: true, opacity: 1 });
+    const rearCircleMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000, transparent: true, opacity: 1 });
+
+    const circleGeometry = new THREE.CylinderGeometry(circleRadius, circleRadius, 0.2, 32);
+
+    const frontLeft = new THREE.Mesh(circleGeometry, frontCircleMaterial.clone());
+    frontLeft.position.set(-cubeWidth / 2, circleHeight, cubeDepth / 2);
+    droneGroup.add(frontLeft);
+
+    const frontRight = new THREE.Mesh(circleGeometry, frontCircleMaterial.clone());
+    frontRight.position.set(cubeWidth / 2, circleHeight, cubeDepth / 2);
+    droneGroup.add(frontRight);
+
+    const rearLeft = new THREE.Mesh(circleGeometry, rearCircleMaterial.clone());
+    rearLeft.position.set(-cubeWidth / 2, circleHeight, -cubeDepth / 2);
+    droneGroup.add(rearLeft);
+
+    const rearRight = new THREE.Mesh(circleGeometry, rearCircleMaterial.clone());
+    rearRight.position.set(cubeWidth / 2, circleHeight, -cubeDepth / 2);
+    droneGroup.add(rearRight);
+
+    frontCircles = [frontLeft, frontRight];
+    rearCircles = [rearLeft, rearRight];
+
+    const triangleGeometry = new THREE.ConeGeometry(10, 20, 3);
+    const triangleMaterial = new THREE.MeshPhongMaterial({ color: 0xffff00 });
+    const triangle = new THREE.Mesh(triangleGeometry, triangleMaterial);
+    triangle.rotation.x = -Math.PI / 2;
+    triangle.position.set(0, circleHeight + 0, -cubeDepth / 2 - 0);
+    droneGroup.add(triangle);
+
+    droneGroup.position.copy(DEFAULT_DRONE_STATE.position);
+    droneGroup.rotation.copy(DEFAULT_DRONE_STATE.rotation);
+    droneGroup.scale.copy(DEFAULT_DRONE_STATE.scale);
+    scene.add(droneGroup);
+    drone = droneGroup;
+    return droneGroup;
+}
+
+function createCoordinatePlane() {
+    const size = 200; // Extends from -100 to +100
+    const divisions = 20; // Step of 10 units
+    gridHelper = new THREE.GridHelper(size, divisions, 0xcccccc, 0xcccccc);
+    scene.add(gridHelper);
+
+    const fontLoader = new THREE.FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000 });
+
+        for (let i = -100; i <= 100; i += 10) { // Step of 10
+            if (i !== 0) {
+                createText(font, textMaterial, i.toString(), i, 0, -100);
+                createText(font, textMaterial, i.toString(), -100, 0, i);
+            }
+        }
+
+        createText(font, textMaterial, 'X', 101, 0, 0);
+        createText(font, textMaterial, 'Z', 0, 0, 101);
+        createText(font, textMaterial, 'Y', 0, 101, 0);
+    });
+}
+
+function createText(font, material, text, x, y, z) {
+    const textGeometry = new THREE.TextGeometry(text, {
+        font: font,
+        size: 5,
+        height: 0.5,
+    });
+    const textMesh = new THREE.Mesh(textGeometry, material);
+    textMesh.position.set(x, y, z);
+    scene.add(textMesh);
+}
+
+function addDirectionIndicators() {
+    addDirectionIndicator(new THREE.Vector3(120, 0, 0), 'Right', 0xff0000);
+    addDirectionIndicator(new THREE.Vector3(-120, 0, 0), 'Left', 0xff0000);
+    addDirectionIndicator(new THREE.Vector3(0, 120, 0), 'Up', 0x00ff00);
+    addDirectionIndicator(new THREE.Vector3(0, -120, 0), 'Down', 0x00ff00);
+    addDirectionIndicator(new THREE.Vector3(0, 0, 120), 'Rear', 0x0000ff);
+    addDirectionIndicator(new THREE.Vector3(0, 0, -120), 'Front', 0x0000ff);
+}
+
+function addDirectionIndicator(position, text, color) {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    canvas.width = 256;
+    canvas.height = 256;
+    context.fillStyle = `rgb(${(color >> 16) & 255}, ${(color >> 8) & 255}, ${color & 255})`;
+    context.font = 'Bold 40px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    context.fillText(text, 128, 128);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    const spriteMaterial = new THREE.SpriteMaterial({ map: texture });
+    const sprite = new THREE.Sprite(spriteMaterial);
+    sprite.position.copy(position);
+    sprite.scale.set(20, 20, 20);
+    scene.add(sprite);
+}
+
+function addWatermark() {
+    const fontLoader = new THREE.FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xd3d3d3 });
+        const watermarkGeometry = new THREE.TextGeometry('EdUHK', {
+            font: font,
+            size: 10,
+            height: 0.5,
+        });
+        const watermarkMesh = new THREE.Mesh(watermarkGeometry, textMaterial);
+        watermarkMesh.rotation.x = -Math.PI / 2;
+        watermarkMesh.position.set(50, 0.1, 0);
+        scene.add(watermarkMesh);
+    });
+}
+
+function addWatermarkSTEM() {
+    const fontLoader = new THREE.FontLoader();
+    fontLoader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json', function(font) {
+        const textMaterial = new THREE.MeshBasicMaterial({ color: 0xd3d3d3 });
+        const stemTextGeometry = new THREE.TextGeometry('STEM Education', {
+            font: font,
+            size: 7,
+            height: 0.5,
+        });
+        const stemWatermarkMesh = new THREE.Mesh(stemTextGeometry, textMaterial);
+        stemWatermarkMesh.rotation.y = Math.PI / 2;
+        stemWatermarkMesh.position.set(0, 0.1, 100);
+        scene.add(stemWatermarkMesh);
+    });
+}
+
+function addVerticalLines() {
+    const material = new THREE.LineBasicMaterial({ color: 0xcccccc });
+    for (let y = 20; y <= 100; y += 20) {
+        const points = [];
+        points.push(new THREE.Vector3(-100, y, -100));
+        points.push(new THREE.Vector3(100, y, -100));
+        points.push(new THREE.Vector3(100, y, 100));
+        points.push(new THREE.Vector3(-100, y, 100));
+        points.push(new THREE.Vector3(-100, y, -100));
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const line = new THREE.Line(geometry, material);
+        scene.add(line);
+    }
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const now = Date.now();
+    if (now - lastBlinkTime > blinkDuration) {
+        blinkState = !blinkState;
+        lastBlinkTime = now;
+
+        frontCircles.forEach(circle => {
+            circle.material.opacity = blinkState ? 1 : 0;
+        });
+
+        rearCircles.forEach(circle => {
+            circle.material.opacity = blinkState ? 1 : 0;
+        });
+    }
+
+    if (pathLine) {
+        if (now - lastPathBlinkToggle > pathBlinkInterval) {
+            pathLine.visible = pathLineBlinkState;
+            pathLineBlinkState = !pathLineBlinkState;
+            lastPathBlinkToggle = now;
+        }
+    }
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+function addCommand(commandType) {
+    let command = commandType;
+    let parameter = '';
+
+    const getParameterValue = (elementId) => {
+        const value = document.getElementById(elementId).value.trim();
+        if (!value) return null;
+        // Allow both numeric values and variable names
+        return value;
+    };
+
+    const isNumeric = (value) => !isNaN(parseFloat(value)) && isFinite(value);
+
+    switch (commandType) {
+        case 'takeOff':
+            command = 'takeOff';
+            break;
+        case 'land':
+            command = 'land';
+            break;
+        case 'throttleUp':
+            parameter = getParameterValue('throttle-distance-up');
+            if (!parameter) {
+                alert(translations[currentLanguage].throttleUpAlert);
+                return;
+            }
+            command = `throttleUp ${parameter}`;
+            break;
+        case 'throttleDown':
+            parameter = getParameterValue('throttle-distance-down');
+            if (!parameter) {
+                alert(translations[currentLanguage].throttleDownAlert);
+                return;
+            }
+            command = `throttleDown ${parameter}`;
+            break;
+        case 'yawLeft':
+            parameter = getParameterValue('yaw-angle');
+            if (!parameter) {
+                alert(translations[currentLanguage].yawLeftAlert);
+                return;
+            }
+            command = `yawLeft ${parameter}`;
+            break;
+        case 'yawRight':
+            parameter = getParameterValue('yaw-angle-right');
+            if (!parameter) {
+                alert(translations[currentLanguage].yawRightAlert);
+                return;
+            }
+            command = `yawRight ${parameter}`;
+            break;
+        case 'pitchForward':
+            parameter = getParameterValue('pitch-distance');
+            if (!parameter) {
+                alert(translations[currentLanguage].pitchForwardAlert);
+                return;
+            }
+            if(isNumeric(parameter) && parseFloat(parameter) < 10){
+                alert(translations[currentLanguage].pitchForwardMinAlert);
+                return;
+            }
+            command = `pitchForward ${parameter}`;
+            break;
+        case 'pitchBackward':
+            parameter = getParameterValue('pitch-distance-back');
+            if (!parameter) {
+                alert(translations[currentLanguage].pitchBackwardAlert);
+                return;
+            }
+            if(isNumeric(parameter) && parseFloat(parameter) < 10){
+                alert(translations[currentLanguage].pitchBackwardMinAlert);
+                return;
+            }
+            command = `pitchBackward ${parameter}`;
+            break;
+        case 'rollLeft':
+            parameter = getParameterValue('roll-distance');
+            if (!parameter) {
+                alert(translations[currentLanguage].rollLeftAlert);
+                return;
+            }
+            if(isNumeric(parameter) && parseFloat(parameter) < 10){
+                alert(translations[currentLanguage].rollLeftMinAlert);
+                return;
+            }
+            command = `rollLeft ${parameter}`;
+            break;
+        case 'rollRight':
+            parameter = getParameterValue('roll-distance-right');
+            if (!parameter) {
+                alert(translations[currentLanguage].rollRightAlert);
+                return;
+            }
+            if(isNumeric(parameter) && parseFloat(parameter) < 10){
+                alert(translations[currentLanguage].rollRightMinAlert);
+                return;
+            }
+            command = `rollRight ${parameter}`;
+            break;
+        case 'repeat':
+            parameter = getParameterValue('repeat-times');
+            if (!parameter) {
+                alert(translations[currentLanguage].repeatAlert);
+                return;
+            }
+            command = `repeat ${parameter} times\n{\n\n}`;
+            break;
+        case 'setVariable':
+            const varName = getParameterValue('var-name');
+            const varValue = getParameterValue('var-value');
+            if (!varName || !varValue) {
+                alert(translations[currentLanguage].setVariableAlert);
+                return;
+            }
+            command = `set ${varName} to ${varValue}`;
+            break;
+
+        default:
+            console.warn(`Unknown command type: ${commandType}`);
+            return;
+    }
+
+    addCommandAtCursor(command);
+}
+
+function addCommandAtCursor(command) {
+    const start = codeInput.selectionStart;
+    const end = codeInput.selectionEnd;
+    const before = codeInput.value.substring(0, start);
+    const after = codeInput.value.substring(end, codeInput.value.length);
+    codeInput.value = before + command + '\n' + after;
+    const newCursorPosition = start + command.length + 1;
+    codeInput.selectionStart = codeInput.selectionEnd = newCursorPosition;
+    codeInput.focus();
+}
+
+
+function parseCode(code) {
+    const lines = code.split('\n');
+    const commands = [];
+    let repeatStack = [];
+    let variables = {};
+
+    function processLine(line) {
+        if (line.startsWith('set ')) {
+            const match = line.match(/set (\w+)\s*(?:=|to)\s*(.+)/);
+            if (match) {
+                return { type: 'set', varName: match[1], expression: match[2] };
+            } else {
+                console.warn(`Invalid set command: ${line}`);
+                return null;
+            }
+        } else if (line.startsWith('repeat')) {
+            const match = line.match(/repeat (.+) times/);
+            if (match) {
+                return {
+                    type: 'repeat',
+                    countExpression: match[1],
+                    commands: []
+                };
+            }
+        } else if (line === '}') {
+            return { type: 'end-repeat' };
+        } else {
+            return { type: 'command', value: line };
+        }
+    }
+
+    for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line === '') continue;
+
+        const processed = processLine(line);
+
+        if (processed === null) {
+            continue;
+        } else if (processed.type === 'repeat') {
+            repeatStack.push(processed);
+        } else if (processed.type === 'end-repeat') {
+            if (repeatStack.length > 0) {
+                const currentRepeat = repeatStack.pop();
+                if (repeatStack.length > 0) {
+                    repeatStack[repeatStack.length - 1].commands.push(currentRepeat);
+                } else {
+                    commands.push(currentRepeat);
+                }
+            } else {
+                console.warn(`Unexpected '}' at line ${i+1}`);
+            }
+        } else if (repeatStack.length > 0) {
+            repeatStack[repeatStack.length - 1].commands.push(processed);
+        } else {
+            commands.push(processed);
+        }
+    }
+
+    return commands;
+}
+
+function evaluateExpression(expr, variables) {
+    const safeEval = (expression) => {
+        return Function(...Object.keys(variables), `return ${expression}`)(...Object.values(variables));
+    };
+    
+    try {
+        return safeEval(expr);
+    } catch (e) {
+        console.error(`Error evaluating expression: "${expr}"`, e);
+        return 0;
+    }
+}
+
+async function runCode() {
+    // Removed the reset check so that the Run / Pause button works immediately after reset.
+    if(isExecuting){
+        // Toggle pause
+        isPaused = !isPaused;
+        if(!isPaused && pausePromiseResolver){
+            pausePromiseResolver();
+            pausePromiseResolver = null;
+        }
+        updateRunButton();
+        return;
+    }
+
+    const parsedCommands = parseCode(codeInput.value);
+    const commands = executeCommands(parsedCommands);
+
+    // Check if the code starts with "takeOff" and ends with "land"
+    if (commands.length < 2 || commands[0].trim().toLowerCase() !== 'takeoff' || commands[commands.length - 1].trim().toLowerCase() !== 'land') {
+        alert(translations[currentLanguage].invalidCodeStructure);
+        return;
+    }
+
+    isExecuting = true;
+    isPaused = false;
+    updateRunButton();
+
+    commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+    commandTimeouts = [];
+
+    console.log(`Executing ${commands.length} commands.`);
+
+    for (const command of commands) {
+        if (isResetPressed) {
+            isResetPressed = false;
+            break;
+        }
+        await executeSingleCommand(command);
+        if(isPaused){
+            await new Promise(resolve => {
+                pausePromiseResolver = resolve;
+            });
+        }
+    }
+
+    isExecuting = false;
+    updateRunButton();
+}
+
+function executeCommands(commands) {
+    const variables = {};
+    const finalCommands = [];
+
+    function executeCommand(cmd) {
+        if (cmd.type === 'set') {
+            variables[cmd.varName] = evaluateExpression(cmd.expression, variables);
+        } else if (cmd.type === 'repeat') {
+            let count = evaluateExpression(cmd.countExpression, variables);
+            if (isNaN(count) || count <= 0) {
+                count = 1; // Default to 1 if invalid
+            }
+            count = Math.round(count);
+            for (let i = 0; i < count; i++) {
+                cmd.commands.forEach(subCmd => executeCommand(subCmd));
+            }
+        } else if (cmd.type === 'command') {
+            const parts = cmd.value.split(' ');
+            if (parts[0].startsWith('//')) {
+                // This is a comment, ignore
+                return;
+            }
+            const evaluatedParts = parts.map((part, index) => {
+                if(index === 0){
+                    return part;
+                }
+                return evaluateExpression(part, variables);
+            });
+            finalCommands.push(evaluatedParts.join(' '));
+        }
+    }
+
+    commands.forEach(executeCommand);
+    return finalCommands;
+}
+
+async function executeSingleCommand(command) {
+    return new Promise((resolve) => {
+        if (isResetPressed) {
+            resolve();
+            return;
+        }
+
+        const parts = command.split(' ');
+        const baseCommand = parts[0];
+        const param = parts[1] ? parseFloat(parts[1]) : null;
+
+        switch (baseCommand.toLowerCase()) {
+            case 'takeoff':
+                throttleDrone('up', 20).then(() => {
+                    console.log(translations[currentLanguage].takingOff);
+                    resolve();
+                });
+                break;
+            case 'land':
+                throttleDrone('down', dronePosition.y).then(() => {
+                    console.log(translations[currentLanguage].landing);
+                    resolve();
+                });
+                break;
+            case 'pitchforward':
+            case 'pitchbackward':
+            case 'rollleft':
+            case 'rollright':
+            case 'throttleup':
+            case 'throttledown':
+            case 'yawleft':
+            case 'yawright':
+                if (param !== null) {
+                    const commandMatch = baseCommand.toLowerCase().match(/(pitch|roll|throttle|yaw)(left|right|forward|backward|up|down)?/);
+                    if (commandMatch) {
+                        const action = commandMatch[1];
+                        const direction = commandMatch[2];
+                        switch (action) {
+                            case 'pitch':
+                                pitchDrone(direction, param).then(resolve);
+                                break;
+                            case 'roll':
+                                rollDrone(direction, param).then(resolve);
+                                break;
+                            case 'throttle':
+                                throttleDrone(direction, param).then(resolve);
+                                break;
+                            case 'yaw':
+                                yawDrone(direction, param).then(resolve);
+                                break;
+                            default:
+                                console.warn(`Unhandled action: ${action}`);
+                                resolve();
+                                break;
+                        }
+                    } else {
+                        console.warn(`Unknown command format: ${command}`);
+                        resolve();
+                    }
+                } else {
+                    console.warn(`Missing parameter for command: ${command}`);
+                    resolve();
+                }
+                break;
+            case 'set':
+                // Handle variable setting within executeSingleCommand if needed
+                console.log(`Setting variable: ${command}`);
+                resolve();
+                break;
+            case 'repeat':
+                // Handled in executeCommands
+                resolve();
+                break;
+            default:
+                console.warn(`Unknown command: ${command}`);
+                resolve();
+        }
+    });
+}
+
+function pitchDrone(direction, distance) {
+    return new Promise((resolve) => {
+        const steps = 20;
+        const stepDuration = 50;
+        let currentStep = 0;
+        const deltaZ = (distance / steps) * (direction === 'forward' ? -1 : 1);
+
+        const pitchInterval = setInterval(() => {
+            if (currentStep < steps) {
+                moveDrone(0, 0, deltaZ, () => {});
+                currentStep++;
+            } else {
+                clearInterval(pitchInterval);
+                resolve();
+            }
+        }, stepDuration);
+    });
+}
+
+function rollDrone(direction, distance) {
+    return new Promise((resolve) => {
+        const steps = 20;
+        const stepDuration = 50;
+        let currentStep = 0;
+        const deltaX = (distance / steps) * (direction === 'left' ? -1 : 1);
+
+        const rollInterval = setInterval(() => {
+            if (currentStep < steps) {
+                moveDrone(deltaX, 0, 0, () => {});
+                currentStep++;
+            } else {
+                clearInterval(rollInterval);
+                resolve();
+            }
+        }, stepDuration);
+    });
+}
+
+function throttleDrone(direction, distance) {
+    return new Promise((resolve) => {
+        if (isThrottling) {
+            resolve();
+            return;
+        }
+        isThrottling = true;
+        const duration = 1000;
+        const steps = 20;
+        const stepDuration = duration / steps;
+        let currentStep = 0;
+        const deltaY = direction === 'up' ? (distance / steps) : (-distance / steps);
+
+        const throttleInterval = setInterval(() => {
+            if (currentStep < steps) {
+                moveDrone(0, deltaY, 0, () => {});
+                currentStep++;
+            } else {
+                clearInterval(throttleInterval);
+                isThrottling = false;
+                resolve();
+            }
+        }, stepDuration);
+    });
+}
+
+function yawDrone(direction, angle) {
+    return new Promise((resolve) => {
+        if (isYawing) {
+            resolve();
+            return;
+        }
+        isYawing = true;
+        const steps = 30;
+        const stepDuration = yawDuration / steps;
+        let currentStep = 0;
+        const deltaAngle = direction === 'left' ? (angle * Math.PI / 180) / steps : -(angle * Math.PI / 180) / steps;
+
+        const yawInterval = setInterval(() => {
+            if (currentStep < steps) {
+                drone.rotation.y += deltaAngle;
+                currentStep++;
+            } else {
+                clearInterval(yawInterval);
+                isYawing = false;
+                resolve();
+            }
+        }, stepDuration);
+    });
+}
+
+function moveDrone(x, y, z, callback) {
+    const movement = new THREE.Vector3(x, y, z);
+    movement.applyEuler(drone.rotation);
+    dronePosition.add(movement);
+    drone.position.copy(dronePosition);
+    if (callback) callback();
+}
+
+function resetSimulation() {
+    isResetPressed = true;
+    isPaused = false;
+
+    // Immediately stop code execution
+    if (isExecuting) {
+        commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+        commandTimeouts = [];
+        isExecuting = false;
+    }
+
+    // Clear all intervals
+    Object.values(blinkIntervals).forEach(intervalId => clearInterval(intervalId));
+    blinkIntervals = {};
+
+    // Reset drone to initial position immediately
+    dronePosition = DEFAULT_DRONE_STATE.position.clone();
+    drone.position.copy(dronePosition);
+    drone.rotation.copy(DEFAULT_DRONE_STATE.rotation);
+    drone.scale.copy(DEFAULT_DRONE_STATE.scale);
+    drone.updateMatrix();
+
+    // Reset camera and controls immediately
+    camera.position.set(100, 70, 100);
+    camera.lookAt(dronePosition);
+    controls.target.copy(dronePosition);
+    controls.update();
+
+    // Clear message
+    messageDiv.textContent = '';
+    messageDiv.classList.remove('blink', 'color-change');
+
+    // Remove path preview if it exists
+    if (pathLine) {
+        scene.remove(pathLine);
+        pathLine = null;
+        isPathPreviewShown = false;
+    }
+
+    // Reset Grid
+    if (gridHelper) {
+        scene.remove(gridHelper);
+    }
+    gridHelper = new THREE.GridHelper(200, 20, 0xcccccc, 0xcccccc);
+    scene.add(gridHelper);
+
+    // Reset all variables and states
+    commandQueue = [];
+    isThrottling = false;
+    isYawing = false;
+    pathPositions = [];
+
+    // Reset Run / Pause button to initial state
+    isExecuting = false;
+    isPaused = false;
+    pausePromiseResolver = null;
+    updateRunButton();
+
+    // Force an immediate re-render of the scene
+    renderer.render(scene, camera);
+
+    console.log(translations[currentLanguage].simulationReset);
+}	
+
+function rotateView(direction) {
+    const rotationAngle = direction === 'left' ? Math.PI / 18 : -Math.PI / 18;
+    const currentPosition = camera.position.clone().sub(dronePosition);
+    currentPosition.applyAxisAngle(new THREE.Vector3(0, 1, 0), rotationAngle);
+    camera.position.copy(dronePosition).add(currentPosition);
+    camera.lookAt(dronePosition);
+}
+
+function moveViewUp() {
+    camera.position.y += 10;
+    camera.lookAt(dronePosition);
+}
+
+function moveViewDown() {
+    if (camera.position.y > 10) {
+        camera.position.y -= 10;
+        camera.lookAt(dronePosition);
+    }
+}
+
+function zoom(direction) {
+    const zoomFactor = direction === 'in' ? 0.9 : 1.1;
+    const currentPosition = camera.position.clone().sub(dronePosition);
+    currentPosition.multiplyScalar(zoomFactor);
+    camera.position.copy(dronePosition).add(currentPosition);
+    camera.lookAt(dronePosition);
+}
+
+function centreView() {
+    camera.position.set(100, 70, 100);
+    camera.lookAt(dronePosition);
+    controls.target.copy(dronePosition);
+    controls.update();
+}
+
+function previewPath() {
+    if (isPathPreviewShown) {
+        if (pathLine) {
+            scene.remove(pathLine);
+            pathLine = null;
+        }
+        isPathPreviewShown = false;
+        return;
+    }
+
+    const parsedCommands = parseCode(codeInput.value);
+    const commands = executeCommands(parsedCommands);
+
+    let simulatedPosition = new THREE.Vector3(0, 20, 0); // Start at 20 units high
+    let simulatedRotation = new THREE.Euler(0, 0, 0, 'YXZ'); // Use YXZ order for proper yaw rotation
+    const positions = [new THREE.Vector3(0, 0, 0), simulatedPosition.clone()]; // Start from ground
+
+    let minX = 0, maxX = 0, minY = 0, maxY = 20, minZ = 0, maxZ = 0;
+
+    commands.forEach(command => {
+        const parts = command.split(' ');
+        const baseCommand = parts[0].toLowerCase();
+        const param = parts[1] ? parseFloat(parts[1]) : null;
+
+        switch (baseCommand) {
+            case 'throttleup':
+                if (param !== null) {
+                    simulatedPosition.y += param;
+                }
+                break;
+            case 'throttledown':
+                if (param !== null) {
+                    simulatedPosition.y = Math.max(0, simulatedPosition.y - param);
+                }
+                break;
+            case 'yawleft':
+            case 'yawright':
+                if (param !== null) {
+                    const yawAngle = baseCommand === 'yawleft' ? param : -param;
+                    simulatedRotation.y += THREE.MathUtils.degToRad(yawAngle);
+                }
+                break;
+            case 'pitchforward':
+            case 'pitchbackward':
+                if (param !== null) {
+                    const pitchDistance = baseCommand === 'pitchforward' ? param : -param;
+                    const forward = new THREE.Vector3(0, 0, -pitchDistance);
+                    forward.applyEuler(simulatedRotation);
+                    simulatedPosition.add(forward);
+                }
+                break;
+            case 'rollleft':
+            case 'rollright':
+                if (param !== null) {
+                    const rollDistance = baseCommand === 'rollleft' ? -param : param;
+                    const side = new THREE.Vector3(rollDistance, 0, 0);
+                    side.applyEuler(simulatedRotation);
+                    simulatedPosition.add(side);
+                }
+                break;
+        }
+
+        // Update min and max values
+        minX = Math.min(minX, simulatedPosition.x);
+        maxX = Math.max(maxX, simulatedPosition.x);
+        minY = Math.min(minY, simulatedPosition.y);
+        maxY = Math.max(maxY, simulatedPosition.y);
+        minZ = Math.min(minZ, simulatedPosition.z);
+        maxZ = Math.max(maxZ, simulatedPosition.z);
+
+        if (baseCommand !== 'takeoff' && baseCommand !== 'land') {
+            positions.push(simulatedPosition.clone());
+        }
+    });
+
+    // Add final landing position
+    positions.push(new THREE.Vector3(simulatedPosition.x, 0, simulatedPosition.z));
+
+    if (positions.length < 2) {
+        alert(translations[currentLanguage].noValidCommands);
+        return;
+    }
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(positions);
+    const material = new THREE.LineBasicMaterial({
+        color: 0x0000ff,
+        linewidth: 2,
+    });
+
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+    pathLine = line;
+    isPathPreviewShown = true;
+
+    // Calculate bounding box with padding
+    const padding = 50;
+    const sizeX = maxX - minX;
+    const sizeZ = maxZ - minZ;
+    const maxSize = Math.max(sizeX, sizeZ, 100); // Ensure minimum size
+    const gridSize = Math.ceil((maxSize + padding) * 1.2); // 20% larger than the path with padding
+
+    // Remove existing grid
+    if (gridHelper) {
+        scene.remove(gridHelper);
+    }
+
+    // Add new grid
+    gridHelper = new THREE.GridHelper(gridSize, gridSize / 10, 0xcccccc, 0xcccccc);
+    scene.add(gridHelper);
+
+    // Recalculate center
+    const centerX = (minX + maxX) / 2;
+    const centerZ = (minZ + maxZ) / 2;
+
+    // Position the camera to encompass the entire grid
+    camera.position.set(centerX + gridSize / 2, gridSize / 2, centerZ + gridSize / 2);
+    camera.lookAt(new THREE.Vector3(centerX, 0, centerZ));
+
+    // Update controls target
+    controls.target.set(centerX, 0, centerZ);
+    controls.update();
+
+    // Render the scene
+    renderer.render(scene, camera);
+}
+
+const translations = {
+    en: {
+        title: "Code Performance Simulation",
+        instruction: "Use the blocks to create a flight path for the drone, then click 'Run / Pause' to execute the instructions.",
+        takeOff: "Take Off",
+        land: "Land",
+        throttleUp: "Throttle Up",
+        throttleDown: "Throttle Down",
+        yawLeft: "Yaw Left",
+        yawRight: "Yaw Right",
+        pitchForward: "Pitch Forward",
+        pitchBackward: "Pitch Backward",
+        rollLeft: "Roll Left",
+        rollRight: "Roll Right",
+        repeat: "Repeat",
+        setVariable: "Set",
+        runPauseCode: "Run / Pause",
+        runPauseCodeRunning: "Pause",
+        runPauseCodePaused: "Resume",
+        reset: "Reset",
+        pathPreview: "Path Preview",
+        centre: "Centre",
+        helpButton: "Tutorial",
+        rotateLeft: "Rotate Left",
+        rotateRight: "Rotate Right",
+        up: "Up",
+        down: "Down",
+        zoomIn: "Zoom In",
+        zoomOut: "Zoom Out",
+        tutorialTitle: "Tutorial",
+        tutorialStep1Title: "Welcome!",
+        tutorialStep1Content: "Welcome to the Code Performance Simulation. This tutorial will guide you through the basics of creating and running your drone's flight path.",
+        tutorialStep2Title: "Learning Objectives",
+        tutorialStep2Content: "• Understand how to use command blocks to control the drone.\n• Learn to write and execute simple code.\n• Experience iterative code refinement for autonomous navigation.",
+        tutorialStep3Title: "Creating a Flight Path",
+        tutorialStep3Content: "1. Use the command buttons to add actions like Take Off, Move, Yaw, etc.\n2. Specify parameters in the input fields.\n3. Each command will be added to your code area.",
+        tutorialStep4Title: "Running Your Code",
+        tutorialStep4Content: "After setting up your flight path, click the 'Run / Pause' button to execute the instructions and see your drone navigate the path.",
+        tutorialStep5Title: "Previewing the Path",
+        tutorialStep5Content: "Use the 'Path Preview' button to visualize the entire flight path before running the code.",
+        tutorialStep6Title: "Resetting the Simulation",
+        tutorialStep6Content: "If you want to start over, click the 'Reset' button to clear your code and reset the drone's position.",
+        tutorialStep7Title: "Getting Help",
+        tutorialStep7Content: "At any time, you can click the 'Tutorial' button to revisit this tutorial.",
+        nextButton: "Next",
+        prevButton: "Previous",
+        closeButton: "Close",
+        takingOff: "Taking off...",
+        landing: "Landing...",
+        simulationReset: "Simulation reset. Drone restored to default position and orientation.",
+        noValidCommands: "No valid commands to preview the path.",
+        invalidCodeStructure: "The code must start with 'Take Off' and end with 'Land'.",
+        throttleUpAlert: "Please enter a value or variable for Throttle Up.",
+        throttleDownAlert: "Please enter a value or variable for Throttle Down.",
+        yawLeftAlert: "Please enter a value or variable for Yaw Left.",
+        yawRightAlert: "Please enter a value or variable for Yaw Right.",
+        pitchForwardAlert: "Please enter a value or variable for Pitch Forward.",
+        pitchBackwardAlert: "Please enter a value or variable for Pitch Backward.",
+        rollLeftAlert: "Please enter a value or variable for Roll Left.",
+        rollRightAlert: "Please enter a value or variable for Roll Right.",
+        pitchForwardMinAlert: "Please enter a value of at least 10 for Pitch Forward.",
+        pitchBackwardMinAlert: "Please enter a value of at least 10 for Pitch Backward.",
+        rollLeftMinAlert: "Please enter a value of at least 10 for Roll Left.",
+        rollRightMinAlert: "Please enter a value of at least 10 for Roll Right.",
+        repeatAlert: "Please enter the number of times or a variable name to repeat.",
+        setVariableAlert: "Please enter both variable name and value."
+    },
+    zh: {
+        title: "編程表現模擬",
+        instruction: "使用方塊創建無人機的飛行路徑，然後點擊「執行 / 暫停」以執行指令。",
+        takeOff: "起飛",
+        land: "著陸",
+        throttleUp: "上升",
+        throttleDown: "下降",
+        yawLeft: "左偏航",
+        yawRight: "右偏航",
+        pitchForward: "前俯仰",
+        pitchBackward: "後俯仰",
+        rollLeft: "左滾轉",
+        rollRight: "右滾轉",
+        repeat: "重複",
+        setVariable: "設置",
+        runPauseCode: "執行 / 暫停",
+        runPauseCodeRunning: "暫停",
+        runPauseCodePaused: "繼續",
+        reset: "重置",
+        pathPreview: "路徑預覽",
+        centre: "居中",
+        helpButton: "教學",
+        rotateLeft: "向左旋轉",
+        rotateRight: "向右旋轉",
+        up: "向上",
+        down: "向下",
+        zoomIn: "放大",
+        zoomOut: "縮小",
+        tutorialTitle: "教學",
+        tutorialStep1Title: "歡迎！",
+        tutorialStep1Content: "歡迎來到編程表現模擬。這個教學將指導你創建和運行無人機的飛行路徑的基礎知識。",
+        tutorialStep2Title: "學習目標",
+        tutorialStep2Content: "• 理解如何使用指令方塊來控制無人機。\n• 學習編寫和執行簡單的代碼。\n• 體驗循環代碼優化以實現自主導航。",
+        tutorialStep3Title: "創建飛行路徑",
+        tutorialStep3Content: "1. 使用指令按鈕添加起飛、移動、偏航等動作。\n2. 在輸入框中指定參數。\n3. 每個指令都將被添加到你的代碼區域。",
+        tutorialStep4Title: "運行你的代碼",
+        tutorialStep4Content: "設置好飛行路徑後，點擊「執行 / 暫停」按鈕執行指令，查看無人機導航路徑。",
+        tutorialStep5Title: "預覽路徑",
+        tutorialStep5Content: "使用「路徑預覽」按鈕在運行代碼前可視化整個飛行路徑。",
+        tutorialStep6Title: "重置模擬",
+        tutorialStep6Content: "如果你想重新開始，點擊「重置」按鈕清除你的代碼並重置無人機的位置。",
+        tutorialStep7Title: "獲取幫助",
+        tutorialStep7Content: "在任何時間，你都可以點擊「教學」按鈕重新訪問這個教學。",
+        nextButton: "下一步",
+        prevButton: "上一步",
+        closeButton: "關閉",
+        takingOff: "起飛中...",
+        landing: "著陸中...",
+        simulationReset: "模擬已重置。無人機已恢復到默認位置和方向。",
+        noValidCommands: "沒有有效的指令來預覽路徑。",
+        invalidCodeStructure: "代碼必須以「起飛」開始，以「著陸」結束。",
+        throttleUpAlert: "請為上升輸入值或變量。",
+        throttleDownAlert: "請為下降輸入值或變量。",
+        yawLeftAlert: "請為左偏航輸入值或變量。",
+        yawRightAlert: "請為右偏航輸入值或變量。",
+        pitchForwardAlert: "請為前俯仰輸入值或變量。",
+        pitchBackwardAlert: "請為後俯仰輸入值或變量。",
+        rollLeftAlert: "請為左滾轉輸入值或變量。",
+        rollRightAlert: "請為右滾轉輸入值或變量。",
+        pitchForwardMinAlert: "請為前俯仰輸入至少 10 的值。",
+        pitchBackwardMinAlert: "請為後俯仰輸入至少 10 的值。",
+        rollLeftMinAlert: "請為左滾轉輸入至少 10 的值。",
+        rollRightMinAlert: "請為右滾轉輸入至少 10 的值。",
+        repeatAlert: "請輸入重複的次數或變量名稱。",
+        setVariableAlert: "請同時輸入變量名稱和數值。"
+    }
+};
+
+let currentLanguage = 'en';
+
+function toggleLanguage() {
+    currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+    updateLanguage();
+}
+
+function updateLanguage() {
+    const elements = document.querySelectorAll('[data-translate]');
+    elements.forEach(element => {
+        const key = element.getAttribute('data-translate');
+        if (translations[currentLanguage][key]) {
+            element.textContent = translations[currentLanguage][key];
+        }
+    });
+
+    const languageSwitch = document.getElementById('language-switch');
+    languageSwitch.textContent = currentLanguage === 'en' ? '繁體中文' : 'English';
+
+    // Update tutorial content if modal is open
+    if (document.getElementById('tutorial-modal').style.display === 'block') {
+        populateTutorial();
+    }
+}
+
+initGame();
+updateLanguage();
+
+// Run / Pause Button Functionality
+function updateRunButton(){
+    const runButton = document.getElementById('run-button');
+    if(!isExecuting){
+        runButton.textContent = translations[currentLanguage].runPauseCode;
+    }
+    else if(isPaused){
+        runButton.textContent = translations[currentLanguage].runPauseCodePaused;
+    }
+    else{
+        runButton.textContent = translations[currentLanguage].runPauseCodeRunning;
+    }
+}
+
+// Tutorial Modal Functionality
+const tutorialModal = document.getElementById("tutorial-modal");
+const closeSpan = document.getElementsByClassName("close")[0];
+const tutorialContent = document.getElementById("tutorial-content");
+let currentStep = 1;
+const totalSteps = 7;
+
+function openTutorial() {
+    currentStep = 1;
+    populateTutorial();
+    tutorialModal.style.display = "block";
+}
+
+function closeTutorial() {
+    tutorialModal.style.display = "none";
+}
+
+function nextStep() {
+    if (currentStep < totalSteps) {
+        currentStep++;
+        populateTutorial();
+    }
+}
+
+function prevStep() {
+    if (currentStep > 1) {
+        currentStep--;
+        populateTutorial();
+    }
+}
+
+function populateTutorial() {
+    const content = translations[currentLanguage];
+    let htmlContent = "";
+    switch(currentStep) {
+        case 1:
+            htmlContent = `<h3>${content.tutorialStep1Title}</h3>
+                           <p>${content.tutorialStep1Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        case 2:
+            htmlContent = `<h3>${content.tutorialStep2Title}</h3>
+                           <p>${content.tutorialStep2Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        case 3:
+            htmlContent = `<h3>${content.tutorialStep3Title}</h3>
+                           <p>${content.tutorialStep3Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        case 4:
+            htmlContent = `<h3>${content.tutorialStep4Title}</h3>
+                           <p>${content.tutorialStep4Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        case 5:
+            htmlContent = `<h3>${content.tutorialStep5Title}</h3>
+                           <p>${content.tutorialStep5Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        case 6:
+            htmlContent = `<h3>${content.tutorialStep6Title}</h3>
+                           <p>${content.tutorialStep6Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        case 7:
+            htmlContent = `<h3>${content.tutorialStep7Title}</h3>
+                           <p>${content.tutorialStep7Content.replace(/\n/g, '<br>')}</p>`;
+            break;
+        default:
+            htmlContent = `<h3>${content.tutorialTitle}</h3>
+                           <p>${content.tutorialStep1Content.replace(/\n/g, '<br>')}</p>`;
+    }
+    tutorialContent.innerHTML = htmlContent;
+
+    // Update button visibility
+    document.getElementById('prev-button').style.display = currentStep === 1 ? 'none' : 'inline-block';
+    document.getElementById('next-button').style.display = currentStep === totalSteps ? 'none' : 'inline-block';
+}
+
+window.onclick = function(event) {
+    if (event.target == tutorialModal) {
+        tutorialModal.style.display = "none";
+    }
+}
+
+</script>
+<script>
+// Three.js and Simulation Scripts
+
+// Existing functions are already defined in the above script tag.
+</script>
+</body>
+</html>
