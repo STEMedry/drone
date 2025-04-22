@@ -1,3 +1,5 @@
+How to revise to allow all the slide bars to increase at a scale of 0.1?
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -454,7 +456,7 @@
         <span id="droneAltitudeValue">0</span> m
       </label>
       <!-- Increased step to 0.5 -->
-      <input type="range" id="droneAltitudeSlider" min="0" max="500" value="0" step="0.5">
+      <input type="range" id="droneAltitudeSlider" min="0" max="500" value="0" step="0.1">
     </div>
     
     <div>
@@ -462,7 +464,7 @@
         <span data-i18n="Horizontal AOV:" data-i18n-zh="水平視角:">Horizontal AOV:</span>
         <span id="aovValue">70</span> °
       </label>
-      <input type="range" id="aov" min="30" max="120" value="70">
+      <input type="range" id="aov" min="30" max="120" value="70" step="0.1">
     </div>
     
     <div id="verticalDiagonalAOV">
@@ -534,14 +536,14 @@
         <span id="calc1AltitudeValue">0</span> m
       </label>
       <!-- Increased step to 0.5 for consistency -->
-      <input type="range" id="calc1Altitude" min="0" max="500" value="0" step="0.5">
+      <input type="range" id="calc1Altitude" min="0" max="500" value="0" step="0.1">
     </div>
     <div>
       <label for="calc1FOVWidth">
         <span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
         <span id="calc1FOVWidthValue">0</span> m
       </label>
-      <input type="range" id="calc1FOVWidth" min="0" max="1732" value="0">
+      <input type="range" id="calc1FOVWidth" min="0" max="1732" value="0" step="0.1">
     </div>
     <div id="calc1Results">
       <div class="aovRow labels">
@@ -569,14 +571,14 @@
         <span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
         <span id="calc2FOVWidthValue">0</span> m
       </label>
-      <input type="range" id="calc2FOVWidth" min="0" max="1732" value="0">
+      <input type="range" id="calc2FOVWidth" min="0" max="1732" value="0" step="0.1">
     </div>
     <div>
       <label for="calc2DiagonalAOV">
         <span data-i18n="Diagonal AOV:" data-i18n-zh="對角視角：">Diagonal AOV:</span>
         <span id="calc2DiagonalAOVValue">0</span> °
       </label>
-      <input type="range" id="calc2DiagonalAOV" min="0" max="120" value="0">
+      <input type="range" id="calc2DiagonalAOV" min="0" max="120" value="0" step="0.1">
     </div>
     <div id="calc2Results">
       <label data-i18n="Required Altitude:" data-i18n-zh="所需高度：">Required Altitude:</label>
