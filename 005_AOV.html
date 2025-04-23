@@ -1,5 +1,3 @@
-How to revise to allow all the slide bars to increase at a scale of 0.1?
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -213,8 +211,8 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
     }
     
     input[type="range"]::-moz-range-thumb {
-      width: 52.5px;
-      height: 52.5px;
+      width: 22.5px;
+      height: 22.5px;
       background: #4CAF50;
       cursor: pointer;
       border-radius: 50%;
@@ -455,7 +453,6 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
         <span data-i18n="Drone Altitude:" data-i18n-zh="無人機高度：">Drone Altitude:</span>
         <span id="droneAltitudeValue">0</span> m
       </label>
-      <!-- Increased step to 0.5 -->
       <input type="range" id="droneAltitudeSlider" min="0" max="500" value="0" step="0.1">
     </div>
     
@@ -473,7 +470,7 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
         <span id="vaovValue">0.0</span> °
       </label>
       <label>
-        <span data-i18n="Diagonal AOV:" data-i18n-zh="對角線視角:">Diagonal AOV:</span>
+        <span data-i18n="Diagonal AOV:" data-i18n-zh="對角視角:">Diagonal AOV:</span>
         <span id="daovValue">0.0</span> °
       </label>
     </div>
@@ -518,7 +515,6 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
   
   <!-- Right Panel Calculation Controls -->
   <div id="additionalControls">
-    <!-- Language & Tutorial Buttons Row -->
     <div id="rightTopButtons">
       <button id="languageToggle">繁體中文</button>
       <button id="startTutorial" data-i18n="Start Tutorial" data-i18n-zh="開始教程">Start Tutorial</button>
@@ -529,21 +525,19 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
       <button class="aspectRatioBtn" data-ratio="1.333" data-i18n="4:3" data-i18n-zh="4:3">4:3</button>
       <button class="aspectRatioBtn" data-ratio="1.778" data-i18n="16:9" data-i18n-zh="16:9">16:9</button>
     </div>
-    <!-- The sliders now allow user adjustment -->
     <div>
       <label for="calc1Altitude">
         <span data-i18n="Altitude:" data-i18n-zh="高度：">Altitude:</span>
         <span id="calc1AltitudeValue">0</span> m
       </label>
-      <!-- Increased step to 0.5 for consistency -->
-      <input type="range" id="calc1Altitude" min="0" max="500" value="0" step="0.1">
+      <input type="range" id="calc1Altitude" min="0" max="500" value="0" step="0.1" tabindex="0">
     </div>
     <div>
       <label for="calc1FOVWidth">
         <span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
         <span id="calc1FOVWidthValue">0</span> m
       </label>
-      <input type="range" id="calc1FOVWidth" min="0" max="1732" value="0" step="0.1">
+      <input type="range" id="calc1FOVWidth" min="0" max="1732" value="0" step="0.1" tabindex="0">
     </div>
     <div id="calc1Results">
       <div class="aovRow labels">
@@ -576,9 +570,10 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
     <div>
       <label for="calc2DiagonalAOV">
         <span data-i18n="Diagonal AOV:" data-i18n-zh="對角視角：">Diagonal AOV:</span>
-        <span id="calc2DiagonalAOVValue">0</span> °
+        <span id="calc2DiagonalAOVValue">30.0</span> ° 
       </label>
-      <input type="range" id="calc2DiagonalAOV" min="0" max="120" value="0" step="0.1">
+      <!-- Diagonal slider default now is 30 -->
+      <input type="range" id="calc2DiagonalAOV" min="0" max="120" value="30" step="0.1">
     </div>
     <div id="calc2Results">
       <label data-i18n="Required Altitude:" data-i18n-zh="所需高度：">Required Altitude:</label>
@@ -643,25 +638,25 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
       </div>
       <div class="step" data-step="6">
         <h2 data-i18n="Toggling Buildings" data-i18n-zh="切換建築物">Toggling Buildings</h2>
-        <p data-i18n="Use the toggle buttons to show or hide different buildings in the simulation. This helps in visualizing how buildings affect the camera's field of view." data-i18n-zh="使用切換按鈕顯示或隱藏模擬中的不同建築物，幫助您觀察建築物如何影響相機視角。">
+        <p data-i18n="Use the toggle buttons to show or hide different buildings in the simulation. This helps in visualizing how buildings affect the camera's field of view." data-i18n-zh="使用切換按鈕選擇顯示或隱藏模擬中的不同建築物，幫助您觀察建築物如何影響相機視角。">
           Use the toggle buttons to show or hide different buildings in the simulation. This helps in visualizing how buildings affect the camera's field of view.
         </p>
       </div>
       <div class="step" data-step="7">
         <h2 data-i18n="Calculation Controls" data-i18n-zh="計算控制">Calculation Controls</h2>
-        <p data-i18n="The right panel displays the horizontal and vertical AOV values along with the FOV Width, Diagonal AOV and the required altitude (which mirrors the drone altitude). No additional button clicks are needed." data-i18n-zh="右側面板自動顯示水平與垂直視角、視角寬度、對角視角及所需高度（與無人機高度同步）。無需額外點擊按鈕。">
-          The right panel displays the horizontal and vertical AOV values along with the FOV Width, Diagonal AOV and the required altitude (which mirrors the drone altitude). No additional button clicks are needed.
+        <p data-i18n="The right panel displays the horizontal and vertical AOV values along with the FOV Width, Diagonal AOV and the required altitude (which now is computed independently in section 3). These values synchronize with the drone altitude and FOV measurements shown in section 1 and 2." data-i18n-zh="右側面板自動顯示水平與垂直視角、視角寬度、對角視角及所需高度（由第3部分獨立計算），並與第1與第2部分顯示的無人機高度與FOV測量數據同步。">
+          The right panel displays the horizontal and vertical AOV values along with the FOV Width, Diagonal AOV and the required altitude (which now is computed independently in section 3). These values synchronize with the drone altitude and FOV measurements shown in section 1 and 2.
         </p>
       </div>
       <div class="step" data-step="8">
         <h2 data-i18n="View Controls" data-i18n-zh="視圖控制">View Controls</h2>
-        <p data-i18n="Use the view control buttons at the bottom to manipulate the camera view. You can tilt, rotate, zoom, and move the camera to better observe the simulation." data-i18n-zh="使用底部的視圖控制按鈕移動相機。您可以傾斜、旋轉、縮放及移動相機以更好地觀察模擬。">
+        <p data-i18n="Use the view control buttons at the bottom to manipulate the camera view. You can tilt, rotate, zoom, and move the camera to better observe the simulation." data-i18n-zh="使用底部的視圖控制按鈕移動相機。您可以傾斜、旋轉、縮放及移動相機，以更好地觀察模擬。">
           Use the view control buttons at the bottom to manipulate the camera view. You can tilt, rotate, zoom, and move the camera to better observe the simulation.
         </p>
       </div>
       <div class="step" data-step="9">
         <h2 data-i18n="Language Toggle" data-i18n-zh="語言切換">Language Toggle</h2>
-        <p data-i18n="Click the language toggle button to switch between English and Traditional Chinese." data-i18n-zh="點擊語言切換按鈕切換英文與繁體中文。">
+        <p data-i18n="Click the language toggle button to switch between English and Traditional Chinese." data-i18n-zh="點擊語言切換按鈕來切換英文與繁體中文。">
           Click the language toggle button to switch between English and Traditional Chinese.
         </p>
       </div>
@@ -730,7 +725,6 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
       const maxHorizontalAOV = 120;
       const horizontalAOVRad = THREE.MathUtils.degToRad(maxHorizontalAOV);
       const verticalAOVRad = 2 * Math.atan(Math.tan(horizontalAOVRad / 2) / aspectRatio);
-      // Compute the diagonal AOV using the tangent relationships.
       const horizontalTan = Math.tan(THREE.MathUtils.degToRad(maxHorizontalAOV) / 2);
       const verticalTan = Math.tan(verticalAOVRad / 2);
       const diagonalTan = Math.sqrt(horizontalTan * horizontalTan + verticalTan * verticalTan);
@@ -830,9 +824,10 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
     /*****************
      * Building & Court Functions
      *****************/
-    // (Functions for creating courts and buildings remain unchanged.)
+    // (The building and court functions remain unchanged.)
     
     function createCourt() {
+      // ... [Court creation code remains unchanged] ...
       const courtGroup = new THREE.Group();
       const courtLength = 94;
       const courtWidth = 50;
@@ -1328,80 +1323,137 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
      * Utility & Sync Functions
      *****************/
     
-    function syncAltitude(newAltitude) {
-      // Set drone altitude and synchronize in all panels.
-      drone.position.y = newAltitude;
-      // Update left panel altitude slider and display.
-      const altSlider = document.getElementById('droneAltitudeSlider');
-      if(altSlider) {
-        altSlider.value = newAltitude;
-        document.getElementById('droneAltitudeValue').textContent = newAltitude.toFixed(1);
-      }
-      // Update altitude slider in panel 2.
-      document.getElementById('calc1Altitude').value = newAltitude;
-      document.getElementById('calc1AltitudeValue').textContent = newAltitude.toFixed(1);
-      // Update Altitude display in left panel measurement section.
-      document.getElementById('altitudeValue').textContent = newAltitude.toFixed(1);
-      updateFOV();
-      updateCamera();
-    }
+function syncAltitude(newAltitude) {
+  // Clamp the altitude so it cannot be less than 0.
+  newAltitude = Math.max(newAltitude, 0);
+  
+  // Set drone altitude and update section 1 display.
+  drone.position.y = newAltitude;
+  const altSlider = document.getElementById('droneAltitudeSlider');
+  if (altSlider) {
+    altSlider.value = newAltitude;
+    document.getElementById('droneAltitudeValue').textContent = newAltitude.toFixed(1);
+  }
+  document.getElementById('altitudeValue').textContent = newAltitude.toFixed(1);
+  updateFOV();
+  updateCamera();
+}
     
-    // Update right panels with FOV Width, Diagonal AOV, Horizontal AOV and Vertical AOV values,
-    // and mirror drone altitude as required altitude.
+    // Update section 1 AOV displays using the current aov slider value
     function updateRightPanelSync(horizontalAOV, verticalAOV, diagonalAOV, width, altitude) {
-      // Panel 2:
-      document.getElementById('calc1FOVWidth').value = width.toFixed(1);
-      document.getElementById('calc1FOVWidthValue').textContent = width.toFixed(1);
-      document.getElementById('calc1DiagonalAOV') && (document.getElementById('calc1DiagonalAOV').textContent = diagonalAOV.toFixed(1));
       document.getElementById('calc1HorizontalAOV').textContent = horizontalAOV.toFixed(1);
       document.getElementById('calc1VerticalAOV').textContent = verticalAOV.toFixed(1);
-      
-      // Panel 3:
-      document.getElementById('calc2FOVWidth').value = width.toFixed(1);
-      document.getElementById('calc2FOVWidthValue').textContent = width.toFixed(1);
-      document.getElementById('calc2DiagonalAOV').value = diagonalAOV.toFixed(1);
-      document.getElementById('calc2DiagonalAOVValue').textContent = diagonalAOV.toFixed(1);
-      
-      // Update required altitude display in panel 3.
-      document.getElementById('calc2Altitude').textContent = altitude.toFixed(1);
+      document.getElementById('calc1DiagonalAOV').textContent = diagonalAOV.toFixed(1);
     }
     
-    // Listen to changes in the calc1FOVWidth slider (panel 2)
-    document.getElementById('calc1FOVWidth').addEventListener('input', function() {
-      const newWidth = parseFloat(this.value);
-      const altitude = drone.position.y;
-      if(altitude > 0) {
-        const newAOV = THREE.MathUtils.radToDeg(2 * Math.atan(newWidth / (2 * altitude)));
-        document.getElementById('aov').value = newAOV.toFixed(1);
-        updateFOV();
-      }
-    });
-    
-    // Listen to altitude change from panel 2.
-    document.getElementById('calc1Altitude').addEventListener('input', function() {
-      syncAltitude(parseFloat(this.value));
-    });
-    
-    // New listener for calc2FOVWidth (Panel 3)
     document.getElementById('calc2FOVWidth').addEventListener('input', function() {
       const newWidth = parseFloat(this.value);
-      const altitude = drone.position.y;
-      if(altitude > 0) {
-        const newAOV = THREE.MathUtils.radToDeg(2 * Math.atan(newWidth / (2 * altitude)));
-        document.getElementById('aov').value = newAOV.toFixed(1);
-        updateFOV();
-      }
+      document.getElementById('calc2FOVWidthValue').textContent = newWidth.toFixed(1);
+      // Synchronize the FOV Width value from Section 3 to Section 2:
+      document.getElementById('calc1FOVWidth').value = newWidth;
+      document.getElementById('calc1FOVWidthValue').textContent = newWidth.toFixed(1);
+      // Now update the calculated AOV values (Section 2) and the 3D display:
+      updateCalc1AOV();
+      // And also update the required altitude calculations (Section 3)
+      updateRequiredAltitude();
     });
     
-    // New listener for calc2DiagonalAOV (Panel 3)
+    // Event listener for the Diagonal AOV slider in Section 3.
     document.getElementById('calc2DiagonalAOV').addEventListener('input', function() {
-      const newDiagonalAOV = parseFloat(this.value);
-      const aspectRatio = parseFloat(document.querySelector('#controls .aspectRatioBtn.active').getAttribute('data-ratio'));
-      // Derive horizontal AOV from diagonal AOV:
-      const newAOV = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(newDiagonalAOV)/2) / Math.sqrt(1 + (1/(aspectRatio*aspectRatio)))));
-      document.getElementById('aov').value = newAOV.toFixed(1);
-      updateFOV();
+      const newDiag = parseFloat(this.value);
+      document.getElementById('calc2DiagonalAOVValue').textContent = newDiag.toFixed(1);
+      // When diagonal AOV is changed, update the required altitude multipliers.
+      updateRequiredAltitude();
+      // No need to call updateCalc1AOV() separately because updateRequiredAltitude() now
+      // updates the calc1Altitude slider and then calls updateCalc1AOV().
     });
+    
+    // Modified updateRequiredAltitude: After computing requiredAltitude, update the calc1Altitude input.
+    function updateRequiredAltitude() {
+      const aspectRatio = parseFloat(
+        document.querySelector('#controls .aspectRatioBtn.active').getAttribute('data-ratio')
+      );
+      const fovWidth = parseFloat(document.getElementById('calc2FOVWidth').value);
+      const diagAOV = parseFloat(document.getElementById('calc2DiagonalAOV').value);
+      if (diagAOV <= 0) return;
+      
+      // Compute the required altitude using the diagonal AOV value from Section 3.
+      const requiredAltitude = (fovWidth * Math.sqrt(1 + 1/(aspectRatio * aspectRatio))) /
+                               (2 * Math.tan(THREE.MathUtils.degToRad(diagAOV) / 2));
+      
+      // Update the display in Section 3.
+      document.getElementById('calc2Altitude').textContent = requiredAltitude.toFixed(1);
+      
+      // Update drone altitude (Section 1) and the left panel.
+      syncAltitude(requiredAltitude);
+      
+      // Also update Section 2's altitude slider value.
+      document.getElementById('calc1Altitude').value = requiredAltitude;
+      document.getElementById('calc1AltitudeValue').textContent = requiredAltitude.toFixed(1);
+      
+      // Update the Section 2 calculations with the new altitude.
+      updateCalc1AOV();
+    }
+    
+    // Function for updating the calculations in Section 2 using calc1 sliders.
+    function updateCalc1AOV() {
+      // Get the values from Section 2's inputs.
+      const altitude = parseFloat(document.getElementById('calc1Altitude').value);
+      const fovWidth = parseFloat(document.getElementById('calc1FOVWidth').value);
+      
+      // Update displays for altitude and FOV Width in Section 2.
+      document.getElementById('calc1AltitudeValue').textContent = altitude.toFixed(1);
+      document.getElementById('calc1FOVWidthValue').textContent = fovWidth.toFixed(1);
+      
+      // Update drone altitude (and Section 1) using syncAltitude.
+      syncAltitude(altitude);
+      
+      // Update Section 1's FOV Width display.
+      document.getElementById('widthValue').textContent = fovWidth.toFixed(1);
+      
+      // Synchronize Section 3's FOV Width slider.
+      document.getElementById('calc2FOVWidth').value = fovWidth;
+      document.getElementById('calc2FOVWidthValue').textContent = fovWidth.toFixed(1);
+    
+      const aspectRatio = parseFloat(
+        document.querySelector('#controls .aspectRatioBtn.active').getAttribute('data-ratio')
+      );
+      
+      // Calculate horizontal, vertical, and diagonal AOV values.
+      let horizontalAOV = 0, verticalAOV = 0, diagonalAOV = 0;
+      if (altitude > 0 && fovWidth > 0) {
+        horizontalAOV = THREE.MathUtils.radToDeg(2 * Math.atan(fovWidth / (2 * altitude)));
+        verticalAOV   = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(horizontalAOV)/2) / aspectRatio));
+        const hTan = Math.tan(THREE.MathUtils.degToRad(horizontalAOV)/2);
+        const vTan = Math.tan(THREE.MathUtils.degToRad(verticalAOV)/2);
+        diagonalAOV   = THREE.MathUtils.radToDeg(2 * Math.atan(Math.sqrt(hTan * hTan + vTan * vTan)));
+      }
+      
+      // Update displays in Section 2.
+      document.getElementById('calc1HorizontalAOV').textContent = horizontalAOV.toFixed(1);
+      document.getElementById('calc1VerticalAOV').textContent = verticalAOV.toFixed(1);
+      document.getElementById('calc1DiagonalAOV').textContent = diagonalAOV.toFixed(1);
+      
+      // Update the horizontal AOV slider value so that updateFOV() is in sync.
+      document.getElementById('aov').value = horizontalAOV.toFixed(1);
+      document.getElementById('aovValue').textContent = horizontalAOV.toFixed(1);
+      
+      // Recalculate Section 1's vertical and diagonal AOV (FOV drawing) based on the horizontal AOV.
+      const currentHorizontalAOV = parseFloat(document.getElementById('aov').value);
+      const currentVerticalAOV = THREE.MathUtils.radToDeg(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(currentHorizontalAOV)/2) / aspectRatio));
+      const currentHorTan = Math.tan(THREE.MathUtils.degToRad(currentHorizontalAOV)/2);
+      const currentVertTan = Math.tan(THREE.MathUtils.degToRad(currentVerticalAOV)/2);
+      const currentDiagonalAOV = THREE.MathUtils.radToDeg(2 * Math.atan(Math.sqrt(currentHorTan * currentHorTan + currentVertTan * currentVertTan)));
+      
+      document.getElementById('vaovValue').textContent = currentVerticalAOV.toFixed(1);
+      document.getElementById('daovValue').textContent = currentDiagonalAOV.toFixed(1);
+      
+      // Update the FOV drawing.
+      updateFOV();
+    }
+    
+    document.getElementById('calc1FOVWidth').addEventListener('input', updateCalc1AOV);
+    document.getElementById('calc1Altitude').addEventListener('input', updateCalc1AOV);
     
     /*****************
      * Initialization and Event Listeners
@@ -1419,6 +1471,7 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
           const activeButtons = allAspectButtons.filter(btn => parseFloat(btn.getAttribute('data-ratio')) === aspectRatio);
           activeButtons.forEach(btn => btn.classList.add('active'));
           updateFOV();
+          updateCalc1AOV();
         });
       });
     }
@@ -1554,13 +1607,18 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
     
       document.getElementById('aov').addEventListener('input', updateFOV);
     
+      // When left panel drone altitude changes, update Section 2 as well.
       if(document.getElementById('droneAltitudeSlider')) {
         document.getElementById('droneAltitudeSlider').addEventListener('input', function() {
-          syncAltitude(parseFloat(this.value));
+          const newAlt = parseFloat(this.value);
+          syncAltitude(newAlt);
+          document.getElementById('calc1Altitude').value = newAlt;
+          document.getElementById('calc1AltitudeValue').textContent = newAlt.toFixed(1);
+          updateCalc1AOV();
         });
       }
     
-      // Right panel altitude (calc1Altitude) is already set above.
+      // Section 2 (calc1 sliders) events already set above.
       document.querySelector('.aspectRatioBtn[data-ratio="1.5"]').click();
     
       updateFOV();
@@ -1707,13 +1765,11 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
       if(altitude > 0){
         width = 2 * altitude * Math.tan(THREE.MathUtils.degToRad(aov) / 2);
         height = width / aspectRatio;
-        verticalAOV = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(aov)/2) / aspectRatio));
-        const horizontalTan = Math.tan(THREE.MathUtils.degToRad(aov) / 2);
-        const verticalTan = Math.tan(THREE.MathUtils.degToRad(verticalAOV) / 2);
-        const diagTan = Math.sqrt(horizontalTan * horizontalTan + verticalTan * verticalTan);
-        diagonalAOV = 2 * THREE.MathUtils.radToDeg(Math.atan(diagTan));
+        verticalAOV = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(aov)/2)/aspectRatio));
+        const horizontalTan = Math.tan(THREE.MathUtils.degToRad(aov)/2);
+        const verticalTan = Math.tan(THREE.MathUtils.degToRad(verticalAOV)/2);
+        diagonalAOV = 2 * THREE.MathUtils.radToDeg(Math.atan(Math.sqrt(horizontalTan*horizontalTan + verticalTan*verticalTan)));
       }
-      // Update left panel measurements (FOV Width, FOV Height and Area Captured)
       document.getElementById('widthValue').textContent = width.toFixed(1);
       document.getElementById('heightValue').textContent = height.toFixed(1);
       const area = width * height;
@@ -1774,11 +1830,11 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
         const baseAltitude = 100, minScale = 20, maxScale = 120;
         let scaleFactor = altitude <= baseAltitude ? minScale : altitude >= 500 ? maxScale : minScale + ((altitude - baseAltitude) / (500 - baseAltitude)) * (maxScale - minScale);
         const abLength = Math.sqrt(Math.pow(corners[1].x - corners[0].x, 2) + Math.pow(corners[1].z - corners[0].z, 2));
-        const abLabel = createDimensionLabel(`${getTranslation('AB:','AB：')} ${abLength.toFixed(1)}m`, offsetMidpointAB, scaleFactor);
+        const abLabel = createDimensionLabel(`AB: ${abLength.toFixed(1)}m`, offsetMidpointAB, scaleFactor);
         scene.add(abLabel);
         dimensionLabels.push(abLabel);
         const bcLength = Math.sqrt(Math.pow(corners[2].x - corners[1].x, 2) + Math.pow(corners[2].z - corners[1].z, 2));
-        const bcLabel = createDimensionLabel(`${getTranslation('BC:','BC：')} ${bcLength.toFixed(1)}m`, offsetMidpointBC, scaleFactor);
+        const bcLabel = createDimensionLabel(`BC: ${bcLength.toFixed(1)}m`, offsetMidpointBC, scaleFactor);
         scene.add(bcLabel);
         dimensionLabels.push(bcLabel);
       }
@@ -1788,12 +1844,10 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
       centerLabel = createCenterLabel('O', centerPosition);
       scene.add(centerLabel);
       
-      // Update left panel AOV values (the aov slider already represents horizontal AOV)
       document.getElementById('aovValue').textContent = aov.toFixed(1);
       document.getElementById('vaovValue').textContent = altitude > 0 ? verticalAOV.toFixed(1) : '0.0';
       document.getElementById('daovValue').textContent = diagonalAOV.toFixed(1);
       
-      // Update right panels.
       updateRightPanelSync(aov, verticalAOV, diagonalAOV, width, altitude);
     }
     
@@ -1898,7 +1952,6 @@ How to revise to allow all the slide bars to increase at a scale of 0.1?
       document.getElementById('aov').dispatchEvent(new Event('input'));
     }
     
-    // Revised moveUp and moveDown functions to use syncAltitude so that altitude changes via view controls are synchronized.
     function moveUp() {
       const newAltitude = Math.min(500, drone.position.y + 1);
       syncAltitude(newAltitude);
