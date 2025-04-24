@@ -221,7 +221,7 @@
     /* View Control Buttons */
     #viewControls {
       position: fixed;
-      bottom: 20px;
+      bottom: 60px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -451,7 +451,8 @@
     <div class="droneAltitudeContainer">
       <label for="droneAltitudeSlider">
         <span data-i18n="Drone Altitude:" data-i18n-zh="無人機高度：">Drone Altitude:</span>
-        <span id="droneAltitudeValue">0</span> m
+        <!-- Drone Altitude now uses an input box for direct entry -->
+        <input type="number" id="droneAltitudeValue" value="0" step="any" style="width:60px;"> m
       </label>
       <input type="range" id="droneAltitudeSlider" min="0" max="500" value="0" step="0.1">
     </div>
@@ -459,7 +460,8 @@
     <div>
       <label for="aov">
         <span data-i18n="Horizontal AOV:" data-i18n-zh="水平視角:">Horizontal AOV:</span>
-        <span id="aovValue">70</span> °
+        <!-- Value display changed to an input box -->
+        <input type="number" id="aovValue" value="70" step="any" style="width:60px;"> °
       </label>
       <input type="range" id="aov" min="30" max="120" value="70" step="0.1">
     </div>
@@ -528,14 +530,16 @@
     <div>
       <label for="calc1Altitude">
         <span data-i18n="Altitude:" data-i18n-zh="高度：">Altitude:</span>
-        <span id="calc1AltitudeValue">0</span> m
+        <!-- Value display changed to an input box -->
+        <input type="number" id="calc1AltitudeValue" value="0" step="any" style="width:60px;"> m
       </label>
       <input type="range" id="calc1Altitude" min="0" max="500" value="0" step="0.1" tabindex="0">
     </div>
     <div>
       <label for="calc1FOVWidth">
         <span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
-        <span id="calc1FOVWidthValue">0</span> m
+        <!-- Value display changed to an input box -->
+        <input type="number" id="calc1FOVWidthValue" value="0" step="any" style="width:60px;"> m
       </label>
       <input type="range" id="calc1FOVWidth" min="0" max="1732" value="0" step="0.1" tabindex="0">
     </div>
@@ -563,16 +567,17 @@
     <div>
       <label for="calc2FOVWidth">
         <span data-i18n="FOV Width:" data-i18n-zh="視角寬度：">FOV Width:</span>
-        <span id="calc2FOVWidthValue">0</span> m
+        <!-- Value display changed to an input box. Note: This input is now independent so that manual editing is preserved. -->
+        <input type="number" id="calc2FOVWidthValue" value="0" step="any" style="width:60px;"> m
       </label>
       <input type="range" id="calc2FOVWidth" min="0" max="1732" value="0" step="0.1">
     </div>
     <div>
       <label for="calc2DiagonalAOV">
         <span data-i18n="Diagonal AOV:" data-i18n-zh="對角視角：">Diagonal AOV:</span>
-        <span id="calc2DiagonalAOVValue">30.0</span> ° 
+        <!-- Value display changed to an input box -->
+        <input type="number" id="calc2DiagonalAOVValue" value="30.0" step="any" style="width:60px;"> °
       </label>
-      <!-- Diagonal slider default now is 30 -->
       <input type="range" id="calc2DiagonalAOV" min="0" max="120" value="30" step="0.1">
     </div>
     <div id="calc2Results">
@@ -1323,21 +1328,23 @@
      * Utility & Sync Functions
      *****************/
     
-function syncAltitude(newAltitude) {
-  // Clamp the altitude so it cannot be less than 0.
-  newAltitude = Math.max(newAltitude, 0);
-  
-  // Set drone altitude and update section 1 display.
-  drone.position.y = newAltitude;
-  const altSlider = document.getElementById('droneAltitudeSlider');
-  if (altSlider) {
-    altSlider.value = newAltitude;
-    document.getElementById('droneAltitudeValue').textContent = newAltitude.toFixed(1);
-  }
-  document.getElementById('altitudeValue').textContent = newAltitude.toFixed(1);
-  updateFOV();
-  updateCamera();
-}
+    function syncAltitude(newAltitude) {
+      // Clamp the altitude so it cannot be less than 0.
+      newAltitude = Math.max(newAltitude, 0);
+      
+      // Set drone altitude and update section 1 display.
+      drone.position.y = newAltitude;
+      const altSlider = document.getElementById('droneAltitudeSlider');
+      if (altSlider) {
+        altSlider.value = newAltitude;
+        // For compatibility, if using the number input, update its value:
+        const altNumberInput = document.getElementById('droneAltitudeValue');
+        if (altNumberInput) altNumberInput.value = newAltitude.toFixed(1);
+      }
+      document.getElementById('altitudeValue').textContent = newAltitude.toFixed(1);
+      updateFOV();
+      updateCamera();
+    }
     
     // Update section 1 AOV displays using the current aov slider value
     function updateRightPanelSync(horizontalAOV, verticalAOV, diagonalAOV, width, altitude) {
@@ -1348,24 +1355,17 @@ function syncAltitude(newAltitude) {
     
     document.getElementById('calc2FOVWidth').addEventListener('input', function() {
       const newWidth = parseFloat(this.value);
-      document.getElementById('calc2FOVWidthValue').textContent = newWidth.toFixed(1);
-      // Synchronize the FOV Width value from Section 3 to Section 2:
-      document.getElementById('calc1FOVWidth').value = newWidth;
-      document.getElementById('calc1FOVWidthValue').textContent = newWidth.toFixed(1);
-      // Now update the calculated AOV values (Section 2) and the 3D display:
-      updateCalc1AOV();
-      // And also update the required altitude calculations (Section 3)
+      document.getElementById('calc2FOVWidthValue').value = newWidth.toFixed(1);
+      // (No auto-sync from section 2 for calc2FOVWidth now.)
       updateRequiredAltitude();
     });
     
     // Event listener for the Diagonal AOV slider in Section 3.
     document.getElementById('calc2DiagonalAOV').addEventListener('input', function() {
       const newDiag = parseFloat(this.value);
-      document.getElementById('calc2DiagonalAOVValue').textContent = newDiag.toFixed(1);
+      document.getElementById('calc2DiagonalAOVValue').value = newDiag.toFixed(1);
       // When diagonal AOV is changed, update the required altitude multipliers.
       updateRequiredAltitude();
-      // No need to call updateCalc1AOV() separately because updateRequiredAltitude() now
-      // updates the calc1Altitude slider and then calls updateCalc1AOV().
     });
     
     // Modified updateRequiredAltitude: After computing requiredAltitude, update the calc1Altitude input.
@@ -1373,6 +1373,7 @@ function syncAltitude(newAltitude) {
       const aspectRatio = parseFloat(
         document.querySelector('#controls .aspectRatioBtn.active').getAttribute('data-ratio')
       );
+      // Use the value from Section 3's FOV Width, which now is edited independently.
       const fovWidth = parseFloat(document.getElementById('calc2FOVWidth').value);
       const diagAOV = parseFloat(document.getElementById('calc2DiagonalAOV').value);
       if (diagAOV <= 0) return;
@@ -1389,7 +1390,7 @@ function syncAltitude(newAltitude) {
       
       // Also update Section 2's altitude slider value.
       document.getElementById('calc1Altitude').value = requiredAltitude;
-      document.getElementById('calc1AltitudeValue').textContent = requiredAltitude.toFixed(1);
+      document.getElementById('calc1AltitudeValue').value = requiredAltitude.toFixed(1);
       
       // Update the Section 2 calculations with the new altitude.
       updateCalc1AOV();
@@ -1402,8 +1403,8 @@ function syncAltitude(newAltitude) {
       const fovWidth = parseFloat(document.getElementById('calc1FOVWidth').value);
       
       // Update displays for altitude and FOV Width in Section 2.
-      document.getElementById('calc1AltitudeValue').textContent = altitude.toFixed(1);
-      document.getElementById('calc1FOVWidthValue').textContent = fovWidth.toFixed(1);
+      document.getElementById('calc1AltitudeValue').value = altitude.toFixed(1);
+      document.getElementById('calc1FOVWidthValue').value = fovWidth.toFixed(1);
       
       // Update drone altitude (and Section 1) using syncAltitude.
       syncAltitude(altitude);
@@ -1411,9 +1412,7 @@ function syncAltitude(newAltitude) {
       // Update Section 1's FOV Width display.
       document.getElementById('widthValue').textContent = fovWidth.toFixed(1);
       
-      // Synchronize Section 3's FOV Width slider.
-      document.getElementById('calc2FOVWidth').value = fovWidth;
-      document.getElementById('calc2FOVWidthValue').textContent = fovWidth.toFixed(1);
+      // (Do not auto-sync calc2FOVWidth here anymore.)
     
       const aspectRatio = parseFloat(
         document.querySelector('#controls .aspectRatioBtn.active').getAttribute('data-ratio')
@@ -1436,7 +1435,7 @@ function syncAltitude(newAltitude) {
       
       // Update the horizontal AOV slider value so that updateFOV() is in sync.
       document.getElementById('aov').value = horizontalAOV.toFixed(1);
-      document.getElementById('aovValue').textContent = horizontalAOV.toFixed(1);
+      document.getElementById('aovValue').value = horizontalAOV.toFixed(1);
       
       // Recalculate Section 1's vertical and diagonal AOV (FOV drawing) based on the horizontal AOV.
       const currentHorizontalAOV = parseFloat(document.getElementById('aov').value);
@@ -1605,20 +1604,99 @@ function syncAltitude(newAltitude) {
       }
       initBuildingButtons();
     
+      // When the horizontal AOV slider changes, update the FOV.
       document.getElementById('aov').addEventListener('input', updateFOV);
-    
+      
+      // Event listener for Drone Altitude number input with validation.
+      document.getElementById('droneAltitudeValue').addEventListener('change', function(){
+        const val = parseFloat(this.value);
+        const min = 0, max = 500;
+        if(val < min || val > max) {
+          alert(getTranslation("Value out-of-range. Please enter a value between " + min + " and " + max + ".", "輸入數值超出範圍，請輸入介於 " + min + " 與 " + max + " 之間的值。"));
+          this.value = Math.min(Math.max(val, min), max).toFixed(1);
+        }
+        let newAlt = parseFloat(this.value);
+        document.getElementById('droneAltitudeSlider').value = newAlt;
+        syncAltitude(newAlt);
+      });
+      
+      // Event listener for Horizontal AOV number input.
+      document.getElementById('aovValue').addEventListener('change', function(){
+        const val = parseFloat(this.value);
+        const min = 30, max = 120;
+        if(val < min || val > max) {
+          alert(getTranslation("Value out-of-range. Please enter a value between " + min + " and " + max + ".", "輸入數值超出範圍，請輸入介於 " + min + " 與 " + max + " 之間的值。"));
+          this.value = Math.min(Math.max(val, min), max).toFixed(1);
+        }
+        const newAOV = parseFloat(this.value);
+        document.getElementById('aov').value = newAOV;
+        updateFOV();
+      });
+      
+      // Event listener for Calc1 Altitude number input.
+      document.getElementById('calc1AltitudeValue').addEventListener('change', function(){
+        const val = parseFloat(this.value);
+        const min = 0, max = 500;
+        if(val < min || val > max){
+          alert(getTranslation("Value out-of-range. Please enter a value between " + min + " and " + max + ".", "輸入數值超出範圍，請輸入介於 " + min + " 與 " + max + " 之間的值。"));
+          this.value = Math.min(Math.max(val, min), max).toFixed(1);
+        }
+        const newAlt = parseFloat(this.value);
+        document.getElementById('calc1Altitude').value = newAlt;
+        updateCalc1AOV();
+      });
+      
+      // Event listener for Calc1 FOV Width number input.
+      document.getElementById('calc1FOVWidthValue').addEventListener('change', function(){
+        const val = parseFloat(this.value);
+        const min = 0, max = 1732;
+        if(val < min || val > max){
+          alert(getTranslation("Value out-of-range. Please enter a value between " + min + " and " + max + ".", "輸入數值超出範圍，請輸入介於 " + min + " 與 " + max + " 之間的值。"));
+          this.value = Math.min(Math.max(val, min), max).toFixed(1);
+        }
+        const newWidth = parseFloat(this.value);
+        document.getElementById('calc1FOVWidth').value = newWidth;
+        updateCalc1AOV();
+      });
+      
+      // Event listener for Calc2 FOV Width number input.
+      document.getElementById('calc2FOVWidthValue').addEventListener('change', function(){
+        const val = parseFloat(this.value);
+        const min = 0, max = 1732;
+        if(val < min || val > max){
+          alert(getTranslation("Value out-of-range. Please enter a value between " + min + " and " + max + ".", "輸入數值超出範圍，請輸入介於 " + min + " 與 " + max + " 之間的值。"));
+          this.value = Math.min(Math.max(val, min), max).toFixed(1);
+        }
+        const newWidth = parseFloat(this.value);
+        document.getElementById('calc2FOVWidth').value = newWidth;
+        updateRequiredAltitude();
+      });
+      
+      // Event listener for Calc2 Diagonal AOV number input.
+      document.getElementById('calc2DiagonalAOVValue').addEventListener('change', function(){
+        const val = parseFloat(this.value);
+        const min = 0, max = 120;
+        if(val < min || val > max){
+          alert(getTranslation("Value out-of-range. Please enter a value between " + min + " and " + max + ".", "輸入數值超出範圍，請輸入介於 " + min + " 與 " + max + " 之間的值。"));
+          this.value = Math.min(Math.max(val, min), max).toFixed(1);
+        }
+        const newDiag = parseFloat(this.value);
+        document.getElementById('calc2DiagonalAOV').value = newDiag;
+        updateRequiredAltitude();
+      });
+      
+      // Also update slider events to reflect any changes from direct entry.
       // When left panel drone altitude changes, update Section 2 as well.
       if(document.getElementById('droneAltitudeSlider')) {
         document.getElementById('droneAltitudeSlider').addEventListener('input', function() {
           const newAlt = parseFloat(this.value);
           syncAltitude(newAlt);
           document.getElementById('calc1Altitude').value = newAlt;
-          document.getElementById('calc1AltitudeValue').textContent = newAlt.toFixed(1);
+          document.getElementById('calc1AltitudeValue').value = newAlt.toFixed(1);
           updateCalc1AOV();
         });
       }
-    
-      // Section 2 (calc1 sliders) events already set above.
+      
       document.querySelector('.aspectRatioBtn[data-ratio="1.5"]').click();
     
       updateFOV();
@@ -1844,7 +1922,7 @@ function syncAltitude(newAltitude) {
       centerLabel = createCenterLabel('O', centerPosition);
       scene.add(centerLabel);
       
-      document.getElementById('aovValue').textContent = aov.toFixed(1);
+      document.getElementById('aovValue').value = aov.toFixed(1);
       document.getElementById('vaovValue').textContent = altitude > 0 ? verticalAOV.toFixed(1) : '0.0';
       document.getElementById('daovValue').textContent = diagonalAOV.toFixed(1);
       
