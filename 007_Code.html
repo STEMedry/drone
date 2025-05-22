@@ -24,9 +24,10 @@ p[data-translate="instruction"] { margin: 2px 0 5px; }
 }
 #command-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 5px; }
 .button-row { display: flex; align-items: center; gap: 5px; }
-.button-row input, .button-row select { width: 50px; padding: 3px; }
+.button-row input, .button-row select { padding: 3px; }
+.button-row input { width: 60px; }
 button {
-  padding: 5px; font-size: 16px; color: white; border: none;
+  padding: 5px; font-size: 12px; color: white; border: none;
   border-radius: 3px; cursor: pointer;
 }
 .green-button { background: #4CAF50; }
@@ -43,8 +44,8 @@ button {
   position: absolute; top: 10px; background: #6A5ACD; color: white;
   border: none; border-radius: 3px; cursor: pointer;
 }
-#help-button { right: 10px; padding: 8px 14px; font-size: 14px; }
-#game-button { right: 90px; padding: 8px 12px; font-size: 14px; }
+#help-button { right: 10px; padding: 5px 14px; font-size: 14px; }
+#game-button { right: 90px; padding: 5px 12px; font-size: 14px; }
 #code-input { width: 95%; height: 200px; resize: vertical; }
 #message { margin-top: 5px; font-weight: bold; min-height: 10px; text-align: left; }
 #view-controls { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
@@ -136,20 +137,28 @@ button {
           <span>to</span>
           <input type="text" id="var-value" placeholder="value">
         </div>
+        <!-- UPDATED: If... then -->
         <div class="button-row">
           <button class="blue-button" onclick="addCommand('ifThen')" data-translate="ifThen">If... then</button>
-          <input type="text" id="if-condition" placeholder="condition" style="width:275px;">
+          <input type="text" id="if-condition" placeholder="condition">
+          <span>then</span>
+          <input type="text" id="if-then-action" placeholder="action">
         </div>
+        <!-- UPDATED: If... then... else -->
         <div class="button-row">
           <button class="blue-button" onclick="addCommand('ifThenElse')" data-translate="ifThenElse">If... then... else</button>
-          <input type="text" id="if-condition-else" placeholder="condition" style="width:230px;">
+          <input type="text" id="if-condition-else" placeholder="condition">
+          <span>then</span>
+          <input type="text" id="if-then-action-else" placeholder="action">
+          <span>else</span>
+          <input type="text" id="if-else-action" placeholder="action">
         </div>
         <!-- New XYZ increase -->
         <div class="button-row">
           <button class="blue-button" onclick="addCommand('xyzIncrease')" data-translate="xyzIncrease">XYZ increase</button>
-          <input type="text" id="xyz-x" placeholder="x" style="width:40px;">
-          <input type="text" id="xyz-y" placeholder="y" style="width:40px;">
-          <input type="text" id="xyz-z" placeholder="z" style="width:40px;">
+          <input type="text" id="xyz-x" placeholder="x">
+          <input type="text" id="xyz-y" placeholder="y">
+          <input type="text" id="xyz-z" placeholder="z">
         </div>
       </div>
       <textarea id="code-input"></textarea><br>
@@ -351,7 +360,6 @@ button {
       dg.scale.copy(DEFAULT_DRONE_STATE.scale);
       scene.add(dg); drone=dg;
     }
-
     function createCoordinatePlane(){
       const size=200, divisions=20;
       gridHelper=new THREE.GridHelper(size,divisions,0xcccccc,0xcccccc); scene.add(gridHelper);
@@ -360,27 +368,20 @@ button {
         const mat=new THREE.MeshBasicMaterial({color:0x000000});
         for(let i=-100;i<=100;i+=10){
           if(i!==0){
-            // X-axis labels (unchanged)
-            createText(font,mat,i.toString(), i, 0, -100);
-            // Y-axis labels reversed: positive toward front (z negative)
-            createText(font,mat,(-i).toString(), -100, 0, i);
+            createText(font,mat,i.toString(),i,0,-100);
+            createText(font,mat,(-i).toString(),-100,0,i);
           }
         }
-        // X axis letter
         createText(font,mat,'X',101,0,0);
-        // Move Y letter to front (z = -101)
         createText(font,mat,'Y',0,0,-101);
-        // Z axis letter (vertical) unchanged
         createText(font,mat,'Z',0,101,0);
       });
     }
-
     function createText(font,material,text,x,y,z){
       const geo=new THREE.TextGeometry(text,{font,font,size:5,height:0.5}),
             mesh=new THREE.Mesh(geo,material);
       mesh.position.set(x,y,z); scene.add(mesh);
     }
-
     function addDirectionIndicators(){
       addDirectionIndicator(new THREE.Vector3(120,0,0),'Right',0xff0000);
       addDirectionIndicator(new THREE.Vector3(-120,0,0),'Left',0xff0000);
@@ -389,14 +390,12 @@ button {
       addDirectionIndicator(new THREE.Vector3(0,0,120),'Rear',0x0000ff);
       addDirectionIndicator(new THREE.Vector3(0,0,-120),'Front',0x0000ff);
     }
-
     function addDirectionIndicator(position,text,color){
       const canvas=document.createElement('canvas'),
             ctx=canvas.getContext('2d');
       canvas.width=canvas.height=256;
       ctx.fillStyle=`rgb(${(color>>16)&255},${(color>>8)&255},${color&255})`;
-      ctx.font='Bold 40px Arial';
-      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.font='Bold 40px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillText(text,128,128);
       const texture=new THREE.CanvasTexture(canvas),
             mat=new THREE.SpriteMaterial({map:texture}),
@@ -404,7 +403,6 @@ button {
       sprite.position.copy(position); sprite.scale.set(20,20,20);
       scene.add(sprite);
     }
-
     function addWatermark(){
       const loader=new THREE.FontLoader();
       loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',font=>{
@@ -414,7 +412,6 @@ button {
         mesh.rotation.x=-Math.PI/2; mesh.position.set(50,0.1,0); scene.add(mesh);
       });
     }
-
     function addWatermarkSTEM(){
       const loader=new THREE.FontLoader();
       loader.load('https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',font=>{
@@ -424,7 +421,6 @@ button {
         mesh.rotation.y=Math.PI/2; mesh.position.set(0,0.1,100); scene.add(mesh);
       });
     }
-
     function addVerticalLines(){
       const mat=new THREE.LineBasicMaterial({color:0xcccccc});
       for(let y=20;y<=100;y+=20){
@@ -464,6 +460,7 @@ button {
       let command='', parameter='';
       const getVal=id=>document.getElementById(id).value.trim()||null;
       const isNum=v=>!isNaN(parseFloat(v))&&isFinite(v);
+
       switch(commandType){
         case 'takeOff': command='takeOff'; break;
         case 'land':    command='land';    break;
@@ -511,14 +508,30 @@ button {
           const vn=getVal('var-name'), vv=getVal('var-value');
           if(!vn||!vv){ alert(translations[currentLanguage].setVariableAlert); return;}
           command=`set ${vn} to ${vv}`; break;
-        case 'ifThen':
-          parameter=getVal('if-condition');
-          if(!parameter){ alert(translations[currentLanguage].ifThenAlert); return;}
-          command=`if ${parameter} then\n{\n\n}`; break;
-        case 'ifThenElse':
-          parameter=getVal('if-condition-else');
-          if(!parameter){ alert(translations[currentLanguage].ifThenElseAlert); return;}
-          command=`if ${parameter} then\n{\n\n} else\n{\n\n}`; break;
+        case 'ifThen': {
+          const cond=getVal('if-condition'),
+                act=getVal('if-then-action');
+          if(!cond){ alert(translations[currentLanguage].ifThenAlert); return; }
+          if(!act){ alert("Please enter an action for 'then'."); return; }
+          command=
+            `if ${cond} then\n`+
+            `{\n  ${act}\n}`;
+          break;
+        }
+        case 'ifThenElse': {
+          const cond=getVal('if-condition-else'),
+                thenAct=getVal('if-then-action-else'),
+                elseAct=getVal('if-else-action');
+          if(!cond){ alert(translations[currentLanguage].ifThenElseAlert); return; }
+          if(!thenAct){ alert("Please enter an action for 'then'."); return; }
+          if(!elseAct){ alert("Please enter an action for 'else'."); return; }
+          command=
+            `if ${cond} then\n`+
+            `{\n  ${thenAct}\n}\n`+
+            `else\n`+
+            `{\n  ${elseAct}\n}`;
+          break;
+        }
         case 'xyzIncrease':
           const x=getVal('xyz-x'), y=getVal('xyz-y'), z=getVal('xyz-z');
           if(!x||!y||!z){ alert(translations[currentLanguage].xyzIncreaseAlert); return;}
@@ -625,7 +638,7 @@ button {
         updateRunButton(); return;
       }
 
-      // ── Reset to origin ──
+      // Reset to origin
       dronePosition.copy(DEFAULT_DRONE_STATE.position);
       drone.position.copy(DEFAULT_DRONE_STATE.position);
       drone.rotation.copy(DEFAULT_DRONE_STATE.rotation);
@@ -652,13 +665,8 @@ button {
         const parts=command.split(' '), base=parts[0].toLowerCase(), param=parts[1]?parseFloat(parts[1]):null;
 
         if(base==='xyzincrease'){
-          // ── Smooth XYZ ──
-          const x=parseFloat(parts[1]), 
-                y=parseFloat(parts[2]), 
-                z=parseFloat(parts[3]);
-          // we still map y→negative z for the drone's front/back movement
-          xyzIncreaseDrone(x,z,-y).then(resolve); 
-          return;
+          const x=parseFloat(parts[1]), y=parseFloat(parts[2]), z=parseFloat(parts[3]);
+          xyzIncreaseDrone(x,z,-y).then(resolve); return;
         }
 
         switch(base){
@@ -736,7 +744,6 @@ button {
       dronePosition.add(mv);
       drone.position.copy(dronePosition);
     }
-    // Smooth XYZ increase
     function xyzIncreaseDrone(dx,dy,dz){
       return new Promise(resolve=>{
         const steps=20, stepDur=50;
@@ -872,7 +879,7 @@ button {
     }
     window.onclick=function(e){ if(e.target==tutorialModal) closeTutorial(); };
 
-    // Start
+    // ── START EVERYTHING ──
     initGame();
     updateLanguage();
     updateRunButton();
