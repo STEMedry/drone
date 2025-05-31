@@ -19,7 +19,6 @@
   <div id="canvas-container"></div>
 
   <script type="module">
-    // Import Three.js and necessary modules
     import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.153.0/build/three.module.js';
     import { STLLoader } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/loaders/STLLoader.js';
     import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.153.0/examples/jsm/controls/OrbitControls.js';
@@ -29,7 +28,7 @@
     const scene = new THREE.Scene();
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    camera.position.set(0, 50, 200); // Adjust camera position for better view
+    camera.position.set(0, 200, 500); // Adjust camera position
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -38,10 +37,10 @@
 
     // Orbit controls for interaction
     const controls = new OrbitControls(camera, renderer.domElement);
-    controls.enableDamping = true; // Smooth controls
+    controls.enableDamping = true; // Smooth interaction
 
-    // Grid helper for debugging the scene
-    const gridHelper = new THREE.GridHelper(200, 50);
+    // Grid helper for debugging
+    const gridHelper = new THREE.GridHelper(500, 50);
     scene.add(gridHelper);
 
     // Lighting
@@ -55,27 +54,22 @@
     // Load STL model
     const loader = new STLLoader();
     loader.load(
-      'https://yourusername.github.io/repository-name/model.stl', // Replace with your GitHub Pages URL
+      'https://stemedry.github.io/drone/model.stl', // Your GitHub Pages URL for the .stl file
       (geometry) => {
-        // Compute the bounding box for debugging
-        geometry.computeBoundingBox();
-        const bbox = geometry.boundingBox;
-        const size = new THREE.Vector3();
-        bbox.getSize(size);
-        console.log('Model size:', size);
+        console.log('STL file loaded:', geometry); // Debug log
 
-        // Create a mesh with the geometry
         const material = new THREE.MeshStandardMaterial({ color: 0x007bff });
         const mesh = new THREE.Mesh(geometry, material);
 
-        // Scale down if the model is too large
-        mesh.scale.set(0.01, 0.01, 0.01);
+        // Scale down the model if it's too large
+        mesh.scale.set(0.1, 0.1, 0.1);
 
         scene.add(mesh);
+        console.log('Model added to scene:', mesh); // Debug log
       },
       undefined,
       (error) => {
-        console.error('An error occurred while loading the STL file:', error);
+        console.error('Error loading STL file:', error); // Debug log
       }
     );
 
