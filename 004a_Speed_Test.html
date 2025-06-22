@@ -462,9 +462,9 @@
         'indepLabelTooltipText': '距離是物體移動的遠度，單位為米 (m)。',
         'dependentVarTooltip': '因變量：',
         'depVarTooltipText': '因變量是在實驗中被測試和測量的變量。它依賴於自變量。',
-        'avgSpeedTooltip': '速度 (m/s)：',
-        'avgSpeedTooltipText': '速度計算為總距離除以總時間。',
-        'averageLabel': '平均速度：',
+        'avgSpeedTooltip': '速率 (m/s)：',
+        'avgSpeedTooltipText': '速率計算為總距離除以總時間。',
+        'averageLabel': '平均速率：',
         'exportButton': '匯出 CSV',
         'languageSwitcher': 'English',
         'experiment': '實驗',
@@ -879,7 +879,7 @@
           ? "(R² = " : "(R² = ") + rSquared.toFixed(2) + ")";
     
         const averageSpeed = (independentVariableSelect.value === "distance" ? 1 / slope : slope);
-        const relationshipText = (currentLanguage === "zh-TW" ? "平均速度 = " : "Average Speed = ") + averageSpeed.toFixed(3) + " m/s";
+        const relationshipText = (currentLanguage === "zh-TW" ? "平均速率 = " : "Average Speed = ") + averageSpeed.toFixed(3) + " m/s";
         trendlineAnnotation.textContent = relationshipText;
         averageSpeedDisplay.textContent = averageSpeed.toFixed(3) + " m/s";
       }
@@ -947,7 +947,7 @@
     // Export CSV functionality.
     exportButton.addEventListener("click", () => {
       let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += currentLanguage === "zh-TW" ? "速度測試實驗結果\n\n" : "Speed Test Experiment Results\n\n";
+      csvContent += currentLanguage === "zh-TW" ? "速率測試實驗結果\n\n" : "Speed Test Experiment Results\n\n";
       csvContent += (currentLanguage === "zh-TW" ? "自變量," : "Independent Variable,") +
         (independentVariableSelect.value === "distance"
           ? (currentLanguage === "zh-TW" ? "距離 (m)" : "Distance (m)")
@@ -959,7 +959,7 @@
         currentLanguage === "zh-TW" ? "試驗 2" : "Trial 2",
         currentLanguage === "zh-TW" ? "試驗 3" : "Trial 3",
         currentLanguage === "zh-TW" ? "試驗 4" : "Trial 4",
-        currentLanguage === "zh-TW" ? "速度 (m/s)" : "Speed (m/s)"
+        currentLanguage === "zh-TW" ? "速率 (m/s)" : "Speed (m/s)"
       ];
       csvContent += headers.join(",") + "\n";
     
@@ -979,7 +979,7 @@
       });
     
       csvContent += "\n";
-      csvContent += (currentLanguage === "zh-TW" ? "平均速度" : "Average Speed") + "," + averageSpeedDisplay.textContent + "\n";
+      csvContent += (currentLanguage === "zh-TW" ? "平均速率" : "Average Speed") + "," + averageSpeedDisplay.textContent + "\n";
     
       const trendlineEq = document.getElementById("trendlineEquation").textContent;
       const rSquared = document.getElementById("rSquaredDisplay").textContent;
@@ -989,7 +989,7 @@
       const encodedUri = encodeURI(csvContent);
       const link = document.createElement("a");
       link.setAttribute("href", encodedUri);
-      link.setAttribute("download", currentLanguage === "zh-TW" ? "速度測試實驗結果.csv" : "speed_test_experiment_results.csv");
+      link.setAttribute("download", currentLanguage === "zh-TW" ? "速率測試實驗結果.csv" : "speed_test_experiment_results.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
