@@ -1,1470 +1,949 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GNSS Satellite Positioning of Drone</title>
-    <style>
-        /* Ensure full height for html and body */
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Body as a flex container */
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;  /* Center horizontally */
-            min-height: 100vh;    /* Full viewport height */
-            padding: 10px;
-            box-sizing: border-box;
-        }
-
-        h1 {
-            text-align: center;
-            margin: 0 0 5px 0;
-            width: 100%;
-            font-size: 24px;
-        }
-
-        .header-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto 10px auto;
-            box-sizing: border-box;
-        }
-
-        .header-buttons {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        /* Main container */
-        .container {
-            display: flex;
-            flex-direction: row; /* Side by side layout */
-            gap: 10px;
-            align-items: flex-start;
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            box-sizing: border-box;
-            flex: 1; /* Allow to grow and fill available space */
-        }
-
-        /* Left panel */
-        .left-panel {
-            display: flex;
-            flex-direction: column;
-            flex: 2;            /* Adjust relative to .right-panel */
-            gap: 10px;
-            box-sizing: border-box;
-        }
-
-        /* Visualization area */
-        .visualization {
-            position: relative;
-            flex: 1;            /* Allow it to grow and fill space */
-            width: 100%;
-            box-sizing: border-box;
-            aspect-ratio: 1 / 1; /* Maintain square aspect ratio */
-        }
-
-        /* Canvas styling */
-        canvas {
-            border: 1px solid #000;
-            cursor: grab;
-            touch-action: none;
-            height: 100%;       /* Fill the container */
-            width: 100%;        /* Fill the container */
-        }
-
-        canvas:active {
-            cursor: grabbing;
-        }
-
-        /* Table Styling */
-        table {
-            border-collapse: collapse;
-            width: 100%;
-            table-layout: fixed;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 2px;  /* Reduced padding */
-            text-align: center;
-            height: 17px;  /* Further reduced height */
-            line-height: 17px;  /* Further reduced line height */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            box-sizing: border-box;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .sat-x, .sat-y {
-            width: 50px;
-            text-align: center;
-        }
-
-        .distance-display {
-            background-color: #f8f8f8;
-            padding: 5px;
-            width: 60px;
-            text-align: center;
-            display: inline-block;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            box-sizing: border-box;
-        }
-
-        /* Right panel */
-        .right-panel {
-            flex: 1;            /* Allocate appropriate space */
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            box-sizing: border-box;
-        }
-
-        /* Button Styling */
-        button {
-            padding: 5px 10px;
-            cursor: pointer;
-            width: 120px; /* This will be overridden for the first button row */
-            font-size: 14px;
-            box-sizing: border-box;
-            border: none; /* Remove default border */
-            border-radius: 4px; /* Rounded corners */
-            color: white; /* Default text color */
-        }
-
-        /* New styles for the first button row */
-        .button-row-full {
-            display: flex;
-            width: 100%; /* Ensure the row takes full width */
-            gap: 10px;
-        }
-
-        .button-row-full button {
-            flex: 1;              /* Allows buttons to grow and fill available space equally */
-            width: auto;          /* Override the fixed width */
-            max-width: none;      /* Remove any max-width constraints */
-            background-color: orange; /* Orange background */
-            transition: background-color 0.3s; /* Smooth transition */
-        }
-
-        .button-row-full button:hover {
-            background-color: darkorange; /* Darker orange on hover */
-        }
-
-        /* New Styles for the Second Button Row */
-        .button-row-three {
-            display: flex;
-            width: 100%;        /* Ensure the row takes the full available width */
-            gap: 10px;          /* Maintain consistent spacing between buttons */
-            flex-wrap: nowrap;  /* Prevent buttons from wrapping to the next line */
-        }
-
-        .button-row-three button {
-            flex: none;         /* Reset any existing flex properties */
-            width: auto;        /* Allow buttons to adjust their width based on content */
-        }
-
-        /* Specific Widths for Individual Buttons */
-        .button-row-three #showAllSatellitesButton,
-        .button-row-three #showEffectiveSatellitesButton {
-            flex: 1;            /* These buttons will take equal, smaller space */
-        }
-
-        .triangleButton {
-            width: 80px;
-            padding: 1px;  /* Reduced padding */
-            margin: 1px 0;  /* Reduced margin */
-            height: 20px;  /* Fixed height */
-            font-size: 12px;
-            box-sizing: border-box;
-        }
-
-        .button-row {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-start;
-            flex-wrap: wrap;
-            box-sizing: border-box;
-        }
-
-        .satellite-table {
-            max-height: none;
-            overflow-y: visible;
-            box-sizing: border-box;
-        }
-
-        .signal-counter {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        @media (max-width: 1200px) {
-            .container {
-                flex-direction: column;
-            }
-            .right-panel {
-                width: 100%;
-            }
-            .button-row {
-                justify-content: center;
-            }
-            .left-panel {
-                width: 100%;
-            }
-        }
-
-        .satellite-detected {
-            background-color: yellow;
-        }
-
-        .triangle-detected {
-            background-color: lightgreen;
-        }
-
-        .triangle-detected.clicked {
-            background-color: orange !important;
-        }
-
-        .langButton {
-            background-color: #4CAF50;
-            font-weight: bold;
-            color: white;
-            cursor: pointer;
-            width: 120px;
-            font-size: 14px;
-            box-sizing: border-box;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .langButton:hover {
-            background-color: #90EE90;
-        }
-
-        .back-button {
-            background-color: #0750ed;
-            font-weight: bold;
-            color: white;
-            padding: 8px 16px;
-            cursor: pointer;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 16px;
-            min-width: 60px;  /* Maintained */
-            text-align: center;  /* Maintained */
-            display: inline-block;  /* Maintained */
-            white-space: nowrap;  /* Maintained */
-            box-sizing: border-box;
-            transition: background-color 0.3s;
-        }
-
-        .back-button:hover {
-            background-color: #0f28b8;
-        }
-
-        /* Green Tutorial Button */
-        #tutorialButton {
-            background-color: #28a745; /* Bootstrap's green */
-            color: white;
-        }
-
-        #tutorialButton:hover {
-            background-color: #218838; /* Darker green on hover */
-        }
-
-        /* Red Reset Button */
-        #resetButton {
-            background-color: #dc3545; /* Bootstrap's red */
-            color: white;
-        }
-
-        #resetButton:hover {
-            background-color: #c82333; /* Darker red on hover */
-        }
-
-        /* Style the "Show All Satellites" button to match orange buttons */
-        #showAllSatellitesButton {
-            background-color: orange; /* Orange background */
-            color: white; /* White text for contrast */
-            transition: background-color 0.3s; /* Smooth transition */
-        }
-
-        #showAllSatellitesButton:hover {
-            background-color: darkorange; /* Darker orange on hover */
-        }
-
-        /* Modal Styles for Tutorial */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
-            top: 0;
-            width: 100%; /* Full width */
-            height: 100%; /* Full height */
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.5); /* Black w/ opacity */
-            box-sizing: border-box;
-        }
-
-        .modal-content {
-            background-color: #fefefe;
-            margin: 5% auto; /* Center vertically with slight top margin */
-            padding: 20px;
-            border: 1px solid #888;
-            width: 60%; /* Width of modal */
-            border-radius: 10px;
-            max-height: 80%;
-            overflow-y: auto;
-            box-sizing: border-box;
-        }
-
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            box-sizing: border-box;
-        }
-
-        .close:hover,
-        .close:focus {
-            color: black;
-            text-decoration: none;
-        }
-
-        .tutorial-controls {
-            margin-top: 20px;
-            text-align: right;
-        }
-
-        .tutorial-controls button {
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 14px;
-            box-sizing: border-box;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-        }
-
-        .tutorial-controls button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Assessment Task Styles */
-        .assessment-task {
-            border: 1px solid #ddd;
-            padding: 10px;
-            border-radius: 5px;
-            background-color: #f9f9f9;
-            box-sizing: border-box;
-            width: 100%; /* Ensure it spans the full width */
-        }
-
-        .assessment-task h2 {
-            margin-top: 0;
-            font-size: 18px;
-        }
-
-        /* Blinking Effect */
-        @keyframes blink {
-            0% { opacity: 1; }
-            50% { opacity: 0; }
-            100% { opacity: 1; }
-        }
-        .blink {
-            animation: blink 1s infinite;
-        }
-
-        /* Reduce font size and cell height for the satellite table */
-        .satellite-table table th, 
-        .satellite-table table td {
-            font-size: 12px; /* Reduce font size from 14px to 12px */
-            padding: 2px; /* Reduce padding from 5px to 2px */
-            height: 10px; /* Reduce cell height for better readability */
-            line-height: 10px; /* Align text vertically within the cell */
-        }
-
-        /* Optional: Adjust the header background for better contrast */
-        .satellite-table table th {
-            background-color: #f2f2f2; /* Light gray background */
-            font-weight: bold; /* Bold text for headers */
-        }
-
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>GNSS Satellite Positioning of Drone</title>
+<style>
+body { font-family: Arial,sans-serif; margin:0; padding:10px; display:flex; flex-direction:column; align-items:center; min-height:100vh; box-sizing:border-box; }
+h1 { text-align:center; margin:0 0 5px; width:100%; font-size:24px; }
+.header-container { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1200px; margin:0 auto 10px; }
+.header-buttons { display:flex; gap:10px; }
+.container { display:flex; gap:10px; width:100%; max-width:1200px; margin:0 auto; }
+.left-panel { flex:2; display:flex; flex-direction:column; gap:10px; }
+.visualization { position:relative; height:600px; width:100%; }
+canvas { border:1px solid #000; cursor:grab; touch-action:none; width:100%; height:100%; }
+canvas:active { cursor:grabbing; }
+table { border-collapse:collapse; width:100%; table-layout:fixed; }
+th, td { border:1px solid #ddd; padding:2px; text-align:center; height:14px; line-height:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-sizing:border-box; }
+th { background-color:#f2f2f2; }
+.satellite-table table th, .satellite-table table td { width:33%; min-width:70px; max-width:1fr; }
+.distance-display { background:#f8f8f8; padding:4.2px; width:60px; text-align:center; display:inline-block; box-sizing:border-box; }
+.right-panel { flex:1; display:flex; flex-direction:column; gap:10px; }
+button { padding:5px 10px; cursor:pointer; width:120px; font-size:14px; box-sizing:border-box; border:none; border-radius:4px; color:white; }
+.button-row-full { display:flex; gap:10px; }
+.button-row-full button { flex:1; background:orange; transition:0.3s; }
+.button-row-full button:hover { background:darkorange; }
+.button-row-three { display:flex; gap:10px; }
+.button-row-three #showAllSatellitesButton, .button-row-three #showEffectiveSatellitesButton { flex:1; }
+.triangleButton { width:60px; height:22px; font-size:12px; margin:1px 0; background:#888; color:white; border-radius:8px; border:none; cursor:pointer; opacity:1; transition:background 0.15s, opacity 0.15s; }
+.triangleButton.disabled { background:#ccc; color:#888; opacity:0.7; cursor:not-allowed; }
+.triangleButton.on { background: #219c42 !important; color: #fff; font-weight: bold; opacity: 1 !important; }
+.triangleButton.off { background: #888 !important; color: #fff; font-weight: normal; opacity: 1 !important; }
+.signal-counter { position:absolute; top:5px; right:10px; background:rgba(255,255,255,0.8); padding:5px 10px; border-radius:5px; font-weight:bold; white-space:pre-wrap; text-align:right; }
+.satellite-detected { background:yellow !important; }
+.distance-detected { background:#e8ffa8 !important; }
+.triangle-detected { background: #b8ffc0 !important; }
+.langButton { background:#4CAF50; }
+.langButton:hover { background:#90EE90; }
+#tutorialButton { background:#28a745; }
+#tutorialButton:hover { background:#218838; }
+#resetButton { background:#dc3545; }
+#resetButton:hover { background:#c82333; }
+#showAllSatellitesButton { background:orange; transition:0.3s; }
+#showAllSatellitesButton:hover { background:darkorange; }
+.modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.5); }
+.modal-content { background:#fff; margin:5% auto; padding:20px; width:60%; max-height:80%; overflow:auto; border-radius:10px; }
+.close { float:right; font-size:28px; cursor:pointer; }
+.tutorial-controls { margin-top:20px; text-align:right; }
+.tutorial-controls button { background:#007bff; }
+.tutorial-controls button:hover { background:#0056b3; }
+.assessment-task { border:1px solid #ddd; padding:10px; border-radius:5px; background:#f9f9f9; }
+.assessment-task h2 { margin:0 0 10px; }
+@keyframes blink { 0%,100%{opacity:1;}50%{opacity:0;} }
+.blink { animation:blink 1s infinite; }
+.positioning-header-group { display:flex; align-items:center; gap:4px; margin:4px 0 0 0; justify-content:center; }
+.positioning-header-flex { display: flex; flex-direction: column; align-items: center; justify-content:center; width: 100%; }
+.pos-toggle-btn { width:70px; height:22px; font-size:12px; border-radius:12px; border:none; outline:none; color:white; font-weight:bold; margin:0 1.5px; transition:background 0.2s; padding:0; cursor:pointer; }
+.pos-on { background:#888; color:white; }
+.pos-off { background:#219c42; color:white; }
+.pos-on.active, .pos-off.active { background:#219c42; color:white; box-shadow:0 0 3px #219c4233; }
+.pos-on:not(.active) { background:#888; }
+.pos-off:not(.active) { background:#888; }
+@media (max-width:700px) {
+.visualization { height:340px; }
+th, td { font-size:11px; }
+.triangleButton { font-size:10px; width:50px; }
+.positioning-header-group { gap:2px; }
+.pos-toggle-btn { width:56px; height:20px; font-size:10px; }
+.satellite-table table th, .satellite-table table td { min-width:50px; }
+}
+</style>
 </head>
 <body>
 
+<!-- Audio elements for radar sounds -->
+<audio id="radar1" src="radar_1.mp3" preload="auto" loop></audio>
+<audio id="radar2" src="radar_2.mp3" preload="auto" loop></audio>
+<audio id="radar3" src="radar_3.mp3" preload="auto" loop></audio>
+
 <div class="header-container">
-    <h1 id="mainTitle">GNSS Satellite Positioning of Drone <span style="font-size: 16px; font-weight: normal;">(simplified 2D simulation)</span></h1>
-    <div class="header-buttons">
-        <!-- Added Back Button -->
-        <a href="001_gallery.html" id="backButton" class="back-button">Back</a>
-        <button id="langButton" class="langButton">繁體中文</button>
-    </div>
+<h1 id="mainTitle">
+GNSS Satellite Positioning of Drone
+<span style="font-size:16px;font-weight:normal;">(simplified 2D simulation)</span>
+</h1>
+<div class="header-buttons">
+<button id="langButton" class="langButton">繁體中文</button>
 </div>
+</div>
+
 <div class="container">
-    <div class="left-panel">
-        <div class="visualization">
-            <canvas id="trilaterationCanvas"></canvas>
-            <div class="signal-counter" id="signalCounter">Satellites in range: 0</div>
-        </div>
-        
-        <!-- Assessment Task moved here -->
-        <div class="assessment-task">
-            <h2 id="assessmentTaskTitle">Assessment Task</h2>
-            <p id="assessmentTaskInstruction">Position the drone to maximize the number of satellites in range.</p>
-        </div>
-    </div>
-    
-    <div class="right-panel">
-        <!-- First Button Row -->
-        <div class="button-row button-row-full">
-            <button id="simulationButton">Drone Move</button>
-            <button id="pauseSatellitesButton">Satellite Pause</button>
-            <button id="showEffectiveSatellitesButton">Show Effective Satellites</button>
-        </div>
-        <!-- Second Button Row -->
-        <div class="button-row button-row-three">
-            <button id="showAllSatellitesButton">Show All Satellites</button>
-            <!-- Removed hideAllSatellitesButton -->
-            <button id="tutorialButton">Tutorial</button>
-            <button id="resetButton">Reset</button>
-        </div>
-        <div class="satellite-table">
-            <table>
-                <tr>
-                    <th>Satellite</th>
-                    <th>Distance</th>
-                    <th>Triangle</th>
-                </tr>
-                <!-- Existing 22 Satellites -->
-                <tr>
-                    <td>1 (Red)</td>
-                    <td><span class="distance-display" id="sat1r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="1">Triangle 1</button></td>
-                </tr>
-                <tr>
-                    <td>2 (Green)</td>
-                    <td><span class="distance-display" id="sat2r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="2">Triangle 2</button></td>
-                </tr>
-                <tr>
-                    <td>3 (Blue)</td>
-                    <td><span class="distance-display" id="sat3r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="3">Triangle 3</button></td>
-                </tr>
-                <tr>
-                    <td>4 (Purple)</td>
-                    <td><span class="distance-display" id="sat4r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="4">Triangle 4</button></td>
-                </tr>
-                <tr>
-                    <td>5 (Orange)</td>
-                    <td><span class="distance-display" id="sat5r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="5">Triangle 5</button></td>
-                </tr>
-                <tr>
-                    <td>6 (Brown)</td>
-                    <td><span class="distance-display" id="sat6r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="6">Triangle 6</button></td>
-                </tr>
-                <tr>
-                    <td>7 (Pink)</td>
-                    <td><span class="distance-display" id="sat7r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="7">Triangle 7</button></td>
-                </tr>
-                <tr>
-                    <td>8 (Gray)</td>
-                    <td><span class="distance-display" id="sat8r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="8">Triangle 8</button></td>
-                </tr>
-                <tr>
-                    <td>9 (Cyan)</td>
-                    <td><span class="distance-display" id="sat9r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="9">Triangle 9</button></td>
-                </tr>
-                <tr>
-                    <td>10 (DarkGreen)</td>
-                    <td><span class="distance-display" id="sat10r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="10">Triangle 10</button></td>
-                </tr>
-                <tr>
-                    <td>11 (Magenta)</td>
-                    <td><span class="distance-display" id="sat11r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="11">Triangle 11</button></td>
-                </tr>
-                <tr>
-                    <td>12 (Teal)</td>
-                    <td><span class="distance-display" id="sat12r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="12">Triangle 12</button></td>
-                </tr>
-                <tr>
-                    <td>13 (Gold)</td>
-                    <td><span class="distance-display" id="sat13r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="13">Triangle 13</button></td>
-                </tr>
-                <tr>
-                    <td>14 (Indigo)</td>
-                    <td><span class="distance-display" id="sat14r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="14">Triangle 14</button></td>
-                </tr>
-                <tr>
-                    <td>15 (Coral)</td>
-                    <td><span class="distance-display" id="sat15r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="15">Triangle 15</button></td>
-                </tr>
-                <tr>
-                    <td>16 (SkyBlue)</td>
-                    <td><span class="distance-display" id="sat16r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="16">Triangle 16</button></td>
-                </tr>
-                <tr>
-                    <td>17 (Maroon)</td>
-                    <td><span class="distance-display" id="sat17r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="17">Triangle 17</button></td>
-                </tr>
-                <tr>
-                    <td>18 (Olive)</td>
-                    <td><span class="distance-display" id="sat18r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="18">Triangle 18</button></td>
-                </tr>
-                <!-- New Satellites Added Below -->
-                <tr>
-                    <td>19 (Navy)</td>
-                    <td><span class="distance-display" id="sat19r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="19">Triangle 19</button></td>
-                </tr>
-                <tr>
-                    <td>20 (DarkBlue)</td>
-                    <td><span class="distance-display" id="sat20r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="20">Triangle 20</button></td>
-                </tr>
-                <tr>
-                    <td>21 (DarkRed)</td>
-                    <td><span class="distance-display" id="sat21r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="21">Triangle 21</button></td>
-                </tr>
-                <tr>
-                    <td>22 (DarkCyan)</td>
-                    <td><span class="distance-display" id="sat22r">30.00</span></td>
-                    <td><button class="triangleButton" data-sat="22">Triangle 22</button></td>
-                </tr>
-            </table>
-        </div>
-    </div>
-
-    <!-- Tutorial Modal -->
-    <div id="tutorialModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <div id="tutorialContent"></div>
-            <div class="tutorial-controls">
-                <button id="prevTutorial">Previous</button>
-                <button id="nextTutorial">Next</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const canvas = document.getElementById('trilaterationCanvas');
-            const ctx = canvas.getContext('2d');
-            let droneX = 0, droneY = 0;
-            let isDragging = false;
-            let scale = 1; // Will be updated based on canvas size
-            let offsetX = 0;
-            let offsetY = 0;
-
-            const DEFAULT_STATES = {
-                dronePosition: {
-                    x: 0,
-                    y: 0
-                },
-                triangles: new Array(22).fill(false) // Updated to 22 satellites
-            };
-
-            const satellites = [
-                { id: 1, x: -40, y: 36, r: 30, color: 'red' },
-                { id: 2, x: 0, y: 45, r: 30, color: 'green' },
-                { id: 3, x: 45, y: 42, r: 30, color: 'blue' },
-                { id: 4, x: -44, y: 3, r: 30, color: 'purple' },
-                { id: 5, x: -5, y: -3, r: 30, color: 'orange' },
-                { id: 6, x: 45, y: 0, r: 30, color: 'brown' },
-                { id: 7, x: -45, y: -45, r: 30, color: 'pink' },
-                { id: 8, x: 0, y: -45, r: 30, color: 'gray' },
-                { id: 9, x: 38, y: -42, r: 30, color: 'cyan' },
-                { id: 10, x: -30, y: 22, r: 30, color: 'darkgreen' },
-                { id: 11, x: 28, y: 32, r: 30, color: 'magenta' },
-                { id: 12, x: -28, y: -32, r: 30, color: 'teal' },
-                { id: 13, x: 32, y: -21, r: 30, color: 'gold' },
-                { id: 14, x: -15, y: 15, r: 30, color: 'indigo' },
-                { id: 15, x: 21, y: 12, r: 30, color: 'coral' },
-                { id: 16, x: -15, y: -15, r: 30, color: 'skyblue' },
-                { id: 17, x: 18, y: -8, r: 30, color: 'maroon' },
-                { id: 18, x: 0, y: 25, r: 30, color: 'olive' },
-                // Additional Satellites
-                { id: 19, x: 35, y: 35, r: 30, color: 'navy' },
-                { id: 20, x: -35, y: 35, r: 30, color: 'darkblue' },
-                { id: 21, x: 35, y: -35, r: 30, color: 'darkred' },
-                { id: 22, x: -35, y: -35, r: 30, color: 'darkcyan' }
-            ];
-
-            // Initialize movement parameters for satellites
-            satellites.forEach(sat => {
-                // Calculate initial angle and orbit radius
-                sat.orbitRadius = Math.sqrt(sat.x * sat.x + sat.y * sat.y);
-                sat.angle = Math.atan2(-sat.y, sat.x); // Negative y to match canvas coordinates
-                // Assign slower angular speed between 0.0005 and 0.002 radians per frame
-                sat.angularSpeed = 0.0005 + Math.random() * 0.0015;
-                // Random direction: 1 for clockwise, -1 for anticlockwise
-                sat.direction = Math.random() < 0.5 ? 1 : -1;
-            });
-
-            let showTriangles = new Array(22).fill(false); // Updated to 22 satellites
-            let showAllSatellites = false; // Initially hidden
-            let showEffectiveSatellites = false; // Initially hidden
-            let satellitesPaused = false; // Track satellite pause state
-
-            const droneImage = new Image();
-            droneImage.src = 'drone.png';
-            const satelliteImage = new Image();
-            satelliteImage.src = 'satellite.png';
-
-            let droneImageLoaded = false;
-            let satelliteImageLoaded = false;
-
-            droneImage.onload = () => {
-                droneImageLoaded = true;
-                updateVisualization();
-            };
-
-            satelliteImage.onload = () => {
-                satelliteImageLoaded = true;
-                updateVisualization();
-            };
-
-            function updateCanvasDimensions() {
-                const visualizationDiv = document.querySelector('.visualization');
-                const height = visualizationDiv.clientHeight;
-                const width = visualizationDiv.clientWidth;
-                canvas.width = width;  // Adjust width based on container
-                canvas.height = height; // Maintain aspect ratio if needed
-                offsetX = canvas.width / 2;
-                offsetY = canvas.height / 2;
-                scale = canvas.width / 100;
-            }
-
-            function drawGridAndAxes() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                ctx.beginPath();
-                ctx.strokeStyle = '#eee';
-                ctx.lineWidth = 1;
-                for(let x=-50; x<=50; x++) {
-                    ctx.moveTo(offsetX + x * scale, 0);
-                    ctx.lineTo(offsetX + x * scale, canvas.height);
-                }
-                for(let y=-50; y<=50; y++) {
-                    ctx.moveTo(0, offsetY - y * scale);
-                    ctx.lineTo(canvas.width, offsetY - y * scale);
-                }
-                ctx.stroke();
-
-                ctx.beginPath();
-                ctx.strokeStyle = '#000';
-                ctx.lineWidth = 2;
-                ctx.moveTo(0, offsetY);
-                ctx.lineTo(canvas.width, offsetY);
-                ctx.moveTo(offsetX, 0);
-                ctx.lineTo(offsetX, canvas.height);
-                ctx.stroke();
-
-                ctx.fillStyle = '#e8e1e1';
-                ctx.font = '14px Arial';
-                for(let x=-50; x<=50; x+=10) {
-                    if(x !== 0) {
-                        ctx.fillText(x, offsetX + x * scale - 10, offsetY + 20);
-                    }
-                }
-                for(let y=-50; y<=50; y+=10) {
-                    if(y !== 0) {
-                        ctx.fillText(y, offsetX + 10, offsetY - y * scale + 5);
-                    }
-                }
-                ctx.fillText('X', canvas.width - 15, offsetY + 15);
-                ctx.fillText('Y', offsetX + 15, 15);
-            }
-
-            function drawSignalCounter(signalsReceived) {
-                const signalCounter = document.getElementById('signalCounter');
-                signalCounter.textContent = `${translations.satellitesInRange[isEnglish ? 'en' : 'zh']}${signalsReceived}`;
-                signalCounter.style.color = signalsReceived >= 3 ? '#006400' : '#8B0000';  // Darker green/red
-            }
-
-            let blinkState = true; // Initial blink state
-
-            // Toggle blink state every 500 milliseconds for medium speed
-            setInterval(() => {
-                blinkState = !blinkState;
-                updateVisualization();
-            }, 500);
-
-            function drawCoverageCircles() {
-                satellites.forEach(sat => {
-                    if (showAllSatellites || (showEffectiveSatellites && sat.inRange)) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = sat.color;
-                        ctx.lineWidth = 1;
-                        ctx.arc(sat.x * scale + offsetX, offsetY - sat.y * scale, sat.r * scale, 0, Math.PI * 2);
-                        ctx.stroke();
-                    }
-                });
-            }
-
-            function drawSatellites() {
-                satellites.forEach(sat => {
-                    // Draw all satellites as satellite.png without coverage circles
-                    if (satelliteImageLoaded) {
-                        if (showEffectiveSatellites && sat.inRange) {
-                            // Apply blinking effect
-                            if (blinkState) {
-                                ctx.globalAlpha = 1.0;  // Fully visible
-                            } else {
-                                ctx.globalAlpha = 0.3;  // Partially visible
-                            }
-                        } else {
-                            ctx.globalAlpha = 1.0;  // Fully visible
-                        }
-
-                        const imgWidth = 30;
-                        const imgHeight = 30;
-                        ctx.drawImage(satelliteImage, 
-                            sat.x * scale + offsetX - imgWidth / 2, 
-                            offsetY - sat.y * scale - imgHeight / 2, 
-                            imgWidth, imgHeight);
-                        ctx.globalAlpha = 1.0; // Reset alpha
-                    } else {
-                        // Fallback to colored circles if image not loaded
-                        ctx.beginPath();
-                        ctx.arc(sat.x * scale + offsetX, offsetY - sat.y * scale, 5, 0, 2 * Math.PI);
-                        ctx.fillStyle = sat.color;
-                        ctx.fill();
-                    }
-
-                    // Label satellites in range
-                    if (sat.inRange) {
-                        ctx.fillStyle = sat.color;
-                        ctx.font = '12px Arial';
-                        const label = `Sat ${sat.id} (${sat.x.toFixed(1)}, ${sat.y.toFixed(1)})`;
-                        ctx.fillText(label, sat.x * scale + offsetX + 10, offsetY - sat.y * scale - 10);
-                        
-                        ctx.fillText(`d=${sat.actualDistance.toFixed(2)}`, 
-                            sat.x * scale + offsetX + 10, 
-                            offsetY - sat.y * scale + 5);
-                    }
-                });
-
-                // Draw Drone
-                if (droneImageLoaded) {
-                    const imgWidth = 50;
-                    const imgHeight = 50;
-                    ctx.drawImage(droneImage, 
-                        droneX * scale + offsetX - imgWidth / 2, 
-                        offsetY - droneY * scale - imgHeight / 2, 
-                        imgWidth, imgHeight);
-                } else {
-                    ctx.beginPath();
-                    ctx.arc(droneX * scale + offsetX, offsetY - droneY * scale, 7, 0, 2 * Math.PI);
-                    ctx.fillStyle = 'black';
-                    ctx.fill();
-                }
-
-                // Label Drone
-                const label = `D (${droneX.toFixed(2)}, ${droneY.toFixed(2)})`;
-                ctx.font = 'bold 14px Arial';
-                const textWidth = ctx.measureText(label).width;
-                const padding = 4;
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-                ctx.fillRect(
-                    droneX * scale + offsetX + 10 - padding, 
-                    offsetY - droneY * scale - 25 - padding, 
-                    textWidth + padding*2, 
-                    20 + padding*2
-                );
-
-                ctx.fillStyle = 'black';
-                ctx.fillText(label, droneX * scale + offsetX + 10, offsetY - droneY * scale - 10);
-            }
-
-            function updateSatelliteRadii() {
-                let signalsReceived = 0;
-                satellites.forEach(sat => {
-                    const dx = sat.x - droneX;
-                    const dy = sat.y - droneY;
-                    const actualDistance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    sat.actualDistance = actualDistance;
-                    sat.inRange = actualDistance <= sat.r;
-                    
-                    // Get the table row and triangle button for this satellite
-                    const row = document.querySelector(`tr:nth-child(${sat.id + 1})`);
-                    const satCell = row.querySelector('td:first-child');
-                    const triangleButton = row.querySelector('.triangleButton');
-
-                    if (sat.inRange) {
-                        signalsReceived++;
-                        satCell.classList.add('satellite-detected');
-                        triangleButton.classList.add('triangle-detected');
-                    } else {
-                        satCell.classList.remove('satellite-detected');
-                        triangleButton.classList.remove('triangle-detected');
-                    }
-                    
-                    // Update distance display
-                    document.getElementById(`sat${sat.id}r`).textContent = actualDistance.toFixed(2);
-                });
-                
-                return signalsReceived;
-            }
-
-            function drawTrianglesOnCanvas() {
-                satellites.forEach(sat => {
-                    if (showTriangles[sat.id - 1] && sat.inRange) {
-                        ctx.beginPath();
-                        ctx.strokeStyle = sat.color;
-                        
-                        const colorMatch = sat.color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
-                        let fillStyle;
-                        if (colorMatch) {
-                            fillStyle = `rgba(${colorMatch[1]}, ${colorMatch[2]}, ${colorMatch[3]}, 0.2)`;
-                        } else {
-                            fillStyle = `${sat.color}33`;
-                        }
-                        ctx.fillStyle = fillStyle;
-                        
-                        ctx.lineWidth = 2;
-                        
-                        ctx.moveTo(sat.x * scale + offsetX, offsetY - sat.y * scale);
-                        ctx.lineTo(droneX * scale + offsetX, offsetY - sat.y * scale);
-                        ctx.lineTo(droneX * scale + offsetX, offsetY - droneY * scale);
-                        ctx.closePath();
-                        ctx.fill();
-                        ctx.stroke();
-                    }
-                });
-            }
-
-            function updateVisualization() {
-                drawGridAndAxes();
-                const signalsReceived = updateSatelliteRadii();
-                drawCoverageCircles(); // Draw coverage circles based on button states
-                drawTrianglesOnCanvas();
-                drawSatellites();
-                drawSignalCounter(signalsReceived);
-            }
-
-            function getEventPosition(e) {
-                const rect = canvas.getBoundingClientRect();
-                return e.touches ? {
-                    x: e.touches[0].clientX - rect.left,
-                    y: e.touches[0].clientY - rect.top
-                } : {
-                    x: e.clientX - rect.left,
-                    y: e.clientY - rect.top
-                };
-            }
-
-            function isDroneClicked(x, y) {
-                const distance = Math.sqrt(
-                    Math.pow(x - (droneX * scale + offsetX), 2) + 
-                    Math.pow(y - (offsetY - droneY * scale), 2)
-                );
-                return distance <= 15;
-            }
-
-            canvas.addEventListener('mousedown', (e) => {
-                const pos = getEventPosition(e);
-                if (isDroneClicked(pos.x, pos.y)) {
-                    isDragging = true;
-                    canvas.style.cursor = 'grabbing';
-                }
-            });
-
-            canvas.addEventListener('touchstart', (e) => {
-                const pos = getEventPosition(e);
-                if (isDroneClicked(pos.x, pos.y)) {
-                    isDragging = true;
-                    canvas.style.cursor = 'grabbing';
-                }
-            }, { passive: false });
-
-            function handleMove(e) {
-                if (isDragging) {
-                    const pos = getEventPosition(e);
-                    droneX = Math.max(-50, Math.min(50, (pos.x - offsetX) / scale));
-                    droneY = Math.max(-50, Math.min(50, (offsetY - pos.y) / scale));
-                    updateVisualization();
-                }
-            }
-
-            canvas.addEventListener('mousemove', handleMove);
-            canvas.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                handleMove(e);
-            }, { passive: false });
-
-            function endDrag() {
-                if (isDragging) {
-                    isDragging = false;
-                    canvas.style.cursor = 'grab';
-                }
-            }
-
-            canvas.addEventListener('mouseup', endDrag);
-            canvas.addEventListener('mouseleave', endDrag);
-            canvas.addEventListener('touchend', endDrag);
-
-            let simulationActive = false;
-            let simulationPaused = false;
-            let simulationTime = 0;
-            const SIMULATION_DURATION = 20000; // 20 seconds
-            let animationId; // To control the animation frame
-
-            function runSimulation() {
-                if(!simulationActive) {
-                    simulationActive = true;
-                    simulationPaused = false;
-                    document.getElementById('simulationButton').textContent = translations.pauseDroneMove[isEnglish ? 'en' : 'zh'];
-                    simulationTime = 0;
-                    animateSimulation();
-                } else if(simulationActive && !simulationPaused) {
-                    // Pause the simulation
-                    simulationPaused = true;
-                    document.getElementById('simulationButton').textContent = translations.resumeDroneMove[isEnglish ? 'en' : 'zh'];
-                } else if(simulationActive && simulationPaused) {
-                    // Resume the simulation
-                    simulationPaused = false;
-                    document.getElementById('simulationButton').textContent = translations.pauseDroneMove[isEnglish ? 'en' : 'zh'];
-                    animateSimulation();
-                }
-            }
-
-            function animateSimulation() {
-                if(!simulationActive || simulationPaused) return;
-
-                simulationTime += 16.7; // Approximate time per frame at ~60fps
-
-                if(simulationTime >= SIMULATION_DURATION) {
-                    simulationActive = false;
-                    simulationPaused = false;
-                    droneX = 0;  // Reset to origin
-                    droneY = 0;
-                    document.getElementById('simulationButton').textContent = translations.simulation[isEnglish ? 'en' : 'zh'];
-                    updateVisualization();
-                    return;
-                }
-
-                const progress = (simulationTime / SIMULATION_DURATION) * Math.PI * 2;
-                droneX = 30 * Math.sin(progress);
-                droneY = 20 * Math.sin(progress * 2);
-
-                updateVisualization();
-                animationId = requestAnimationFrame(animateSimulation);
-            }
-
-            let isEnglish = true;
-
-            const translations = {
-                back: {
-                    en: 'Back',
-                    zh: '返回'
-                },
-                // Added translations for new colors
-                colors: {
-                    en: {
-                        red: 'Red',
-                        green: 'Green',
-                        blue: 'Blue',
-                        purple: 'Purple',
-                        orange: 'Orange',
-                        brown: 'Brown',
-                        pink: 'Pink',
-                        gray: 'Gray',
-                        cyan: 'Cyan',
-                        darkgreen: 'DarkGreen',
-                        magenta: 'Magenta',
-                        teal: 'Teal',
-                        gold: 'Gold',
-                        indigo: 'Indigo',
-                        coral: 'Coral',
-                        skyblue: 'SkyBlue',
-                        maroon: 'Maroon',
-                        olive: 'Olive',
-                        navy: 'Navy',
-                        darkblue: 'DarkBlue',
-                        darkred: 'DarkRed',
-                        darkcyan: 'DarkCyan'
-                    },
-                    zh: {
-                        red: '紅',
-                        green: '綠',
-                        blue: '藍',
-                        purple: '紫',
-                        orange: '橙',
-                        brown: '棕',
-                        pink: '粉',
-                        gray: '灰',
-                        cyan: '青',
-                        darkgreen: '深綠',
-                        magenta: '洋紅',
-                        teal: '藍綠',
-                        gold: '金',
-                        indigo: '靛藍',
-                        coral: '珊瑚',
-                        skyblue: '天藍',
-                        maroon: '栗',
-                        olive: '橄欖',
-                        navy: '藏青',
-                        darkblue: '深藍',
-                        darkred: '深紅',
-                        darkcyan: '深青'
-                    }
-                },
-                pageTitle: {
-                    en: 'GNSS Satellite Positioning of Drone',
-                    zh: '無人機 GNSS 衛星定位'
-                },
-                subtitle: {
-                    en: '(simplified 2D simulation)',
-                    zh: '(簡化二維模擬)'
-                },
-                showHideAllSatellites: {
-                    en: 'Show All Satellites',
-                    zh: '顯示所有衛星'
-                },
-                hideAllSatellites: {
-                    en: 'Hide All Satellites',
-                    zh: '隱藏所有衛星'
-                },
-                showEffectiveSatellite: {
-                    en: 'Show Effective Satellites',
-                    zh: '顯示有效衛星'
-                },
-                hideEffectiveSatellites: {
-                    en: 'Hide Effective Satellites',
-                    zh: '隱藏有效衛星'
-                },
-                reset: {
-                    en: 'Reset',
-                    zh: '重設'
-                },
-                simulation: {
-                    en: 'Drone Move',
-                    zh: '無人機移動'
-                },
-                pauseSatellites: {
-                    en: 'Satellite Pause',
-                    zh: '暫停衛星'
-                },
-                resumeSatellites: {
-                    en: 'Satellite Resume',
-                    zh: '恢復衛星'
-                },
-                tutorial: {
-                    en: 'Tutorial',
-                    zh: '教學'
-                },
-                satellite: {
-                    en: 'Satellite',
-                    zh: '衛星'
-                },
-                distance: {
-                    en: 'Distance',
-                    zh: '距離'
-                },
-                triangle: {
-                    en: 'Triangle',
-                    zh: '三角形'
-                },
-                sat: {
-                    en: 'Sat',
-                    zh: '衛星'
-                },
-                satellitesInRange: {
-                    en: 'Satellites in range: ',
-                    zh: '範圍內的衛星： '
-                },
-                assessmentTask: {
-                    en: 'Assessment Task',
-                    zh: '評量任務'
-                },
-                assessmentInstruction: {
-                    en: 'Position the drone to maximize the number of satellites in range.',
-                    zh: '將無人機定位以最大化範圍內的衛星數量。'
-                },
-                tutorialSteps: {
-                    en: [
-                        {
-                            title: 'Welcome to the GNSS Tutorial',
-                            content: 'Discover how Global Navigation Satellite Systems (GNSS) empower drones with precise location capabilities.'
-                        },
-                        {
-                            title: 'How GNSS Determines Location',
-                            content: 'Learn the magic behind GNSS positioning: trilateration using signals from multiple satellites.'
-                        },
-                        {
-                            title: 'Why Multiple Satellites Matter',
-                            content: 'Find out why receiving signals from three or more satellites enhances accuracy and reliability.'
-                        },
-                        {
-                            title: 'Maximizing Your Satellite Coverage',
-                            content: 'Tips and tricks to position your drone for optimal satellite signal reception.'
-                        },
-                        {
-                            title: 'Explore the Simulation',
-                            content: 'Interact with the simulation by dragging the drone. See in real-time how satellite coverage changes your position accuracy.'
-                        },
-                        {
-                            title: 'Dive Deeper',
-                            content: 'For more insights, visit the <a href="https://novatel.com/tech-talk/an-introduction-to-gnss/what-are-global-navigation-satellite-systems-gnss" target="_blank">NovAtel GNSS Introduction</a>.'
-                        }
-                    ],
-                    zh: [
-                        {
-                            title: '歡迎來到 GNSS 教學',
-                            content: '了解全球導航衛星系統（GNSS）如何賦予無人機精確的位置定位能力。'
-                        },
-                        {
-                            title: 'GNSS 如何確定位置',
-                            content: '探索 GNSS 定位的原理：利用多顆衛星的信號進行三邊測量法定位。'
-                        },
-                        {
-                            title: '為什麼需要多顆衛星',
-                            content: '了解接收多顆衛星信號對提升定位準確性和可靠性的原因。'
-                        },
-                        {
-                            title: '最大化衛星覆蓋',
-                            content: '提供實用的技巧和建議，幫助您最佳化無人機的位置以獲取更多衛星信號。'
-                        },
-                        {
-                            title: '探索模擬',
-                            content: '通過拖動無人機與模擬互動。實時觀察衛星覆蓋如何影響您位置的準確性。'
-                        },
-                        {
-                            title: '深入了解',
-                            content: '如需更多資訊，請訪問 <a href="https://novatel.com/tech-talk/an-introduction-to-gnss/what-are-global-navigation-satellite-systems-gnss" target="_blank">NovAtel GNSS 介紹</a>。'
-                        }
-                    ]
-                },
-                previous: {
-                    en: 'Previous',
-                    zh: '上一頁'
-                },
-                finish: {
-                    en: 'Finish',
-                    zh: '完成'
-                },
-                next: {
-                    en: 'Next',
-                    zh: '下一頁'
-                },
-                pauseDroneMove: {
-                    en: 'Pause Drone Move',
-                    zh: '暫停無人機移動'
-                },
-                resumeDroneMove: {
-                    en: 'Resume Drone Move',
-                    zh: '恢復無人機移動'
-                }
-            };
-
-            // Update language function
-            function updateLanguage() {
-                // Update language button text
-                document.getElementById('langButton').textContent = isEnglish ? '繁體中文' : 'English';
-                
-                // Update title and subtitle
-                document.getElementById('mainTitle').innerHTML = `${translations.pageTitle[isEnglish ? 'en' : 'zh']} <span style="font-size: 16px; font-weight: normal;">${translations.subtitle[isEnglish ? 'en' : 'zh']}</span>`;
-                document.title = translations.pageTitle[isEnglish ? 'en' : 'zh'];
-
-                // Update back button if exists
-                const backButton = document.getElementById('backButton');
-                if (backButton) {
-                    backButton.textContent = translations.back[isEnglish ? 'en' : 'zh'];
-                }
-                
-                // Update buttons
-                document.getElementById('resetButton').textContent = translations.reset[isEnglish ? 'en' : 'zh'];
-                document.getElementById('showAllSatellitesButton').textContent = showAllSatellites ? 
-                    translations.hideAllSatellites[isEnglish ? 'en' : 'zh'] : 
-                    translations.showHideAllSatellites[isEnglish ? 'en' : 'zh'];
-                document.getElementById('showEffectiveSatellitesButton').textContent = showEffectiveSatellites ? 
-                    translations.hideEffectiveSatellites[isEnglish ? 'en' : 'zh'] : 
-                    translations.showEffectiveSatellite[isEnglish ? 'en' : 'zh'];
-                document.getElementById('simulationButton').textContent = simulationActive ? 
-                    (simulationPaused ? translations.resumeDroneMove[isEnglish ? 'en' : 'zh'] : translations.pauseDroneMove[isEnglish ? 'en' : 'zh']) : 
-                    translations.simulation[isEnglish ? 'en' : 'zh'];
-                document.getElementById('pauseSatellitesButton').textContent = satellitesPaused ? 
-                    translations.resumeSatellites[isEnglish ? 'en' : 'zh'] : 
-                    translations.pauseSatellites[isEnglish ? 'en' : 'zh'];
-                document.getElementById('tutorialButton').textContent = translations.tutorial[isEnglish ? 'en' : 'zh'];
-
-                // Update assessment task
-                document.getElementById('assessmentTaskTitle').textContent = translations.assessmentTask[isEnglish ? 'en' : 'zh'];
-                document.getElementById('assessmentTaskInstruction').textContent = translations.assessmentInstruction[isEnglish ? 'en' : 'zh'];
-
-                // Update satellite names
-                const rows = document.querySelectorAll('table tr');
-                rows.forEach((row, index) => {
-                    if (index > 0) { // Skip header row
-                        const colorCell = row.querySelector('td:first-child');
-                        const satNum = index;
-                        const sat = satellites[satNum - 1];
-                        if (sat) {
-                            const colorName = sat.color.toLowerCase();
-                            const translatedColor = translations.colors[isEnglish ? 'en' : 'zh'][colorName] || sat.color;
-                            colorCell.textContent = `${satNum} (${translatedColor})`;
-                        }
-                    }
-                });
-
-                // Update table headers
-                const headers = document.querySelectorAll('th');
-                headers[0].textContent = translations.satellite[isEnglish ? 'en' : 'zh'];
-                headers[1].textContent = translations.distance[isEnglish ? 'en' : 'zh'];
-                headers[2].textContent = translations.triangle[isEnglish ? 'en' : 'zh'];
-
-                // Update triangle buttons
-                const triangleButtons = document.querySelectorAll('.triangleButton');
-                triangleButtons.forEach((button, index) => {
-                    button.textContent = `${translations.triangle[isEnglish ? 'en' : 'zh']} ${index + 1}`;
-                });
-
-                // Update tutorial buttons if open
-                if (tutorialModal.style.display === "block") {
-                    document.getElementById('prevTutorial').textContent = translations.previous[isEnglish ? 'en' : 'zh'];
-                    document.getElementById('nextTutorial').textContent = (currentTutorialStep === translations.tutorialSteps[isEnglish ? 'en' : 'zh'].length -1) ? 
-                        translations.finish[isEnglish ? 'en' : 'zh'] : 
-                        translations.next[isEnglish ? 'en' : 'zh'];
-                }
-
-                updateVisualization();
-            }
-
-            // Language Button Event Listener
-            document.getElementById('langButton').addEventListener('click', () => {
-                isEnglish = !isEnglish;
-                updateLanguage();
-            });
-
-            // Modify the drawSignalCounter function to use translations
-            function drawSignalCounter(signalsReceived) {
-                const signalCounter = document.getElementById('signalCounter');
-                signalCounter.textContent = `${translations.satellitesInRange[isEnglish ? 'en' : 'zh']}${signalsReceived}`;
-                signalCounter.style.color = signalsReceived >= 3 ? '#006400' : '#8B0000';  // Darker green/red
-            }
-
-            function initialize() {
-                updateCanvasDimensions();
-
-                const triangleButtons = document.querySelectorAll('.triangleButton');
-                triangleButtons.forEach(button => {
-                    const satId = parseInt(button.getAttribute('data-sat'));
-                    button.style.backgroundColor = '';
-                    button.addEventListener('click', () => {
-                        showTriangles[satId - 1] = !showTriangles[satId - 1];
-                        button.classList.toggle('clicked');
-                        updateVisualization();
-                    });
-                });
-
-                document.getElementById('resetButton').addEventListener('click', () => {
-                    droneX = DEFAULT_STATES.dronePosition.x;
-                    droneY = DEFAULT_STATES.dronePosition.y;
-                    simulationActive = false;
-                    simulationPaused = false;
-                    cancelAnimationFrame(animationId); // Stop simulation if running
-                    showTriangles = [...DEFAULT_STATES.triangles];
-                    showEffectiveSatellites = false;
-                    showAllSatellites = false;
-                    
-                    // Reset all triangle buttons
-                    const triangleButtons = document.querySelectorAll('.triangleButton');
-                    triangleButtons.forEach(button => {
-                        button.classList.remove('clicked');
-                    });
-
-                    // Reset satellite coverage buttons to default
-                    document.getElementById('showEffectiveSatellitesButton').textContent = translations.showEffectiveSatellite[isEnglish ? 'en' : 'zh'];
-                    document.getElementById('showAllSatellitesButton').textContent = translations.showHideAllSatellites[isEnglish ? 'en' : 'zh'];
-                    
-                    // Reset "Drone Move" button text
-                    document.getElementById('simulationButton').textContent = translations.simulation[isEnglish ? 'en' : 'zh'];
-
-                    updateVisualization();
-                });
-
-                // Show Effective Satellites Button Event Listener
-                document.getElementById('showEffectiveSatellitesButton').addEventListener('click', () => {
-                    showEffectiveSatellites = !showEffectiveSatellites;
-                    document.getElementById('showEffectiveSatellitesButton').textContent = showEffectiveSatellites ? 
-                        translations.hideEffectiveSatellites[isEnglish ? 'en' : 'zh'] : 
-                        translations.showEffectiveSatellite[isEnglish ? 'en' : 'zh'];
-                    updateVisualization();
-                });
-
-                // Show All Satellites Button Event Listener (Toggle Show/Hide)
-                document.getElementById('showAllSatellitesButton').addEventListener('click', () => {
-                    showAllSatellites = !showAllSatellites;
-                    document.getElementById('showAllSatellitesButton').textContent = showAllSatellites ? 
-                        translations.hideAllSatellites[isEnglish ? 'en' : 'zh'] : 
-                        translations.showHideAllSatellites[isEnglish ? 'en' : 'zh'];
-                    updateVisualization();
-                });
-
-                // Pause/Resume Satellites Button
-                document.getElementById('pauseSatellitesButton').addEventListener('click', () => {
-                    satellitesPaused = !satellitesPaused;
-                    document.getElementById('pauseSatellitesButton').textContent = satellitesPaused ? 
-                        translations.resumeSatellites[isEnglish ? 'en' : 'zh'] : 
-                        translations.pauseSatellites[isEnglish ? 'en' : 'zh'];
-                });
-
-                // Drone Move Button Event Listener
-                document.getElementById('simulationButton').addEventListener('click', runSimulation);
-
-                document.getElementById('tutorialButton').addEventListener('click', openTutorial);
-
-                // Initialize Tutorial
-                initializeTutorial();
-
-                // Start satellite animation
-                animationFrameId = requestAnimationFrame(animateSatellites);
-
-                // Initial visualization
-                updateVisualization();
-            }
-
-            // Satellite Animation Function
-            let animationFrameId; // To track the animation frame
-            function animateSatellites() {
-                if (!satellitesPaused) {
-                    satellites.forEach(sat => {
-                        sat.angle += sat.direction * sat.angularSpeed;
-                        // Keep angle within 0 to 2π
-                        if (sat.angle > Math.PI * 2) sat.angle -= Math.PI * 2;
-                        if (sat.angle < 0) sat.angle += Math.PI * 2;
-                        sat.x = sat.orbitRadius * Math.cos(sat.angle);
-                        sat.y = sat.orbitRadius * Math.sin(sat.angle);
-                    });
-                    updateVisualization();
-                }
-                animationFrameId = requestAnimationFrame(animateSatellites);
-            }
-
-            // Tutorial Implementation
-            const tutorialModal = document.getElementById('tutorialModal');
-            const tutorialContent = document.getElementById('tutorialContent');
-            const closeTutorial = document.querySelector('.close');
-            const prevTutorial = document.getElementById('prevTutorial');
-            const nextTutorial = document.getElementById('nextTutorial');
-            let currentTutorialStep = 0;
-            let totalTutorialSteps = translations.tutorialSteps['en'].length;
-
-            function initializeTutorial() {
-                closeTutorial.onclick = closeTutorialModal;
-                prevTutorial.onclick = showPreviousTutorialStep;
-                nextTutorial.onclick = showNextTutorialStep;
-                window.onclick = function(event) {
-                    if (event.target == tutorialModal) {
-                        closeTutorialModal();
-                    }
-                };
-            }
-
-            function openTutorial() {
-                currentTutorialStep = 0;
-                totalTutorialSteps = translations.tutorialSteps[isEnglish ? 'en' : 'zh'].length;
-                tutorialModal.style.display = "block";
-                renderTutorialStep();
-            }
-
-            function closeTutorialModal() {
-                tutorialModal.style.display = "none";
-            }
-
-            function showPreviousTutorialStep() {
-                if (currentTutorialStep > 0) {
-                    currentTutorialStep--;
-                    renderTutorialStep();
-                }
-            }
-
-            function showNextTutorialStep() {
-                if (currentTutorialStep < totalTutorialSteps - 1) {
-                    currentTutorialStep++;
-                    renderTutorialStep();
-                } else {
-                    closeTutorialModal();
-                }
-            }
-
-            function renderTutorialStep() {
-                const step = translations.tutorialSteps[isEnglish ? 'en' : 'zh'][currentTutorialStep];
-                tutorialContent.innerHTML = `<h2>${step.title}</h2><p>${step.content}</p>`;
-                
-                // Control "Previous" button visibility
-                prevTutorial.style.display = currentTutorialStep === 0 ? 'none' : 'inline-block';
-                
-                // Update "Next" button text
-                nextTutorial.textContent = (currentTutorialStep === totalTutorialSteps -1) ? 
-                    translations.finish[isEnglish ? 'en' : 'zh'] : 
-                    translations.next[isEnglish ? 'en' : 'zh'];
-                
-                // Update "Previous" button text
-                prevTutorial.textContent = translations.previous[isEnglish ? 'en' : 'zh'];
-            }
-
-            // Adjust drag functionality for full-screen
-            // Ensure that the scale and offset are updated correctly on resize
-            window.addEventListener('resize', () => {
-                updateCanvasDimensions();
-                updateVisualization();
-            });
-
-            initialize();
+<div class="left-panel">
+<div class="visualization">
+<canvas id="trilaterationCanvas" width="800" height="800"></canvas>
+<div class="signal-counter" id="signalCounter">
+Satellites in range: 0
+Effective radius of all satellites: 30
+</div>
+</div>
+<div class="assessment-task">
+<h2 id="assessmentTaskTitle">Assessment Task</h2>
+<p id="assessmentTaskInstruction">
+Position the drone to maximize the number of satellites in range.
+</p>
+</div>
+</div>
+<div class="right-panel">
+<div class="button-row button-row-full">
+<button id="simulationButton">Drone Move</button>
+<button id="pauseSatellitesButton">Satellite Pause</button>
+<button id="showEffectiveSatellitesButton">Show Effective Satellites</button>
+</div>
+<div class="button-row button-row-three">
+<button id="showAllSatellitesButton">Show All Satellites</button>
+<button id="tutorialButton">Tutorial</button>
+<button id="resetButton">Reset</button>
+</div>
+<div class="satellite-table">
+<table>
+<tr>
+<th>Satellite</th>
+<th>Distance</th>
+<th>
+<div class="positioning-header-flex">
+<span id="positioningHeaderLabel">Positioning</span>
+<span class="positioning-header-group" id="positioningToggleGroup">
+<button class="pos-toggle-btn pos-off active" id="posOffBtn" type="button">All OFF</button>
+<button class="pos-toggle-btn pos-on" id="posOnBtn" type="button">All ON</button>
+</span>
+</div>
+</th>
+</tr>
+<tr><td>1 (Red)</td> <td><span id="sat1r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="1"></button></td></tr>
+<tr><td>2 (Green)</td><td><span id="sat2r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="2"></button></td></tr>
+<tr><td>3 (Blue)</td> <td><span id="sat3r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="3"></button></td></tr>
+<tr><td>4 (Purple)</td><td><span id="sat4r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="4"></button></td></tr>
+<tr><td>5 (Orange)</td><td><span id="sat5r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="5"></button></td></tr>
+<tr><td>6 (Brown)</td> <td><span id="sat6r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="6"></button></td></tr>
+<tr><td>7 (Pink)</td> <td><span id="sat7r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="7"></button></td></tr>
+<tr><td>8 (Gray)</td> <td><span id="sat8r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="8"></button></td></tr>
+<tr><td>9 (Cyan)</td> <td><span id="sat9r" class="distance-display">30.00</span></td> <td><button class="triangleButton off" data-sat="9"></button></td></tr>
+<tr><td>10 (DarkGreen)</td><td><span id="sat10r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="10"></button></td></tr>
+<tr><td>11 (Magenta)</td><td><span id="sat11r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="11"></button></td></tr>
+<tr><td>12 (Teal)</td> <td><span id="sat12r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="12"></button></td></tr>
+<tr><td>13 (Gold)</td> <td><span id="sat13r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="13"></button></td></tr>
+<tr><td>14 (Indigo)</td><td><span id="sat14r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="14"></button></td></tr>
+<tr><td>15 (Coral)</td><td><span id="sat15r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="15"></button></td></tr>
+<tr><td>16 (SkyBlue)</td><td><span id="sat16r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="16"></button></td></tr>
+<tr><td>17 (Maroon)</td><td><span id="sat17r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="17"></button></td></tr>
+<tr><td>18 (Olive)</td> <td><span id="sat18r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="18"></button></td></tr>
+<tr><td>19 (Navy)</td> <td><span id="sat19r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="19"></button></td></tr>
+<tr><td>20 (DarkBlue)</td><td><span id="sat20r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="20"></button></td></tr>
+<tr><td>21 (DarkRed)</td><td><span id="sat21r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="21"></button></td></tr>
+<tr><td>22 (DarkCyan)</td><td><span id="sat22r" class="distance-display">30.00</span></td><td><button class="triangleButton off" data-sat="22"></button></td></tr>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Tutorial Modal -->
+<div id="tutorialModal" class="modal">
+<div class="modal-content">
+<span class="close">&times;</span>
+<div id="tutorialContent"></div>
+<div class="tutorial-controls">
+<button id="prevTutorial">Previous</button>
+<button id="nextTutorial">Next</button>
+</div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+
+// ---- RADAR AUDIO LOGIC ----
+
+const radar1 = document.getElementById('radar1');
+const radar2 = document.getElementById('radar2');
+const radar3 = document.getElementById('radar3');
+
+function stopAllRadar() {
+    radar1.pause(); radar1.currentTime=0;
+    radar2.pause(); radar2.currentTime=0;
+    radar3.pause(); radar3.currentTime=0;
+}
+
+// Radar priority logic (radar_1 only for All ON, both showAllSatellites and showEffectiveSatellites off):
+// 1. If positioningMode (All On) is ON:
+//     a. If Show Effective Satellites is ON, radar2
+//     b. Else if Show All Satellites is ON, radar3
+//     c. Else radar1 (looped)
+// 2. If positioningMode is OFF:
+//     a. If Show Effective Satellites is ON, radar2
+//     b. Else if Show All Satellites is ON, radar3
+//     c. Else none
+
+function updateRadarFromState() {
+    if (positioningMode) {
+        if (showEffectiveSatellites) {
+            radar1.pause(); radar1.currentTime=0;
+            radar2.loop = true;
+            radar2.volume = 1.0;
+            radar2.currentTime = 0;
+            radar2.play();
+            radar3.pause(); radar3.currentTime=0;
+        } else if (showAllSatellites) {
+            radar1.pause(); radar1.currentTime=0;
+            radar3.loop = true;
+            radar3.volume = 1.0;
+            radar3.currentTime = 0;
+            radar3.play();
+            radar2.pause(); radar2.currentTime=0;
+        } else {
+            radar2.pause(); radar2.currentTime=0;
+            radar3.pause(); radar3.currentTime=0;
+            // Play radar1.mp3 in loop
+            radar1.loop = true;
+            radar1.volume = 1.0;
+            radar1.currentTime = 0;
+            radar1.play();
+        }
+    } else {
+        radar1.pause(); radar1.currentTime=0;
+        if (showEffectiveSatellites) {
+            radar2.loop = true;
+            radar2.volume = 1.0;
+            radar2.currentTime = 0;
+            radar2.play();
+            radar3.pause(); radar3.currentTime=0;
+        } else if (showAllSatellites) {
+            radar3.loop = true;
+            radar3.volume = 1.0;
+            radar3.currentTime = 0;
+            radar3.play();
+            radar2.pause(); radar2.currentTime=0;
+        } else {
+            radar2.pause(); radar2.currentTime=0;
+            radar3.pause(); radar3.currentTime=0;
+        }
+    }
+}
+
+// --- Satellite positions and orbit ---
+const canvas = document.getElementById('trilaterationCanvas'),
+ctx = canvas.getContext('2d');
+let droneX=0, droneY=0, isDragging=false;
+let scale=canvas.width/100, offsetX=canvas.width/2, offsetY=canvas.height/2;
+const satelliteCoords = [
+[-34, 37], [6, 42], [30, 28], [-40,-19], [-10, 7], [41,-11], [-31,-35], [7,-38], [36,-21], [-26,19], [21,34],
+[-19,-33], [28,-27], [-14,23], [19,6], [-17,-18], [23,-10], [0, 30], [38, 20], [-32,28], [34,-32], [-24,-36]
+];
+const satelliteColors = [
+'red','green','blue','purple','orange','brown','pink','gray','cyan','darkgreen',
+'magenta','teal','gold','indigo','coral','skyblue','maroon','olive','navy','darkblue','darkred','darkcyan'
+];
+const satellites = [];
+for(let i=0;i<22;i++) {
+satellites.push({
+id: i+1,
+x: satelliteCoords[i][0],
+y: satelliteCoords[i][1],
+r: 30,
+color: satelliteColors[i]
+});
+}
+satellites.forEach((s,i)=>{
+s.orbitRadius=Math.hypot(s.x,s.y);
+const centAng = (i*1.27)%6.2832;
+const centR = 18+10*Math.sin(i);
+s.cx = Math.round(centR * Math.cos(centAng));
+s.cy = Math.round(centR * Math.sin(centAng));
+s.angle=Math.atan2(s.y-s.cy,s.x-s.cx) + Math.random()*Math.PI*2;
+s.angularSpeed=0.0009+Math.random()*0.0006;
+s.direction=Math.random()<0.5?1:-1;
+s.initOrbitRadius = Math.hypot(s.x-s.cx,s.y-s.cy);
+});
+let showTriangles=new Array(22).fill(false),
+showAllSatellites=false,
+showEffectiveSatellites=false,
+satellitesPaused=false,
+showSatCoverage=new Array(22).fill(false),
+positioningMode = false, // false = All Off, true = All On
+userTriangles = new Array(22).fill(false);
+
+const droneImage=new Image(), satelliteImage=new Image();
+droneImage.src='drone.png'; satelliteImage.src='satellite.png';
+let droneImageLoaded=false, satelliteImageLoaded=false;
+droneImage.onload=()=>{droneImageLoaded=true;updateVisualization();};
+satelliteImage.onload=()=>{satelliteImageLoaded=true;updateVisualization();};
+
+function updateTriangleButtonStates() {
+const btns = document.querySelectorAll('.triangleButton');
+satellites.forEach((s, idx)=>{
+const btn = btns[idx];
+const triangleCell = btn.parentElement;
+const row = btn.closest('tr');
+const satCell = row.querySelector('td:first-child');
+const distCell = row.querySelector('td:nth-child(2)');
+if(s.inRange){
+satCell.classList.add('satellite-detected');
+distCell.classList.add('distance-detected');
+} else {
+satCell.classList.remove('satellite-detected');
+distCell.classList.remove('distance-detected');
+}
+if (s.inRange) {
+btn.disabled = false;
+btn.classList.remove('disabled');
+} else {
+btn.disabled = true;
+btn.classList.add('disabled');
+}
+// Update ON/OFF text bilingual
+btn.textContent = (showTriangles[idx] && s.inRange)
+? (isEnglish ? 'ON':'開')
+: (isEnglish ? 'OFF':'關');
+if (showTriangles[idx] && s.inRange) {
+btn.classList.add('on');
+btn.classList.remove('off');
+triangleCell.classList.add('triangle-detected');
+} else {
+btn.classList.remove('on');
+btn.classList.add('off');
+triangleCell.classList.remove('triangle-detected');
+}
+});
+}
+
+function triangleBtnHandler(idx){
+return function(){
+const satellite = satellites[idx];
+if(!satellite.inRange){
+alert(isEnglish
+? 'This satellite is not effective for positioning (distance > 30).'
+: '此衛星距離大於 30，無法定位。');
+return;
+}
+showTriangles[idx] = !showTriangles[idx];
+userTriangles[idx] = showTriangles[idx];
+updateVisualization();
+};
+}
+
+function attachTriangleButtonHandlers() {
+const btns = document.querySelectorAll('.triangleButton');
+btns.forEach((btn, idx) => {
+btn.onclick = triangleBtnHandler(idx);
+});
+}
+
+function setButtonStateAboveTable(enabled){
+[
+document.getElementById('simulationButton'),
+document.getElementById('pauseSatellitesButton'),
+document.getElementById('showEffectiveSatellitesButton'),
+document.getElementById('showAllSatellitesButton'),
+document.getElementById('tutorialButton'),
+document.getElementById('resetButton')
+].forEach(btn=>{
+btn.disabled = !enabled;
+btn.style.opacity = enabled ? "1" : "0.6";
+btn.style.pointerEvents = enabled ? "auto" : "none";
+});
+}
+
+function updateCanvasDimensions(){
+const viz=document.querySelector('.visualization');
+canvas.width=viz.clientWidth;
+canvas.height=viz.clientHeight;
+offsetX=canvas.width/2; offsetY=canvas.height/2;
+scale=canvas.width/100;
+}
+
+function drawGridAndAxes(){
+ctx.clearRect(0,0,canvas.width,canvas.height);
+ctx.beginPath();ctx.strokeStyle='#eee';ctx.lineWidth=1;
+for(let x=-50;x<=50;x++){
+ctx.moveTo(offsetX+x*scale,0);
+ctx.lineTo(offsetX+x*scale,canvas.height);
+}
+for(let y=-50;y<=50;y++){
+ctx.moveTo(0,offsetY-y*scale);
+ctx.lineTo(canvas.width,offsetY-y*scale);
+}
+ctx.stroke();
+ctx.beginPath();ctx.strokeStyle='#000';ctx.lineWidth=2;
+ctx.moveTo(0,offsetY);ctx.lineTo(canvas.width,offsetY);
+ctx.moveTo(offsetX,0);ctx.lineTo(offsetX,canvas.height);
+ctx.stroke();
+ctx.fillStyle='#e8e1e1';ctx.font='14px Arial';
+for(let x=-50;x<=50;x+=10) if(x!==0)
+ctx.fillText(x,offsetX+x*scale-10,offsetY+20);
+for(let y=-50;y<=50;y+=10) if(y!==0)
+ctx.fillText(y,offsetX+10,offsetY-y*scale+5);
+ctx.fillText('X',canvas.width-15,offsetY+15);
+ctx.fillText('Y',offsetX+15,15);
+}
+
+let blinkState=true;
+setInterval(()=>{ blinkState=!blinkState; updateVisualization(); },500);
+
+function drawCoverageCircles(){
+satellites.forEach((s,i)=>{
+let radiusUnits;
+if(showAllSatellites){
+radiusUnits = s.r;
+} else if(showEffectiveSatellites && s.inRange){
+radiusUnits = s.actualDistance;
+} else if(showSatCoverage[i] && s.inRange){
+radiusUnits = s.actualDistance;
+} else {
+return;
+}
+const displayedRadius = radiusUnits * scale;
+ctx.beginPath();
+ctx.strokeStyle = s.color;
+ctx.lineWidth = 1;
+ctx.arc(
+s.x * scale + offsetX,
+offsetY - s.y * scale,
+displayedRadius,
+0, 2 * Math.PI
+);
+ctx.stroke();
+});
+}
+
+function drawSatellites(){
+satellites.forEach(s=>{
+if(satelliteImageLoaded){
+ctx.globalAlpha = (showEffectiveSatellites && s.inRange)
+? (blinkState ? 1 : 0.3)
+: 1;
+ctx.drawImage(
+satelliteImage,
+s.x * scale + offsetX - 15,
+offsetY - s.y * scale - 15,
+30, 30
+);
+ctx.globalAlpha = 1;
+} else {
+ctx.beginPath();
+ctx.arc(
+s.x * scale + offsetX,
+offsetY - s.y * scale,
+5, 0, 2 * Math.PI
+);
+ctx.fillStyle = s.color;
+ctx.fill();
+}
+if(s.inRange){
+ctx.fillStyle = s.color;
+ctx.font = '12px Arial';
+ctx.fillText(
+`Sat ${s.id} (${s.x.toFixed(1)},${s.y.toFixed(1)})`,
+s.x * scale + offsetX + 10,
+offsetY - s.y * scale - 10
+);
+ctx.fillText(
+`d=${s.actualDistance.toFixed(2)}`,
+s.x * scale + offsetX + 10,
+offsetY - s.y * scale + 5
+);
+}
+});
+if(droneImageLoaded){
+ctx.drawImage(
+droneImage,
+droneX * scale + offsetX - 25,
+offsetY - droneY * scale - 25,
+50, 50
+);
+} else {
+ctx.beginPath();
+ctx.arc(
+droneX * scale + offsetX,
+offsetY - droneY * scale,
+7, 0, 2 * Math.PI
+);
+ctx.fillStyle = 'black';
+ctx.fill();
+}
+const lab = `D (${droneX.toFixed(2)},${droneY.toFixed(2)})`;
+ctx.font = 'bold 14px Arial';
+const tw = ctx.measureText(lab).width, pd = 4;
+ctx.fillStyle = 'rgba(255,255,255,0.8)';
+ctx.fillRect(
+droneX * scale + offsetX + 10 - pd,
+offsetY - droneY * scale - 25 - pd,
+tw + pd * 2,
+20 + pd * 2
+);
+ctx.fillStyle = 'black';
+ctx.fillText(
+lab,
+droneX * scale + offsetX + 10,
+offsetY - droneY * scale - 10
+);
+}
+
+function updateSatelliteRadii(){
+let cnt = 0;
+satellites.forEach((s,idx)=>{
+const dx = s.x - droneX,
+dy = s.y - droneY,
+d = Math.hypot(dx, dy);
+s.actualDistance = d;
+s.inRange = d <= s.r;
+const row = document.querySelector(`tr:nth-child(${s.id+1})`);
+const cell = row.querySelector('td:first-child');
+const distCell = row.querySelector('td:nth-child(2)');
+if(s.inRange){
+cnt++;
+cell.classList.add('satellite-detected');
+distCell.classList.add('distance-detected');
+} else {
+cell.classList.remove('satellite-detected');
+distCell.classList.remove('distance-detected');
+}
+const span = document.getElementById(`sat${s.id}r`);
+span.textContent = d.toFixed(2);
+if(d <= s.r){
+span.style.color = 'red';
+span.style.fontWeight = 'bold';
+} else {
+span.style.color = 'black';
+span.style.fontWeight = 'normal';
+}
+if(!s.inRange && showTriangles[idx]) {
+showTriangles[idx]=false;
+userTriangles[idx]=false;
+}
+});
+return cnt;
+}
+
+function updateTrianglesForPositioningMode() {
+if (positioningMode) {
+satellites.forEach((s, i)=>{
+showTriangles[i] = s.inRange ? true : false;
+});
+}
+}
+
+function drawTrianglesOnCanvas(){
+satellites.forEach((s,i)=>{
+if(showTriangles[i] && s.inRange) {
+ctx.beginPath();
+ctx.strokeStyle = s.color;
+ctx.fillStyle = toRGBA(s.color,0.2);
+ctx.lineWidth = 2;
+ctx.moveTo(s.x*scale+offsetX, offsetY-s.y*scale);
+ctx.lineTo(droneX*scale+offsetX, offsetY-s.y*scale);
+ctx.lineTo(droneX*scale+offsetX, offsetY-droneY*scale);
+ctx.closePath(); ctx.fill(); ctx.stroke();
+}
+});
+}
+
+function drawSignalCounter(n){
+const sc = document.getElementById('signalCounter');
+sc.textContent =
+`${translations.satellitesInRange[isEnglish?'en':'zh']}${n}\n`+
+`${translations.effectiveRadiusAll[isEnglish?'en':'zh']}30`;
+sc.style.color = n >= 3 ? '#006400' : '#8B0000';
+}
+
+function updateVisualization(){
+updateTrianglesForPositioningMode();
+drawGridAndAxes();
+const cnt = updateSatelliteRadii();
+drawCoverageCircles();
+drawTrianglesOnCanvas();
+drawSatellites();
+drawSignalCounter(cnt);
+updateTriangleButtonStates();
+attachTriangleButtonHandlers();
+
+    // --- Add the label here ---
+    ctx.save();
+    ctx.font = '14px Arial';
+    ctx.fillStyle = 'black';
+    ctx.textBaseline = 'bottom';
+    ctx.textAlign = 'left';
+    const padding = 12;
+    ctx.fillText('C Y YEUNG, EDUHK', padding, canvas.height - padding);
+    ctx.restore();
+
+}
+
+function getEventPosition(e){
+const r = canvas.getBoundingClientRect();
+if(e.touches) return {x:e.touches[0].clientX-r.left,y:e.touches[0].clientY-r.top};
+return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+
+function isDroneClicked(x,y){
+return Math.hypot(
+x - (droneX*scale+offsetX),
+y - (offsetY-droneY*scale)
+) <= 15;
+}
+
+canvas.addEventListener('mousedown',e=>{
+const p = getEventPosition(e);
+if(isDroneClicked(p.x,p.y)){ isDragging=true; canvas.style.cursor='grabbing'; }
+});
+canvas.addEventListener('touchstart',e=>{
+const p = getEventPosition(e);
+if(isDroneClicked(p.x,p.y)){ isDragging=true; canvas.style.cursor='grabbing'; }
+});
+function handleMove(e){
+if(!isDragging) return;
+const p = getEventPosition(e);
+droneX = Math.max(-50, Math.min(50, (p.x-offsetX)/scale));
+droneY = Math.max(-50, Math.min(50, (offsetY-p.y)/scale));
+updateVisualization();
+}
+canvas.addEventListener('mousemove',handleMove);
+canvas.addEventListener('touchmove',e=>{e.preventDefault();handleMove(e);},{passive:false});
+function endDrag(){
+if(isDragging){
+isDragging=false;
+canvas.style.cursor='grab';
+}
+}
+canvas.addEventListener('mouseup',endDrag);
+canvas.addEventListener('mouseleave',endDrag);
+canvas.addEventListener('touchend',endDrag);
+
+canvas.addEventListener('click', e => {
+if(isDragging) return;
+const p = getEventPosition(e);
+satellites.forEach((s,i)=>{
+const sx = s.x*scale + offsetX,
+sy = offsetY - s.y*scale;
+if(Math.hypot(p.x - sx, p.y - sy) <= 15){
+showSatCoverage[i] = !showSatCoverage[i];
+updateVisualization();
+}
+});
+});
+
+function toRGBA(color,alpha){
+const d=document.createElement('div');
+d.style.color=color; document.body.appendChild(d);
+const cs=getComputedStyle(d).color; document.body.removeChild(d);
+const [r,g,b]=cs.match(/\d+/g).map(Number);
+return `rgba(${r},${g},${b},${alpha})`;
+}
+
+let satFrame;
+function animateSatellites(){
+if(!satellitesPaused){
+satellites.forEach((s,i)=>{
+s.angle = (s.angle + s.direction*s.angularSpeed) % (2*Math.PI);
+s.x = s.cx + s.initOrbitRadius * Math.cos(s.angle);
+s.y = s.cy + s.initOrbitRadius * Math.sin(s.angle);
+});
+updateVisualization();
+}
+satFrame = requestAnimationFrame(animateSatellites);
+}
+
+let simFrame,simulationActive=false,simulationPaused=false,simulationTime=0;
+const SIMULATION_DURATION=20000;
+function runSimulation(){
+if(!simulationActive){
+simulationActive=true; simulationPaused=false;
+document.getElementById('simulationButton').textContent=
+translations.pauseDroneMove[isEnglish?'en':'zh'];
+simulationTime=0; animateSimulation();
+} else if(!simulationPaused){
+simulationPaused=true;
+document.getElementById('simulationButton').textContent=
+translations.resumeDroneMove[isEnglish?'en':'zh'];
+} else {
+simulationPaused=false;
+document.getElementById('simulationButton').textContent=
+translations.pauseDroneMove[isEnglish?'en':'zh'];
+animateSimulation();
+}
+}
+function animateSimulation(){
+if(!simulationActive||simulationPaused) return;
+simulationTime += 16.7;
+if(simulationTime >= SIMULATION_DURATION){
+simulationActive=simulationPaused=false;
+droneX=droneY=0;
+document.getElementById('simulationButton').textContent=
+translations.simulation[isEnglish?'en':'zh'];
+updateVisualization();
+return;
+}
+const p = (simulationTime/SIMULATION_DURATION)*Math.PI*2;
+droneX = 15*Math.sin(p);
+droneY = 10*Math.sin(p*2);
+updateVisualization();
+simFrame = requestAnimationFrame(animateSimulation);
+}
+
+let isEnglish=true;
+const translations={
+pageTitle:{en:'GPS Satellite Positioning of Drone',zh:'無人機 GNSS 衛星定位'},
+subtitle:{en:'(simplified 2D simulation)',zh:'(簡化二維模擬)'},
+showHideAllSatellites:{en:'Show All Satellites',zh:'顯示所有衛星'},
+hideAllSatellites:{en:'Hide All Satellites',zh:'隱藏所有衛星'},
+showEffectiveSatellite:{en:'Show Effective Satellites',zh:'顯示有效衛星'},
+hideEffectiveSatellites:{en:'Hide Effective Satellites',zh:'隱藏有效衛星'},
+reset:{en:'Reset',zh:'重設'},
+simulation:{en:'Drone Move',zh:'無人機移動'},
+pauseSatellites:{en:'Satellite Pause',zh:'暫停衛星'},
+resumeSatellites:{en:'Satellite Resume',zh:'恢復衛星'},
+tutorial:{en:'Tutorial',zh:'教學'},
+satellite:{en:'Satellite',zh:'衛星'},
+distance:{en:'Distance',zh:'距離'},
+positioning:{en:'Positioning',zh:'定位'},
+on:{en:'ON',zh:'開'},
+off:{en:'OFF',zh:'關'},
+allOn:{en:'All ON',zh:'全部開'},
+allOff:{en:'All OFF',zh:'全部關'},
+triangle:{en:'Triangle',zh:'三角形'},
+satellitesInRange:{en:'Satellites in range: ',zh:'範圍內的衛星： '},
+effectiveRadiusAll:{en:'Effective radius of all satellites: ',zh:'所有衛星的有效半徑：'},
+assessmentTask:{en:'Assessment Task',zh:'評量任務'},
+assessmentInstruction:{en:'Position the drone to maximize the number of satellites in range.',zh:'將無人機定位以最大化範圍內的衛星數量。'},
+tutorialSteps:{
+en:[
+{title:'What is GNSS Positioning?',content:'Global Navigation Satellite Systems (GNSS) let devices like drones determine their precise location using signals from multiple satellites.'},
+{title:'How Positioning Works',content:'Every satellite broadcasts its position and a precise time. The drone receives these and uses the measured distances (range) to the satellites.'},
+{title:'Understanding Range Circles',content:'On the map, each satellite\'s distance is shown as a circle. The drone must be somewhere on this circle.'},
+{title:'Ambiguity with Two Satellites',content:'Two circles usually intersect at two points. With only two satellites, the drone cannot distinguish which intersection is correct.'},
+{title:'Trilateration with Three Satellites',content:'A third satellite\'s circle will intersect the other two at just one point. This reveals the unique position of the drone.'},
+{title:'Try It Yourself',content:'Drag the drone, or use the simulation. Enable/disable satellites\' triangles to see how their range circles and intersections change.'},
+{title:'More Satellites = Higher Accuracy',content:'GNSS works best with as many satellites as possible. Place the drone where it can "see" the most satellites for the best accuracy.'},
+{title:'Controls Reference',content:'• <b>All ON/All OFF</b>: Enable/disable all effective satellites\' triangles.<br>• <b>Show Effective Satellites</b>: Blink satellites in range.<br>• <b>Show All Satellites</b>: Display all coverage circles.<br>• <b>ON/OFF</b>: Toggle an individual satellite for positioning.'},
+{title:'Assignment',content:'Move the drone and use the controls. Try to maximize the number of satellites used for positioning. Observe how the positioning triangles work.'},
+{title:'Learn More',content:'For more on GNSS trilateration, visit:<br><a href="https://www.gps.gov/systems/gps/" target="_blank">GPS.gov: How GPS Works</a>'}
+],
+zh:[
+{title:'GNSS 衛星定位是什麼？',content:'GNSS（全球衛星導航系統）讓像無人機這樣的裝置，能用多顆衛星來精確知道自身位置。'},
+{title:'定位原理',content:'每顆衛星都會廣播自己的位置與精確時間。無人機收到訊號後，計算與衛星的距離（測距）。'},
+{title:'測距圓的意義',content:'畫面上，每顆衛星的距離會以圓圈表示。無人機的位置必然落在這個圓上。'},
+{title:'只有兩顆衛星的歧義',content:'兩個圓通常會在兩點相交。僅靠兩顆衛星，無人機無法分辨哪個交點是正確位置。'},
+{title:'三顆衛星三邊定位',content:'第三顆衛星的圓會與前兩個圓只交於一點。這樣就能唯一確定無人機的位置。'},
+{title:'動手操作',content:'拖曳無人機或啟動模擬。切換各衛星三角形，觀察圓圈與交點如何改變。'},
+{title:'衛星越多越精確',content:'GNSS 衛星越多，定位越穩定。嘗試把無人機放在能「看到」最多衛星的位置。'},
+{title:'操作說明',content:'• <b>全部開/全部關</b>：開關所有有效衛星三角形。<br>• <b>顯示有效衛星</b>：閃爍範圍內的衛星。<br>• <b>顯示所有衛星</b>：顯示所有覆蓋圓。<br>• <b>開/關</b>：切換個別衛星是否參與定位。'},
+{title:'練習任務',content:'移動無人機並操作控制項。嘗試讓更多衛星參與定位，觀察定位三角形的變化。'},
+{title:'想了解更多',content:'想深入 GNSS 三邊定位原理，請參考：<br><a href="https://www.gps.gov/systems/gps/" target="_blank">GPS.gov: GPS 如何運作</a>'}
+]
+},
+previous:{en:'Previous',zh:'上一頁'},
+finish:{en:'Finish',zh:'完成'},
+next:{en:'Next',zh:'下一頁'},
+pauseDroneMove:{en:'Pause Drone Move',zh:'暫停無人機移動'},
+resumeDroneMove:{en:'Resume Drone Move',zh:'恢復無人機移動'}
+};
+
+function updateLanguage(){
+document.getElementById('langButton').textContent = isEnglish?'繁體中文':'English';
+document.getElementById('mainTitle').innerHTML =
+`${translations.pageTitle[isEnglish?'en':'zh']} <span style="font-size:16px;font-weight:normal;">${translations.subtitle[isEnglish?'en':'zh']}</span>`;
+document.title = translations.pageTitle[isEnglish?'en':'zh'];
+document.getElementById('resetButton').textContent = translations.reset[isEnglish?'en':'zh'];
+document.getElementById('showAllSatellitesButton').textContent =
+showAllSatellites
+? translations.hideAllSatellites[isEnglish?'en':'zh']
+: translations.showHideAllSatellites[isEnglish?'en':'zh'];
+document.getElementById('showEffectiveSatellitesButton').textContent =
+showEffectiveSatellites
+? translations.hideEffectiveSatellites[isEnglish?'en':'zh']
+: translations.showEffectiveSatellite[isEnglish?'en':'zh'];
+document.getElementById('simulationButton').textContent =
+simulationActive
+? (simulationPaused
+? translations.resumeDroneMove[isEnglish?'en':'zh']
+: translations.pauseDroneMove[isEnglish?'en':'zh'])
+: translations.simulation[isEnglish?'en':'zh'];
+document.getElementById('pauseSatellitesButton').textContent =
+satellitesPaused
+? translations.resumeSatellites[isEnglish?'en':'zh']
+: translations.pauseSatellites[isEnglish?'en':'zh'];
+document.getElementById('tutorialButton').textContent = translations.tutorial[isEnglish?'en':'zh'];
+document.getElementById('assessmentTaskTitle').textContent = translations.assessmentTask[isEnglish?'en':'zh'];
+document.getElementById('assessmentTaskInstruction').textContent = translations.assessmentInstruction[isEnglish?'en':'zh'];
+const ths=document.querySelectorAll('th');
+ths[0].textContent = translations.satellite[isEnglish?'en':'zh'];
+ths[1].textContent = translations.distance[isEnglish?'en':'zh'];
+document.getElementById('positioningHeaderLabel').textContent = translations.positioning[isEnglish?'en':'zh'];
+document.getElementById('posOnBtn').textContent = translations.allOn[isEnglish?'en':'zh'];
+document.getElementById('posOffBtn').textContent = translations.allOff[isEnglish?'en':'zh'];
+updateTriangleButtonStates();
+document.querySelectorAll('.satellite-table table tr').forEach((row,i)=>{
+if(i>0){
+const sat=satellites[i-1];
+const name=translations.colors ? (translations.colors[isEnglish?'en':'zh'][sat.color]||sat.color) : sat.color;
+row.querySelector('td:first-child').textContent=`${i} (${name})`;
+}
+});
+updateVisualization();
+}
+
+document.getElementById('langButton').addEventListener('click',()=>{
+isEnglish=!isEnglish; updateLanguage();
+});
+document.getElementById('pauseSatellitesButton').addEventListener('click',()=>{
+satellitesPaused=!satellitesPaused;
+document.getElementById('pauseSatellitesButton').textContent=
+satellitesPaused
+? translations.resumeSatellites[isEnglish?'en':'zh']
+: translations.pauseSatellites[isEnglish?'en':'zh'];
+});
+document.getElementById('showEffectiveSatellitesButton').addEventListener('click',()=>{
+showEffectiveSatellites=!showEffectiveSatellites;
+document.getElementById('showEffectiveSatellitesButton').textContent=
+showEffectiveSatellites
+? translations.hideEffectiveSatellites[isEnglish?'en':'zh']
+: translations.showEffectiveSatellite[isEnglish?'en':'zh'];
+updateRadarFromState();
+updateVisualization();
+});
+document.getElementById('showAllSatellitesButton').addEventListener('click',()=>{
+showAllSatellites=!showAllSatellites;
+document.getElementById('showAllSatellitesButton').textContent=
+showAllSatellites
+? translations.hideAllSatellites[isEnglish?'en':'zh']
+: translations.showHideAllSatellites[isEnglish?'en':'zh'];
+updateRadarFromState();
+updateVisualization();
+});
+document.getElementById('simulationButton').addEventListener('click',runSimulation);
+document.getElementById('resetButton').addEventListener('click',()=>{
+droneX=0;
+droneY=0;
+simulationActive=simulationPaused=false;
+cancelAnimationFrame(simFrame);
+showTriangles=new Array(22).fill(false);
+userTriangles=new Array(22).fill(false);
+showAllSatellites=false;
+showEffectiveSatellites=false;
+showSatCoverage=new Array(22).fill(false);
+positioningMode = false;
+document.getElementById('posOffBtn').classList.add('active');
+document.getElementById('posOnBtn').classList.remove('active');
+setButtonStateAboveTable(true);
+document.getElementById('showEffectiveSatellitesButton').textContent=
+translations.showEffectiveSatellite[isEnglish?'en':'zh'];
+document.getElementById('showAllSatellitesButton').textContent=
+translations.showHideAllSatellites[isEnglish?'en':'zh'];
+document.getElementById('simulationButton').textContent=
+translations.simulation[isEnglish?'en':'zh'];
+stopAllRadar();
+updateVisualization();
+});
+
+// --- Tutorial Modal ---
+const tutorialModal=document.getElementById('tutorialModal'),
+tutorialContent=document.getElementById('tutorialContent'),
+closeBtn=document.querySelector('.close'),
+prevBtn=document.getElementById('prevTutorial'),
+nextBtn=document.getElementById('nextTutorial');
+let currentTutorialStep=0;
+function renderTutorialStep(){
+const steps=translations.tutorialSteps[isEnglish?'en':'zh'],
+step = steps[currentTutorialStep];
+tutorialContent.innerHTML=`<h2>${step.title}</h2><p>${step.content}</p>`;
+prevBtn.style.display=currentTutorialStep===0?'none':'inline-block';
+prevBtn.textContent=translations.previous[isEnglish?'en':'zh'];
+nextBtn.textContent=currentTutorialStep===steps.length-1
+? translations.finish[isEnglish?'en':'zh']
+: translations.next[isEnglish?'en':'zh'];
+}
+function openTutorial(){
+currentTutorialStep=0;
+tutorialModal.style.display='block';
+renderTutorialStep();
+}
+function prevTutorial(){ if(currentTutorialStep>0){currentTutorialStep--;renderTutorialStep();}}
+function nextTutorial(){
+const steps=translations.tutorialSteps[isEnglish?'en':'zh'];
+if(currentTutorialStep<steps.length-1){
+currentTutorialStep++; renderTutorialStep();
+} else tutorialModal.style.display='none';
+}
+function initTutorial(){
+closeBtn.onclick=()=>tutorialModal.style.display='none';
+prevBtn.onclick=prevTutorial;
+nextBtn.onclick=nextTutorial;
+window.onclick=e=>{ if(e.target===tutorialModal) tutorialModal.style.display='none'; };
+}
+document.getElementById('tutorialButton').addEventListener('click',openTutorial);
+initTutorial();
+
+// --- Positioning ALL ON/OFF buttons ---
+const posOffBtn = document.getElementById('posOffBtn');
+const posOnBtn = document.getElementById('posOnBtn');
+
+function setPositioningMode(on) {
+    const prevMode = positioningMode;
+    positioningMode = !!on;
+    if(positioningMode) {
+        posOffBtn.classList.remove('active');
+        posOnBtn.classList.add('active');
+        // Only play radar1.mp3 continuously when switching to ON and both showAllSatellites/showEffectiveSatellites are off
+        if (!prevMode && !showAllSatellites && !showEffectiveSatellites) {
+            try {
+                radar1.loop = true;
+                radar1.volume = 1.0;
+                radar1.currentTime = 0;
+                radar1.play();
+            } catch(e) {}
+        }
+    } else {
+        posOffBtn.classList.add('active');
+        posOnBtn.classList.remove('active');
+        satellites.forEach((s, i)=>{
+            showTriangles[i] = (userTriangles[i] && s.inRange) ? true : false;
+            if(!s.inRange) userTriangles[i]=false;
         });
-    </script>
+        radar1.pause(); radar1.currentTime=0;
+    }
+    setButtonStateAboveTable(true);
+    updateRadarFromState();
+    updateVisualization();
+}
+
+// Attach click handlers for All OFF/All ON
+posOffBtn.addEventListener('click', ()=>{
+    setPositioningMode(false);
+});
+posOnBtn.addEventListener('click', ()=>{
+    setPositioningMode(true);
+});
+
+window.addEventListener('resize',()=>{
+updateCanvasDimensions();
+updateVisualization();
+});
+
+updateCanvasDimensions();
+updateLanguage();
+animateSatellites();
+updateVisualization();
+
+});
+</script>
 </body>
 </html>
+
