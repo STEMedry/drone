@@ -1,658 +1,1030 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>QuadPhysics: Quadcopter Flight Explorer</title>
-  <style>
-    body { margin: 0; overflow: hidden; font-family: Arial, sans-serif; display: flex; flex-direction: column; height: 100vh; }
-    #title {
-      position: absolute; top: 10px; left: 10px;
-      background: rgba(0,0,0,0.7); color: white;
-      padding: 10px 20px; border-radius: 5px; font-size: 28px; z-index: 10;
-    }
-    #top-buttons {
-      position: absolute; top: 10px; right: 10px;
-      display: flex; gap: 10px; z-index: 10;
-    }
-    #top-buttons button {
-      padding: 10px 20px; font-size: 18px; border: none; border-radius: 5px; cursor: pointer;
-      color: white; transition: background-color 0.3s;
-    }
-    #conceptual-challenges-button,
-    #language-switch { background: rgba(0,0,0,0.7); }
-    #conceptual-challenges-button:hover,
-    #language-switch:hover { background: rgba(0,0,0,0.85); }
-    #tutorial-button { background: #4CAF50; }
-    #tutorial-button:hover { background: #45a049; }
-
-    #controls-container {
-      position: absolute; top: 80px; left: 10px; z-index: 3;
-      display: flex; flex-direction: column; align-items: flex-start; user-select: none;
-    }
-    #statusBox {
-      background: rgba(0,0,0,0.7); color: gold; padding: 15px; font-size: 24px;
-      border-radius: 8px; width: 300px; display: flex; flex-direction: column; gap: 10px;
-      margin-bottom: 20px;
-    }
-    #relativeScaleMessage { color: white; font-weight: bold; margin-top: 10px; }
-
-    /* dat.GUI tweaks (same as your original) */
-    .dg.main { width:450px!important; font-size:18px!important; user-select:none!important; }
-    .dg.main .close-button{display:none!important;}
-    .dg .property-value{display:inline-block!important;width:30px!important;text-align:right;}
-    .dg .slider{position:relative;height:12px;width:400px;}
-    .dg .slider .ticks{position:absolute;width:100%;height:100%;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between;pointer-events:none;}
-    .dg .slider .tick{width:1px;height:12px;background:#555;}
-    .dg .slider input[type=range]{-webkit-appearance:none;width:100%;height:12px;background:#ddd;border:1px solid #555;border-radius:6px;margin:0;padding:0;}
-    /* ... plus all your custom slider colors/thumbs ... */
-
-    /* modal styles (unchanged) */
-    .modal{display:none;position:fixed;z-index:100;left:0;top:0;width:100%;height:100%;overflow:auto;background:rgba(0,0,0,0.8);}
-    .modal-content{background:#fefefe;margin:5% auto;padding:20px;border:1px solid #888;width:80%;border-radius:10px;position:relative;font-size:18px;}
-    .close-modal{position:absolute;top:10px;right:20px;font-size:28px;font-weight:bold;color:#aaa;cursor:pointer;}
-    .close-modal:hover,.close-modal:focus{color:black;text-decoration:none;}
-    .modal-navigation{display:flex;justify-content:space-between;margin-top:20px;}
-    .modal-navigation button{padding:10px 20px;font-size:16px;cursor:pointer;border:none;border-radius:5px;background:#4CAF50;color:white;transition:background 0.3s;}
-    .modal-navigation button:hover{background:#45a049;}
-    .modal-navigation button:disabled{background:#ccc;cursor:not-allowed;}
-    @media(max-width:600px){.modal-content{width:95%!important;}}
-
-    *{user-select:none!important;}
-    input,textarea{user-select:text!important;}
-    /* *** ADDED FOR NUMBER INPUTS: show text cursor & spin‐buttons *** */
-    input[type=number] {
-      cursor: text;
-    }
-    input[type=number]::-webkit-inner-spin-button,
-    input[type=number]::-webkit-outer-spin-button {
-      opacity: 1;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QuadPhysics: Quadcopter Flight Explorer</title>
+<style>
+html, body { margin:0; padding:0; width:100%; height:100%; overflow:hidden;
+font-family:Arial,sans-serif; display:flex; flex-direction:column; background:#232323;}
+body { height:100vh; }
+#title { position:absolute; top:10px; left:10px;
+background:rgba(0,0,0,0.7); color:#fff; padding:10px 20px; border-radius:5px; font-size:28px; z-index:10;}
+#top-buttons { position:absolute; top:10px; right:10px; display:flex; gap:10px; z-index:10;}
+#top-buttons button { padding:10px 20px; font-size:18px; border:none; border-radius:5px; cursor:pointer;
+color:#fff; transition:background-color .3s;}
+#conceptual-challenges-button, #language-switch { background:rgba(0,0,0,0.7);}
+#conceptual-challenges-button:hover, #language-switch:hover { background:rgba(0,0,0,0.85);}
+#tutorial-button { background:#4CAF50;}
+#tutorial-button:hover { background:#45a049;}
+#controls-container { position:absolute; top:80px; left:10px; z-index:3;
+display:flex; flex-direction:column; align-items:flex-start; user-select:none;}
+#statusBox { background:rgba(0,0,0,0.7); color:gold; padding:15px; font-size:24px; border-radius:8px;
+width:340px; display:flex; flex-direction:column; gap:10px; margin-bottom:20px;}
+#statusMessage { white-space: nowrap;}
+#relativeScaleMessage { color:#fff; font-weight:bold; margin-top:10px;}
+.gui-precise-row { display: flex; align-items: center; gap: 10px; margin-top: 4px; margin-bottom: 8px;}
+.gui-precise-row label { width: 115px; font-size: 1em; color: #fff; background:rgba(0,0,0,0.5); border-radius:5px;
+padding: 2px 9px 2px 9px; margin-right: 0px; flex-shrink: 0;}
+.gui-precise-row input[type=range] { width: 180px; margin: 0 0 0 0;}
+.gui-precise-row input[type=number] { width: 65px; font-size: 1em; border-radius: 4px; border: 1px solid #888;
+padding: 2px 6px; margin-left: 2px; margin-right: 0; text-align: right;}
+@media (max-width: 700px) {
+.gui-precise-row label { width: 88px; font-size:0.95em;}
+.gui-precise-row input[type=number] { width: 54px;}
+}
+@media (max-width: 500px) {
+.gui-precise-row label { width: 62px; font-size:0.90em;}
+.gui-precise-row input[type=number] { width: 41px;}
+.gui-precise-row input[type=range] { width: 90px;}
+}
+#reset-row { display: flex; width: 100%; margin-top: 6px; margin-bottom: 6px; justify-content: flex-start;}
+#reset-btn { background: #c0392b; color: #fff; font-size: 1em; padding: 5px 20px; border: none; border-radius: 6px;
+cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.13); transition: background 0.2s; font-weight: bold; margin-right: 0;}
+#reset-btn:hover { background: #e74c3c;}
+input, textarea { -webkit-user-select:text!important; -ms-user-select:text!important; user-select:text!important; }
+input[type=number] { cursor:text; }
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button { opacity:1; }
+.modal{ display:none; position:fixed; z-index:100; left:0; top:0; width:100%; height:100%; overflow:auto; background:rgba(0,0,0,0.8);}
+.modal-content{ background:#fefefe; margin:5% auto; padding:20px; border:1px solid #888; width:80%; border-radius:10px; position:relative; font-size:18px;}
+.close-modal{ position:absolute; top:10px; right:20px; font-size:28px; font-weight:bold; color:#aaa; cursor:pointer;}
+.close-modal:hover,.close-modal:focus{ color:#000;text-decoration:none;}
+.modal-navigation{ display:flex; justify-content:space-between; margin-top:20px;}
+.modal-navigation button{ padding:10px 20px; font-size:16px; cursor:pointer; border:none; border-radius:5px; background:#4CAF50; color:#fff; transition:background .3s;}
+.modal-navigation button:hover{ background:#45a049;}
+.modal-navigation button:disabled{ background:#ccc; cursor:not-allowed;}
+@media(max-width:600px){ .modal-content{ width:95%!important; } }
+#force-panel-container { position: absolute; right: 30px; bottom: 28px; width: 370px; height: 520px; min-width: 170px; max-width: 100vw;
+z-index: 50; display: flex; flex-direction: column; align-items: flex-end; pointer-events: none;}
+#force-panel-title { margin-top: 0; margin-bottom: 0; margin-right: 22px; color: #fff; background: rgba(0,0,0,0.75); padding: 6px 18px;
+border-radius: 5px 5px 0 0; font-weight: bold; font-size: 22px; pointer-events: none; text-align: right; letter-spacing: 0.5px; user-select: none;}
+#force-panel { width: 350px; height: 460px; max-width: 98vw; background: rgba(34,34,34,0.89); box-shadow: 0 2px 24px 0 rgba(0,0,0,0.26);
+border-radius: 0 0 13px 13px; margin-right: 20px; margin-bottom: 0; pointer-events: auto; display: flex; flex-direction: column;
+align-items: center; justify-content: flex-start; position: relative; padding-top: 7px; padding-bottom: 13px;}
+#force-panel-math { display: none;}
+@media (max-width: 900px) {
+#force-panel-container { width: 220px; height: 320px;}
+#force-panel { width: 98vw; min-width: 120px; max-width: 98vw; height: 255px;}
+#force-panel-title { font-size: 15px; margin-right: 7px; }
+}
+@media (max-width: 600px) {
+#force-panel-container { width: 98vw; min-width: 0; left: 0; right: 0; bottom: 0; top: unset; height: auto; position: fixed; align-items: center;}
+#force-panel { margin-right: 0; width: 99vw; min-width: 0; max-width: 99vw; height: 240px; margin-bottom: 0;}
+#force-panel-title { margin-right: 0; margin-left: 0; font-size: 13px; text-align: center;}
+}
+#force-canvas { width: 100% !important; height: 100% !important; background: transparent; border-radius: 12px; display: block; margin: 0 auto;
+pointer-events: none; user-select: none; touch-action: none;}
+.force-panel-label { font-size: 11px !important; font-weight: bold; padding: 2px 8px; border-radius: 5px; margin-left: 5px; margin-right: 5px;
+pointer-events: none; user-select: none; background: rgba(32,32,32,0.7); color: #fff; box-shadow: 0 1px 5px 0 rgba(0,0,0,0.10);
+white-space:nowrap;}
+#force-panel-legend { display: none; }
+#force-panel-status-box {
+position: absolute;
+left: 50%;
+transform: translateX(-50%);
+bottom: 20px;
+min-width: 130px;
+max-width: 85%;
+padding: 14px 24px;
+border-radius: 12px;
+font-size: 2.1em;
+font-weight: bold;
+text-align: center;
+color: #fff;
+box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+z-index: 12;
+letter-spacing: 0.5px;
+user-select: none;
+pointer-events: none;
+transition: background 0.35s;
+}
+#force-panel-status-box.hovering { background: #2e9838de; color: #fff; }
+#force-panel-status-box.ascending { background: #215edbde; color: #fff; }
+#force-panel-status-box.descending { background: #d47909de; color: #fff; }
+#force-panel-status-box.onground { background: #222222dc; color: #ffd700; }
+@media (max-width: 900px) {
+#force-panel-status-box { font-size: 1.2em; padding: 10px 8px; border-radius: 8px; }
+}
+@media (max-width: 600px) {
+#force-panel-status-box { font-size: 1em; left: 50%; transform: translateX(-50%); bottom: 10px; min-width: 70px; }
+}
+@media (max-width: 410px) {
+#force-panel-status-box { display:none; }
+}
+</style>
 </head>
 <body>
-  <h1 id="title">QuadPhysics: Quadcopter Flight Explorer</h1>
-  <div id="top-buttons">
-    <button id="conceptual-challenges-button">Conceptual Challenges</button>
-    <button id="tutorial-button">Tutorial</button>
-    <button id="language-switch">繁體中文</button>
-  </div>
+<h1 id="title">QuadPhysics: Quadcopter Flight Explorer</h1>
+<div id="top-buttons">
+<button id="conceptual-challenges-button">Conceptual Challenges</button>
+<button id="tutorial-button">Tutorial</button>
+<button id="language-switch">繁體中文</button>
+</div>
+<div id="controls-container">
+<div id="statusBox">
+<div id="force">Force: N/A</div>
+<div id="statusMessage">Status: N/A</div>
+<div id="hoverRotorSpeed">Hover Rotor Speed: N/A</div>
+</div>
+<div id="relativeScaleMessage">All values are on relative scales and not real precise values.</div>
+<div id="reset-row">
+<button id="reset-btn">Reset</button>
+</div>
+<div id="precise-controls"></div>
+</div>
+<div id="force-panel-container">
+<div id="force-panel-title">Force Diagram</div>
+<div id="force-panel">
+<canvas id="force-canvas" width="340" height="470"
+style="width:100%;height:100%;"></canvas>
+<div id="force-panel-status-box" style="display:none"></div>
+<div id="force-panel-math"></div>
+</div>
+</div>
+<!-- Tutorial Modal -->
+<div id="tutorialModal" class="modal">
+<div class="modal-content">
+<span class="close-modal" id="close-tutorial">&times;</span>
+<div id="tutorialContent"></div>
+<div class="modal-navigation">
+<button id="prevButton">Previous</button>
+<button id="nextButton">Next</button>
+</div>
+</div>
+</div>
+<!-- Conceptual Challenges Modal -->
+<div id="conceptualModal" class="modal">
+<div class="modal-content">
+<span class="close-modal" id="close-conceptual">&times;</span>
+<div id="conceptualContent"></div>
+</div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
+<script>
+//── PHYSICS & GLOBALS ─────────────────────────────
+const timeScale = 0.5;
+let scene, camera, renderer, quadcopter, ground, orbitControls;
+let blinkingBalls = [], lastBlinkTime = 0, blinkInterval = 1000;
+let isHovering = false, hoverStartY = 0, hoverTime = 0;
+const hoverFrequency = 1, hoverAmplitude = 0.2;
+let particles;
+let velocity = { y: 0 };
+const clock = new THREE.Clock();
 
-  <div id="controls-container">
-    <div id="statusBox">
-      <div id="force">Force: N/A</div>
-      <div id="statusMessage">Status: N/A</div>
-      <div id="hoverRotorSpeed">Hover Rotor Speed: N/A</div>
-    </div>
-    <div id="relativeScaleMessage">All values are on relative scales and not real precise values.</div>
-  </div>
+let gui, rotorAudio, djiAudio, takeoffAudio, hoveringAudio;
+let hasTakenOff = false, isHoveringSoundPlayed = false;
+let prevRotorSpeed = 0;
 
-  <!-- Tutorial Modal -->
-  <div id="tutorialModal" class="modal">
-    <div class="modal-content">
-      <span class="close-modal">&times;</span>
-      <div id="tutorialContent"></div>
-      <div class="modal-navigation">
-        <button id="prevButton">Previous</button>
-        <button id="nextButton">Next</button>
-      </div>
-    </div>
-  </div>
+const HOVER_EPS = 0.01; // Use for all "hover" comparisons
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.7/dat.gui.min.js"></script>
-  <script>
-  //── SETTINGS ───────────────────────────────────────────────────────────────────
-  const timeScale = 0.5; // was 0.2, now faster descent/ascent
+const guiControls = {
+mass: 8,
+rotorSpeed: 0, gravity: 9.8, pressure: 10,
+reset: function(){
+this.mass=8; this.rotorSpeed=0; this.gravity=9.8; this.pressure=10;
+quadcopter.position.set(0,0,0);
+quadcopter.scale.set(1,1,1);
+velocity.y=0; scene.rotation.y=0;
+hasTakenOff=false; isHovering=false; hoverTime=0;
+prevRotorSpeed = 0;
+if(hoveringAudio&&!hoveringAudio.paused){
+hoveringAudio.pause(); hoveringAudio.currentTime=0; isHoveringSoundPlayed=false;
+}
+updateQuadcopter(0);
+updatePreciseControls();
+djiAudio.currentTime=0; djiAudio.play().catch(()=>{});
+updateParticles();
+quadcopter.position.y=0;
+updateForcePanel();
+}
+};
+const paramConfig = [
+{ key: "mass", label: {en:"Mass", zh:"質量"}, min: 1, max: 20, step: 0.1 },
+{ key: "rotorSpeed", label: {en:"Rotor Speed", zh:"旋翼轉速"}, min: 0, max: 20, step: 0.1 },
+{ key: "gravity", label: {en:"Gravity", zh:"重力"}, min: 0.1, max: 20, step: 0.1 },
+{ key: "pressure", label: {en:"Atm. Pressure", zh:"大氣壓力"}, min: 0, max: 20, step: 0.1 }
+];
+let currentLangIsZh = false;
+let lastForcePanelVals = {
+lift: 0,
+action: 0,
+weight: 0,
+net: 0,
+isHovering: false,
+isOnGround: true,
+status: ""
+};
 
-  //── GLOBALS ────────────────────────────────────────────────────────────────────
-  let scene, camera, renderer, quadcopter, ground, orbitControls;
-  let blinkingBalls = [], lastBlinkTime = 0, blinkInterval = 1000;
-  let isHovering = false, hoverStartY = 0, hoverTime = 0;
-  const hoverFrequency = 1, hoverAmplitude = 0.2;
-  let particles;
-  let velocity = { y: 0 };
-  const clock = new THREE.Clock();
+// ------- Tutorial and Conceptual Challenge Data --------
+const tutorialStepsEN = [
+{
+title: "Welcome to Quadcopter Flight Explorer",
+content: "This simulator lets you explore the forces and controls of a quadcopter in a virtual environment. Use the controls on the left to adjust mass, rotor speed, gravity, and atmospheric pressure."
+},
+{
+title: "Force Diagram",
+content: "On the right is the Force Diagram. Arrows represent key forces acting on the quadcopter: orange for Weight, blue for Lift, yellow for Action on Air, and white for Net Force."
+},
+{
+title: "Hovering and Motion",
+content: "Try adjusting the rotor speed. When Lift equals Weight, the quadcopter hovers (Net Force = 0). Increase rotor speed to ascend, or decrease to descend."
+},
+{
+title: "Atmospheric Pressure & Gravity",
+content: "Change gravity or atmospheric pressure to see how they affect required hover rotor speed and quadcopter behavior."
+},
+{
+title: "Try These!",
+content: "<ul><li>Set pressure to zero: what happens?</li><li>Increase mass: how does hover speed change?</li><li>Can you hover at different gravity?</li></ul>"
+}
+];
+const tutorialStepsZH = [
+{
+title: "歡迎來到四旋翼飛行器探索",
+content: "本模擬器讓你在虛擬環境中探索四旋翼飛行器的受力與控制。請用左邊的控制項調節質量、旋翼轉速、重力與大氣壓力。"
+},
+{
+title: "力圖",
+content: "右側顯示的是力圖。箭咀代表四旋翼所受的主要力：橙色為重量、藍色為升力、黃色為四旋翼對空氣作用、白色為合力。"
+},
+{
+title: "懸停與運動",
+content: "嘗試改變旋翼轉速。當升力等於重量時，四旋翼會懸停（合力 = 0）。增加旋翼轉速會上升，減少則下降。"
+},
+{
+title: "大氣壓力與重力",
+content: "調整重力或大氣壓力，觀察懸停所需旋翼速度及四旋翼運動的改變。"
+},
+{
+title: "動手試試！",
+content: "<ul><li>將大氣壓力調至零：會發生什麼？</li><li>增加質量：懸停速度如何變化？</li><li>嘗試不同重力下的懸停！</li></ul>"
+}
+];
+const conceptualEN = `<h2>Conceptual Challenges</h2>
+<ol>
+<li>Why can't the quadcopter take off if atmospheric pressure is zero?</li>
+<li>How does changing gravity affect the hover rotor speed?</li>
+<li>If the net force is zero, what is the motion of the quadcopter?</li>
+<li>What is the physical meaning of "Action on Air"?</li>
+</ol>`;
+const conceptualZH = `<h2>概念挑戰</h2>
+<ol>
+<li>為什麼在大氣壓力為零時四旋翼無法起飛？</li>
+<li>改變重力會如何影響懸停所需的旋翼轉速？</li>
+<li>當合力為零時，四旋翼的運動狀態如何？</li>
+<li>「對空氣作用」這個力的物理意義是什麼？</li>
+</ol>`;
 
-  let gui, rotorAudio, djiAudio, takeoffAudio, hoveringAudio;
-  let hasTakenOff = false, isHoveringSoundPlayed = false;
-  const guiControls = {
-    weight: 5, rotorSpeed: 0, gravity: 5, pressure: 5,
-    reset: function() {
-      this.weight=5; this.rotorSpeed=0; this.gravity=5; this.pressure=5;
-      quadcopter.position.set(0,0,0);
-      quadcopter.scale.set(1,1,1);
-      velocity.y=0; scene.rotation.y=0;
-      hasTakenOff=false; isHovering=false; hoverTime=0;
-      if(hoveringAudio&&!hoveringAudio.paused){
-        hoveringAudio.pause(); hoveringAudio.currentTime=0; isHoveringSoundPlayed=false;
-      }
-      updateQuadcopter(0);
-      gui.__controllers.forEach(c=>c.updateDisplay());
-      djiAudio.currentTime=0; djiAudio.play().catch(()=>{});
-      updateParticles();
-      quadcopter.position.y=0;
-    }
-  };
+// ------- END Tutorial/Challenges Data --------
 
-  // Tutorial steps (unchanged)
-  const tutorialSteps = [
-    { titleKey:'tutorial-step-1-title',  contentKey:'tutorial-step-1-content'  },
-    { titleKey:'tutorial-step-2-title',  contentKey:'tutorial-step-2-content'  },
-    { titleKey:'tutorial-step-3-title',  contentKey:'tutorial-step-3-content'  },
-    { titleKey:'tutorial-step-4-title',  contentKey:'tutorial-step-4-content'  },
-    { titleKey:'tutorial-step-5-title',  contentKey:'tutorial-step-5-content'  },
-    { titleKey:'tutorial-step-6-title',  contentKey:'tutorial-step-6-content'  },
-    { titleKey:'tutorial-step-7-title',  contentKey:'tutorial-step-7-content'  },
-    { titleKey:'tutorial-step-8-title',  contentKey:'tutorial-step-8-content'  },
-    { titleKey:'tutorial-step-9-title',  contentKey:'tutorial-step-9-content'  },
-    { titleKey:'tutorial-step-10-title', contentKey:'tutorial-step-10-content' }
-  ];
-  let tutorialCurrentStep = 0;
+init();
+animate();
+function init(){
+scene = new THREE.Scene();
+camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
+camera.position.set(5,5,5); camera.lookAt(0,0,0);
+renderer = new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(window.innerWidth,window.innerHeight);
+document.body.appendChild(renderer.domElement);
+orbitControls = new THREE.OrbitControls(camera,renderer.domElement);
+orbitControls.enableDamping=true; orbitControls.dampingFactor=0.05;
+orbitControls.minDistance=2; orbitControls.maxDistance=50;
+orbitControls.maxPolarAngle=Math.PI/2;
+scene.add(new THREE.AmbientLight(0x404040,1.5));
+const dirL=new THREE.DirectionalLight(0xffffff,1);
+dirL.position.set(10,20,10); scene.add(dirL);
+createGround();
+createGrid();
+createQuadcopter();
+rotorAudio = new Audio('rotor.mp3'); rotorAudio.loop=true; rotorAudio.volume=0; rotorAudio.preload='auto';
+djiAudio = new Audio('dji.mp3'); djiAudio.loop=false; djiAudio.volume=0.1; djiAudio.preload='auto';
+djiAudio.play().catch(()=>{});
+takeoffAudio = new Audio('takeoff.mp3');takeoffAudio.loop=false;takeoffAudio.volume=0.5;takeoffAudio.preload='auto';
+hoveringAudio = new Audio('hovering.mp3');hoveringAudio.loop=false;hoveringAudio.volume=1.0;hoveringAudio.preload='auto';
+createPreciseControls();
+createParticles();
+window.addEventListener('resize', onWindowResize);
+document.getElementById('reset-btn').onclick = function() {
+guiControls.reset();
+};
 
-  //── INIT & ANIMATE ─────────────────────────────────────────────────────────────
-  init();
-  animate();
+// --- BUTTONS: Tutorial, Conceptual, Language ---
+document.getElementById('tutorial-button').onclick = showTutorialModal;
+document.getElementById('conceptual-challenges-button').onclick = showConceptualModal;
+document.getElementById('language-switch').onclick = function() {
+currentLangIsZh = !currentLangIsZh;
+updateLanguageUI();
+};
 
-  function init(){
-    // SCENE & CAMERA
-    scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(75,window.innerWidth/window.innerHeight,0.1,1000);
-    camera.position.set(5,5,5);
-    camera.lookAt(0,0,0);
-    // RENDERER
-    renderer = new THREE.WebGLRenderer({antialias:true});
-    renderer.setSize(window.innerWidth,window.innerHeight);
-    document.body.appendChild(renderer.domElement);
+// Modal close buttons
+document.getElementById('close-tutorial').onclick = closeTutorialModal;
+document.getElementById('close-conceptual').onclick = closeConceptualModal;
 
-    // CONTROLS
-    orbitControls = new THREE.OrbitControls(camera,renderer.domElement);
-    orbitControls.enableDamping=true; orbitControls.dampingFactor=0.05;
-    orbitControls.minDistance=2; orbitControls.maxDistance=50;
-    orbitControls.maxPolarAngle=Math.PI/2;
+updateForcePanel();
+updateLanguageUI(); // Set initial language UI
+}
 
-    // LIGHTS
-    scene.add(new THREE.AmbientLight(0x404040,1.5));
-    const dirL = new THREE.DirectionalLight(0xffffff,1);
-    dirL.position.set(10,20,10);
-    scene.add(dirL);
+// Language and UI update
+function updateLanguageUI() {
+const isZh = currentLangIsZh;
+const T = getTranslations(isZh);
+document.getElementById('title').innerText = T.title;
+document.getElementById('relativeScaleMessage').innerText = T.relativeScaleMessage;
+document.getElementById('reset-btn').innerText = T.reset;
+document.getElementById('tutorial-button').innerText = T['tutorial-button'];
+document.getElementById('conceptual-challenges-button').innerText = T['conceptual-challenges-button'];
+document.getElementById('language-switch').innerText = T['language-switch'];
+document.getElementById('force-panel-title').innerText = T.forcePanelTitle;
+createPreciseControls();
+updateQuadcopter(0);
+updateForcePanel();
+}
 
-    // OBJECTS
-    createGround();
-    createGrid();
-    createQuadcopter();
+// --- Tutorial Modal Logic ---
+let tutorialStep = 0;
+function showTutorialModal() {
+tutorialStep = 0;
+renderTutorialStep();
+document.getElementById('tutorialModal').style.display = "block";
+}
+function closeTutorialModal() {
+document.getElementById('tutorialModal').style.display = "none";
+}
+function renderTutorialStep() {
+const steps = currentLangIsZh ? tutorialStepsZH : tutorialStepsEN;
+const step = steps[tutorialStep];
+document.getElementById('tutorialContent').innerHTML =
+"<h2>"+step.title+"</h2><div>"+step.content+"</div>";
+document.getElementById('prevButton').disabled = tutorialStep === 0;
+document.getElementById('nextButton').disabled = tutorialStep === steps.length-1;
+}
+document.getElementById('prevButton').onclick = function() {
+if (tutorialStep > 0) { tutorialStep--; renderTutorialStep();}
+};
+document.getElementById('nextButton').onclick = function() {
+const steps = currentLangIsZh ? tutorialStepsZH : tutorialStepsEN;
+if (tutorialStep < steps.length-1) { tutorialStep++; renderTutorialStep();}
+};
 
-    // AUDIO
-    rotorAudio    = new Audio('rotor.mp3'); rotorAudio.loop=true;    rotorAudio.volume=0;    rotorAudio.preload='auto';
-    djiAudio      = new Audio('dji.mp3');   djiAudio.loop=false;     djiAudio.volume=0.1;    djiAudio.preload='auto';
-    djiAudio.play().catch(()=>{});
-    takeoffAudio  = new Audio('takeoff.mp3');takeoffAudio.loop=false; takeoffAudio.volume=0.5;takeoffAudio.preload='auto';
-    hoveringAudio = new Audio('hovering.mp3');hoveringAudio.loop=false;hoveringAudio.volume=1.0;hoveringAudio.preload='auto';
+// --- Conceptual Challenges Modal Logic ---
+function showConceptualModal() {
+document.getElementById('conceptualContent').innerHTML = currentLangIsZh ? conceptualZH : conceptualEN;
+document.getElementById('conceptualModal').style.display = "block";
+}
+function closeConceptualModal() {
+document.getElementById('conceptualModal').style.display = "none";
+}
 
-    // GUI
-    gui = new dat.GUI({autoPlace:false,width:450});
-    const gw = document.createElement('div');
-    gw.style.display='flex'; gw.style.flexDirection='column'; gw.style.gap='10px';
-    gw.appendChild(gui.domElement);
-    document.getElementById('controls-container').appendChild(gw);
+function createPreciseControls() {
+const container = document.getElementById('precise-controls');
+container.innerHTML = '';
+const isZh = currentLangIsZh;
+paramConfig.forEach(param => {
+const row = document.createElement('div');
+row.className = 'gui-precise-row';
+const label = document.createElement('label');
+label.innerText = isZh ? param.label.zh : param.label.en;
+label.htmlFor = "precise-"+param.key;
+row.appendChild(label);
+const slider = document.createElement('input');
+slider.type = "range";
+slider.id = "precise-slider-"+param.key;
+slider.min = param.min;
+slider.max = param.max;
+slider.step = param.step;
+slider.value = guiControls[param.key];
+row.appendChild(slider);
+const number = document.createElement('input');
+number.type = "number";
+number.id = "precise-num-"+param.key;
+number.min = param.min;
+number.max = param.max;
+number.step = param.step;
+number.value = guiControls[param.key];
+row.appendChild(number);
+slider.addEventListener('input', function() {
+const v = parseFloat(this.value);
+guiControls[param.key] = v;
+number.value = v;
+updateQuadcopter(0);
+updateForcePanel();
+});
+number.addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (isNaN(v)) return;
+v = Math.max(param.min, Math.min(param.max, v));
+guiControls[param.key] = v;
+slider.value = v;
+updateQuadcopter(0);
+updateForcePanel();
+});
+row.slider = slider;
+row.number = number;
+container.appendChild(row);
+});
+document.getElementById('reset-btn').innerText = isZh ? "重設" : "Reset";
+}
+function updatePreciseControls() {
+paramConfig.forEach(param => {
+const slider = document.getElementById('precise-slider-'+param.key);
+const number = document.getElementById('precise-num-'+param.key);
+if (slider) slider.value = guiControls[param.key];
+if (number) number.value = guiControls[param.key];
+});
+}
+function animate(){
+requestAnimationFrame(animate);
+const rawDt = clock.getDelta(), dt = rawDt * timeScale;
+updateQuadcopter(dt);
+if (quadcopter) {
+quadcopter.children.forEach(c=>{
+if(c.geometry instanceof THREE.BoxGeometry && c.geometry.parameters.height===0.02){
+c.rotation.y += c.userData.rotationDirection * guiControls.rotorSpeed * 0.1;
+}
+});
+}
+if(isHovering){
+hoverTime += dt;
+const off = Math.sin(hoverTime*2*Math.PI*hoverFrequency)*hoverAmplitude;
+quadcopter.position.y = hoverStartY + off;
+}
+orbitControls.update();
+renderer.render(scene,camera);
+}
+function createGround(){
+const geo = new THREE.PlaneGeometry(10,10,100,100), pos = geo.attributes.position;
+for(let i=0;i<pos.count;i++) pos.setZ(i,Math.random()*0.2);
+const craters=[{x:-2,y:-2,r:1},{x:3,y:3,r:1.5},{x:-4,y:2,r:1}];
+craters.forEach(c=>{
+for(let i=0;i<pos.count;i++){
+const dx=pos.getX(i)-c.x, dy=pos.getY(i)-c.y, d=Math.hypot(dx,dy);
+if(d<c.r){
+const fall=1-(d/c.r);
+pos.setZ(i,pos.getZ(i)-fall*0.5);
+}
+}
+});
+geo.computeVertexNormals();
+const mat=new THREE.MeshPhongMaterial({color:0x8B4513,side:THREE.DoubleSide});
+ground=new THREE.Mesh(geo,mat);
+ground.rotation.x=-Math.PI/2;
+ground.position.y=-0.5;
+scene.add(ground);
+}
+function createGrid(){
+const gh=new THREE.GridHelper(10,10,0xffffff,0xffffff);
+gh.position.y=0; gh.material.opacity=0.6; gh.material.transparent=true;
+scene.add(gh);
+}
+function createQuadcopter(){
+quadcopter=new THREE.Group();
+const body=new THREE.Mesh(
+new THREE.BoxGeometry(2,0.4,2),
+new THREE.MeshPhongMaterial({color:0x0000FF,transparent:true,opacity:0.8})
+);
+quadcopter.add(body);
+const armGeo=new THREE.CylinderGeometry(0.1,0.1,2), armMat=new THREE.MeshPhongMaterial({color:0x808080});
+for(let i=0;i<4;i++){
+const arm=new THREE.Mesh(armGeo,armMat);
+arm.position.set(i<2?-1:1,0,i%2===0?-1:1);
+arm.rotation.z=Math.PI/2;
+quadcopter.add(arm);
+const dir=(i===0||i===3)?1:-1;
+const prop=new THREE.Mesh(
+new THREE.BoxGeometry(0.2,0.02,1.2,1.2),
+new THREE.MeshPhongMaterial({color:i<2?0xFF0000:0x00FF00})
+);
+prop.position.set(i<2?-1:1,0.2,i%2===0?-1:1);
+prop.userData.rotationDirection=dir;
+quadcopter.add(prop);
+const ball=new THREE.Mesh(
+new THREE.SphereGeometry(0.3,32,32),
+new THREE.MeshPhongMaterial({color:0xFFFF00})
+);
+ball.position.set(i<2?-1:1,0,i%2===0?-1:1);
+quadcopter.add(ball);
+blinkingBalls.push(ball);
+}
+const c=document.createElement('canvas'); c.width=c.height=512;
+const ctx=c.getContext('2d');
+ctx.fillStyle='gold'; ctx.font='bold 140px Arial';
+ctx.textAlign='center'; ctx.textBaseline='middle';
+ctx.translate(256,256); ctx.rotate(-Math.PI/2);
+ctx.fillText('EdUHK',0,-40);
+ctx.fillStyle='white'; ctx.font='bold 80px Arial';
+ctx.fillText('Quadcopter',0,80);
+const tex=new THREE.CanvasTexture(c);
+const lbl=new THREE.Mesh(
+new THREE.PlaneGeometry(2,2),
+new THREE.MeshBasicMaterial({map:tex,transparent:true})
+);
+lbl.position.set(0,0.21,0); lbl.rotation.x=-Math.PI/2;
+quadcopter.add(lbl);
+quadcopter.position.set(0,0,0);
+scene.add(quadcopter);
+}
+function roundDownToOneDecimal(n){ return Math.floor(n*10)/10; }
 
-    const wC = gui.add(guiControls,'weight',1,20).step(0.1).name('Weight').onChange(()=>updateQuadcopter(0)).listen();
-    const rC = gui.add(guiControls,'rotorSpeed',0,20).step(0.1).name('Rotor Speed').onChange(()=>updateQuadcopter(0)).listen();
-    const gC = gui.add(guiControls,'gravity',0.1,20).step(0.1).name('Gravity').onChange(()=>updateQuadcopter(0)).listen();
-    const pC = gui.add(guiControls,'pressure',0,20).step(0.1).name('Atm. Pressure')
-               .onChange(v=>{ updateQuadcopter(0); updateParticles(); }).listen();
-    gui.add(guiControls,'reset').name('Reset');
-
-    gui.domElement.style.fontSize='18px';
-    gui.domElement.style.marginBottom='20px';
-
-    [wC,rC,gC,pC].forEach(addScales);
-    // Replace each property-value span with an <input type="number">
-    gui.__controllers.forEach(ctrl=>{
-      const li = ctrl.__li;
-      const span = li.querySelector('.property-value');
-      if(!span) return;
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.value = ctrl.getValue();
-      if(ctrl.__min!==undefined) input.min = ctrl.__min;
-      if(ctrl.__max!==undefined) input.max = ctrl.__max;
-      if(ctrl.__step!==undefined)input.step=ctrl.__step;
-      input.style.width='50px';
-      input.addEventListener('change',()=>{
-        const v = parseFloat(input.value);
-        if(!isNaN(v)) ctrl.setValue(v);
-      });
-      span.replaceWith(input);
-    });
-
-    createParticles();
-    window.addEventListener('resize',onWindowResize);
-  }
-
-  function animate(){
-    requestAnimationFrame(animate);
-    const rawDt = clock.getDelta();
-    const dt = rawDt * timeScale;
-    updateQuadcopter(dt);
-    if(isHovering){
-      hoverTime += dt;
-      const off = Math.sin(hoverTime*2*Math.PI*hoverFrequency)*hoverAmplitude;
-      quadcopter.position.y = hoverStartY + off;
-    }
-    orbitControls.update();
-    renderer.render(scene,camera);
-  }
-
-  //── SCENE HELPERS ───────────────────────────────────────────────────────────────
-  function createGround(){
-    const geo = new THREE.PlaneGeometry(10,10,100,100),
-          pos = geo.attributes.position;
-    for(let i=0;i<pos.count;i++) pos.setZ(i,Math.random()*0.2);
-    const craters=[{x:-2,y:-2,r:1},{x:3,y:3,r:1.5},{x:-4,y:2,r:1}];
-    craters.forEach(c=>{
-      for(let i=0;i<pos.count;i++){
-        const dx=pos.getX(i)-c.x, dy=pos.getY(i)-c.y, d=Math.hypot(dx,dy);
-        if(d<c.r){
-          const fall=1-(d/c.r);
-          pos.setZ(i,pos.getZ(i)-fall*0.5);
-        }
-      }
-    });
-    geo.computeVertexNormals();
-    const mat = new THREE.MeshPhongMaterial({color:0x8B4513,side:THREE.DoubleSide});
-    ground = new THREE.Mesh(geo,mat);
-    ground.rotation.x = -Math.PI/2;
-    ground.position.y = -0.5;
-    scene.add(ground);
-  }
-  function createGrid(){
-    const gh=new THREE.GridHelper(10,10,0xffffff,0xffffff);
-    gh.position.y=0; gh.material.opacity=0.6; gh.material.transparent=true;
-    scene.add(gh);
-  }
-  function createQuadcopter(){
-    quadcopter=new THREE.Group();
-    const body=new THREE.Mesh(
-      new THREE.BoxGeometry(2,0.4,2),
-      new THREE.MeshPhongMaterial({color:0x0000FF,transparent:true,opacity:0.8})
-    );
-    quadcopter.add(body);
-
-    const armGeo=new THREE.CylinderGeometry(0.1,0.1,2),
-          armMat=new THREE.MeshPhongMaterial({color:0x808080});
-
-    for(let i=0;i<4;i++){
-      const arm=new THREE.Mesh(armGeo,armMat);
-      arm.position.set(i<2?-1:1,0,i%2===0?-1:1);
-      arm.rotation.z = Math.PI/2;
-      quadcopter.add(arm);
-
-      const dir = (i===0||i===3)?1:-1;
-      const prop = new THREE.Mesh(
-        new THREE.BoxGeometry(0.2,0.02,1.2*1.2),
-        new THREE.MeshPhongMaterial({color: i<2?0xFF0000:0x00FF00})
-      );
-      prop.position.set(i<2?-1:1,0.2,i%2===0?-1:1);
-      prop.userData.rotationDirection = dir;
-      quadcopter.add(prop);
-
-      const ball = new THREE.Mesh(
-        new THREE.SphereGeometry(0.3,32,32),
-        new THREE.MeshPhongMaterial({color:0xFFFF00})
-      );
-      ball.position.set(i<2?-1:1,0,i%2===0?-1:1);
-      quadcopter.add(ball);
-      blinkingBalls.push(ball);
-    }
-
-    // Labels
-    const c = document.createElement('canvas'); c.width=c.height=512;
-    const ctx = c.getContext('2d');
-    ctx.fillStyle='gold'; ctx.font='bold 140px Arial';
-    ctx.textAlign='center'; ctx.textBaseline='middle';
-    ctx.translate(256,256); ctx.rotate(-Math.PI/2);
-    ctx.fillText('EdUHK',0,-40);
-    ctx.fillStyle='white'; ctx.font='bold 80px Arial';
-    ctx.fillText('Quadcopter',0,80);
-    const tex=new THREE.CanvasTexture(c);
-    const lbl=new THREE.Mesh(
-      new THREE.PlaneGeometry(2,2),
-      new THREE.MeshBasicMaterial({map:tex,transparent:true})
-    );
-    lbl.position.set(0,0.21,0);
-    lbl.rotation.x=-Math.PI/2;
-    quadcopter.add(lbl);
-
-    quadcopter.position.set(0,0,0);
-    scene.add(quadcopter);
-  }
-
-  function roundDownToOneDecimal(n){ return Math.floor(n*10)/10; }
-
-  //── PHYSICS & STATUS ──────────────────────────────────────────────────────────
-  function updateQuadcopter(dt){
+// ---- MAJOR PHYSICS/ARROWS LOGIC MODIFICATION STARTS HERE ----
+function updateQuadcopter(dt){
     let netForce=0, hoverRotorSpeed=NaN;
-    const gravForce=(guiControls.weight*guiControls.gravity)/10;
+    const mass = guiControls.mass;
+    const gravityForce = (mass*guiControls.gravity)/10;
+    let liftForce = 0;
+    let actionOnAir = 0;
+    let status = "";
 
-    if(guiControls.pressure===0||guiControls.gravity===0){
-      netForce=0; hoverRotorSpeed=NaN;
-      quadcopter.position.y=0; velocity.y=0; isHovering=false;
+    // Calculate hover rotor speed (theoretical minimum rotor speed to hover)
+    const rawHRS = Math.sqrt((mass*guiControls.gravity)/Math.max(0.0001,guiControls.pressure));
+    hoverRotorSpeed = roundDownToOneDecimal(rawHRS > 0 ? rawHRS : 0.1);
+
+    let rotorSpeedNow = guiControls.rotorSpeed;
+    let justTookOff = false;
+
+    // Always compute liftForce and actionOnAir as a function of rotorSpeed (quadratic)
+    // Even before takeoff, so arrows always increase with rotor speed!
+    let k = 1;
+    if (hoverRotorSpeed > 0 && guiControls.pressure > 0) {
+        k = gravityForce / (hoverRotorSpeed*hoverRotorSpeed * guiControls.pressure);
+    }
+    if (guiControls.pressure === 0 || guiControls.gravity === 0) {
+        liftForce = 0;
+        actionOnAir = 0;
+        netForce = 0;
+        hoverRotorSpeed = NaN;
+        status = currentLangIsZh ? "地面" : "On Ground";
+        quadcopter.position.y=0; velocity.y=0; isHovering=false; hasTakenOff=false;
     } else {
-      const rawHRS=Math.sqrt((guiControls.weight*guiControls.gravity)/guiControls.pressure);
-      hoverRotorSpeed=roundDownToOneDecimal(rawHRS>0?rawHRS:0.1);
-      const ratio=guiControls.rotorSpeed/hoverRotorSpeed;
-      netForce=(ratio*ratio-1)*gravForce;
-      if(Math.abs(netForce)<0.0001){
-        if(!isHovering){ hoverStartY=quadcopter.position.y; hoverTime=0; }
-        isHovering=true;
-      } else {
-        isHovering=false;
-      }
+        liftForce = k * rotorSpeedNow*rotorSpeedNow * guiControls.pressure;
+        actionOnAir = -liftForce;
+        netForce = liftForce - gravityForce;
     }
 
-    if(!isHovering && !isNaN(netForce)){
-      velocity.y += netForce * dt;
-      const maxV = guiControls.gravity/2;
-      velocity.y = THREE.MathUtils.clamp(velocity.y, -maxV, maxV);
-      quadcopter.position.y += velocity.y * dt;
-      velocity.y *= 0.98;
+    // Takeoff logic: take off when lift > weight (arrow length is then longer than weight's)
+    if(guiControls.pressure===0||guiControls.gravity===0){
+        quadcopter.position.y=0; velocity.y=0; isHovering=false; hasTakenOff=false;
+    } else if (!hasTakenOff) {
+        if (liftForce > gravityForce + 0.01) {
+            hasTakenOff = true;
+            takeoffAudio.play().catch(()=>{});
+            justTookOff = true;
+        } else {
+            quadcopter.position.y = 0;
+            velocity.y = 0;
+            isHovering = false;
+            status = currentLangIsZh ? "地面" : "On Ground";
+            updateStatus(hoverRotorSpeed, netForce, hasTakenOff, false);
+            handleAudio();
+            updateGroundColor();
+            updateQuadcopterScale();
+            updatePreciseControls();
+            // LIFT/ACTION arrows always shown if rotorSpeed > 0 (even if not taken off)
+            let showLift = rotorSpeedNow > 0 ? liftForce : 0;
+            let showAction = rotorSpeedNow > 0 ? actionOnAir : 0;
+            // Here: net force is just -gravityForce (white arrow: always shorter as lift increases)
+            let showNet = -gravityForce + liftForce;
+            updateForcePanel(showLift, showAction, gravityForce, showNet, false, true, status, mass);
+            prevRotorSpeed = rotorSpeedNow;
+            return;
+        }
     }
 
-    if(quadcopter.position.y>10){
-      guiControls.reset(); return;
+    // Hover logic: when |liftForce - gravityForce| <= threshold
+    let isHoveringNow = false;
+    if (hasTakenOff && Math.abs(liftForce - gravityForce) <= HOVER_EPS) {
+        isHoveringNow = true;
+        if (!isHovering) { // just entered hover
+            velocity.y = 0;
+            hoverStartY = quadcopter.position.y;
+            hoverTime = 0;
+        }
+        status = currentLangIsZh ? "懸停" : "Hovering";
+    } else if (hasTakenOff) {
+        if (netForce > 0) status = currentLangIsZh ? "上升" : "Ascending";
+        else if (netForce < 0) status = currentLangIsZh ? "下降" : "Descending";
     }
-    if(quadcopter.position.y<0){
-      quadcopter.position.y=0; velocity.y=0;
+    isHovering = isHoveringNow;
+
+    // Quadcopter motion
+    if (!isHovering && hasTakenOff && !isNaN(netForce)) {
+        velocity.y += netForce * dt;
+        const maxV=guiControls.gravity/2;
+        velocity.y=THREE.MathUtils.clamp(velocity.y,-maxV,maxV);
+        quadcopter.position.y += velocity.y * dt;
+        velocity.y *= 0.98;
     }
+    if (isHovering) {
+        hoverTime += dt;
+        const off = Math.sin(hoverTime*2*Math.PI*hoverFrequency)*hoverAmplitude;
+        quadcopter.position.y = hoverStartY + off;
+        velocity.y = 0;
+    }
+    if (quadcopter.position.y < 0) {
+        quadcopter.position.y=0; velocity.y=0;
+        hasTakenOff = false;
+        isHovering = false;
+        status = currentLangIsZh ? "地面" : "On Ground";
+    }
+    if(quadcopter.position.y>10){ guiControls.reset(); return; }
 
-    // rotate props
-    quadcopter.children.forEach(c=>{
-      if(c.geometry instanceof THREE.BoxGeometry && c.geometry.parameters.height===0.02){
-        c.rotation.y += c.userData.rotationDirection * guiControls.rotorSpeed * 0.1;
-      }
-    });
-
-    updateStatus(hoverRotorSpeed,netForce);
+    // UI/status update
+    updateStatus(hoverRotorSpeed, netForce, hasTakenOff, isHovering);
     handleAudio();
     updateGroundColor();
     updateQuadcopterScale();
-  }
+    updatePreciseControls();
 
-  function updateStatus(hoverRotorSpeed,netForce){
-    const isCN = document.getElementById('language-switch').textContent.includes('English');
-    const T = getTranslations(isCN);
-    const fEl = document.getElementById('force'),
-          sEl = document.getElementById('statusMessage');
-    fEl.style.color='gold'; sEl.style.color='gold';
-    let fTxt,sTxt;
-
-    if(guiControls.pressure===0||guiControls.gravity===0){
-      fTxt = T.forceLabel + T.forceNA;
-      sTxt = T.statusLabel + T.statusOnGround;
-      isHovering=false;
-    } else if(Math.abs(netForce)<0.0001){
-      fTxt=T.forceLabel+T.forceLiftEqualsGravity;
-      sTxt=T.statusLabel+T.statusHovering;
-      isHovering=true;
-      fEl.style.color='#90EE90'; sEl.style.color='#90EE90';
-    } else if(netForce>0){
-      fTxt=T.forceLabel+T.forceLiftGreaterGravity;
-      sTxt=T.statusThrottleUp;
-      if(!hasTakenOff){ takeoffAudio.play().catch(()=>{}); hasTakenOff=true; }
-      fEl.style.color='pink'; sEl.style.color='pink';
+    // --- Pass force values for force panel ---
+    let showLift = rotorSpeedNow > 0 ? liftForce : 0;
+    let showAction = rotorSpeedNow > 0 ? actionOnAir : 0;
+    let showNet;
+    if (!hasTakenOff) {
+        // On ground: net force arrow length decreases as lift increases
+        showNet = liftForce - gravityForce; // negative until takeoff, then positive
     } else {
-      fTxt=T.forceLabel+T.forceLiftLessGravity;
-      sTxt=T.statusThrottleDown;
-      hasTakenOff=false;
+        // In air: net force as calculated
+        showNet = netForce;
     }
+    updateForcePanel(showLift, showAction, gravityForce, showNet, isHovering, !hasTakenOff, status, mass);
+    prevRotorSpeed = rotorSpeedNow;
+}
+// ---- END OF MODIFIED PHYSICS/ARROWS LOGIC ----
 
-    fEl.innerText=fTxt;
-    sEl.innerText=sTxt;
-    const hrsTxt = isNaN(hoverRotorSpeed)?T.hoverRotorSpeedNA:hoverRotorSpeed.toFixed(1);
-    document.getElementById('hoverRotorSpeed').innerText = T.hoverRotorSpeedLabel + hrsTxt;
+function updateStatus(hoverRotorSpeed, netForce, hasTakenOff, isHovering){
+const isCN=currentLangIsZh;
+const T=getTranslations(isCN);
+const fEl=document.getElementById('force'), sEl=document.getElementById('statusMessage');
+fEl.style.color='gold'; sEl.style.color='gold';
+let fTxt,sTxt;
+if(guiControls.pressure===0||guiControls.gravity===0){
+fTxt=T.forceLabel+T.forceNA;
+sTxt=T.statusLabel+T.statusOnGround;
+isHovering=false;
+} else if (!hasTakenOff) {
+if (guiControls.rotorSpeed >= hoverRotorSpeed) {
+fTxt=T.forceLabel+T.forceLiftEqualsGravity;
+sTxt=T.statusLabel+T.statusOnGround + " - " + T.readyToTakeOff;
+} else {
+fTxt=T.forceLabel+T.forceLiftLessGravity;
+sTxt=T.statusLabel+T.statusOnGround;
+}
+} else if(isHovering) {
+fTxt=T.forceLabel+T.forceLiftEqualsGravity;
+sTxt=T.statusLabel+T.statusHovering;
+fEl.style.color='#90EE90'; sEl.style.color='#90EE90';
+} else if(netForce>0){
+fTxt=T.forceLabel+T.forceLiftGreaterGravity;
+sTxt=T.statusLabel+T.statusThrottleUp;
+fEl.style.color='pink'; sEl.style.color='pink';
+} else {
+fTxt=T.forceLabel+T.forceLiftLessGravity;
+sTxt=T.statusLabel+T.statusThrottleDown;
+}
+fEl.innerText=fTxt; sEl.innerText=sTxt;
+const hrsTxt=isNaN(hoverRotorSpeed)?T.hoverRotorSpeedNA:hoverRotorSpeed.toFixed(1);
+document.getElementById('hoverRotorSpeed').innerText=T.hoverRotorSpeedLabel+hrsTxt;
+if(Date.now()-lastBlinkTime>1000){
+blinkingBalls.forEach(b=>b.visible=!b.visible);
+lastBlinkTime=Date.now();
+}
+if(isHovering && !isHoveringSoundPlayed){
+hoveringAudio.currentTime=0; hoveringAudio.play().catch(()=>{});
+isHoveringSoundPlayed=true;
+} else if(!isHovering && isHoveringSoundPlayed){
+if(!hoveringAudio.paused){ hoveringAudio.pause(); hoveringAudio.currentTime=0; }
+isHoveringSoundPlayed=false;
+}
+}
+function handleAudio(){
+if(guiControls.rotorSpeed>0 && guiControls.pressure>0){
+if(rotorAudio.paused) rotorAudio.play().catch(()=>{});
+rotorAudio.volume=Math.min(guiControls.rotorSpeed/20,1);
+} else {
+if(!rotorAudio.paused){ rotorAudio.pause(); rotorAudio.currentTime=0; }
+}
+}
+function createParticles(){
+const maxP=20, maxN=10000;
+const cnt=Math.floor((guiControls.pressure/maxP)*maxN);
+if(particles) scene.remove(particles);
+if(cnt===0) return;
+const geo=new THREE.BufferGeometry(), pos=[];
+for(let i=0;i<cnt;i++){
+pos.push((Math.random()-0.5)*20,(Math.random()-0.5)*20,(Math.random()-0.5)*20);
+}
+geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+const c=document.createElement('canvas'); c.width=c.height=64;
+const cx=c.getContext('2d'); cx.beginPath(); cx.arc(32,32,30,0,2*Math.PI); cx.fillStyle='white'; cx.fill();
+const tex=new THREE.CanvasTexture(c);
+const mat=new THREE.PointsMaterial({
+color:0xFFFFFF, size:0.1, transparent:true,
+opacity:0.5, map:tex, alphaTest:0.5,
+depthWrite:false, blending:THREE.AdditiveBlending
+});
+particles=new THREE.Points(geo,mat);
+scene.add(particles);
+}
+function updateParticles(){ createParticles(); }
+function onWindowResize(){
+camera.aspect=window.innerWidth/window.innerHeight;
+camera.updateProjectionMatrix();
+renderer.setSize(window.innerWidth,window.innerHeight);
+updateForcePanel();
+}
+function updateGroundColor(){
+const g=guiControls.gravity,
+minC=new THREE.Color(0xC49E7F),
+maxC=new THREE.Color(0x4E342E),
+t=g>1?THREE.MathUtils.clamp((g-1)/19,0,1):0;
+ground.material.color.copy(minC).lerp(maxC,t);
+}
+function updateQuadcopterScale(){
+const m=guiControls.mass,
+t=THREE.MathUtils.clamp((m-1)/19,0,1),
+s=0.5 + t*(2.0-0.5);
+quadcopter.scale.set(s,s,s);
+}
+function getTranslations(isChinese){
+if (isChinese) {
+return {
+title: '四旋翼飛行器物理模擬',
+'language-switch': 'English',
+relativeScaleMessage: '所有數值都是相對尺度，而不是實際精確值。',
+forceLabel: '力：',
+statusLabel: '狀態：',
+hoverRotorSpeedLabel: '懸停旋翼速度：',
+forceNA: '不適用',
+statusOnGround: '著陸',
+readyToTakeOff: '準備起飛',
+forceLiftEqualsGravity: '升力 = 重量',
+statusHovering: '懸停中',
+forceLiftGreaterGravity: '升力 > 重量',
+statusThrottleUp: '上升',
+forceLiftLessGravity: '升力 < 重量',
+statusThrottleDown: '下降',
+hoverRotorSpeedNA: '不適用',
+reset: '重設',
+'tutorial-button': '教程',
+'conceptual-challenges-button': '概念挑戰',
+forcePanelTitle: '力圖',
+mathWeight: '重量',
+mathLift: '升力'
+};
+} else {
+return {
+title: 'QuadPhysics: Quadcopter Flight Explorer',
+'language-switch': '繁體中文',
+relativeScaleMessage: 'All values are on relative scales and not real precise values.',
+forceLabel: 'Force: ',
+statusLabel: 'Status: ',
+hoverRotorSpeedLabel: 'Hover Rotor Speed: ',
+forceNA: 'N/A',
+statusOnGround: 'On Ground',
+readyToTakeOff: 'Ready to Take Off',
+forceLiftEqualsGravity: 'Lift = Weight',
+statusHovering: 'Hovering',
+forceLiftGreaterGravity: 'Lift > Weight',
+statusThrottleUp: 'Ascending',
+forceLiftLessGravity: 'Lift < Weight',
+statusThrottleDown: 'Descending',
+hoverRotorSpeedNA: 'N/A',
+reset: 'Reset',
+'tutorial-button': 'Tutorial',
+'conceptual-challenges-button': 'Conceptual Challenges',
+forcePanelTitle: 'Force Diagram',
+mathWeight: 'Weight',
+mathLift: 'Lift'
+};
+}
+}
 
-    // blinking
-    if(Date.now()-lastBlinkTime>blinkInterval){
-      blinkingBalls.forEach(b=>b.visible=!b.visible);
-      lastBlinkTime=Date.now();
-    }
+// --- UPDATE FORCE PANEL: always draw lift/action if rotorSpeed>0, even 0<rs<1 ---
+function updateForcePanel(
+liftVal, actionVal, weightVal, netVal, isHovering, isOnGround, status, massVal
+) {
+if (arguments.length === 0) {
+({ lift: liftVal, action: actionVal, weight: weightVal, net: netVal, isHovering, isOnGround, status } = lastForcePanelVals);
+massVal = guiControls.mass;
+}
+lastForcePanelVals = { lift: liftVal, action: actionVal, weight: weightVal, net: netVal, isHovering, isOnGround, status };
+const canvas = document.getElementById('force-canvas');
+if (!canvas) return;
+let width = canvas.parentElement.offsetWidth || 340;
+let height = canvas.parentElement.offsetHeight || 470;
+if (width < 120) width = 120;
+if (height < 100) height = 100;
+canvas.width = width;
+canvas.height = height;
+const ctx = canvas.getContext('2d');
+ctx.clearRect(0,0,width,height);
 
-    // hovering audio
-    if(isHovering && !isHoveringSoundPlayed){
-      hoveringAudio.currentTime=0; hoveringAudio.play().catch(()=>{});
-      isHoveringSoundPlayed=true;
-    } else if(!isHovering && isHoveringSoundPlayed){
-      if(!hoveringAudio.paused){
-        hoveringAudio.pause(); hoveringAudio.currentTime=0;
-      }
-      isHoveringSoundPlayed=false;
-    }
-  }
+const cx = width/2;
+const cy = height * 0.50;
+const quadcopterLen = Math.max(width*0.24, 56);
+const quadcopterH = Math.max(height*0.055, 22);
 
-  function handleAudio(){
-    if(guiControls.rotorSpeed>0 && guiControls.pressure>0){
-      if(rotorAudio.paused) rotorAudio.play().catch(()=>{});
-      rotorAudio.volume = Math.min(guiControls.rotorSpeed/20,1);
-    } else {
-      if(!rotorAudio.paused){
-        rotorAudio.pause(); rotorAudio.currentTime=0;
-      }
-    }
-  }
+// Normal scale for all arrows
+const maxMass = paramConfig.find(p=>p.key==="mass").max;
+const maxGravity = paramConfig.find(p=>p.key==="gravity").max;
+const maxForce = (maxMass * maxGravity) / 10;
+let availableHeight = Math.min(cy - quadcopterH/2 - 12, height - (cy + quadcopterH/2) - 12);
+let maxArrowLen = availableHeight * 0.75;
+let forceScale = (maxArrowLen / maxForce);
 
-  //── PARTICLES ─────────────────────────────────────────────────────────────────
-  function createParticles(){
-    const maxP=20, maxN=10000;
-    const cnt = Math.floor((guiControls.pressure/maxP)*maxN);
-    if(particles) scene.remove(particles);
-    if(cnt===0) return;
-    const geo = new THREE.BufferGeometry(), pos=[];
+// Arrow lengths (all use same scale)
+let liftArrowLen = Math.abs(liftVal*forceScale);
+let actionArrowLen = Math.abs(actionVal*forceScale);
+let weightArrowLen = Math.abs(weightVal*forceScale);
+let netArrowLen = Math.abs(netVal*forceScale);
 
-    for(let i=0;i<cnt;i++){
-      pos.push((Math.random()-0.5)*20,(Math.random()-0.5)*20,(Math.random()-0.5)*20);
-    }
-    geo.setAttribute('position', new THREE.Float32BufferAttribute(pos,3));
+// ---- minimum on-screen arrow length (but always drawn if rotorSpeed > 0) ----
+let minArrowPx = 10;
+let rotorSpeedNow = guiControls.rotorSpeed;
 
-    const c=document.createElement('canvas'); c.width=c.height=64;
-    const cx=c.getContext('2d');
-    cx.beginPath(); cx.arc(32,32,30,0,2*Math.PI);
-    cx.fillStyle='white'; cx.fill();
-    const tex=new THREE.CanvasTexture(c);
+ctx.save();
+ctx.strokeStyle = "#333";
+ctx.lineWidth = 5;
+ctx.fillStyle = "#2453a7";
+ctx.globalAlpha = 0.72;
+ctx.beginPath();
+ctx.roundRect(cx - quadcopterLen/2, cy - quadcopterH/2, quadcopterLen, quadcopterH, 10);
+ctx.fill();
+ctx.globalAlpha = 0.95;
+ctx.stroke();
+ctx.restore();
 
-    const mat=new THREE.PointsMaterial({
-      color:0xFFFFFF, size:0.1, transparent:true,
-      opacity:0.5, map:tex, alphaTest:0.5,
-      depthWrite:false, blending:THREE.AdditiveBlending
-    });
-    particles=new THREE.Points(geo,mat);
-    scene.add(particles);
-  }
-  function updateParticles(){ createParticles(); }
+function drawArrow(x, y, len, up, color, label, labelSide, thick, arrHeadScale=0.8, labelCustom) {
+// Always draw, but ensure visible minimum length
+if(len < minArrowPx) len = minArrowPx;
+ctx.save();
+ctx.lineWidth = thick||9;
+ctx.strokeStyle = color;
+ctx.fillStyle = color;
+ctx.beginPath();
+let tipY = y + (up ? -len : len);
+ctx.moveTo(x, y);
+ctx.lineTo(x, tipY);
+ctx.stroke();
+ctx.beginPath();
+let arrHead = Math.max(10, ctx.lineWidth*1.8) * arrHeadScale;
+ctx.moveTo(x - arrHead*0.60, tipY + (up?arrHead:-arrHead));
+ctx.lineTo(x, tipY);
+ctx.lineTo(x + arrHead*0.60, tipY + (up?arrHead:-arrHead));
+ctx.stroke();
+ctx.fill();
+ctx.save();
+let fontsize = 14.3;
+ctx.font = 'bold '+fontsize+'px Arial';
+ctx.globalAlpha = 0.93;
+ctx.textAlign = (labelSide=="right") ? "left" : "right";
+ctx.textBaseline = "middle";
+let frac = 0.62;
+let lx = x + (labelSide == "right" ? arrHead+10 : -(arrHead+10));
+let ly = y + (up ? -len*frac : len*frac);
+let txt = label || "";
+if (labelCustom) {
+lx = labelCustom.x;
+ly = labelCustom.y;
+ctx.textAlign = labelCustom.align||ctx.textAlign;
+}
+let met = ctx.measureText(txt);
+ctx.save();
+ctx.fillStyle = "#242424";
+ctx.globalAlpha = 0.73;
+ctx.fillRect(lx+(ctx.textAlign=="left"?0:-met.width-10), ly-fontsize/2-2, met.width+14, fontsize+5);
+ctx.restore();
+ctx.globalAlpha = 1;
+ctx.fillStyle = color;
+ctx.fillText(txt, lx, ly+2);
+ctx.restore();
+ctx.restore();
+}
 
-  //── RESIZE ─────────────────────────────────────────────────────────────────────
-  function onWindowResize(){
-    camera.aspect=window.innerWidth/window.innerHeight;
-    camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth,window.innerHeight);
-  }
+// Weight arrow (normal length)
+drawArrow(
+cx - quadcopterLen*0.7,
+cy + quadcopterH/2,
+weightArrowLen,
+false, "#ffa500",
+currentLangIsZh ? "重量" : "Weight",
+"left", 12, 0.8
+);
 
-  //── UTILITIES ─────────────────────────────────────────────────────────────────
-  function addScales(ctrl){
-    const slider=ctrl.__li.querySelector('.slider');
-    if(!slider) return;
-    const ticks=document.createElement('div');
-    ticks.className='ticks';
-    for(let i=0;i<=20;i++){
-      const t=document.createElement('div');
-      t.className='tick';
-      ticks.appendChild(t);
-    }
-    slider.classList.add(`property-${ctrl.property}`);
-    slider.appendChild(ticks);
-  }
-  function updateGroundColor(){
-    const g=guiControls.gravity,
-          minC=new THREE.Color(0xC49E7F),
-          maxC=new THREE.Color(0x4E342E),
-          t=g>1?THREE.MathUtils.clamp((g-1)/19,0,1):0;
-    ground.material.color.copy(minC).lerp(maxC,t);
-  }
-  function updateQuadcopterScale(){
-    const w=guiControls.weight,
-          t=THREE.MathUtils.clamp((w-1)/19,0,1),
-          s=0.5 + t*(2.0-0.5);
-    quadcopter.scale.set(s,s,s);
-  }
+// --- Always draw LIFT/ACTION arrows if rotor speed > 0 ---
+if (rotorSpeedNow > 0) {
+drawArrow(
+cx - quadcopterLen*0.19,
+cy - quadcopterH/2,
+liftArrowLen,
+true, "#42b7ff",
+currentLangIsZh ? "升力" : "Lift",
+"left", 12, 0.8
+);
+drawArrow(
+cx + quadcopterLen*0.33,
+cy + quadcopterH/2,
+actionArrowLen,
+false, "#ffe600",
+currentLangIsZh ? "四旋翼對空氣作用" : "Action on Air",
+"right", 12, 0.8
+);
+}
 
-  //── TRANSLATIONS & TUTORIAL ────────────────────────────────────────────────────
-  function getTranslations(isChinese){
-    return {
-      title: isChinese?'四旋翼飛行器物理模擬':'QuadPhysics: Quadcopter Flight Explorer',
-      'language-switch': isChinese?'English':'繁體中文',
-      relativeScaleMessage: isChinese?'所有數值都是相對尺度，而不是實際精確值。':'All values are on relative scales and not real precise values.',
-      forceLabel: isChinese?'力：':'Force: ',
-      statusLabel: isChinese?'狀態：':'Status: ',
-      hoverRotorSpeedLabel: isChinese?'懸停旋翼速度：':'Hover Rotor Speed: ',
-      forceNA: isChinese?'不適用':'N/A',
-      statusOnGround: isChinese?'著陸':'On Ground',
-      forceLiftEqualsGravity: isChinese?'升力 = 重力':'Lift = Gravity',
-      statusHovering: isChinese?'懸停中':'Hovering',
-      forceLiftGreaterGravity: isChinese?'升力 > 重力':'Lift > Gravity',
-      statusThrottleUp: isChinese?'上升':'Throttle Up',
-      forceLiftLessGravity: isChinese?'升力 < 重力':'Lift < Gravity',
-      statusThrottleDown: isChinese?'下降':'Throttle Down',
-      hoverRotorSpeedNA: isChinese?'不適用':'N/A',
-      reset: isChinese?'重置':'Reset',
-      'tutorial-button': isChinese?'教程':'Tutorial',
-      'conceptual-challenges-button': isChinese?'概念挑戰':'Conceptual Challenges',
-      'tutorial-step-1-title': isChinese?'教程 - 步驟 1':'Tutorial - Step 1',
-      'tutorial-step-1-content': isChinese?
-        '歡迎來到四旋翼飛行器物理模擬教程！在這個模擬中，你將學習如何調節旋翼速度、重力和大氣壓力，並觀察這些因素如何影響飛行器的起飛和懸停。'
-        : 'Welcome to the Quadcopter Physics Simulator Tutorial! In this simulation, you will learn how to adjust rotor speed, gravity, and atmospheric pressure, and observe how these factors affect the quadcopter\'s takeoff and hovering.',
-      'tutorial-step-2-title': isChinese?'教程 - 步驟 2':'Tutorial - Step 2',
-      'tutorial-step-2-content': isChinese?
-        '使用滑桿來調節四旋翼的重量、旋翼速度、重力和大氣壓力。每個滑桿下方都有數值顯示，讓你可以精確控制每個變數。'
-        : 'Use the sliders to adjust the quadcopter\'s weight, rotor speed, gravity, and atmospheric pressure. Each slider has a value display below it, allowing you to precisely control each variable.',
-      'tutorial-step-3-title': isChinese?'教程 - 步驟 3':'Tutorial - Step 3',
-      'tutorial-step-3-content': isChinese?
-        '調節旋翼速度會影響升力。增加旋翼速度可以提高升力，使飛行器上升；減少旋翼速度則會降低升力，使飛行器下降。'
-        : 'Adjusting the rotor speed affects lift. Increasing the rotor speed can increase lift, causing the quadcopter to ascend; decreasing the rotor speed will reduce lift, causing it to descend.',
-      'tutorial-step-4-title': isChinese?'教程 - 步驟 4':'Tutorial - Step 4',
-      'tutorial-step-4-content': isChinese?
-        '重力的強度決定了飛行器需要多少升力才能懸停或起飛。增加重力需要更高的旋翼速度來克服重力。'
-        : 'The strength of gravity determines how much lift the quadcopter needs to hover or take off. Increasing gravity requires higher rotor speeds to overcome it.',
-      'tutorial-step-5-title': isChinese?'教程 - 步驟 5':'Tutorial - Step 5',
-      'tutorial-step-5-content': isChinese?
-        '大氣壓力影響飛行器的空氣動力學。高大氣壓力下，飛行器需要更高的旋翼速度來產生足夠的升力。'
-        : 'Atmospheric pressure affects the quadcopter\'s aerodynamics. Under high atmospheric pressure, the quadcopter requires higher rotor speeds to generate sufficient lift.',
-      'tutorial-step-6-title': isChinese?'教程 - 步驟 6':'Tutorial - Step 6',
-      'tutorial-step-6-content': isChinese?
-        '觀察模擬中的粒子系統，它反映了當前的大氣壓力。大氣壓力越高，粒子越多。'
-        : 'Observe the particle system in the simulation, which reflects the current atmospheric pressure. Higher atmospheric pressure results in more particles.',
-      'tutorial-step-7-title': isChinese?'教程 - 步驟 7':'Tutorial - Step 7',
-      'tutorial-step-7-content': isChinese?
-        '當飛行器達到懸停狀態時，旋翼速度正好產生與重力相等的升力，此時飛行器會穩定懸停在空中。'
-        : 'When the quadcopter reaches a hovering state, the rotor speed generates lift equal to the gravitational force, causing the quadcopter to stabilize and hover in the air.',
-      'tutorial-step-8-title': isChinese?'教程 - 步驟 8':'Tutorial - Step 8',
-      'tutorial-step-8-content': isChinese?
-        '利用這個模擬來探索不同條件下四旋翼飛行器的行為，並理解物理原理如何應用於實際情境。'
-        : 'Use this simulation to explore the behavior of quadcopters under different conditions and understand how physical principles apply in real-world scenarios.',
-      'tutorial-step-9-title': isChinese?'案例研究：機智號 - 火星直升機':'Case Study: Ingenuity - Mars Helicopter',
-      'tutorial-step-9-content': isChinese?
-        `<p>機智號是一款專為火星探索設計的直升機，其重量為1.80 kg。由於火星大氣壓力僅為地球的0.1%，重力為地球的38%，機智號能夠利用這些條件飛行。</p>
-         <img src="mars_drone.jpg" alt="Mars Helicopter 'Ingenuity' (機智號)" style="width:100%;height:auto;border-radius:8px;">`
-        : `<p>The Ingenuity Mars Helicopter is a specially designed drone for Mars exploration, weighing 1.80 kg. With atmospheric pressure only 0.1% of Earth's and gravity at 38% of Earth, Ingenuity effectively utilizes these conditions to achieve flight.</p>
-         <img src="mars_drone.jpg" alt="Mars Helicopter 'Ingenuity'" style="width:100%;height:auto;border-radius:8px;">`,
-      'tutorial-step-10-title': isChinese?'案例研究：蜻蜓號 - 土衛六八足飛機':'Case Study: Dragonfly - Titan Octocopter',
-      'tutorial-step-10-content': isChinese?
-        `<p>蜻蜓號是一台為土衛六設計的八足飛機，重量達450 kg。其大氣壓力為地球的145%，重力為地球的14%，使蜻蜓號能夠在濃密的土衛六大氣中穩定飛行並執行長時間科學任務。</p>
-         <img src="titan_drone.jpg" alt="Titan Octocopter 'Dragonfly' (蜻蜓號)" style="width:100%;height:auto;border-radius:8px;">`
-        : `<p>The Dragonfly Titan Octocopter is an eight-legged drone designed for Titan exploration, weighing 450 kg. With atmospheric pressure at 145% of Earth's and gravity at only 14% of Earth, Dragonfly can stabilize and conduct long-duration scientific missions in Titan's dense atmosphere.</p>
-         <img src="titan_drone.jpg" alt="Titan Octocopter 'Dragonfly'" style="width:100%;height:auto;border-radius:8px;">`,
-      previous: isChinese?'上一頁':'Previous',
-      next:     isChinese?'下一頁':'Next',
-      close:    isChinese?'關閉':'Close',
-      'conceptual-challenges-tooltip': isChinese?'挑戰你的物理知識！':'Challenge your physics knowledge!'
-    };
-  }
+// Net Force (white, right of quadcopter)
+let showNetArrow = true;
+if (isHovering) {
+// Show "Net Force: 0" text, no arrow
+showNetArrow = false;
+let netX = cx + quadcopterLen*0.66;
+let netY = cy;
+let labelText = currentLangIsZh ? "合力 = 0" : "Net Force = 0";
+let fontsize = 13;
+ctx.save();
+ctx.font = 'bold '+fontsize+'px Arial';
+ctx.textAlign = "left";
+ctx.textBaseline = "middle";
+let met = ctx.measureText(labelText);
+let lx = netX + 6, ly = netY;
+ctx.fillStyle = "#242424";
+ctx.globalAlpha = 0.72;
+ctx.fillRect(lx, ly-fontsize/2-3, met.width+14, fontsize+5);
+ctx.globalAlpha = 1;
+ctx.fillStyle = "#fff";
+ctx.fillText(labelText, lx+7, ly+3);
+ctx.restore();
+}
+if (showNetArrow && netArrowLen>0.00001) {
+let netX = cx + quadcopterLen*0.66;
+let netY = cy;
+let up = netVal > 0;
+if (isOnGround && !up) netArrowLen = Math.abs(netVal*forceScale); // white arrow down, shrinks as lift increases
+let tipY = netY + (up ? -netArrowLen : netArrowLen);
+if (up && tipY < 30) netArrowLen = netY-30;
+if (!up && tipY > height-30) netArrowLen = height-30-netY;
+let labelText = currentLangIsZh ?
+("合力\n" + (up ? "(向上)" : "(向下)")) :
+("Net Force\n" + (up ? "(upward)" : "(downward)"));
+let fontsize = 14.3;
+let lines = labelText.split('\n');
+let labelY = netY + (up ? -netArrowLen-9-fontsize : netArrowLen+9+fontsize);
+let labelCustom = {
+x: netX+34,
+y: labelY,
+align: "left"
+};
+ctx.save();
+ctx.font = 'bold '+fontsize+'px Arial';
+ctx.textAlign = "left";
+ctx.textBaseline = "middle";
+let boxW = Math.max(...lines.map(line=>ctx.measureText(line).width));
+let boxH = lines.length*fontsize+6;
+ctx.fillStyle = "#242424";
+ctx.globalAlpha = 0.72;
+ctx.fillRect(labelCustom.x, labelCustom.y-fontsize/2-3, boxW+12, boxH);
+ctx.globalAlpha = 1;
+ctx.fillStyle = "#fff";
+lines.forEach((line, i) => {
+ctx.fillText(line, labelCustom.x+6, labelCustom.y + i*fontsize + 3);
+});
+ctx.restore();
+drawArrow(
+netX, netY, netArrowLen, up, "#fff",
+"", "right", 14, 0.8
+);
+}
 
-  function switchLanguage(){
-    const wasEnglish = document.getElementById('language-switch').textContent.includes('English');
-    const isCN = !wasEnglish;
-    const T = getTranslations(isCN);
-    document.getElementById('title').textContent = T.title;
-    document.getElementById('language-switch').textContent = T['language-switch'];
-    document.getElementById('relativeScaleMessage').textContent = T.relativeScaleMessage;
-    document.getElementById('tutorial-button').textContent = T['tutorial-button'];
-    document.getElementById('conceptual-challenges-button').textContent = T['conceptual-challenges-button'];
-    // update GUI labels
-    gui.__controllers.forEach(c=>{
-      if(T[c.property]) c.name(T[c.property]);
-    });
-    gui.updateDisplay();
-    // tutorial modal if open
-    const modal = document.getElementById('tutorialModal');
-    if(modal.style.display==='block'){
-      updateTutorialContent(tutorialCurrentStep,T);
-      updateNavigationButtons(tutorialCurrentStep,T);
-    }
-  }
-
-  function updateTutorialContent(step,T){
-    if(step<0||step>=tutorialSteps.length) return;
-    const cur = tutorialSteps[step];
-    document.getElementById('tutorialContent').innerHTML =
-      `<h2>${T[cur.titleKey]}</h2><div>${T[cur.contentKey]}</div>`;
-  }
-  function updateNavigationButtons(step,T){
-    const prevB=document.getElementById('prevButton'),
-          nextB=document.getElementById('nextButton');
-    prevB.textContent=T.previous; prevB.disabled=(step===0);
-    nextB.textContent=(step===tutorialSteps.length-1?T.close:T.next);
-  }
-
-  //── MODAL & EVENTS ─────────────────────────────────────────────────────────────
-  document.getElementById('tutorial-button').onclick = ()=>{
-    const modal=document.getElementById('tutorialModal');
-    modal.style.display='block';
-    tutorialCurrentStep=0;
-    const isCN=document.getElementById('language-switch').textContent.includes('English');
-    const T=getTranslations(isCN);
-    updateTutorialContent(0,T);
-    updateNavigationButtons(0,T);
-  };
-  document.querySelector('.close-modal').onclick = ()=>{ document.getElementById('tutorialModal').style.display='none'; };
-  window.onclick = e=>{ if(e.target===document.getElementById('tutorialModal')) document.getElementById('tutorialModal').style.display='none'; };
-  document.getElementById('prevButton').onclick = ()=>{
-    if(tutorialCurrentStep>0){
-      tutorialCurrentStep--;
-      const isCN=document.getElementById('language-switch').textContent.includes('English');
-      const T=getTranslations(isCN);
-      updateTutorialContent(tutorialCurrentStep,T);
-      updateNavigationButtons(tutorialCurrentStep,T);
-    }
-  };
-  document.getElementById('nextButton').onclick = ()=>{
-    const isCN=document.getElementById('language-switch').textContent.includes('English');
-    const T=getTranslations(isCN);
-    if(tutorialCurrentStep < tutorialSteps.length-1){
-      tutorialCurrentStep++;
-      updateTutorialContent(tutorialCurrentStep,T);
-      updateNavigationButtons(tutorialCurrentStep,T);
-    } else {
-      document.getElementById('tutorialModal').style.display='none';
-    }
-  };
-  document.getElementById('conceptual-challenges-button').onclick = ()=>{
-    window.location.href='003a_forcepair.html';
-  };
-  document.getElementById('language-switch').addEventListener('click', switchLanguage);
-
-  // prevent context menu / multitouch
-  document.addEventListener('contextmenu', e=>e.preventDefault());
-  document.addEventListener('touchstart', e=>{ if(e.touches.length>1) e.preventDefault(); }, {passive:false});
-  </script>
+// --------- Status box at bottom of force window (2x size, colored) ---------
+const statusBox = document.getElementById('force-panel-status-box');
+let stateClass = "onground", stateText = status;
+if (typeof status === "string") {
+let lower = status.toLowerCase();
+if (lower.indexOf("hover") !== -1 || status === "懸停" || status === "懸停中")
+stateClass = "hovering";
+else if (lower.indexOf("ascend") !== -1 || status === "上升")
+stateClass = "ascending";
+else if (lower.indexOf("descend") !== -1 || status === "下降")
+stateClass = "descending";
+else if (lower.indexOf("ground") !== -1 || status === "地面" || status === "著陸")
+stateClass = "onground";
+else
+stateClass = "onground";
+}
+if (statusBox) {
+if (status && (""+status).trim().length > 0) {
+statusBox.textContent = stateText;
+statusBox.className = "";
+statusBox.classList.add(stateClass);
+statusBox.style.display = "";
+} else {
+statusBox.style.display = "none";
+}
+}
+}
+</script>
 </body>
 </html>
+
+
