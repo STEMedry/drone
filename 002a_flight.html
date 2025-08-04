@@ -42,21 +42,6 @@
         z-index: 100;
       }
       
-      /* Top Left "Back" Button */
-      #backBtn {
-        position: absolute;
-        top: 10px;
-        right: 20px;
-        z-index: 110;
-        padding: 8px 12px;
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        color: white;
-        background-color: #2196f3;
-      }
-      
       /* Top Right Buttons */
       #langToggle, #tutorialButton {
         position: absolute;
@@ -70,11 +55,11 @@
         color: white;
       }
       #langToggle { 
-        right: 85px; /* Moved to occupy the "Back" button's position */
+        right: 20px; /* Moved to occupy the "Back" button's position */
         background-color: #4caf50; 
       }
       #tutorialButton { 
-        right: 180px; /* Adjust as needed for spacing */
+        right: 120px; /* Adjust as needed for spacing */
         background-color: #ff9800; 
       }
             
@@ -123,7 +108,7 @@
       /* Controls Container */
       #controls {
         position: absolute;
-        bottom: 10px;
+        bottom: 50px;
         left: 50%;
         transform: translateX(-50%);
         z-index: 20;
@@ -311,7 +296,7 @@
       /* Replay Box Styles */
       #replayBox {
         position: absolute;
-        top: 280px;
+        top: 250px;
         left: 20px;
         width: 200px; /* Reduced width */
         background: rgba(255,255,255,0.9);
@@ -322,19 +307,19 @@
       }
       #replayTitle { margin: 5px 0; font-size: 16px; text-align: center; }
       #replayCanvas {
-        width: 150px; /* Reduced size */
-        height: 150px; /* Reduced size */
+        width: 150px; /* Reduced width */
+        height: 150px; /* Reduced height */
         background: #f0f0f0;
         border: 1px solid #ccc;
         display: block;
         margin: 5px auto;
         transform: rotate(180deg);
       }
-      #replayInfo p { margin: 2px 0; font-size: 12px; text-align: center; } 
-      #replayButtons { display: flex; justify-content: center; gap: 5px; } 
+      #replayInfo p { margin: 2px 0; font-size: 12px; text-align: center; } /* Reduced font size */
+      #replayButtons { display: flex; justify-content: center; gap: 5px; } /* Reduced gap */
       #playReplay, #stopReplay {
         padding: 5px 10px;
-        font-size: 12px; 
+        font-size: 12px; /* Reduced font size */
         border: none;
         border-radius: 5px;
         cursor: pointer;
@@ -469,9 +454,6 @@
     </style>
   </head>
   <body>
-    <!-- Back Button -->
-    <button id="backBtn" class="btn-default">Back</button>
-
     <!-- Title and Description -->
     <div id="title">Virtual Flight Simulator</div>
     <div id="description">Guide your drone through hoops and safely return home.</div>
@@ -495,7 +477,7 @@
     <!-- Replay Box -->
     <div id="replayBox">
       <h3 id="replayTitle">Replay</h3>
-      <canvas id="replayCanvas" width="150" height="150"></canvas>
+      <canvas id="replayCanvas" width="150" height="150"></canvas> <!-- Reduced size -->
       <div id="replayInfo">
         <p>
           <span id="replayTotalDistanceLabel"></span><span id="replayDistance">0</span>
@@ -506,7 +488,7 @@
       </div>
       <div id="replayButtons">
         <button id="playReplay" class="btn-default">Play</button>
-        <button id="stopReplay" class="btn-default">Pause</button>
+        <button id="stopReplay" class="btn-default">Pause</button> <!-- Changed initial text to "Pause" -->
       </div>
     </div>
     
@@ -568,7 +550,7 @@
     <div id="tutorialModal">
       <div id="tutorialContent">
         <span class="closeTutorial">&times;</span>
-        <h1>Virtual Flight Simulator Tutorial</h1>
+        <h1 id="tutorialHeading"></h1>
         
         <div class="tutorial-section">
           <h2 data-key="tutorial_intro_title">Introduction</h2>
@@ -1211,6 +1193,7 @@
           }
       });
       
+     
       // ------------------------------------
       // Translations Setup
       // ------------------------------------
@@ -1219,7 +1202,7 @@
               title: "Virtual Flight Simulator",
               description: "Guide your drone through hoops and safely return home.",
               allHoopsPassed: "All hoops passed! Now fly back and land on the home point (marked with H).",
-              landingMessage: "Congratulations! You landed safely at home.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
+              landingMessage: "Congratulations! You landed safely at home.<br>Use the <b>Replay</b> window to review and evaluate your flight performance.<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>New Game</button>",
               automaticLanding: "Automatic Landing",
               reset: "Reset",
               showFlightPath: "Show Flight Path",
@@ -1265,6 +1248,7 @@
               tutorialTitle: "Tutorial",
               closeTutorial: "Close",
               /* Tutorial Translations */
+	      tutorial_heading: "Virtual Flight Simulator Tutorial",
               tutorial_intro_title: "Introduction",
               tutorial_intro_text: "Welcome to the Virtual Flight Simulator! This tutorial will guide you through the basics of piloting your drone, understanding 3D spatial concepts, and mastering the eight dimensions of movement.",
               tutorial_spatial_title: "Understanding 3D Spatial Concepts",
@@ -1300,7 +1284,7 @@
               title: "四軸無人機飛行模擬",
               description: "操控無人機穿越環門並安全降落於起飛點。",
               allHoopsPassed: "所有環門已通過！請飛回並在以「H」標示的起飛點著陸。",
-              landingMessage: "恭喜！您已安全降落在起飛點。<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>新遊戲</button>",
+              landingMessage: "恭喜！您已安全降落在起飛點。<br>請利用<b>回放</b>視窗檢視及評估您的飛行表現。<br><button id='newGameButton' onclick='resetDrone()' class='btn-default'>新遊戲</button>",
               automaticLanding: "自動降落",
               reset: "重置",
               showFlightPath: "顯示飛行路徑",
@@ -1346,38 +1330,69 @@
               tutorialTitle: "教程",
               closeTutorial: "關閉",
               /* Tutorial Translations */
-              tutorial_intro_title: "介紹",
-              tutorial_intro_text: "歡迎使用四軸無人機飛行模擬！本教程將指導您瞭解操控無人機的基礎知識、3D 空間概念以及掌握八個運動維度。",
-              tutorial_spatial_title: "理解3D空間概念",
-              tutorial_spatial_text: "在3D環境中，物體具有三個空間維度：X（水平）、Y（深度）和Z（垂直）。理解這些軸對於精確操控無人機至關重要。",
-              tutorial_movement_title: "八個運動維度",
-              tutorial_movement_intro: "您的無人機可以在八個不同的方向移動，以實現精確控制：",
-              tutorial_movement_throttle_up: "上升",
-              tutorial_movement_throttle_down: "下降",
-              tutorial_movement_yaw_left: "左轉",
-              tutorial_movement_yaw_right: "右轉",
-              tutorial_movement_pitch_forward: "前進",
-              tutorial_movement_pitch_backward: "後退",
-              tutorial_movement_roll_left: "左移",
-              tutorial_movement_roll_right: "右移",
-              tutorial_controls_title: "控制概覽",
-              tutorial_controls_text: "使用屏幕上的虛擬搖桿或鍵盤來控制無人機：",
-              tutorial_controls_left_joystick: "左搖桿",
-              tutorial_controls_right_joystick: "右搖桿",
-              tutorial_controls_keyboard: "鍵盤控制",
-              tutorial_flightpath_title: "飛行路徑與環門",
-              tutorial_flightpath_text: "導航您的無人機穿越環境中散布的環門。成功通過所有環門後，您將能安全返回家中。",
-              tutorial_rth_title: "自動返航 (RTH)",
-              tutorial_rth_text: "如果您失去控制或達到最大距離，啟動自動返航(RTH)功能，無人機將自動返回起始點。",
-              tutorial_safety_title: "安全提示",
-              tutorial_safety_tip1: "始終保持對無人機的高度和距離的警覺。",
-              tutorial_safety_tip2: "逐漸練習每個運動維度以建立信心。",
-              tutorial_safety_tip3: "避免突然或劇烈的動作以防止墜落。",
-              tutorial_safety_tip4: "使用教程熟悉控制方式，再嘗試具挑戰性的操作。",
-              tutorial_conclusion_title: "結論",
-              tutorial_conclusion_text: "掌握這些控制方式並理解3D空間關係將提升您的飛行技能，確保在模擬和現實情境中的安全高效導航。"
+tutorial_heading: "四軸無人機飛行模擬教學",
+tutorial_intro_title: "簡介",
+tutorial_intro_text: "歡迎使用四軸無人機飛行模擬器！本教學將帶您認識無人機操控基礎、3D 空間概念，以及八大操作維度。",
+tutorial_spatial_title: "理解 3D 空間概念",
+tutorial_spatial_text: "在三維空間中，物體具有三個軸向：X（水平）、Y（深度）、Z（垂直）。掌握這些軸線，有助於精準控制無人機飛行。",
+tutorial_movement_title: "八大運動維度",
+tutorial_movement_intro: "無人機具備八種基本運動方式，可實現靈活精細的操作：",
+tutorial_movement_throttle_up: "上升",
+tutorial_movement_throttle_down: "下降",
+tutorial_movement_yaw_left: "左轉",
+tutorial_movement_yaw_right: "右轉",
+tutorial_movement_pitch_forward: "前進",
+tutorial_movement_pitch_backward: "後退",
+tutorial_movement_roll_left: "左橫移",
+tutorial_movement_roll_right: "右橫移",
+tutorial_controls_title: "控制方式總覽",
+tutorial_controls_text: "您可以透過螢幕上的虛擬搖桿或鍵盤來控制無人機：",
+tutorial_controls_left_joystick: "左搖桿",
+tutorial_controls_right_joystick: "右搖桿",
+tutorial_controls_keyboard: "鍵盤操作",
+tutorial_flightpath_title: "飛行路徑與環門",
+tutorial_flightpath_text: "指引無人機穿越場景中分布的環門。成功通過所有環門後即可安全返航。",
+tutorial_rth_title: "自動返航 (RTH)",
+tutorial_rth_text: "若發生失控或達到最大飛行距離，可啟動自動返航（RTH）功能，讓無人機自動返回起始點。",
+tutorial_safety_title: "安全提示",
+tutorial_safety_tip1: "時刻留意無人機的高度與距離。",
+tutorial_safety_tip2: "循序漸進練習各種操作，建立穩定操控能力。",
+tutorial_safety_tip3: "避免劇烈或突發動作，以免墜毀。",
+tutorial_safety_tip4: "建議先熟悉本教學內容再嘗試高難度操作。",
+tutorial_conclusion_title: "總結",
+tutorial_conclusion_text: "熟練這些操作與空間概念，能提升您的飛行技巧，讓您在模擬與真實場景中都能安全高效地駕馭無人機。",tutorial_intro_title: "簡介",
+tutorial_intro_text: "歡迎使用四軸無人機飛行模擬器！本教學將帶您認識無人機操控基礎、3D 空間概念，以及八大操作維度。",
+tutorial_spatial_title: "理解 3D 空間概念",
+tutorial_spatial_text: "在三維空間中，物體具有三個軸向：X（水平）、Y（深度）、Z（垂直）。掌握這些軸線，有助於精準控制無人機飛行。",
+tutorial_movement_title: "八大運動維度",
+tutorial_movement_intro: "無人機具備八種基本運動方式，可實現靈活精細的操作：",
+tutorial_movement_throttle_up: "上升",
+tutorial_movement_throttle_down: "下降",
+tutorial_movement_yaw_left: "左轉",
+tutorial_movement_yaw_right: "右轉",
+tutorial_movement_pitch_forward: "前進",
+tutorial_movement_pitch_backward: "後退",
+tutorial_movement_roll_left: "左橫移",
+tutorial_movement_roll_right: "右橫移",
+tutorial_controls_title: "控制方式總覽",
+tutorial_controls_text: "您可以透過螢幕上的虛擬搖桿或鍵盤來控制無人機：",
+tutorial_controls_left_joystick: "左搖桿",
+tutorial_controls_right_joystick: "右搖桿",
+tutorial_controls_keyboard: "鍵盤操作",
+tutorial_flightpath_title: "飛行路徑與環門",
+tutorial_flightpath_text: "指引無人機穿越場景中分布的環門。成功通過所有環門後即可安全返航。",
+tutorial_rth_title: "自動返航 (RTH)",
+tutorial_rth_text: "若發生失控或達到最大飛行距離，可啟動自動返航（RTH）功能，讓無人機自動返回起始點。",
+tutorial_safety_title: "安全提示",
+tutorial_safety_tip1: "時刻留意無人機的高度與距離。",
+tutorial_safety_tip2: "循序漸進練習各種操作，建立穩定操控能力。",
+tutorial_safety_tip3: "避免劇烈或突發動作，以免墜毀。",
+tutorial_safety_tip4: "建議先熟悉本教學內容再嘗試高難度操作。",
+tutorial_conclusion_title: "總結",
+tutorial_conclusion_text: "熟練這些操作與空間概念，能提升您的飛行技巧，讓您在模擬與真實場景中都能安全高效地駕馭無人機。"
           }
       };
+
       let currentLanguage = "en";
       function updateUIText() {
           document.getElementById("title").innerHTML = translations[currentLanguage].title;
@@ -1437,6 +1452,7 @@
           document.getElementById("hoopStatusTitle").textContent = translations[currentLanguage].hoopStatus;
           
           // Update tutorial button text
+	  document.getElementById("tutorialHeading").textContent = translations[currentLanguage].tutorial_heading;
           document.getElementById("tutorialButton").textContent = translations[currentLanguage].tutorialTitle;
           
           // Update Tutorial Modal Content
@@ -1464,9 +1480,6 @@
           
           // Update 'stopReplay' button text based on playback state
           document.getElementById("stopReplay").innerHTML = replayPaused ? translations[currentLanguage].resumeReplay : translations[currentLanguage].pauseReplay;
-          
-          // Update Back button text
-          document.getElementById("backBtn").innerHTML = translations[currentLanguage].back;
       }
       document.getElementById("langToggle").addEventListener("click", function(){
           if(currentLanguage==="en"){ currentLanguage="zh"; this.innerHTML="English"; }
@@ -1497,13 +1510,6 @@
               tutorialModal.style.display = "none";
           }
       }
-      
-      // ------------------------------------
-      // Back Button Functionality
-      // ------------------------------------
-      document.getElementById("backBtn").addEventListener("click", function(){
-          window.location.href = "002_control.html";
-      });
       
       // ------------------------------------
       // Main Renderer Setup
@@ -2173,3 +2179,4 @@
     </script>
   </body>
 </html>
+
