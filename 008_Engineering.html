@@ -76,6 +76,28 @@
   break-after: page;
 }
 
+body, #pdfArea {
+  background-color: #fff;
+  background-image:
+    linear-gradient(to right, #e0e0e0 1px, transparent 1px),
+    linear-gradient(to bottom, #e0e0e0 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+.signature-label {
+  font-weight: bold;
+  color: #111;
+  font-size: 14px;
+  position: absolute;
+  right: 32px;
+  bottom: 24px;
+  z-index: 10;
+  background: none;
+  pointer-events: none;
+}
+#designConsiderations {
+  position: relative;
+  min-height: 200px;
+}
 
     /* --- New Design Considerations Section --- */
     .consideration { margin-bottom: 30px;}
@@ -231,6 +253,7 @@
       </div>
       <div class="model-answer" id="model-water"></div>
     </div>
+<div class="signature-label">C Y YEUNG, EdUHK</div>
   </section>
   <!-- --- END DESIGN CONSIDERATIONS SECTION --- -->
 
