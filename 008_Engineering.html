@@ -1,370 +1,543 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Drone-assisted Water Sampling</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            background-color: #f0f0f0;
-        }
-        .page-wrapper {
-            width: 100%;
-            max-width: 1400px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            padding: 10px 10px 10px 10px; 
-            margin: 20px 0;
-        }
-        .container {
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 2px;
-            gap: 0px;
-        }
-        .content {
-            flex: 0.8;
-            padding-right: 0px;
-            min-width: 250px;
-            position: relative; /* Added for button positioning */
-        }
-        .image-section {
-            flex: 2.8;
-            min-width: 300px;
-            display: grid;
-            grid-template-columns: repeat(5, minmax(40px, 1fr));
-            grid-template-rows: auto repeat(2, 1fr);
-            gap: 5px;
-            padding: 3px;
-        }
-        .image-box {
-            width: 100%;
-            aspect-ratio: 1;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            border: 1px solid #ddd;
-            border-radius: 3px;
-            padding: 2px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .image-box:hover {
-            transform: scale(1.05);
-            border-color: #4CAF50;
-        }
-        .image-box img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 3px;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-        }
-        .modal-content {
-            max-width: 90%;
-            max-height: 90vh;
-            border: 3px solid white;
-            border-radius: 5px;
-        }
-        .language-toggle {
-            position: absolute;
-            top: 50px;
-            right: 120px;
-            cursor: pointer;
-            padding: 5px 10px;
-            background-color: #4CAF50;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            font-size: 16px;
-            color: white;
-        }
-        .language-toggle:hover {
-            background-color: #1cc723;
-        }
-        .hidden {
-            display: none;
-        }
-        h1 {
-            text-align: center;
-		margin-top: 10px;
-            margin-bottom: 5px;
-        }
-        h2 {
-            font-size: 1.2em;
-            color: #333;
-            margin-top: 20px;
-            margin-bottom: 5px;
-        }
-        h3 {
-            font-size: 1.1em;
-            color: #444;
-            margin-top: 8px;
-            margin-bottom: 5px;
-        }
-        .image-section h2 {
-            grid-column: 1 / -1;
-            margin-bottom: 2px;
-            margin-top: 0;
-            color: #333;
-        }
-        ul {
-            padding-left: 20px;
-            margin: 5px 0;
-        }
-        li {
-            margin: 5px 0;
-            font-size: 0.9em;
-        }
-        .toggle-button {
-            background-color: #fc8803;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-size: 1em;
-            transition: background-color 0.3s ease;
-            display: block;
-        }
-        .toggle-button:hover {
-            background-color: #fcc603;
-        }
-        .video-section {
-            flex: 2;
-            min-width: 200px;
-            display: none;
-            padding: 2px;
-            height: 80%;
-        }
-        .video-section video {
-            width: 90%;
-            height: 90%;
-            object-fit: cover;
-        }
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            .content, .image-section {
-                flex: none;
-                padding-right: 0;
-            }
-            .image-section {
-                grid-template-columns: repeat(2, 1fr);
-                grid-template-rows: repeat(5, 1fr);
-            }
-            .language-toggle {
-                right: 20px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Mission: Engineer a Water Sample Drone!</title>
+  <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #cceeff, #ffffff);
+      margin: 0; padding: 20px; line-height: 1.6; position: relative;
+    }
+    #langBtn {
+      position: absolute; top: 20px; right: 20px;
+      background: #4CAF50; color: #fff; border: none;
+      padding: 8px 12px; border-radius: 4px;
+      font-weight: bold; cursor: pointer;
+    }
+    #langBtn:hover { background: #45a049; }
+    header { text-align: center; padding-bottom: 20px; }
+    h1 { color: #006699; }
+    p { max-width: 800px; margin: 0 auto 15px; font-size: 1.1em; }
+    section {
+      background: #fff; border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      margin: 0 auto 20px; padding: 20px;
+      max-width: 1000px;
+    }
+    h2 {
+      color: #004d66; border-bottom: 2px solid #004d66;
+      padding-bottom: 8px; display: flex;
+      align-items: center; font-size: 1.4em;
+      margin-top: 20px;
+    }
+    .icon {
+      width: 2.4em; height: 2.4em; margin-right: 12px; flex: 0 0 auto;
+      vertical-align: middle; display: inline-block;
+    }
+    .criteria-text { flex: 1; min-width: 300px; }
+    .criteria-img { flex: 0 0 40%; min-width: 250px; }
+    .criteria-img img,
+    .criteria-img video { width: 100%; height: auto; }
+    .calc-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+    .calc-table { flex: 1; min-width: 250px; }
+    table { width: 100%; border-collapse: collapse; }
+    td { padding: 6px; vertical-align: middle; }
+    input[type="number"] {
+      width: 85%; max-width: 120px;
+      padding: 6px; border-radius: 4px; border: 1px solid #ccc;
+    }
+    .result-box {
+      background: #e0f7fa; padding: 15px;
+      border-radius: 8px; flex: 0 0 40%; min-width: 200px;
+      display: flex; flex-direction: column;
+    }
+    button {
+      margin-top: 15px; padding: 12px 20px;
+      background: #006699; color: #fff; border: none;
+      border-radius: 6px; cursor: pointer;
+      transition: background 0.3s;
+    }
+    button:hover { background: #005577; }
+    #alertMsg { color: red; font-weight: bold; margin-top: 10px; }
+    #alertMsgSavePdf { color: red; font-weight: bold; margin-top: 10px; }
+    #pdfArea {
+      display: none;
+      background: #fff;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+    }
+
+.pdf-break-after {
+  page-break-after: always;
+  break-after: page;
+}
+
+
+    /* --- New Design Considerations Section --- */
+    .consideration { margin-bottom: 30px;}
+    textarea { width: 98%; min-height: 60px; margin-top: 7px; font-size: 1em; border-radius: 4px; border: 1px solid #bbb; padding: 7px;}
+    .response-actions { margin-top: 8px;}
+    .response-actions button { background: #0f8fbf; color: #fff; border: none; border-radius: 5px; cursor: pointer; padding: 7px 16px; font-weight: bold; font-size: 1em; margin-right: 10px;}
+    .response-actions button:disabled {opacity: 0.5; cursor: not-allowed;}
+    .model-answer { background: #e9f4e2; border-left: 4px solid #49b44d; padding: 10px 16px; border-radius: 5px; font-size: 0.97em; color: #204d25; margin-top: 8px; display: none;}
+    #downloadPdfBtn { margin: 24px auto 0 auto; display: block; padding: 12px 22px; font-size: 1.1em; background: #006699; color: #fff; border: none; border-radius: 6px;}
+    #downloadPdfBtn:active { background: #005577;}
+    /* Page break for PDF export */
+    .page-break { page-break-before: always; break-before: page; }
+    @media (max-width:700px) { 
+      section { padding: 10px; max-width:98vw;}
+      .icon { width: 2em; height: 2em;}
+    }
+    .considerations-box { display: none !important; }
+  </style>
 </head>
-
 <body>
-    <div class="page-wrapper">
-        <div class="language-toggle" onclick="toggleLanguage()">繁體中文</div>
+  <button id="langBtn">繁體中文</button>
 
-        <div id="english-content">
-            <h1>Drone-assisted Water Sampling System</h1>
-            
-            <div class="container">
-                <div class="content">
-                    <h2>System Components</h2>
-                    <ul>
-                        <li>Quadcopter drone</li>
-                        <li>2-meter-long string</li>
-                        <li>Inverted plastic bottle</li>
-                        <li>Iron ball</li>
-                    </ul>
-				<p></p>
-                    <h2>Water Sampling Process</h2>
+  <div id="exportArea">
 
-                    <h3>Water Retrieval</h3>
-                    <ul>
-                        <li>Drone carries sampling bottle sealed with iron ball</li>
-                        <li>Descends to target water surface</li>
-                        <li>Iron ball sinks upon contact, allowing water collection</li>
-                        <li>Ascends while pulling string to reseal bottle</li>
-                    </ul>
+  <header>
+    <h1 data-i18n="title">Mission: Engineer a Water Sample Drone!</h1>
+    <p data-i18n-html="intro">
+      <em>Use this interactive guide to plan, calculate, and refine your drone-based water sampling system. Think about the materials, balance, stability, and how to successfully collect water from the source and deliver it safely to your destination.</em>
+    </p>
+  </header>
 
-                    <h3>Water Discharge</h3>
-                    <ul>
-                        <li>Flies to discharge station</li>
-                        <li>Aligns with collection bucket guided by "O" ring</li>
-                        <li>Releases iron ball to discharge water sample</li>
-                    </ul>
-
-                    <button class="toggle-button" onclick="toggleContent()">Sampling Principle</button>
-                </div>
-
-                <div class="image-section" id="imageSection">
-                    <h2>Drone-assisted Water Sampling Protocol</h2>
-                    <div class="image-box"><img src="eng001.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng002.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng003.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng004.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng005.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng006.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng007.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng008.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng009.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng010.jpg" onclick="openModal(this.src)"></div>
-                </div>
-
-                <div class="video-section" id="videoSection">
-                    <video controls>
-                        <source src="watersampling.mp4" type="video/mp4">
-                        Your browser does not support the video tag.
-                    </video>
-                </div>
-            </div>
-        </div>
-
-        <div id="chinese-content" class="hidden">
-            <h1>無人機輔助水樣採集系統</h1>
-            
-            <div class="container">
-                <div class="content">
-                    <h2>系統組件</h2>
-                    <ul>
-                        <li>四旋翼無人機</li>
-                        <li>2米長繩索</li>
-                        <li>倒置塑料瓶</li>
-                        <li>鐵球</li>
-                    </ul>
-
-                    <h2>水樣採集過程</h2>
-
-                    <h3>取水過程</h3>
-                    <ul>
-                        <li>無人機攜帶鐵球密封的採樣瓶</li>
-                        <li>下降至目標水面</li>
-                        <li>鐵球接觸水面後下沉，開啟瓶口收集水樣</li>
-                        <li>上升時拉動繩索重新密封瓶口</li>
-                    </ul>
-
-                    <h3>排水過程</h3>
-                    <ul>
-                        <li>飛往排放站</li>
-                        <li>對準帶有"O"型環的收集桶</li>
-                        <li>釋放鐵球排出水樣</li>
-                    </ul>
-
-                    <button class="toggle-button" onclick="toggleContent()">採樣原理</button>
-                </div>
-
-                <div class="image-section" id="imageSection-zh">
-                    <h2>無人機輔助水樣採集規程</h2>
-                    <div class="image-box"><img src="eng001.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng002.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng003.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng004.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng005.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng006.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng007.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng008.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng009.jpg" onclick="openModal(this.src)"></div>
-                    <div class="image-box"><img src="eng010.jpg" onclick="openModal(this.src)"></div>
-                </div>
-
-                <div class="video-section" id="videoSection-zh">
-                    <video controls>
-                        <source src="watersampling.mp4" type="video/mp4">
-                        您的瀏覽器不支持視頻播放。
-                    </video>
-                </div>
-            </div>
-        </div>
+  <!-- About This Engineering Design Mission -->
+  <section style="display:flex; flex-wrap:wrap; align-items:flex-start;">
+    <div class="criteria-text">
+      <h2><span class="icon" id="aboutIcon"></span><span data-i18n="about_h2"></span></h2>
+      <p data-i18n="about_p"></p>
     </div>
-
-    <div id="imageModal" class="modal" onclick="closeModal()">
-        <img class="modal-content" id="modalImage">
+    <div class="criteria-img">
+      <video src="sampling.mp4" controls></video>
     </div>
+  </section>
+
+  <!-- Success Criteria -->
+  <section style="display:flex; flex-wrap:wrap; align-items:flex-start;">
+    <div class="criteria-text">
+      <h2><span class="icon" id="criteriaIcon"></span><span data-i18n="criteria_h2"></span></h2>
+      <ul>
+        <li data-i18n="criteria_li1"></li>
+        <li data-i18n="criteria_li2"></li>
+        <li data-i18n="criteria_li3"></li>
+        <li data-i18n="criteria_li4"></li>
+        <li data-i18n="criteria_li5"></li>
+      </ul>
+    </div>
+    <div class="criteria-img">
+      <img src="resources.jpg" data-i18n-alt="criteria_img_alt" alt="Success criteria illustration" />
+    </div>
+  </section>
+
+  <!-- Payload calculator -->
+  <section id="payloadSection">
+    <h2><span class="icon" id="calcIcon"></span><span data-i18n="calc_h2"></span></h2>
+    <p data-i18n="calc_p"></p>
+    <div class="calc-layout">
+      <div class="calc-table">
+        <table>
+          <tr>
+            <td><label for="mainWeight" data-i18n="label_mainWeight"></label></td>
+            <td><input type="number" id="mainWeight" value="87"></td>
+          </tr>
+          <tr>
+            <td><label for="partA" data-i18n="label_partA"></label></td>
+            <td><input type="number" id="partA" value="5.50"></td>
+          </tr>
+          <tr>
+            <td><label for="partB_w" data-i18n="label_partB"></label></td>
+            <td style="white-space:nowrap;">
+              <input type="number" id="partB_w" data-i18n-placeholder="ph_per_piece" placeholder="per piece" style="width:70px;"> x
+              <input type="number" id="partB_no" data-i18n-placeholder="ph_pcs" placeholder="pcs" style="width:70px;">
+            </td>
+          </tr>
+          <tr>
+            <td><label for="wideStraw_w" data-i18n="label_wideStraw"></label></td>
+            <td style="white-space:nowrap;">
+              <input type="number" id="wideStraw_w" data-i18n-placeholder="ph_per_piece" placeholder="per piece" style="width:70px;"> x
+              <input type="number" id="wideStraw_no" data-i18n-placeholder="ph_pcs" placeholder="pcs" style="width:70px;">
+            </td>
+          </tr>
+          <tr>
+            <td><label for="slimStraw_w" data-i18n="label_slimStraw"></label></td>
+            <td style="white-space:nowrap;">
+              <input type="number" id="slimStraw_w" data-i18n-placeholder="ph_per_piece" placeholder="per piece" style="width:70px;"> x
+              <input type="number" id="slimStraw_no" data-i18n-placeholder="ph_pcs" placeholder="pcs" style="width:70px;">
+            </td>
+          </tr>
+          <tr>
+            <td><label for="extraMaterials" data-i18n="label_extraMaterials"></label></td>
+            <td><input type="number" id="extraMaterials" data-i18n-placeholder="ph_grams" placeholder="grams"></td>
+          </tr>
+          <tr>
+            <td><label for="waterVolume" data-i18n="label_waterVolume"></label></td>
+            <td><input type="number" id="waterVolume" value="5"></td>
+          </tr>
+        </table>
+        <button type="button" id="calculateBtn" data-i18n="btn_calculate"></button>
+      </div>
+      <div class="result-box">
+        <h3 data-i18n="results_h3"></h3>
+        <div id="payloadResults" data-i18n-html="results_initial">
+          Please fill in the form and click Calculate.
+        </div>
+        <div id="alertMsg"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- --- DESIGN CONSIDERATIONS SECTION --- -->
+  <section id="designConsiderations">
+    <h2><span class="icon" id="designIcon"></span><span data-i18n="design_considerations_h2"></span></h2>
+    <div class="consideration" data-consid="balance">
+      <strong data-i18n="design1_h"></strong>
+      <div data-i18n="prompt_balance"></div>
+      <textarea data-i18n-placeholder="ph_response" placeholder="Your response..." id="respBalance"></textarea>
+      <div class="response-actions">
+        <button disabled onclick="showModelAnswer(this, 'balance')" data-i18n="btn_guidance"></button>
+      </div>
+      <div class="model-answer" id="model-balance"></div>
+    </div>
+    <div class="consideration" data-consid="sensor">
+      <strong data-i18n="design2_h"></strong>
+      <div data-i18n="prompt_sensor"></div>
+      <textarea data-i18n-placeholder="ph_response" placeholder="Your response..." id="respSensors"></textarea>
+      <div class="response-actions">
+        <button disabled onclick="showModelAnswer(this, 'sensor')" data-i18n="btn_guidance"></button>
+      </div>
+      <div class="model-answer" id="model-sensor"></div>
+    </div>
+    <div class="consideration" data-consid="stability">
+      <strong data-i18n="design3_h"></strong>
+      <div data-i18n="prompt_stability"></div>
+      <textarea data-i18n-placeholder="ph_response" placeholder="Your response..." id="respStability"></textarea>
+      <div class="response-actions">
+        <button disabled onclick="showModelAnswer(this, 'stability')" data-i18n="btn_guidance"></button>
+      </div>
+      <div class="model-answer" id="model-stability"></div>
+    </div>
+    <div class="consideration" data-consid="water">
+      <strong data-i18n="design4_h"></strong>
+      <div data-i18n="prompt_water"></div>
+      <textarea data-i18n-placeholder="ph_response" placeholder="Your response..." id="respWater"></textarea>
+      <div class="response-actions">
+        <button disabled onclick="showModelAnswer(this, 'water')" data-i18n="btn_guidance"></button>
+      </div>
+      <div class="model-answer" id="model-water"></div>
+    </div>
+  </section>
+  <!-- --- END DESIGN CONSIDERATIONS SECTION --- -->
+
+  </div>
+  <!-- Main exportable content ends -->
+
+  <!-- Save to PDF Button OUTSIDE export area -->
+  <button id="downloadPdfBtn" data-i18n="btn_savepdf">Download PDF</button>
+  <div id="alertMsgSavePdf"></div>
+
+  <!-- PDF-only export area, hidden -->
+  <div id="pdfArea" style="display:none">
+    <section id="pdfPayloadSection"></section>
+    <section id="pdfDesignConsiderations"></section>
+  </div>
 
 <script>
-        let isEnglish = true;
+const translations = {
+  en: {
+    title: "Mission: Engineer a Water Sample Drone!",
+    intro: "<em>Use this interactive guide to plan, calculate, and refine your drone-based water sampling system. Think about the materials, balance, stability, and how to successfully collect water from the source and deliver it safely to your destination.</em>",
+    about_h2: "About This Engineering Design Mission",
+    about_p: "Your challenge is to design and build a drone system that can pick up a water sample (5 ml) from a large water source, fly through the air, and land at a designated point. You will need to consider weight, balance, water retention, and stability to make sure your drone can perform the task successfully.",
+    criteria_h2: "Success Criteria",
+    criteria_li1: "The payload (water + parts) does not exceed 20% of total drone weight.",
+    criteria_li2: "The drone remains balanced and stable during flight.",
+    criteria_li3: "Water is securely collected and retained during flight.",
+    criteria_li4: "The drone can take off, fly accurately to the destination, and land safely.",
+    criteria_li5: "The sensors are not hindered by additional payloads.",
+    criteria_img_alt: "Success criteria illustration",
+    calc_h2: "Payload Fraction Calculator",
+    calc_p: "Enter your material weights and water volume. Click \"Calculate\" to see the results.",
+    label_mainWeight: "Quadcopter weight:",
+    label_partA: "Weight of Part A (3D printed):",
+    label_partB: "Weight of Part B (3D printed):",
+    ph_per_piece: "per piece",
+    ph_pcs: "pcs",
+    label_wideStraw: "Weight of Wide Straw:",
+    label_slimStraw: "Weight of Slim Straw:",
+    label_extraMaterials: "Weight of extra materials (e.g., tape):",
+    ph_grams: "grams",
+    label_waterVolume: "Water volume to collect (ml):",
+    btn_calculate: "Calculate",
+    results_h3: "Results",
+    results_initial: "Please fill in the form and click Calculate.",
+    /* DESIGN CONSIDERATIONS */
+    design_considerations_h2: "Design Considerations",
+    design1_h: "Balance & Distribution",
+    design2_h: "Sensor Interference",
+    design3_h: "Flight Stability",
+    design4_h: "Water Retention",
+    ph_response: "Your response...",
+    prompt_balance: "Where will you put the payload? Is the weight balanced? What if the drone tilts?",
+    prompt_sensor: "Could parts of your design block the drone's sensors? How can you avoid it?",
+    prompt_stability: "Will your drone fly smoothly with the payload? How can you improve stability?",
+    prompt_water: "How will you keep the water from spilling or leaking during flight?",
+    btn_guidance: "Show Guidance",
+    btn_savepdf: "Download PDF",
+    model_balance: "<b>Example:</b> Place the payload under the center. Use two equal arms. If it tilts, add weight to the light side or move the payload to the center.",
+    model_sensor: "<b>Tip:</b> Use a clear map of your sensors. Keep the payload away or use transparent materials. Test with paper to check if the sensor still works.",
+    model_stability: "<b>Example:</b> Attach the payload as low as possible. Add fins if needed. Make sure it can't swing. Test by shaking the drone gently.",
+    model_water: "<b>Tip:</b> Use a container with a seal or sponge to stop leaks. Check if the water moves when you tilt or shake the drone."
+  },
+  zh: {
+    title: "工程任務：設計你的水樣採集無人機！",
+    intro: "<em>運用這份互動指引，計劃、計算及優化你的無人機採水系統設計。思考材料、平衡、穩定性，以及如何順利從水源取水並安全運送到目的地。</em>",
+    about_h2: "關於本工程設計任務",
+    about_p: "你的挑戰是設計並建造一套無人機系統，從大型水源中取走 5 ml 水樣，飛行並降落到指定地點。你需要考慮重量、平衡、水保持與穩定性，確保無人機能順利完成任務。",
+    criteria_h2: "成功準則",
+    criteria_li1: "載荷（含水及零件）不得超過無人機總重的 20%。",
+    criteria_li2: "無人機飛行時保持平衡與穩定。",
+    criteria_li3: "能夠牢固地收集並保持水樣於飛行途中。",
+    criteria_li4: "無人機能起飛、準確飛到目的地並安全降落。",
+    criteria_li5: "感測器不受額外載荷干擾。",
+    criteria_img_alt: "成功準則示意圖",
+    calc_h2: "載重比例計算器",
+    calc_p: "請輸入各材料重量與水量，點擊「計算」查看結果。",
+    label_mainWeight: "四軸機重量：",
+    label_partA: "A件（3D列印）重量：",
+    label_partB: "B件（3D列印）重量：",
+    ph_per_piece: "每件重",
+    ph_pcs: "件數",
+    label_wideStraw: "粗吸管重量：",
+    label_slimStraw: "細吸管重量：",
+    label_extraMaterials: "額外材料重量（如膠帶）：",
+    ph_grams: "克",
+    label_waterVolume: "計畫採集水量（ml）：",
+    btn_calculate: "計算",
+    results_h3: "結果",
+    results_initial: "請完整填寫表格並點擊計算。",
+    design_considerations_h2: "設計考慮",
+    design1_h: "平衡與分佈",
+    design2_h: "感測器干擾",
+    design3_h: "飛行穩定性",
+    design4_h: "水份保持",
+    ph_response: "你的回答…",
+    prompt_balance: "你會把載荷放在哪？重量平衡嗎？如果無人機傾斜會怎樣？",
+    prompt_sensor: "你的設計會不會擋住無人機感測器？如何避免？",
+    prompt_stability: "加上載荷後無人機會穩定飛行嗎？如何提升穩定性？",
+    prompt_water: "你如何避免水在飛行時灑出或漏出？",
+    btn_guidance: "顯示指引",
+    btn_savepdf: "下載 PDF",
+    model_balance: "<b>範例：</b>將載荷放在正中央下方，用兩側對稱設計。若傾斜可加重輕的一側或移動載荷到中心。",
+    model_sensor: "<b>提示：</b>先畫感測器位置圖。載荷盡量遠離或用透明材料。可用紙測試感測器是否仍可運作。",
+    model_stability: "<b>範例：</b>載荷盡量低掛。可加鰭片。用膠帶固定避免擺動。可輕搖機身測試穩定。",
+    model_water: "<b>提示：</b>用可密封容器或加海綿防漏。傾斜或搖晃時檢查水是否會流出。"
+  }
+};
 
-        function toggleLanguage() {
-            const englishContent = document.getElementById('english-content');
-            const chineseContent = document.getElementById('chinese-content');
-            const languageToggle = document.querySelector('.language-toggle');
-            const button = document.querySelector('.toggle-button');
-            
-            // Get the current active image and video sections
-            const currentImageSection = isEnglish ? 
-                document.getElementById('imageSection') : 
-                document.getElementById('imageSection-zh');
-            
-            if (isEnglish) {
-                englishContent.classList.add('hidden');
-                chineseContent.classList.remove('hidden');
-                languageToggle.textContent = 'English';
-                
-                // Update button text based on current display state
-                if (currentImageSection.style.display !== 'none') {
-                    button.textContent = '採樣原理';
-                } else {
-                    button.textContent = '排水過程';
-                }
-            } else {
-                englishContent.classList.remove('hidden');
-                chineseContent.classList.add('hidden');
-                languageToggle.textContent = '繁體中文';
-                
-                // Update button text based on current display state
-                if (currentImageSection.style.display !== 'none') {
-                    button.textContent = 'Sampling Principle';
-                } else {
-                    button.textContent = 'Water Discharge Process';
-                }
-            }
+// SVG icons (for About, Criteria, Calculator, Design Considerations)
+const icons = {
+  about: `<svg viewBox="0 0 48 48" class="icon" aria-label="Mission Drone" focusable="false">
+    <circle cx="24" cy="24" r="20" fill="#d2f1ff" stroke="#006699" stroke-width="2"/>
+    <circle cx="24" cy="24" r="12" fill="#fff" stroke="#0081b7" stroke-width="3"/>
+    <rect x="20" y="8" width="8" height="4" rx="2" fill="#006699"/>
+    <rect x="20" y="36" width="8" height="4" rx="2" fill="#006699"/>
+    <rect x="8" y="20" width="4" height="8" rx="2" fill="#006699"/>
+    <rect x="36" y="20" width="4" height="8" rx="2" fill="#006699"/>
+    <circle cx="24" cy="24" r="4.5" fill="#22b2f7" stroke="#006699" stroke-width="2"/>
+    <circle cx="24" cy="24" r="1.5" fill="#0081b7"/>
+    <line x1="24" y1="12" x2="24" y2="20" stroke="#4FC3F7" stroke-width="2"/>
+    <line x1="24" y1="36" x2="24" y2="28" stroke="#4FC3F7" stroke-width="2"/>
+    <line x1="12" y1="24" x2="20" y2="24" stroke="#4FC3F7" stroke-width="2"/>
+    <line x1="36" y1="24" x2="28" y2="24" stroke="#4FC3F7" stroke-width="2"/>
+  </svg>`,
+  criteria: `<svg viewBox="0 0 48 48" class="icon" aria-label="Success Criteria" focusable="false">
+    <circle cx="24" cy="24" r="20" fill="#f0fff2" stroke="#0a8c4c" stroke-width="2"/>
+    <circle cx="24" cy="24" r="14" fill="#fff" stroke="#0a8c4c" stroke-width="3"/>
+    <polyline points="15 25 22 32 34 17" fill="none" stroke="#0a8c4c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="24" cy="24" r="5" fill="#c8f7d6" stroke="#0a8c4c" stroke-width="1"/>
+  </svg>`,
+  calc: `<svg viewBox="0 0 48 48" class="icon" aria-label="Calculator" focusable="false">
+    <rect x="8" y="8" width="32" height="32" rx="6" fill="#ffecb3" stroke="#ff9800" stroke-width="2"/>
+    <rect x="14" y="14" width="20" height="8" rx="2" fill="#fff" stroke="#ff9800" stroke-width="1"/>
+    <circle cx="18" cy="28" r="2.5" fill="#ff9800"/>
+    <circle cx="24" cy="28" r="2.5" fill="#ff9800"/>
+    <circle cx="30" cy="28" r="2.5" fill="#ff9800"/>
+    <rect x="18" y="33" width="12" height="3" rx="1.5" fill="#ff9800"/>
+  </svg>`,
+  design: `<svg viewBox="0 0 48 48" class="icon" aria-label="Design Considerations" focusable="false">
+    <circle cx="24" cy="24" r="20" fill="#e3f6ff" stroke="#0081b7" stroke-width="2"/>
+    <path d="M24,13 a8,8 0 0,1 0,16 a8,8 0 0,1 0,-16" fill="#fff" stroke="#0081b7" stroke-width="2"/>
+    <rect x="21" y="21" width="6" height="6" rx="1.5" fill="#ffe082" stroke="#0081b7" stroke-width="1.5"/>
+    <rect x="14" y="34" width="20" height="4" rx="2" fill="#0081b7"/>
+    <rect x="8" y="18" width="4" height="12" rx="2" fill="#0081b7"/>
+    <rect x="36" y="18" width="4" height="12" rx="2" fill="#0081b7"/>
+    <circle cx="24" cy="24" r="2" fill="#0081b7"/>
+    <rect x="22" y="9" width="4" height="8" rx="2" fill="#0081b7"/>
+  </svg>`
+};
 
-            isEnglish = !isEnglish;
-        }
+// Set icons into headings
+function setSectionIcons() {
+  document.getElementById('aboutIcon').innerHTML = icons.about;
+  document.getElementById('criteriaIcon').innerHTML = icons.criteria;
+  document.getElementById('calcIcon').innerHTML = icons.calc;
+  document.getElementById('designIcon').innerHTML = icons.design;
+}
+setSectionIcons();
 
-        function openModal(imgSrc) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modal.style.display = "flex";
-            modalImg.src = imgSrc;
-        }
+let currentLang = 'en';
 
-        function closeModal() {
-            document.getElementById('imageModal').style.display = "none";
-        }
+// Update all texts and SVG icons for current language
+function updateTexts() {
+  document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-TW';
+  document.querySelectorAll('[data-i18n]').forEach(el =>
+    el.textContent = translations[currentLang][el.dataset.i18n]
+  );
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el =>
+    el.placeholder = translations[currentLang][el.dataset.i18nPlaceholder]
+  );
+  document.querySelectorAll('[data-i18n-html]').forEach(el =>
+    el.innerHTML = translations[currentLang][el.dataset.i18nHtml]
+  );
+  document.querySelectorAll('.consideration').forEach(div => {
+    let c = div.dataset.consid;
+    div.querySelector('strong').textContent = translations[currentLang]['design'+(c==='balance'?1:c==='sensor'?2:c==='stability'?3:4)+'_h'];
+    div.querySelector('div').textContent = translations[currentLang]['prompt_'+c];
+    div.querySelector('.model-answer').innerHTML = translations[currentLang]['model_'+c];
+    div.querySelector('textarea').placeholder = translations[currentLang].ph_response;
+    div.querySelector('button').textContent = translations[currentLang].btn_guidance;
+  });
+  document.getElementById('downloadPdfBtn').textContent = translations[currentLang].btn_savepdf;
+  document.querySelectorAll('[data-i18n-alt]').forEach(el =>
+    el.alt = translations[currentLang][el.dataset.i18nAlt]
+  );
+  // Title
+  document.title = translations[currentLang].title;
+  // Section icons (SVG) - already set in setSectionIcons
+}
+document.getElementById('langBtn').addEventListener('click', () => {
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+  document.getElementById('langBtn').textContent = currentLang === 'en' ? '繁體中文' : 'English';
+  updateTexts();
+});
+updateTexts();
 
-        function toggleContent() {
-            const button = document.querySelector('.toggle-button');
-            const imageSection = document.getElementById(isEnglish ? 'imageSection' : 'imageSection-zh');
-            const videoSection = document.getElementById(isEnglish ? 'videoSection' : 'videoSection-zh');
+// Enable "Show Guidance" only if textarea has text
+document.querySelectorAll('.consideration textarea').forEach((ta) => {
+  ta.addEventListener('input', function() {
+    let btn = ta.parentElement.querySelector('button');
+    btn.disabled = ta.value.trim().length === 0;
+    if (ta.value.trim().length === 0) {
+      let ma = ta.parentElement.querySelector('.model-answer');
+      ma.style.display = "none";
+    }
+  });
+});
 
-            if (imageSection.style.display !== 'none') {
-                // Switch to video
-                imageSection.style.display = 'none';
-                videoSection.style.display = 'block';
-                button.textContent = isEnglish ? 'Water Discharge Process' : '排水過程';
-            } else {
-                // Switch to images
-                imageSection.style.display = 'grid';
-                videoSection.style.display = 'none';
-                button.textContent = isEnglish ? 'Sampling Principle' : '採樣原理';
-            }
-        }
-    </script>
+function showModelAnswer(btn, consid) {
+  let par = btn.closest('.consideration');
+  par.querySelector('.model-answer').style.display = 'block';
+}
+
+// PDF Export - Payload and Design Considerations each on their own page.
+document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
+  const alertBox = document.getElementById('alertMsgSavePdf');
+  alertBox.textContent = '';
+  // Get the source nodes
+  const srcPayload = document.getElementById('payloadSection');
+  const srcDesign = document.getElementById('designConsiderations');
+  const pdfPayload = document.getElementById('pdfPayloadSection');
+  const pdfDesign = document.getElementById('pdfDesignConsiderations');
+  const pdfArea = document.getElementById('pdfArea');
+
+  pdfPayload.innerHTML = "";
+  pdfDesign.innerHTML = "";
+  pdfPayload.appendChild(srcPayload.cloneNode(true));
+  pdfDesign.appendChild(srcDesign.cloneNode(true));
+  pdfArea.style.display = "block";
+
+  // Remove video controls in PDF for better rendering
+  pdfArea.querySelectorAll('video').forEach(video => {
+    video.pause();
+    video.currentTime = 0;
+    video.removeAttribute('controls');
+  });
+
+  window.scrollTo(0, 0);
+
+  try {
+    alertBox.textContent = currentLang === 'en'
+      ? 'Generating PDF, please wait...'
+      : '正在生成 PDF，請稍候...';
+
+    await html2pdf().set({
+      margin: 0,
+      filename: 'Water_Sampling_Drone_Design.pdf',
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    }).from(pdfArea).save();
+
+    alertBox.textContent = currentLang === 'en'
+      ? 'PDF saved! Check your downloads.'
+      : 'PDF 已下載，請檢查您的下載資料夾。';
+  } catch(e) {
+    console.error(e);
+    alertBox.textContent = currentLang === 'en'
+      ? 'PDF save failed! Try again or check your browser settings.'
+      : 'PDF 下載失敗，請重試或檢查瀏覽器設定。';
+  } finally {
+    pdfArea.style.display = "none";
+    setTimeout(() => { alertBox.textContent = ''; }, 6000);
+  }
+});
+
+// --- The following is the original calculator JS, left unchanged ---
+document.getElementById('calculateBtn').onclick = function() {
+  let m = parseFloat(document.getElementById('mainWeight').value) || 0;
+  let partA = parseFloat(document.getElementById('partA').value) || 0;
+  let partB_w = parseFloat(document.getElementById('partB_w').value) || 0;
+  let partB_no = parseFloat(document.getElementById('partB_no').value) || 0;
+  let wideStraw_w = parseFloat(document.getElementById('wideStraw_w').value) || 0;
+  let wideStraw_no = parseFloat(document.getElementById('wideStraw_no').value) || 0;
+  let slimStraw_w = parseFloat(document.getElementById('slimStraw_w').value) || 0;
+  let slimStraw_no = parseFloat(document.getElementById('slimStraw_no').value) || 0;
+  let extra = parseFloat(document.getElementById('extraMaterials').value) || 0;
+  let waterMl = parseFloat(document.getElementById('waterVolume').value) || 0;
+
+  let partB = partB_w * partB_no;
+  let wideStraw = wideStraw_w * wideStraw_no;
+  let slimStraw = slimStraw_w * slimStraw_no;
+  let water = waterMl; // 1ml water = 1g
+
+  let payload = partA + partB + wideStraw + slimStraw + extra + water;
+  let total = m + payload;
+  let percent = (payload/total)*100;
+
+  let result = '';
+  if (m <= 0) {
+    result = '<span style="color:red">Please enter a valid quadcopter weight.</span>';
+  } else {
+    result = `
+      <b>Drone weight:</b> ${m.toFixed(2)} g<br>
+      <b>Payload (all parts + water):</b> ${payload.toFixed(2)} g<br>
+      <b>Total weight (drone + payload):</b> ${total.toFixed(2)} g<br>
+      <b>Payload fraction:</b> ${percent.toFixed(2)}%<br>
+      ${(percent > 20) ?
+        '<span style="color:red"><b>Warning:</b> Payload exceeds 20% limit!</span>' :
+        '<span style="color:green">✔️ OK: Within 20% payload limit.</span>'
+      }
+    `;
+  }
+  document.getElementById('payloadResults').innerHTML = result;
+  document.getElementById('alertMsg').textContent = '';
+};
+</script>
 </body>
 </html>
