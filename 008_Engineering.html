@@ -26,6 +26,7 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
       margin: 0 auto 20px; padding: 20px;
       max-width: 1000px;
+      border: 2px solid #111; /* Black border for all sections */
     }
     h2 {
       color: #004d66; border-bottom: 2px solid #004d66;
@@ -38,9 +39,32 @@
       vertical-align: middle; display: inline-block;
     }
     .criteria-text { flex: 1; min-width: 300px; }
-    .criteria-img { flex: 0 0 40%; min-width: 250px; }
-    .criteria-img img,
-    .criteria-img video { width: 100%; height: auto; }
+    .criteria-img-box {
+      flex: 0 0 320px;
+      min-width: 250px;
+      max-width: 420px;
+      width: 320px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      margin-left: 18px;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+    }
+    /* Make video or image fill the box */
+    .criteria-img-box iframe,
+    .criteria-img-box video,
+    .criteria-img-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #000;
+      display: block;
+    }
     .calc-layout { display: flex; gap: 20px; flex-wrap: wrap; }
     .calc-table { flex: 1; min-width: 250px; }
     table { width: 100%; border-collapse: collapse; }
@@ -113,6 +137,7 @@ body, #pdfArea {
     @media (max-width:700px) { 
       section { padding: 10px; max-width:98vw;}
       .icon { width: 2em; height: 2em;}
+      .criteria-img-box { width: 100vw; max-width: 100vw; height: 180px; margin-left: 0;}
     }
     .considerations-box { display: none !important; }
   </style>
@@ -135,8 +160,8 @@ body, #pdfArea {
       <h2><span class="icon" id="aboutIcon"></span><span data-i18n="about_h2"></span></h2>
       <p data-i18n="about_p"></p>
     </div>
-    <div class="criteria-img">
-      <video src="sampling.mp4" controls></video>
+    <div class="criteria-img-box">
+      <iframe src="https://www.youtube.com/embed/emH8IzaYxjQ" title="YouTube video player" allowfullscreen style="border:none;"></iframe>
     </div>
   </section>
 
@@ -152,7 +177,7 @@ body, #pdfArea {
         <li data-i18n="criteria_li5"></li>
       </ul>
     </div>
-    <div class="criteria-img">
+    <div class="criteria-img-box">
       <img src="resources.jpg" data-i18n-alt="criteria_img_alt" alt="Success criteria illustration" />
     </div>
   </section>
@@ -253,7 +278,7 @@ body, #pdfArea {
       </div>
       <div class="model-answer" id="model-water"></div>
     </div>
-<div class="signature-label">C Y YEUNG, EdUHK</div>
+    <div class="signature-label">C Y YEUNG, EdUHK</div>
   </section>
   <!-- --- END DESIGN CONSIDERATIONS SECTION --- -->
 
@@ -363,7 +388,6 @@ const translations = {
   }
 };
 
-// SVG icons (for About, Criteria, Calculator, Design Considerations)
 const icons = {
   about: `<svg viewBox="0 0 48 48" class="icon" aria-label="Mission Drone" focusable="false">
     <circle cx="24" cy="24" r="20" fill="#d2f1ff" stroke="#006699" stroke-width="2"/>
@@ -405,7 +429,6 @@ const icons = {
   </svg>`
 };
 
-// Set icons into headings
 function setSectionIcons() {
   document.getElementById('aboutIcon').innerHTML = icons.about;
   document.getElementById('criteriaIcon').innerHTML = icons.criteria;
@@ -416,7 +439,6 @@ setSectionIcons();
 
 let currentLang = 'en';
 
-// Update all texts and SVG icons for current language
 function updateTexts() {
   document.documentElement.lang = currentLang === 'en' ? 'en' : 'zh-TW';
   document.querySelectorAll('[data-i18n]').forEach(el =>
@@ -440,9 +462,7 @@ function updateTexts() {
   document.querySelectorAll('[data-i18n-alt]').forEach(el =>
     el.alt = translations[currentLang][el.dataset.i18nAlt]
   );
-  // Title
   document.title = translations[currentLang].title;
-  // Section icons (SVG) - already set in setSectionIcons
 }
 document.getElementById('langBtn').addEventListener('click', () => {
   currentLang = currentLang === 'en' ? 'zh' : 'en';
@@ -451,7 +471,6 @@ document.getElementById('langBtn').addEventListener('click', () => {
 });
 updateTexts();
 
-// Enable "Show Guidance" only if textarea has text
 document.querySelectorAll('.consideration textarea').forEach((ta) => {
   ta.addEventListener('input', function() {
     let btn = ta.parentElement.querySelector('button');
@@ -468,11 +487,9 @@ function showModelAnswer(btn, consid) {
   par.querySelector('.model-answer').style.display = 'block';
 }
 
-// PDF Export - Payload and Design Considerations each on their own page.
 document.getElementById('downloadPdfBtn').addEventListener('click', async () => {
   const alertBox = document.getElementById('alertMsgSavePdf');
   alertBox.textContent = '';
-  // Get the source nodes
   const srcPayload = document.getElementById('payloadSection');
   const srcDesign = document.getElementById('designConsiderations');
   const pdfPayload = document.getElementById('pdfPayloadSection');
@@ -485,7 +502,6 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async () => 
   pdfDesign.appendChild(srcDesign.cloneNode(true));
   pdfArea.style.display = "block";
 
-  // Remove video controls in PDF for better rendering
   pdfArea.querySelectorAll('video').forEach(video => {
     video.pause();
     video.currentTime = 0;
@@ -521,7 +537,6 @@ document.getElementById('downloadPdfBtn').addEventListener('click', async () => 
   }
 });
 
-// --- The following is the original calculator JS, left unchanged ---
 document.getElementById('calculateBtn').onclick = function() {
   let m = parseFloat(document.getElementById('mainWeight').value) || 0;
   let partA = parseFloat(document.getElementById('partA').value) || 0;
@@ -537,7 +552,7 @@ document.getElementById('calculateBtn').onclick = function() {
   let partB = partB_w * partB_no;
   let wideStraw = wideStraw_w * wideStraw_no;
   let slimStraw = slimStraw_w * slimStraw_no;
-  let water = waterMl; // 1ml water = 1g
+  let water = waterMl;
 
   let payload = partA + partB + wideStraw + slimStraw + extra + water;
   let total = m + payload;
