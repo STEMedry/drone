@@ -34,7 +34,6 @@
         margin-bottom: 18px;
         position: relative;
     }
-    /* Distinct button styles */
     .btn-home {
         background: slateblue;
         color: #fff;
@@ -82,7 +81,6 @@
         z-index: 2;
         border: 2px solid #5ecfff;
     }
-    /* Dropdown base */
     .dropdown {
         position: relative;
         display: inline-block;
@@ -90,7 +88,6 @@
     .dropbtn {
         min-width: 140px;
     }
-    /* Dropdown menu styles for each category */
     .dropdown-content {
         display: none;
         position: absolute;
@@ -106,14 +103,14 @@
         animation: fadeIn 0.22s;
         border-top: 5px solid;
     }
-    /* Category colored border-top for dropdowns */
+    .dropdown.open .dropdown-content {
+        display: block;
+    }
     .dropdown-scitech .dropdown-content { border-top-color: royalblue; }
     .dropdown-mthsci .dropdown-content { border-top-color: seagreen; }
     .dropdown-techmth .dropdown-content { border-top-color: sandybrown; }
     .dropdown-engineering .dropdown-content { border-top-color: firebrick; }
-    /* FadeIn animation */
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-12px);} to { opacity: 1; transform: translateY(0);} }
-    /* Dropdown text color (distinct for each category) */
     .dropdown-scitech .dropdown-content button {
         color: #244c9e;
     }
@@ -169,10 +166,6 @@
         font-weight: bold;
         padding-left: 32px;
     }
-    .dropdown:hover .dropdown-content,
-    .dropdown:focus-within .dropdown-content {
-        display: block;
-    }
     /* Language toggle */
     .button-language.language-toggle {
         position: absolute;
@@ -188,7 +181,6 @@
         font-weight: bold;
         box-shadow: 0 3px 16px 0 rgba(40,60,120,0.10);
     }
-    /* Responsive adjustments */
     @media (max-width: 700px) {
         h1#main-title { font-size: 1.3em;}
         h3#author-name { font-size: 1em;}
@@ -213,8 +205,8 @@
         <button class="mainbtn btn-home" onclick="showApp('app-home', this)" id="btn-home">Home</button>
         <button class="mainbtn btn-uav" onclick="showApp('app1', this)" id="btn-uav">UAV Technology</button>
         <!-- Sci-Tech Category -->
-        <div class="dropdown dropdown-scitech">
-            <button class="dropbtn btn-scitech" id="btn-scitech">Sci-Tech &#9662;</button>
+        <div class="dropdown dropdown-scitech" id="dropdown-scitech">
+            <button class="dropbtn btn-scitech" id="btn-scitech" type="button" onclick="toggleDropdown('dropdown-scitech')">Sci-Tech &#9662;</button>
             <div class="dropdown-content" id="scitech-dropdown">
                 <button onclick="showApp('app2', this)" id="btn-gps">Satellite Positioning</button>
                 <button onclick="showApp('app3', this)" id="btn-movement">Movement Principle</button>
@@ -224,8 +216,8 @@
             </div>
         </div>
         <!-- Mth-Sci Category -->
-        <div class="dropdown dropdown-mthsci">
-            <button class="dropbtn btn-mthsci" id="btn-mthsci">Mth-Sci &#9662;</button>
+        <div class="dropdown dropdown-mthsci" id="dropdown-mthsci">
+            <button class="dropbtn btn-mthsci" id="btn-mthsci" type="button" onclick="toggleDropdown('dropdown-mthsci')">Mth-Sci &#9662;</button>
             <div class="dropdown-content" id="mthsci-dropdown">
                 <button onclick="showApp('app7', this)" id="btn-motionspeed">Motion & Speed</button>
                 <button onclick="showApp('app8', this)" id="btn-expt">Expt Data Treatment</button>
@@ -233,8 +225,8 @@
             </div>
         </div>
         <!-- Tech-Mth Category -->
-        <div class="dropdown dropdown-techmth">
-            <button class="dropbtn btn-techmth" id="btn-techmth">Tech-Mth &#9662;</button>
+        <div class="dropdown dropdown-techmth" id="dropdown-techmth">
+            <button class="dropbtn btn-techmth" id="btn-techmth" type="button" onclick="toggleDropdown('dropdown-techmth')">Tech-Mth &#9662;</button>
             <div class="dropdown-content" id="techmth-dropdown">
                 <button onclick="showApp('app10', this)" id="btn-circum">Circumnavigation</button>
                 <button onclick="showApp('app11', this)" id="btn-spiral">2D/3D Spiral Navigation</button>
@@ -243,8 +235,8 @@
             </div>
         </div>
         <!-- Engineering Category -->
-        <div class="dropdown dropdown-engineering">
-            <button class="dropbtn btn-engineering" id="btn-engineering">Engineering &#9662;</button>
+        <div class="dropdown dropdown-engineering" id="dropdown-engineering">
+            <button class="dropbtn btn-engineering" id="btn-engineering" type="button" onclick="toggleDropdown('dropdown-engineering')">Engineering &#9662;</button>
             <div class="dropdown-content" id="engineering-dropdown">
                 <button onclick="showApp('app14', this)" id="btn-eng1">System Design 1</button>
                 <button onclick="showApp('app15', this)" id="btn-eng2">System Design 2</button>
@@ -301,7 +293,7 @@
         <iframe src="008_Engineering.html"></iframe>
     </div>
     <div id="app15" class="app">
-        <iframe src="008a_Engineering1.html"></iframe>
+        <iframe src="008a_Engineering.html"></iframe>
     </div>
 
 <script>
@@ -397,6 +389,38 @@
         document.getElementById('btn-eng2').textContent = lang.buttons.eng2;
     }
 
+    // Dropdown toggling logic
+    function toggleDropdown(dropdownId) {
+        // Close all dropdowns except the one being toggled
+        document.querySelectorAll('.dropdown').forEach(dd => {
+            if (dd.id !== dropdownId) dd.classList.remove('open');
+        });
+        // Toggle the clicked dropdown
+        const dd = document.getElementById(dropdownId);
+        dd.classList.toggle('open');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        const dropdowns = document.querySelectorAll('.dropdown');
+        let clickedDropdown = false;
+        dropdowns.forEach(dd => {
+            if (dd.contains(e.target)) {
+                clickedDropdown = true;
+            }
+        });
+        if (!clickedDropdown) {
+            dropdowns.forEach(dd => dd.classList.remove('open'));
+        }
+    });
+
+    // Allow ESC key to close dropdowns
+    document.addEventListener('keydown', function(e) {
+        if (e.key === "Escape") {
+            document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
+        }
+    });
+
     // Track selected app/button
     function showApp(appId, btn) {
         // Hide all apps
@@ -417,6 +441,8 @@
             }
             btn.classList.add('selected-button');
         }
+        // Close all dropdowns after selection
+        document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
     }
 
     // Default: show Home/app-home
@@ -426,4 +452,3 @@
 </script>
 </body>
 </html>
-
