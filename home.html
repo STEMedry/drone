@@ -176,6 +176,7 @@
       height: 200px;
       transition: height 0.35s;
       box-sizing: border-box;
+      position: relative;
     }
     .video-box iframe {
       width: 100%;
@@ -249,7 +250,7 @@
     }
     .pedagogy {
       margin-top: 0.11rem;
-      margin-bottom: 1.1rem; /* Increased gap below, matches icon top gap */
+      margin-bottom: 1.1rem;
       border: 1px solid #ccc;
       border-radius: 4px;
       background-color: #f9f9f9;
@@ -259,7 +260,7 @@
       flex-direction: column;
       gap: 0.06rem;
       align-items: center;
-      width: 90%;       /* <--- Adjust this value */
+      width: 90%;
       margin-left: auto;
       margin-right: auto;
     }
@@ -409,6 +410,7 @@
     <!-- Introduction Section with Language Switch inside -->
     <div class="intro">
       <div class="intro-left">
+        <!-- TIP: Compress 'Project_Logo.png' for faster load -->
         <img src="Project_Logo.png" width="200" height="150" alt="Project Logo">
       </div>
       <div class="intro-right">
@@ -428,8 +430,16 @@
           <ul class="strategies-list" id="challenges-list"></ul>
         </div>
         <div class="video-box" id="video-box">
-          <!-- Updated YouTube video to a working link -->
-          <iframe src="https://www.youtube.com/embed/e117aBxZ9Ac" title="YouTube video player" allowfullscreen></iframe>
+          <!-- Lazy-load YouTube iframe for speed -->
+          <div id="youtube-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:#000;">
+            <img src="https://img.youtube.com/vi/e117aBxZ9Ac/hqdefault.jpg" alt="YouTube Thumbnail" style="width:100%;height:100%;object-fit:cover;">
+            <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+              <svg width="68" height="68" viewBox="0 0 68 68">
+                <circle cx="34" cy="34" r="34" fill="rgba(0,0,0,0.5)"/>
+                <polygon points="26,20 52,34 26,48" fill="#fff"/>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -616,12 +626,30 @@
       document.getElementById('acknowledgement-text').innerText = t.acknowledgement;
     }
 
+    // Lazy-load YouTube iframe on click
+    function setupYoutubeLazyLoad() {
+      var ytPlaceholder = document.getElementById('youtube-placeholder');
+      if (ytPlaceholder) {
+        ytPlaceholder.addEventListener('click', function() {
+          var iframe = document.createElement('iframe');
+          iframe.src = "https://www.youtube.com/embed/e117aBxZ9Ac?autoplay=1";
+          iframe.title = "YouTube video player";
+          iframe.allowFullscreen = true;
+          iframe.setAttribute('allowfullscreen', '');
+          iframe.style.width = "100%";
+          iframe.style.height = "100%";
+          iframe.style.border = "none";
+          ytPlaceholder.parentNode.replaceChild(iframe, ytPlaceholder);
+        });
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', function() {
       renderIntro();
       renderChallengesList();
       renderSimCards();
+      setupYoutubeLazyLoad();
     });
   </script>
 </body>
-
 </html>
