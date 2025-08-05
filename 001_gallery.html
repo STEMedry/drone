@@ -9,284 +9,212 @@
             --primary-color: #2c3e50;
             --secondary-color: #3498db;
             --background-color: #f4f4f4;
+            --intro-bg: #e7f1fc;
+            --app-bg: #f8f8ee;
             --text-color: #333;
             --grid-color: rgba(0, 0, 0, 0.1);
+            --infographic-gap: 24px;
+            --box-radius: 14px;
+            --box-shadow: 0 2px 8px rgba(44,62,80,0.09);
         }
 
         body {
             font-family: 'Arial', sans-serif;
-            line-height: 1.0;
-            margin: 0;
-            padding: 0;
             background-color: var(--background-color);
             color: var(--text-color);
             background-image: 
                 linear-gradient(45deg, rgba(44,62,80,0.05) 0%, rgba(44,62,80,0.02) 100%),
                 repeating-linear-gradient(45deg, rgba(52,152,219,0.02) 0px, rgba(52,152,219,0.02) 10px, transparent 10px, transparent 20px);
             background-size: cover;
+            margin: 0;
+            padding: 0;
         }
 
         .container {
             display: flex;
             width: 100%;
             max-width: 1500px;
-            margin: 5px auto;
-            padding: 5px;
+            margin: 26px auto;
+            padding: 0 16px;
             box-sizing: border-box;
-            gap: 5px;
+            gap: 36px;
         }
 
         .content-section {
             display: flex;
-            gap: 5px;
+            gap: 36px;
             flex: 1;
         }
 
         .text-content {
-            background-color: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            background-color: transparent;
+            padding: 0;
+            border-radius: var(--box-radius);
             flex: 1;
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: visible;
+            box-shadow: none;
+        }
+
+        .shape-animation {
+            position: relative;
+            height: 80px;
             overflow: hidden;
+            margin-bottom: 10px;
+            z-index: 1;
         }
 
-        .text-content::before {
-            content: '';
+        .shape {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                linear-gradient(to right, var(--grid-color) 1px, transparent 1px),
-                linear-gradient(to bottom, var(--grid-color) 1px, transparent 1px);
-            background-size: 25px 25px;
-            pointer-events: none;
-            z-index: 0;
+            width: 30px;
+            height: 30px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            left: -30px;
+        }
+        .shape:nth-child(1) { background-color: #3498db; border-radius: 50%; top: 15px; animation: moveRight 6s linear infinite; }
+        .shape:nth-child(2) { background-color: #e74c3c; top: 50px; animation: moveRight 7s linear infinite; }
+        .shape:nth-child(3) { background-color: #27ae60; clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%); top: 15px; animation: moveRight 5s linear infinite; }
+        .shape:nth-child(4) { background-color: #f1c40f; clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%); top: 50px; animation: moveRight 8s linear infinite; }
+        .shape:nth-child(5) { background-color: #9b59b6; clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%); top: 30px; animation: moveRight 9s linear infinite; }
+
+        @keyframes moveRight {
+            0% { transform: translateX(0); left: -30px; }
+            100% { transform: translateX(calc(100vw + 30px)); left: -30px; }
         }
 
-.shape-animation {
-    position: relative;
-    height: 80px;
-    overflow: hidden;
-    margin-bottom: 5px;
-    z-index: 1;
-}
+        /* INTRODUCTION BOX */
+        .intro-box {
+            background: var(--intro-bg);
+            border-radius: var(--box-radius);
+            box-shadow: var(--box-shadow);
+            padding: 28px 30px 20px 30px;
+            margin-bottom: 32px;
+        }
 
-.shape {
-    position: absolute;
-    width: 30px;
-    height: 30px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-    left: -30px;
-}
-
-.shape:nth-child(1) {
-    background-color: #3498db;
-    border-radius: 50%;
-    top: 15px;
-    animation: moveRight 6s linear infinite;
-}
-
-.shape:nth-child(2) {
-    background-color: #e74c3c;
-    top: 50px;
-    animation: moveRight 7s linear infinite;
-}
-
-.shape:nth-child(3) {
-    background-color: #27ae60;
-    clip-path: polygon(50% 0%, 100% 38%, 82% 100%, 18% 100%, 0% 38%);
-    top: 15px;
-    animation: moveRight 5s linear infinite;
-}
-
-.shape:nth-child(4) {
-    background-color: #f1c40f;
-    clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
-    top: 50px;
-    animation: moveRight 8s linear infinite;
-}
-
-.shape:nth-child(5) {
-    background-color: #9b59b6;
-    clip-path: polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%);
-    top: 30px;
-    animation: moveRight 9s linear infinite;
-}
-
-@keyframes moveRight {
-    0% {
-        transform: translateX(0);
-        left: -30px;
-    }
-    100% {
-        transform: translateX(calc(100vw + 30px));
-        left: -30px;
-    }
-}
+        .intro-box h2 {
+            margin: 0 0 18px 0;
+            color: var(--primary-color);
+            font-size: 1.3em;
+            font-weight: bold;
+            letter-spacing: .01em;
+        }
+        .intro-box p {
+            font-size: 1.11em;
+            margin: 0;
+            line-height: 1.55;
+            color: #303e4c;
+        }
 
         .text-content h1 {
-            font-size: 1.6em;
-            margin: 0 0 8px 0;
+            font-size: 2em;
+            margin: 0 0 16px 0;
             text-align: center;
             color: var(--primary-color);
             z-index: 1;
             position: relative;
+            letter-spacing: .01em;
         }
 
-        .text-content h2 {
-            margin: 5px 0 15px 0;
+        /* APPLICATIONS BOXES */
+        .applications-section {
+            margin-bottom: 10px;
+        }
+        .applications-title {
+            font-size: 1.18em;
             color: var(--primary-color);
-            font-size: 1.2em;
+            margin-bottom: 20px;
+            font-weight: bold;
         }
-
-        .text-content p {
-		line-height: 1.2;
-            margin: 0 0 8px 0;
-            font-size: 1.1em;
-        }
-
         .infographic {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 8px;
-            margin-top: 2px;
+            gap: var(--infographic-gap);
         }
-
         .infographic-item {
-            background-color: #f9f9f9;
-            padding: 4px;
-            border-radius: 8px;
+            background: var(--app-bg);
+            padding: 22px 10px 14px 10px;
+            border-radius: var(--box-radius);
+            box-shadow: var(--box-shadow);
             text-align: center;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.1);
-            font-size: 0.95em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            min-height: 145px;
+            transition: box-shadow 0.22s;
+        }
+        .infographic-item:hover {
+            box-shadow: 0 6px 18px rgba(44,62,80,0.13);
         }
 
         .infographic-icon {
-            font-size: 2.8em;
-            margin-bottom: 2px;
+            font-size: 2.6em;
+            margin-bottom: 5px;
         }
 
         .infographic-item h4 {
-            margin: 5px 0 4px 0;
-            font-size: 1em;
+            margin: 0 0 6px 0;
+            font-size: 1.07em;
             color: var(--primary-color);
+            font-weight: bold;
         }
-
         .infographic-item p {
-            margin: 3;
-            font-size: 0.85em;
+            margin: 0;
+            font-size: 1em;
+            color: #4e5e70;
+            line-height: 1.43;
         }
 
+        /* DRONE MODELS */
         .drone-models {
             background-color: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px 13px;
+            border-radius: var(--box-radius);
+            box-shadow: var(--box-shadow);
             flex: 1;
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
+            gap: 22px;
             height: auto;
             box-sizing: border-box;
+            margin-left: 0;
         }
 
         .drone-model {
-            background-color: white;
-            border-radius: 10px;
-            padding: 10px;
+            background-color: #f9fafb;
+            border-radius: var(--box-radius);
+            padding: 14px 8px;
             text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
-		min-height: 100px;
+            box-shadow: 0 2px 6px rgba(44,62,80,0.07);
+            transition: transform 0.3s, box-shadow 0.2s;
+            min-height: 120px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            font-size: 0.85em;
+            font-size: 0.93em;
+            gap: 7px;
         }
-
         .drone-model:hover {
-            transform: scale(1.05);
+            transform: scale(1.04);
+            box-shadow: 0 5px 16px rgba(44,62,80,0.13);
         }
 
         .drone-model p {
-            margin: 2px 0 0px 0;
+            margin: 2px 0 2px 0;
             color: var(--primary-color);
-            font-size: 1.2em;
+            font-size: 1.18em;
             font-weight: bold;
+            letter-spacing: .01em;
         }
 
         .drone-model a img {
             width: 100%;
             height: 120px;
             object-fit: cover;
-            border-radius: 2px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-                margin: 10px;
-                padding: 10px;
-            }
-
-            .content-section {
-                flex-direction: column;
-                gap: 10px;
-            }
-
-            .infographic {
-                grid-template-columns: 1fr;
-                gap: 8px;
-            }
-
-            .drone-models {
-                grid-template-columns: 1fr;
-                padding: 10px;
-                gap: 8px;
-            }
-
-            .shape-animation {
-                height: 100px;
-            }
-
-            .shape {
-                width: 25px;
-                height: 25px;
-            }
-
-            .text-content h1 {
-                font-size: 1.5em;
-                margin-bottom: 8px;
-            }
-
-            .infographic-icon {
-                font-size: 1.4em;
-            }
-
-            .text-content {
-                padding: 10px;
-            }
-
-            .infographic-item {
-                padding: 2px;
-                font-size: 0.8em;
-            }
-
-            .drone-models {
-                padding: 10px;
-                gap: 8px;
-            }
-
-            .drone-model a img {
-                height: 120px;
-            }
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
         }
 
         .language-switch {
@@ -303,38 +231,27 @@
             z-index: 1000;
             transition: background-color 0.3s ease;
         }
+        .language-switch:hover { background-color: #1cc723; }
 
-        .language-switch:hover {
-            background-color: #1cc723;
+        /* RESPONSIVE */
+        @media (max-width: 1025px) {
+            .container { flex-direction: column; gap: 24px; }
+            .content-section { flex-direction: column; gap: 24px; }
+            .drone-models { gap: 16px; }
+            .infographic { gap: 14px; }
         }
-.gps-button {
-    background-color: #0750ed;
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    margin: 10px 0;
-    transition: background-color 0.3s ease;
-    text-decoration: none;
-    display: inline-block;
-	font-weight: bold;
-	width: fit-content;
-	text-align: center;
-}
-
-.gps-button:hover {
-    background-color: #0f28b8;
-}
-
-@media (max-width: 768px) {
-    .gps-button {
-        font-size: 0.9em;
-        padding: 8px 16px;
-        min-width: 150px; /* Adjusted minimum wi
-    }
-}
+        @media (max-width: 900px) {
+            .infographic { grid-template-columns: 1fr 1fr; }
+            .drone-models { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 0 2vw; }
+            .intro-box { padding: 16px 8px 11px 8px; }
+            .text-content h1 { font-size: 1.18em; }
+            .applications-title { font-size: 1em; }
+            .infographic { grid-template-columns: 1fr; gap: 11px; }
+            .drone-models { padding: 10px 2px; }
+        }
     </style>
 </head>
 <body>
@@ -344,6 +261,7 @@
     <div class="container">
         <div class="content-section">
             <div class="text-content">
+
                 <div class="shape-animation">
                     <div class="shape"></div>
                     <div class="shape"></div>
@@ -351,44 +269,48 @@
                     <div class="shape"></div>
                     <div class="shape"></div>
                 </div>
+
                 <h1>Drone Technology: Exploring the Future of Flight</h1>
+                <div class="intro-box">
+                    <h2>Introduction to Drone Technology</h2>
+                    <p>
+                        Drone technology represents a revolutionary engineering field that integrates aerodynamics, electronics, computer science, and innovative design. <b><u>D</b></u>ynamic <b><u>R</b></u>emotely <b><u>O</b></u>perated <b><u>N</b></u>avigation <b><u>E</b></u>quipments <b>(Drones)</b>, or Unmanned Aerial Vehicles <b>(UAVs)</b>, comprise aircraft systems capable of remote control or autonomous operation. Their applications extend across cinematography, education, agriculture, and space exploration. Global Navigation Satellite System (GNSS) technology serves as a fundamental component in drone positioning, enabling precise navigation and location tracking that enhances operational effectiveness across diverse applications.
+                    </p>
+                </div>
 
-                <h2>Introduction to Drone Technology</h2>
-                <p>Drone technology represents a revolutionary engineering field that integrates aerodynamics, electronics, computer science, and innovative design. <b><u>D</b></u>ynamic <b><u>R</b></u>emotely <b><u>O</b></u>perated <b><u>N</b></u>avigation <b><u>E</b></u>quipments <b>(Drones)</b>, or Unmanned Aerial Vehicles <b>(UAVs)</b>, comprise aircraft systems capable of remote control or autonomous operation. Their applications extend across cinematography, education, agriculture, and space exploration. Global Positioning System (GPS) technology serves as a fundamental component in drone positioning, enabling precise navigation and location tracking that enhances operational effectiveness across diverse applications.</p>
-
-         <a href="001a_GPS.html" class="gps-button" data-translate="gps_button">GNSS Satellite Positioning of Drone</a>
-       
-                <h3>Drone Technology Applications</h3>
-                <div class="infographic">
-                    <div class="infographic-item">
-                        <div class="infographic-icon">🌳</div>
-                        <h4>Environmental</h4>
-                        <p>Monitoring ecosystems, wildlife tracking</p>
-                    </div>
-                    <div class="infographic-item">
-                        <div class="infographic-icon">🚑</div>
-                        <h4>Humanitarian</h4>
-                        <p>Emergency aid, disaster relief</p>
-                    </div>
-                    <div class="infographic-item">
-                        <div class="infographic-icon">🌾</div>
-                        <h4>Agriculture</h4>
-                        <p>Crop monitoring, precision farming</p>
-                    </div>
-                    <div class="infographic-item">
-                        <div class="infographic-icon">📦</div>
-                        <h4>Delivery</h4>
-                        <p>Medical supplies, packages</p>
-                    </div>
-                    <div class="infographic-item">
-                        <div class="infographic-icon">🛰️</div>
-                        <h4>Exploration</h4>
-                        <p>Space missions, planetary research</p>
-                    </div>
-                    <div class="infographic-item">
-                        <div class="infographic-icon">🏗️</div>
-                        <h4>Infrastructure</h4>
-                        <p>Inspection, surveying</p>
+                <div class="applications-section">
+                    <div class="applications-title">Drone Technology Applications</div>
+                    <div class="infographic">
+                        <div class="infographic-item">
+                            <div class="infographic-icon">🌳</div>
+                            <h4>Environmental</h4>
+                            <p>Monitoring ecosystems, wildlife tracking</p>
+                        </div>
+                        <div class="infographic-item">
+                            <div class="infographic-icon">🚑</div>
+                            <h4>Humanitarian</h4>
+                            <p>Emergency aid, disaster relief</p>
+                        </div>
+                        <div class="infographic-item">
+                            <div class="infographic-icon">🌾</div>
+                            <h4>Agriculture</h4>
+                            <p>Crop monitoring, precision farming</p>
+                        </div>
+                        <div class="infographic-item">
+                            <div class="infographic-icon">📦</div>
+                            <h4>Delivery</h4>
+                            <p>Medical supplies, packages</p>
+                        </div>
+                        <div class="infographic-item">
+                            <div class="infographic-icon">🛰️</div>
+                            <h4>Exploration</h4>
+                            <p>Space missions, planetary research</p>
+                        </div>
+                        <div class="infographic-item">
+                            <div class="infographic-icon">🏗️</div>
+                            <h4>Infrastructure</h4>
+                            <p>Inspection, surveying</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -400,35 +322,30 @@
                         <img src="pic1.jpg" alt="Cinematography Drone">
                     </a>
                 </div>
-                
                 <div class="drone-model">
-                    <p>Educational Drone</p>
-                    <a href="https://sketchfab.com/models/2c8b6a9110f24c5da04a2561bbf855c2/embed" target="_blank">
-                        <img src="pic2.jpg" alt="Educational Drone">
+                    <p>Mini Camera Drone</p>
+                    <a href="https://sketchfab.com/models/d5e04a9802af4e4fb2089c96d0f70db4/embed" target="_blank">
+                        <img src="pic2.jpg" alt="Mini Camera Drone">
                     </a>
                 </div>
-                
                 <div class="drone-model">
                     <p>Infrastructure Inspection</p>
                     <a href="https://sketchfab.com/3d-models/dji-m300-drone-animated-d60665a39f774fe1b49a152f30588666/embed" target="_blank">
                         <img src="pic3.jpg" alt="Infrastructure Inspection Drone">
                     </a>
                 </div>
-                
                 <div class="drone-model">
                     <p>Agricultural Irrigation</p>
                     <a href="https://sketchfab.com/3d-models/dji-drone-dji-drone-e3f150488ab843bebaa367f821fcb409/embed" target="_blank">
                         <img src="pic4.jpg" alt="Agricultural Irrigation Drone">
                     </a>
                 </div>
-                
                 <div class="drone-model">
                     <p>Mars Exploration Drone</p>
                     <a href="https://sketchfab.com/3d-models/mars-ingenuity-helicopter-201020c6e7e04440a7a956abeda32040/embed" target="_blank">
                         <img src="pic5.jpg" alt="Mars Exploration Drone">
                     </a>
                 </div>
-                
                 <div class="drone-model">
                     <p>Titan Exploration Drone</p>
                     <a href="https://sketchfab.com/3d-models/nasa-dragonfly-quadcopter-fa2d23cbce6642598f5e6e6f65b8b312/embed" target="_blank">
@@ -444,8 +361,7 @@
             en: {
                 title: "Drone Technology: Exploring the Future of Flight",
                 intro_title: "Introduction to Drone Technology",
-                intro_text: "Drone technology represents a revolutionary engineering field that integrates aerodynamics, electronics, computer science, and innovative design. <b><u>D</b></u>ynamic <b><u>R</b></u>emotely <b><u>O</b></u>perated <b><u>N</b></u>avigation <b><u>E</b></u>quipments <b>(Drones)</b>, or Unmanned Aerial Vehicles <b>(UAVs)</b>, comprise aircraft systems capable of remote control or autonomous operation. Their applications extend across cinematography, education, agriculture, and space exploration. Global Positioning System (GPS) technology serves as a fundamental component in drone positioning, enabling precise navigation and location tracking that enhances operational effectiveness across diverse applications.",
-		    gps_button: "GPS Satellite Positioning of Drone",
+                intro_text: "Drone technology represents a revolutionary engineering field that integrates aerodynamics, electronics, computer science, and innovative design. <b><u>D</b></u>ynamic <b><u>R</b></u>emotely <b><u>O</b></u>perated <b><u>N</b></u>avigation <b><u>E</b></u>quipments <b>(Drones)</b>, or Unmanned Aerial Vehicles <b>(UAVs)</b>, comprise aircraft systems capable of remote control or autonomous operation. Their applications extend across cinematography, education, agriculture, and space exploration. Global Navigation Satellite System (GNSS) technology serves as a fundamental component in drone positioning, enabling precise navigation and location tracking that enhances operational effectiveness across diverse applications.",
                 app_title: "Drone Technology Applications",
                 env: "Environmental",
                 env_desc: "Monitoring ecosystems, wildlife tracking",
@@ -460,7 +376,7 @@
                 inf: "Infrastructure",
                 inf_desc: "Inspection, surveying",
                 drone1: "Cinematography Drone",
-                drone2: "Educational Drone",
+                drone2: "Mini Camera Drone",
                 drone3: "Infrastructure Inspection",
                 drone4: "Agricultural Irrigation",
                 drone5: "Mars Exploration Drone",
@@ -470,8 +386,7 @@
             zh: {
                 title: "無人機技術：探索飛行的未來",
                 intro_title: "無人機技術簡介",
-                intro_text: "無人機技術為工程領域的重大突破，整合了空氣動力學、電子工程、計算機科學與創新設計等領域。動態遠端操控導航裝置（無人機）或稱無人航空載具（UAV），是指能透過遠端操控或自主運作的航空器。其應用領域廣泛，從影像捕捉、教育應用、農業作業到太空探測皆涵蓋在內。全球衛星定位系統（GPS）為無人機定位之關鍵技術，使其能進行精確導航與位置追蹤，從而提升各類任務執行效能。",
-		    gps_button: "無人機GNSS衛星定位",
+                intro_text: "無人機技術為工程領域的重大突破，整合了空氣動力學、電子工程、計算機科學與創新設計等領域。動態遠端操控導航裝置（無人機）或稱無人航空載具（UAV），是指能透過遠端操控或自主運作的航空器。其應用領域廣泛，從影像捕捉、教育應用、農業作業到太空探測皆涵蓋在內。全球導航衛星系統（GNSS）為無人機定位之關鍵技術，使其能進行精確導航與位置追蹤，從而提升各類任務執行效能。",
                 app_title: "無人機技術應用",
                 env: "環境",
                 env_desc: "生態系統監測，野生動物追蹤",
@@ -486,7 +401,7 @@
                 inf: "基礎設施",
                 inf_desc: "檢查，測量",
                 drone1: "電影攝影無人機",
-                drone2: "教育用無人機",
+                drone2: "迷你攝影無人機",
                 drone3: "基礎設施檢查",
                 drone4: "農業灌溉",
                 drone5: "火星探測無人機",
@@ -505,12 +420,10 @@
 
         function updateContent() {
             const t = translations[currentLang];
-            
             document.querySelector('h1').textContent = t.title;
-            document.querySelector('h2').textContent = t.intro_title;
-            document.querySelector('.text-content > p').innerHTML = t.intro_text;
-            document.querySelector('h3').textContent = t.app_title;
-		document.querySelector('.gps-button').textContent = t.gps_button;
+            document.querySelector('.intro-box h2').textContent = t.intro_title;
+            document.querySelector('.intro-box p').innerHTML = t.intro_text;
+            document.querySelector('.applications-title').textContent = t.app_title;
 
             const infoItems = document.querySelectorAll('.infographic-item');
             infoItems[0].querySelector('h4').textContent = t.env;
@@ -535,32 +448,28 @@
             droneModels[5].textContent = t.drone6;
         }
 
-document.addEventListener('DOMContentLoaded', startAnimation);
-window.addEventListener('pageshow', function(event) {
-    // When navigating back via back/forward buttons
-    if (event.persisted) {
-        resetAnimation();
-    }
-});
+        document.addEventListener('DOMContentLoaded', startAnimation);
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                resetAnimation();
+            }
+        });
 
-function resetAnimation() {
-    const shapes = document.querySelectorAll('.shape');
-    shapes.forEach(shape => {
-        shape.classList.remove('animate');
-        // Trigger reflow
-        void shape.offsetWidth;
-        shape.classList.add('animate');
-    });
-}
+        function resetAnimation() {
+            const shapes = document.querySelectorAll('.shape');
+            shapes.forEach(shape => {
+                shape.classList.remove('animate');
+                void shape.offsetWidth;
+                shape.classList.add('animate');
+            });
+        }
 
-function startAnimation() {
-    const shapes = document.querySelectorAll('.shape');
-    shapes.forEach(shape => {
-        shape.classList.add('animate');
-    });
-}
-
+        function startAnimation() {
+            const shapes = document.querySelectorAll('.shape');
+            shapes.forEach(shape => {
+                shape.classList.add('animate');
+            });
+        }
     </script>
-
 </body>
 </html>
