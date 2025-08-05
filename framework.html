@@ -19,9 +19,6 @@
         linear-gradient(to right, #c3e0e9 1px, transparent 1px),
         linear-gradient(to bottom, #c3e0e9 1px, transparent 1px);
       background-size: 40px 40px;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
       user-select: none;
       display: flex;
       align-items: stretch;
@@ -121,12 +118,12 @@
       justify-content: flex-start;
       min-height: 100%;
       height: 100%;
-      border: 2.3px solid #222; /* Added black border */
+      border: 2.3px solid #222;
     }
     .info-box-title {
       display: flex;
       align-items: center;
-      font-size: 1.35em;
+      font-size: 1.55em;
       font-weight: bold;
       margin-bottom: 20px;
       color: #a25c0d;
@@ -140,12 +137,10 @@
       color: #5b3d1c;
       white-space: pre-line;
     }
-
-.info-box-content p {
-  margin-top: -0.4em;
-  margin-bottom: -0.4em;
-}
-
+    .info-box-content p {
+      margin-top: -0.4em;
+      margin-bottom: -0.4em;
+    }
 
     /* SVG Icon styling */
     .info-icon {
@@ -186,7 +181,7 @@
       .info-icon { width: 1.6em; height: 1.6em; }
     }
 
-    /* ---- Framework Image and Hotspots (original code, unchanged) ---- */
+    /* ---- Framework Image and Hotspots ---- */
     .container {
       position: relative;
       display: flex;
@@ -261,7 +256,6 @@
     .hotspot[data-type="S-T"] { width: 44px; height: 44px; left: 58.8%; top: 40.5%; }
     .hotspot[data-type="M-S"] { width: 40px; height: 40px; left: 55%; top: 37%; }
     .hotspot[data-type="T-M"] { width: 38px; height: 38px; left: 70.2%; top: 38.8%; }
-    /* (hotspot and tooltip styles unchanged from previous code) */
     :root {
       --popup-gap-title-items: 5px;
       --popup-gap-items: 2px;
@@ -339,9 +333,9 @@
     .hotspot[data-type="T"] .tooltip-items li::before { color: #e3bb5c; }
 
     .hotspot[data-type="S"] .tooltip {
-    left: 90%;   /* Horizontal position relative to the hotspot (default: 50%) */
-    top: 20px;  /* Vertical offset upwards */
-    transform: translate(-60%, -120%);
+      left: 90%;
+      top: 20px;
+      transform: translate(-60%, -120%);
       background: linear-gradient(120deg, #ecf7fd 60%, #d6eafd 100%);
       border-color: #b9dfff;
     }
@@ -449,6 +443,7 @@
       line-height: 1.56;
       letter-spacing: 0.01em;
       user-select: none;
+      animation: breathe 2.8s ease-in-out infinite;
     }
     .integration-multi {
       border: 2.5px solid #f24747;
@@ -457,7 +452,7 @@
       top: 65%;
       width: 162px;
       min-height: 90px;
-      height: 200px;
+      height: 190px;
     }
     .integration-inter {
       border: 2.5px solid #1ba6a0;
@@ -472,10 +467,10 @@
       border: 2.5px solid #a85bb7;
       color: #813f8c;
       left: 0.5%;
-      top: 2%;
+      top: 3.8%;
       width: 172px;
       min-height: 120px;
-      height: 195px;
+      height: 188px;
     }
     @media (max-width: 700px) {
       .container { width: 99vw; min-width: 0; max-width: 100vw; max-height: 70vw; height: 65vw; }
@@ -510,13 +505,22 @@
         padding: 2px 5px 2px 5px;
       }
     }
+
+    /* Blinking animation for integration boxes */
+@keyframes breathe {
+  0%   { opacity: 1;    transform: scale(1);}
+  30%  { opacity: 0.7;  transform: scale(1.025);}
+  50%  { opacity: 0.55; transform: scale(1.045);}
+  70%  { opacity: 0.7;  transform: scale(1.025);}
+  100% { opacity: 1;    transform: scale(1);}
+}
+    /* To adjust blinking frequency, change animation-duration above (default 2s, e.g. 1s for faster blink, 3s for slower) */
   </style>
 </head>
 <body>
   <!-- Language Switcher fixed -->
   <div class="lang-switcher-fixed">
-    <button class="lang-btn active" data-lang="en">English</button>
-    <button class="lang-btn" data-lang="zh">繁體中文</button>
+    <button class="lang-btn active" id="lang-btn" data-lang="en">繁體中文</button>
   </div>
   <div class="main-wrapper" id="main-wrapper">
     <!-- LEFT COLUMN -->
@@ -554,19 +558,22 @@
           </span>
         </div>
         <div class="info-box-content"
-             data-lang-en="<p>The curriculum fosters a progressive escalation of disciplinary integration, transitioning from multi- to inter- and ultimately trans-disciplinary learning, in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
-<p>In the initial phase, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
-<p>In the intermediate phase, they integrate and test their knowledge in interdisciplinary scenarios.</p>
-<p>In the final phase, students engage in transdisciplinary engineering design tasks (e.g., automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>"
-
-             data-lang-zh="<p>課程結構促進學科整合逐步提升，從多學科到跨學科，最終達致跨領域學習，並呼應 Bloom 的認知領域分類法，引導學生由低階思維（記憶、理解與應用）過渡至高階思維（分析、評估及創造）。</p>
-<p>在初始階段，學生運用於常規課堂中學到的科學、科技及數學知識，解決基礎問題。</p>
-<p>於中期階段，學生於跨學科場景中整合及驗證知識。</p>
-<p>最終階段，學生參與跨領域工程設計任務（例如自動無人機水樣採集系統），綜合運用所學知識解決真實世界挑戰，並展現批判性思維、創造力及計算思維。</p>">
-          <p>The curriculum fosters a progressive escalation of disciplinary integration, transitioning from multi- to inter- and ultimately trans-disciplinary learning, in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
-          <p>In the initial phase, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
-          <p>In the intermediate phase, they integrate and test their knowledge in interdisciplinary scenarios.</p>
-          <p>In the final phase, students engage in transdisciplinary engineering design tasks (e.g., automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
+             data-lang-en='
+<p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
+<p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
+<p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
+<p>In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
+'
+             data-lang-zh='
+<p>課程結構促進學科整合逐步提升，並呼應 Bloom 的認知領域分類法，引導學生由低階思維（記憶、理解與應用）過渡至高階思維（分析、評估及創造）。</p>
+<p>在初始階段<b style="color:#C00000;">（多學科）</b>，學生運用於常規課堂中學到的科學、科技及數學知識，解決基礎問題。</p>
+<p>於中期階段<b style="color:#008080;">（跨學科）</b>，學生於跨學科場景中整合及驗證知識。</p>
+<p>最終階段<b style="color:#A02B93;">（跨領域）</b>，學生投入工程設計任務（自動無人機水樣採集系統），綜合運用所學知識解決真實世界挑戰，並展現批判性思維、創造力及計算思維。</p>
+'>
+          <p>The curriculum fosters a progressive escalation of disciplinary integration, transitioning from <b style="color:#C00000;">(multidisciplinary)</b> to <b style="color:#008080;">(interdisciplinary)</b> and ultimately <b style="color:#A02B93;">(transdisciplinary)</b> learning, in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
+          <p>In the <b style="color:#C00000;">(multidisciplinary)</b> phase, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
+          <p>In the <b style="color:#008080;">(interdisciplinary)</b> phase, they integrate and test their knowledge in interdisciplinary scenarios.</p>
+          <p>In the <b style="color:#A02B93;">(transdisciplinary)</b> phase, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
         </div>
       </div>
     </div>
@@ -578,7 +585,6 @@
              oncontextmenu="return false;"
              ondragstart="return false;"
              onselectstart="return false;">
-        <!-- Overlay to block right-click and selection on image -->
         <div class="overlay-blocker"
              oncontextmenu="return false;"
              onmousedown="if(event.button==2){event.preventDefault();return false;}"
@@ -589,12 +595,12 @@
           C Y YEUNG, EdUHK
         </div>
 
-        <!-- Integration Boxes (no content inside, just colored borders) -->
+        <!-- Integration Boxes -->
         <div class="integration-box integration-multi" id="integration-multi"></div>
         <div class="integration-box integration-inter" id="integration-inter"></div>
         <div class="integration-box integration-trans" id="integration-trans"></div>
 
-        <!-- Hotspots (English + Traditional Chinese in data attributes) -->
+        <!-- Hotspots -->
         <div class="hotspot" data-type="S" tabindex="0"
              data-popup-width="190px" data-popup-height="auto"
              data-lang-title-en="Science"
@@ -711,6 +717,9 @@
   </div>
   <script>
     // Language switcher logic for whole page
+    let curLang = 'en';
+    const langBtn = document.getElementById('lang-btn');
+
     function switchLang(lang) {
       // All elements with data-lang-en/data-lang-zh
       document.querySelectorAll('[data-lang-en],[data-lang-zh]').forEach(function(el) {
@@ -757,15 +766,24 @@
           ul.appendChild(li);
         });
       });
+      // Update button label
+      if (lang === 'zh') {
+        langBtn.textContent = 'English';
+        langBtn.setAttribute('data-lang', 'zh');
+      } else {
+        langBtn.textContent = '繁體中文';
+        langBtn.setAttribute('data-lang', 'en');
+      }
+      curLang = lang;
     }
-    // Language button events
-    const langBtns = document.querySelectorAll('.lang-btn');
-    langBtns.forEach(btn => btn.addEventListener('click', function() {
-      langBtns.forEach(b => b.classList.remove('active'));
+
+    // Language button event (toggle single button)
+    langBtn.addEventListener('click', function() {
+      let nextLang = (curLang === 'en') ? 'zh' : 'en';
+      switchLang(nextLang);
       this.classList.add('active');
-      const lang = this.getAttribute('data-lang');
-      switchLang(lang);
-    }));
+    });
+
     // Default to English on load
     switchLang('en');
 
@@ -827,7 +845,6 @@
     });
 
     // Prevent copying the picture or overlay
-    // Block right click everywhere in .container (except interactive elements)
     document.querySelector('.container').addEventListener('contextmenu', function(e) {
       if (!e.target.closest('.hotspot')) {
         e.preventDefault();
@@ -835,7 +852,6 @@
       }
     }, {capture: true});
 
-    // Prevent drag or select events on overlay and image
     document.querySelector('.overlay-blocker').addEventListener('dragstart', function(e){e.preventDefault();return false;});
     document.querySelector('.overlay-blocker').addEventListener('selectstart', function(e){e.preventDefault();return false;});
     document.querySelector('.overlay-blocker').addEventListener('mousedown', function(e){
