@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=0.9" />
   <title>GenAI-Driven Drone Simulations</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
-      font-family: system-ui, Arial, Helvetica, sans-serif;
+      font-family: 'Roboto', sans-serif;
       user-select: none;
       background: #f0f8ff;
       background-image: linear-gradient(to right, #d3d3d3 1px, transparent 1px),
@@ -45,14 +47,6 @@
       justify-content: center;
       padding-right: 1rem;
     }
-    .intro-left img {
-      max-width: 100%;
-      height: auto;
-      max-height: 70px;
-      border-radius: 8px;
-      background: #fff;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
     .intro-right {
       width: 75%;
       position: relative;
@@ -60,21 +54,27 @@
       flex-direction: column;
       justify-content: center;
     }
+    .project-logo {
+      height: 100%;
+      width: auto;
+      max-height: 50px;
+    }
     .intro h2 {
-      font-size: 2.1rem;
+      font-size: 2.2rem;
       margin-bottom: 0.5rem;
       color: #003366;
     }
     .intro p {
-      font-size: 1.16rem;
-      line-height: 1.4;
+      font-size: 1.3rem;
+      line-height: 1.2;
     }
     .intro .intro-note {
-      margin-top: 0.4rem;
+      margin-top: 0.35rem;
       font-size: 1.01rem;
       font-weight: bold;
       text-decoration: underline;
       color: #d2691e;
+      letter-spacing: 0.01em;
       display: block;
     }
     .intro .language-switch {
@@ -105,6 +105,7 @@
       max-width: 1200px;
       margin: 0 auto;
       box-sizing: border-box;
+      min-height: unset;
       margin-bottom: 1rem;
     }
     .strategies-box {
@@ -175,7 +176,6 @@
       height: 200px;
       transition: height 0.35s;
       box-sizing: border-box;
-      position: relative;
     }
     .video-box iframe {
       width: 100%;
@@ -249,7 +249,7 @@
     }
     .pedagogy {
       margin-top: 0.11rem;
-      margin-bottom: 1.1rem;
+      margin-bottom: 1.1rem; /* Increased gap below, matches icon top gap */
       border: 1px solid #ccc;
       border-radius: 4px;
       background-color: #f9f9f9;
@@ -259,7 +259,7 @@
       flex-direction: column;
       gap: 0.06rem;
       align-items: center;
-      width: 90%;
+      width: 90%;       /* <--- Adjust this value */
       margin-left: auto;
       margin-right: auto;
     }
@@ -409,7 +409,7 @@
     <!-- Introduction Section with Language Switch inside -->
     <div class="intro">
       <div class="intro-left">
-        <img src="Logo.jpg" width="200" height="70" alt="Project Logo">
+        <img src="Project_Logo.png" width="200" height="150" alt="Project Logo">
       </div>
       <div class="intro-right">
         <div class="language-switch">
@@ -428,16 +428,8 @@
           <ul class="strategies-list" id="challenges-list"></ul>
         </div>
         <div class="video-box" id="video-box">
-          <!-- Use local image for fast thumbnail load -->
-          <div id="youtube-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:#000;">
-            <img src="yt-thumb.jpg" alt="YouTube Thumbnail" style="width:100%;height:100%;object-fit:cover;">
-            <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
-              <svg width="68" height="68" viewBox="0 0 68 68">
-                <circle cx="34" cy="34" r="34" fill="rgba(0,0,0,0.5)"/>
-                <polygon points="26,20 52,34 26,48" fill="#fff"/>
-              </svg>
-            </div>
-          </div>
+          <!-- Updated YouTube video to a working link -->
+          <iframe src="https://www.youtube.com/embed/e117aBxZ9Ac" title="YouTube video player" allowfullscreen></iframe>
         </div>
       </div>
     </div>
@@ -490,12 +482,11 @@
     </div>
   </footer>
   <script>
-    // All translation and logic unchanged
     const translations = {
       en: {
         button: "繁體中文",
         introTitle: "Introduction",
-        intro: "This project, grounded in the Hybrid Intelligence and AI-TPACK frameworks, transforms experiential learning cycle teaching strategies into interactive simulations to promote inquiry-based learning and cost-effective, cross-disciplinary drone STEM education.",
+        intro: "This project, grounded in the Hybrid Intelligence and AI-TPACK frameworks, transforms experiential learning cycle teaching strategies into interactive simulations to promote inquiry-based learning and cost-effective, interdisciplinary drone STEM education.",
         introNote: "<b><u>(Recommended using a computer browser or iPad.)</u></b>",
         challengesTitle: "This simulation supports drone education strategies, including:",
         challenges: [
@@ -625,29 +616,10 @@
       document.getElementById('acknowledgement-text').innerText = t.acknowledgement;
     }
 
-    // Lazy-load YouTube iframe on click
-    function setupYoutubeLazyLoad() {
-      var ytPlaceholder = document.getElementById('youtube-placeholder');
-      if (ytPlaceholder) {
-        ytPlaceholder.addEventListener('click', function() {
-          var iframe = document.createElement('iframe');
-          iframe.src = "https://www.youtube.com/embed/e117aBxZ9Ac?autoplay=1";
-          iframe.title = "YouTube video player";
-          iframe.allowFullscreen = true;
-          iframe.setAttribute('allowfullscreen', '');
-          iframe.style.width = "100%";
-          iframe.style.height = "100%";
-          iframe.style.border = "none";
-          ytPlaceholder.parentNode.replaceChild(iframe, ytPlaceholder);
-        });
-      }
-    }
-
     window.addEventListener('DOMContentLoaded', function() {
       renderIntro();
       renderChallengesList();
       renderSimCards();
-      setupYoutubeLazyLoad();
     });
   </script>
 </body>
