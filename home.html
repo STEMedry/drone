@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=0.9" />
   <title>GenAI-Driven Drone Simulations</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     html, body {
       height: 100%;
-      font-family: 'Roboto', sans-serif;
+      font-family: system-ui, Arial, Helvetica, sans-serif;
       user-select: none;
       background: #f0f8ff;
       background-image: linear-gradient(to right, #d3d3d3 1px, transparent 1px),
@@ -47,6 +45,14 @@
       justify-content: center;
       padding-right: 1rem;
     }
+    .intro-left img {
+      max-width: 100%;
+      height: auto;
+      max-height: 70px;
+      border-radius: 8px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
     .intro-right {
       width: 75%;
       position: relative;
@@ -54,27 +60,21 @@
       flex-direction: column;
       justify-content: center;
     }
-    .project-logo {
-      height: 100%;
-      width: auto;
-      max-height: 50px;
-    }
     .intro h2 {
-      font-size: 2.2rem;
+      font-size: 2.1rem;
       margin-bottom: 0.5rem;
       color: #003366;
     }
     .intro p {
-      font-size: 1.3rem;
-      line-height: 1.2;
+      font-size: 1.16rem;
+      line-height: 1.4;
     }
     .intro .intro-note {
-      margin-top: 0.35rem;
+      margin-top: 0.4rem;
       font-size: 1.01rem;
       font-weight: bold;
       text-decoration: underline;
       color: #d2691e;
-      letter-spacing: 0.01em;
       display: block;
     }
     .intro .language-switch {
@@ -105,7 +105,6 @@
       max-width: 1200px;
       margin: 0 auto;
       box-sizing: border-box;
-      min-height: unset;
       margin-bottom: 1rem;
     }
     .strategies-box {
@@ -410,8 +409,7 @@
     <!-- Introduction Section with Language Switch inside -->
     <div class="intro">
       <div class="intro-left">
-        <!-- TIP: Compress 'Logo.jpg' for faster load -->
-        <img src="Logo.jpg" width="200" height="150" alt="Project Logo">
+        <img src="Logo.jpg" width="200" height="70" alt="Project Logo">
       </div>
       <div class="intro-right">
         <div class="language-switch">
@@ -430,9 +428,9 @@
           <ul class="strategies-list" id="challenges-list"></ul>
         </div>
         <div class="video-box" id="video-box">
-          <!-- Lazy-load YouTube iframe for speed -->
+          <!-- Use local image for fast thumbnail load -->
           <div id="youtube-placeholder" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;background:#000;">
-            <img src="https://img.youtube.com/vi/e117aBxZ9Ac/hqdefault.jpg" alt="YouTube Thumbnail" style="width:100%;height:100%;object-fit:cover;">
+            <img src="yt-thumb.jpg" alt="YouTube Thumbnail" style="width:100%;height:100%;object-fit:cover;">
             <div style="position:absolute;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
               <svg width="68" height="68" viewBox="0 0 68 68">
                 <circle cx="34" cy="34" r="34" fill="rgba(0,0,0,0.5)"/>
@@ -492,6 +490,7 @@
     </div>
   </footer>
   <script>
+    // All translation and logic unchanged
     const translations = {
       en: {
         button: "繁體中文",
@@ -653,4 +652,3 @@
   </script>
 </body>
 </html>
-
