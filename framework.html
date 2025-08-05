@@ -249,13 +249,13 @@
       user-select: none;
     }
     .hotspot-label { display: none !important; }
-    .hotspot[data-type="S"] { width: 64px; height: 64px; left: 26.5%; top: 67%; }
-    .hotspot[data-type="M"] { width: 56px; height: 56px; left: 69.8%; top: 54.5%; }
-    .hotspot[data-type="T"] { width: 85px; height: 85px; left: 86.5%; top: 81.5%; }
-    .hotspot[data-type="E"] { width: 68px; height: 68px; left: 60.5%; top: 1%; }
-    .hotspot[data-type="S-T"] { width: 44px; height: 44px; left: 58.8%; top: 40.5%; }
-    .hotspot[data-type="M-S"] { width: 40px; height: 40px; left: 55%; top: 37%; }
-    .hotspot[data-type="T-M"] { width: 38px; height: 38px; left: 70.2%; top: 38.8%; }
+    .hotspot[data-type="S"] { width: 90px; height: 150px; left: 26.5%; top: 67%; }
+    .hotspot[data-type="M"] { width: 220px; height: 90px; left: 69.8%; top: 54.5%; }
+    .hotspot[data-type="T"] { width: 300px; height: 90px; left: 62.5%; top: 81.5%; }
+    .hotspot[data-type="E"] { width: 228px; height: 68px; left: 40.5%; top: 1%; }
+    .hotspot[data-type="S-T"] { width: 44px; height: 100px; left: 58.8%; top: 40.5%; }
+    .hotspot[data-type="M-S"] { width: 130px; height: 40px; left: 45%; top: 37%; }
+    .hotspot[data-type="T-M"] { width: 128px; height: 80px; left: 70.2%; top: 36.8%; }
     :root {
       --popup-gap-title-items: 5px;
       --popup-gap-items: 2px;
@@ -366,6 +366,9 @@
     .hotspot[data-type="M-S"] .tooltip {
       background: linear-gradient(120deg, #f7eee6 60%, #e5d3b3 100%);
       border-color: #c1a97a;
+      left: 50%;
+      top: -24px;
+      transform: translate(-50%, -100%);
     }
     .hotspot[data-type="M-S"] .tooltip-title {
       color: #a8905b; text-decoration-color: #c1a97a;
@@ -373,6 +376,9 @@
     .hotspot[data-type="T-M"] .tooltip {
       background: linear-gradient(120deg, #fff3e3 60%, #ffe1bc 100%);
       border-color: #f9a23b;
+      left: 51%;
+      top: -22px;
+      transform: translate(-50%, -100%);
     }
     .hotspot[data-type="T-M"] .tooltip-title {
       color: #f9a23b; text-decoration-color: #f9a23b;
@@ -380,6 +386,9 @@
     .hotspot[data-type="E"] .tooltip {
       background: linear-gradient(120deg, #e6faea 60%, #d6f5de 100%);
       border-color: #b9ebc1;
+      left: 50%;
+      top: 105%;
+      transform: translate(-50%, 0);
     }
     .hotspot[data-type="E"] .tooltip-title {
       color: #5ea35f; text-decoration-color: #b9ebc1;
@@ -400,27 +409,45 @@
     .hotspot[data-type="M"] .tooltip:after { border-color: #fad7d7 transparent transparent transparent; }
     .hotspot[data-type="T"] .tooltip:after { border-color: #faefc7 transparent transparent transparent; }
     .hotspot[data-type="S-T"] .tooltip:after { border-color: #cfd7ed transparent transparent transparent; }
-    .hotspot[data-type="M-S"] .tooltip:after { border-color: #e5d3b3 transparent transparent transparent; }
-    .hotspot[data-type="T-M"] .tooltip:after { border-color: #ffe1bc transparent transparent transparent; }
-    .hotspot[data-type="E"] .tooltip:after { border-color: #d6f5de transparent transparent transparent; }
+    .hotspot[data-type="M-S"] .tooltip:after {
+      border-color: #e5d3b3 transparent transparent transparent;
+      left: 50%;
+      top: 100%;
+      transform: translateX(-50%);
+      border-width: 13px 13px 0 13px;
+    }
+    .hotspot[data-type="T-M"] .tooltip:after {
+      border-color: #ffe1bc transparent transparent transparent;
+      left: 50%;
+      top: 100%;
+      transform: translateX(-50%);
+      border-width: 13px 13px 0 13px;
+    }
+    .hotspot[data-type="E"] .tooltip:after {
+      border-color: #d6f5de transparent transparent transparent;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%) rotate(180deg);
+      border-width: 0 13px 13px 13px;
+    }
     .tooltip { left: 50%; top: 0; transform: translate(-50%, -110%); }
     .hotspot[data-type="M-S"] .tooltip {
-      left: auto; right: 115%; top: 50%; transform: translateY(-50%);
+      /* Overridden above */
     }
     .hotspot[data-type="M-S"] .tooltip:after {
-      left: auto; right: -17px; top: 50%;
-      transform: translateY(-50%) rotate(90deg);
-      border-width: 13px 0 13px 13px;
+      /* Overridden above */
     }
-    .hotspot[data-type="T-M"] .tooltip,
+    .hotspot[data-type="T-M"] .tooltip {
+      /* Overridden above */
+    }
+    .hotspot[data-type="T-M"] .tooltip:after {
+      /* Overridden above */
+    }
     .hotspot[data-type="E"] .tooltip {
-      left: 115%; right: auto; top: 150%; transform: translateY(-50%);
+      /* Overridden above */
     }
-    .hotspot[data-type="T-M"] .tooltip:after,
     .hotspot[data-type="E"] .tooltip:after {
-      left: -17px; right: auto; top: 50%;
-      transform: translateY(-50%) rotate(-90deg);
-      border-width: 13px 13px 13px 0;
+      /* Overridden above */
     }
 
     .integration-box {
@@ -446,31 +473,31 @@
       animation: breathe 2.8s ease-in-out infinite;
     }
     .integration-multi {
-      border: 2.5px solid #f24747;
+      border: 5.5px solid #f24747;
       color: #d03131;
       left: 0.5%;
-      top: 65%;
-      width: 162px;
+      top: 64%;
+      width: 200px;
       min-height: 90px;
       height: 190px;
     }
     .integration-inter {
-      border: 2.5px solid #1ba6a0;
+      border: 5.5px solid #1ba6a0;
       color: #1a6f69;
       left: 0.5%;
-      top: 36%;
+      top: 35%;
       width: 172px;
       min-height: 120px;
-      height: 170px;
+      height: 180px;
     }
     .integration-trans {
-      border: 2.5px solid #a85bb7;
+      border: 5.5px solid #a85bb7;
       color: #813f8c;
       left: 0.5%;
-      top: 3.8%;
-      width: 172px;
+      top: 3.1%;
+      width: 180px;
       min-height: 120px;
-      height: 188px;
+      height: 200px;
     }
     @media (max-width: 700px) {
       .container { width: 99vw; min-width: 0; max-width: 100vw; max-height: 70vw; height: 65vw; }
