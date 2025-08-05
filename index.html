@@ -13,7 +13,7 @@
     }
     h1#main-title {
         text-align: center;
-        font-size: 2.025em; /* 0.9x of 2.25em */
+        font-size: 2.025em;
         font-weight: bold;
         margin: 22px 0 8px 0;
         letter-spacing: 0.01em;
@@ -34,32 +34,42 @@
         margin-bottom: 18px;
         position: relative;
     }
+    /* Distinct, vivid colors for first three buttons */
     .btn-home {
-        background: slateblue;
+        background: #4267B2;
         color: #fff;
-        outline: none !important;
         border: none !important;
+        outline: none !important;
+    }
+    .btn-framework {
+        background: #F5A623;
+        color: #fff;
+        border: none !important;
+        outline: none !important;
     }
     .btn-uav {
-        background: #222e50;
+        background: #E94F37;
         color: #fff;
+        border: none !important;
+        outline: none !important;
     }
     .btn-scitech {
-        background: royalblue;
+        background: #4A6FBA;
         color: #fff;
     }
     .btn-mthsci {
-        background: seagreen;
+        background: #8B4F6B;
         color: #fff;
     }
     .btn-techmth {
-        background: sandybrown;
+        background: #F43919;
         color: #fff;
     }
     .btn-engineering {
-        background: firebrick;
+        background: #2EB872;
         color: #fff;
     }
+
     .mainbtn, .dropbtn {
         padding: 9px 22px;
         font-size: 16px;
@@ -106,22 +116,22 @@
     .dropdown.open .dropdown-content {
         display: block;
     }
-    .dropdown-scitech .dropdown-content { border-top-color: royalblue; }
-    .dropdown-mthsci .dropdown-content { border-top-color: seagreen; }
-    .dropdown-techmth .dropdown-content { border-top-color: sandybrown; }
-    .dropdown-engineering .dropdown-content { border-top-color: firebrick; }
+    .dropdown-scitech .dropdown-content { border-top-color: #4A6FBA; }
+    .dropdown-mthsci .dropdown-content { border-top-color: #8B4F6B; }
+    .dropdown-techmth .dropdown-content { border-top-color: #F43919; }
+    .dropdown-engineering .dropdown-content { border-top-color: #2EB872; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(-12px);} to { opacity: 1; transform: translateY(0);} }
     .dropdown-scitech .dropdown-content button {
         color: #244c9e;
     }
     .dropdown-mthsci .dropdown-content button {
-        color: #207a58;
+        color: #8B4F6B;
     }
     .dropdown-techmth .dropdown-content button {
-        color: #ba7824;
+        color: #F43919;
     }
     .dropdown-engineering .dropdown-content button {
-        color: #b32b2b;
+        color: #2EB872;
     }
     .dropdown-content button {
         background: none;
@@ -141,28 +151,28 @@
     .dropdown-scitech .dropdown-content button:hover,
     .dropdown-scitech .dropdown-content button.selected-button {
         background: #e5eeff;
-        color: royalblue;
+        color: #4A6FBA;
         font-weight: bold;
         padding-left: 32px;
     }
     .dropdown-mthsci .dropdown-content button:hover,
     .dropdown-mthsci .dropdown-content button.selected-button {
-        background: #dff4ea;
-        color: seagreen;
+        background: #f1e8ee;
+        color: #8B4F6B;
         font-weight: bold;
         padding-left: 32px;
     }
     .dropdown-techmth .dropdown-content button:hover,
     .dropdown-techmth .dropdown-content button.selected-button {
-        background: #fff2e0;
-        color: #bf7b2e;
+        background: #ffe7e0;
+        color: #F43919;
         font-weight: bold;
         padding-left: 32px;
     }
     .dropdown-engineering .dropdown-content button:hover,
     .dropdown-engineering .dropdown-content button.selected-button {
-        background: #fbeaea;
-        color: firebrick;
+        background: #e7f8ed;
+        color: #2EB872;
         font-weight: bold;
         padding-left: 32px;
     }
@@ -203,6 +213,7 @@
     <h3 id="author-name">By Richard C Y YEUNG, The Education University of Hong Kong</h3>
     <div class="button-container">
         <button class="mainbtn btn-home" onclick="showApp('app-home', this)" id="btn-home">Home</button>
+        <button class="mainbtn btn-framework" onclick="showApp('app-framework', this)" id="btn-framework">Framework</button>
         <button class="mainbtn btn-uav" onclick="showApp('app1', this)" id="btn-uav">Overview</button>
         <!-- Sci-Tech Category -->
         <div class="dropdown dropdown-scitech" id="dropdown-scitech">
@@ -249,6 +260,9 @@
     <!-- IFRAME APPS -->
     <div id="app-home" class="app">
         <iframe src="home.html"></iframe>
+    </div>
+    <div id="app-framework" class="app">
+        <iframe src="framework.html"></iframe>
     </div>
     <div id="app1" class="app">
         <iframe src="001_gallery.html"></iframe>
@@ -305,7 +319,8 @@
             languageButton: '繁體中文',
             buttons: {
                 home: 'Home',
-                uav: 'Overview', // Changed from "UAV Technology"
+                framework: 'Framework',
+                uav: 'Overview',
                 scitech: 'Sci-Tech',
                 mthsci: 'Mth-Sci',
                 techmth: 'Tech-Mth',
@@ -332,6 +347,7 @@
             languageButton: 'English',
             buttons: {
                 home: '主頁',
+                framework: '架構',
                 uav: '概覽',
                 scitech: '科學技術',
                 mthsci: '數理科學',
@@ -368,6 +384,7 @@
         document.getElementById('author-name').textContent = lang.authorName;
         document.getElementById('lang-toggle').textContent = lang.languageButton;
         document.getElementById('btn-home').textContent = lang.buttons.home;
+        document.getElementById('btn-framework').textContent = lang.buttons.framework;
         document.getElementById('btn-uav').textContent = lang.buttons.uav;
         document.getElementById('btn-scitech').innerHTML = lang.buttons.scitech + ' &#9662;';
         document.getElementById('btn-mthsci').innerHTML = lang.buttons.mthsci + ' &#9662;';
@@ -391,11 +408,9 @@
 
     // Dropdown toggling logic
     function toggleDropdown(dropdownId) {
-        // Close all dropdowns except the one being toggled
         document.querySelectorAll('.dropdown').forEach(dd => {
             if (dd.id !== dropdownId) dd.classList.remove('open');
         });
-        // Toggle the clicked dropdown
         const dd = document.getElementById(dropdownId);
         dd.classList.toggle('open');
     }
@@ -414,7 +429,6 @@
         }
     });
 
-    // Allow ESC key to close dropdowns
     document.addEventListener('keydown', function(e) {
         if (e.key === "Escape") {
             document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
@@ -434,14 +448,12 @@
         if (btn.classList.contains('mainbtn')) {
             btn.classList.add('selected-button');
         } else {
-            // Highlight the dropdown button
             let parentDropdown = btn.closest('.dropdown');
             if (parentDropdown) {
                 parentDropdown.querySelector('.dropbtn').classList.add('selected-button');
             }
             btn.classList.add('selected-button');
         }
-        // Close all dropdowns after selection
         document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
     }
 
@@ -452,4 +464,3 @@
 </script>
 </body>
 </html>
-
