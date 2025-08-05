@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drone-assisted Water Sampling</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            background-color: #f0f0f0;
+        }
+        .page-wrapper {
+            width: 100%;
+            max-width: 1400px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 10px 10px 10px 10px; 
+            margin: 20px 0;
+        }
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 2px;
+            gap: 0px;
+        }
+        .content {
+            flex: 0.8;
+            padding-right: 0px;
+            min-width: 250px;
+            position: relative; /* Added for button positioning */
+        }
+        .image-section {
+            flex: 2.8;
+            min-width: 300px;
+            display: grid;
+            grid-template-columns: repeat(5, minmax(40px, 1fr));
+            grid-template-rows: auto repeat(2, 1fr);
+            gap: 5px;
+            padding: 3px;
+        }
+        .image-box {
+            width: 100%;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            padding: 2px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .image-box:hover {
+            transform: scale(1.05);
+            border-color: #4CAF50;
+        }
+        .image-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 3px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            max-width: 90%;
+            max-height: 90vh;
+            border: 3px solid white;
+            border-radius: 5px;
+        }
+        .language-toggle {
+            position: absolute;
+            top: 50px;
+            right: 120px;
+            cursor: pointer;
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            font-size: 16px;
+            color: white;
+        }
+        .language-toggle:hover {
+            background-color: #1cc723;
+        }
+        .hidden {
+            display: none;
+        }
+        h1 {
+            text-align: center;
+		margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        h2 {
+            font-size: 1.2em;
+            color: #333;
+            margin-top: 20px;
+            margin-bottom: 5px;
+        }
+        h3 {
+            font-size: 1.1em;
+            color: #444;
+            margin-top: 8px;
+            margin-bottom: 5px;
+        }
+        .image-section h2 {
+            grid-column: 1 / -1;
+            margin-bottom: 2px;
+            margin-top: 0;
+            color: #333;
+        }
+        ul {
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+        li {
+            margin: 5px 0;
+            font-size: 0.9em;
+        }
+        .toggle-button {
+            background-color: #fc8803;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+            display: block;
+        }
+        .toggle-button:hover {
+            background-color: #fcc603;
+        }
+        .video-section {
+            flex: 2;
+            min-width: 200px;
+            display: none;
+            padding: 2px;
+            height: 80%;
+        }
+        .video-section video {
+            width: 90%;
+            height: 90%;
+            object-fit: cover;
+        }
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            .content, .image-section {
+                flex: none;
+                padding-right: 0;
+            }
+            .image-section {
+                grid-template-columns: repeat(2, 1fr);
+                grid-template-rows: repeat(5, 1fr);
+            }
+            .language-toggle {
+                right: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper">
+        <div class="language-toggle" onclick="toggleLanguage()">繁體中文</div>
+
+        <div id="english-content">
+            <h1>Drone-assisted Water Sampling System</h1>
+            
+            <div class="container">
+                <div class="content">
+                    <h2>System Components</h2>
+                    <ul>
+                        <li>Quadcopter drone</li>
+                        <li>2-meter-long string</li>
+                        <li>Inverted plastic bottle</li>
+                        <li>Iron ball</li>
+                    </ul>
+				<p></p>
+                    <h2>Water Sampling Process</h2>
+
+                    <h3>Water Retrieval</h3>
+                    <ul>
+                        <li>Drone carries sampling bottle sealed with iron ball</li>
+                        <li>Descends to target water surface</li>
+                        <li>Iron ball sinks upon contact, allowing water collection</li>
+                        <li>Ascends while pulling string to reseal bottle</li>
+                    </ul>
+
+                    <h3>Water Discharge</h3>
+                    <ul>
+                        <li>Flies to discharge station</li>
+                        <li>Aligns with collection bucket guided by "O" ring</li>
+                        <li>Releases iron ball to discharge water sample</li>
+                    </ul>
+
+                    <button class="toggle-button" onclick="toggleContent()">Sampling Principle</button>
+                </div>
+
+                <div class="image-section" id="imageSection">
+                    <h2>Drone-assisted Water Sampling Protocol</h2>
+                    <div class="image-box"><img src="eng001.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng002.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng003.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng004.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng005.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng006.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng007.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng008.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng009.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng010.jpg" onclick="openModal(this.src)"></div>
+                </div>
+
+                <div class="video-section" id="videoSection">
+                    <video controls>
+                        <source src="watersampling.mp4" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                </div>
+            </div>
+        </div>
+
+        <div id="chinese-content" class="hidden">
+            <h1>無人機輔助水樣採集系統</h1>
+            
+            <div class="container">
+                <div class="content">
+                    <h2>系統組件</h2>
+                    <ul>
+                        <li>四旋翼無人機</li>
+                        <li>2米長繩索</li>
+                        <li>倒置塑料瓶</li>
+                        <li>鐵球</li>
+                    </ul>
+
+                    <h2>水樣採集過程</h2>
+
+                    <h3>取水過程</h3>
+                    <ul>
+                        <li>無人機攜帶鐵球密封的採樣瓶</li>
+                        <li>下降至目標水面</li>
+                        <li>鐵球接觸水面後下沉，開啟瓶口收集水樣</li>
+                        <li>上升時拉動繩索重新密封瓶口</li>
+                    </ul>
+
+                    <h3>排水過程</h3>
+                    <ul>
+                        <li>飛往排放站</li>
+                        <li>對準帶有"O"型環的收集桶</li>
+                        <li>釋放鐵球排出水樣</li>
+                    </ul>
+
+                    <button class="toggle-button" onclick="toggleContent()">採樣原理</button>
+                </div>
+
+                <div class="image-section" id="imageSection-zh">
+                    <h2>無人機輔助水樣採集規程</h2>
+                    <div class="image-box"><img src="eng001.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng002.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng003.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng004.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng005.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng006.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng007.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng008.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng009.jpg" onclick="openModal(this.src)"></div>
+                    <div class="image-box"><img src="eng010.jpg" onclick="openModal(this.src)"></div>
+                </div>
+
+                <div class="video-section" id="videoSection-zh">
+                    <video controls>
+                        <source src="watersampling.mp4" type="video/mp4">
+                        您的瀏覽器不支持視頻播放。
+                    </video>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="imageModal" class="modal" onclick="closeModal()">
+        <img class="modal-content" id="modalImage">
+    </div>
+
+<script>
+        let isEnglish = true;
+
+        function toggleLanguage() {
+            const englishContent = document.getElementById('english-content');
+            const chineseContent = document.getElementById('chinese-content');
+            const languageToggle = document.querySelector('.language-toggle');
+            const button = document.querySelector('.toggle-button');
+            
+            // Get the current active image and video sections
+            const currentImageSection = isEnglish ? 
+                document.getElementById('imageSection') : 
+                document.getElementById('imageSection-zh');
+            
+            if (isEnglish) {
+                englishContent.classList.add('hidden');
+                chineseContent.classList.remove('hidden');
+                languageToggle.textContent = 'English';
+                
+                // Update button text based on current display state
+                if (currentImageSection.style.display !== 'none') {
+                    button.textContent = '採樣原理';
+                } else {
+                    button.textContent = '排水過程';
+                }
+            } else {
+                englishContent.classList.remove('hidden');
+                chineseContent.classList.add('hidden');
+                languageToggle.textContent = '繁體中文';
+                
+                // Update button text based on current display state
+                if (currentImageSection.style.display !== 'none') {
+                    button.textContent = 'Sampling Principle';
+                } else {
+                    button.textContent = 'Water Discharge Process';
+                }
+            }
+
+            isEnglish = !isEnglish;
+        }
+
+        function openModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.style.display = "flex";
+            modalImg.src = imgSrc;
+        }
+
+        function closeModal() {
+            document.getElementById('imageModal').style.display = "none";
+        }
+
+        function toggleContent() {
+            const button = document.querySelector('.toggle-button');
+            const imageSection = document.getElementById(isEnglish ? 'imageSection' : 'imageSection-zh');
+            const videoSection = document.getElementById(isEnglish ? 'videoSection' : 'videoSection-zh');
+
+            if (imageSection.style.display !== 'none') {
+                // Switch to video
+                imageSection.style.display = 'none';
+                videoSection.style.display = 'block';
+                button.textContent = isEnglish ? 'Water Discharge Process' : '排水過程';
+            } else {
+                // Switch to images
+                imageSection.style.display = 'grid';
+                videoSection.style.display = 'none';
+                button.textContent = isEnglish ? 'Sampling Principle' : '採樣原理';
+            }
+        }
+    </script>
+</body>
+</html>
