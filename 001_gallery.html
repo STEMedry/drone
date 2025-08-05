@@ -43,19 +43,38 @@
         .content-section {
             display: flex;
             gap: 36px;
-            flex: 1;
+            align-items: stretch;
+            width: 100%;
         }
 
         .text-content {
             background-color: transparent;
             padding: 0;
             border-radius: var(--box-radius);
-            flex: 1;
+            flex: 0 0 60%;
+            max-width: 60%;
+            min-width: 0;
             display: flex;
             flex-direction: column;
             position: relative;
             overflow: visible;
             box-shadow: none;
+        }
+
+        .drone-models {
+            background-color: white;
+            padding: 20px 13px;
+            border-radius: var(--box-radius);
+            box-shadow: var(--box-shadow);
+            flex: 0 0 40%;
+            max-width: 40%;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(3, 1fr);
+            gap: 22px;
+            height: 100%;
+            box-sizing: border-box;
         }
 
         .shape-animation {
@@ -96,7 +115,7 @@
         .intro-box h2 {
             margin: 0 0 18px 0;
             color: var(--primary-color);
-            font-size: 1.3em;
+            font-size: 1.44em;
             font-weight: bold;
             letter-spacing: .01em;
         }
@@ -107,22 +126,12 @@
             color: #303e4c;
         }
 
-        .text-content h1 {
-            font-size: 2em;
-            margin: 0 0 16px 0;
-            text-align: center;
-            color: var(--primary-color);
-            z-index: 1;
-            position: relative;
-            letter-spacing: .01em;
-        }
-
         /* APPLICATIONS BOXES */
         .applications-section {
             margin-bottom: 10px;
         }
         .applications-title {
-            font-size: 1.18em;
+            font-size: 1.44em;
             color: var(--primary-color);
             margin-bottom: 20px;
             font-weight: bold;
@@ -168,53 +177,58 @@
         }
 
         /* DRONE MODELS */
-        .drone-models {
-            background-color: white;
-            padding: 20px 13px;
-            border-radius: var(--box-radius);
-            box-shadow: var(--box-shadow);
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 22px;
-            height: auto;
-            box-sizing: border-box;
-            margin-left: 0;
-        }
-
         .drone-model {
             background-color: #f9fafb;
             border-radius: var(--box-radius);
-            padding: 14px 8px;
+            padding: 14px 8px 10px 8px;
             text-align: center;
             box-shadow: 0 2px 6px rgba(44,62,80,0.07);
             transition: transform 0.3s, box-shadow 0.2s;
             min-height: 120px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: flex-start;
             font-size: 0.93em;
-            gap: 7px;
+            gap: 4px;
         }
         .drone-model:hover {
             transform: scale(1.04);
             box-shadow: 0 5px 16px rgba(44,62,80,0.13);
         }
-
         .drone-model p {
-            margin: 2px 0 2px 0;
+            margin: 3px 0 8px 0;
             color: var(--primary-color);
             font-size: 1.18em;
             font-weight: bold;
             letter-spacing: .01em;
         }
-
         .drone-model a img {
             width: 100%;
-            height: 120px;
+            height: 170px;
             object-fit: cover;
             border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            margin-top: 0;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .container { max-width: 1000px; }
+            .text-content { flex-basis: 100%; max-width: 100%; }
+            .drone-models { flex-basis: 100%; max-width: 100%; }
+            .content-section { flex-direction: column; gap: 24px; }
+        }
+        @media (max-width: 900px) {
+            .infographic { grid-template-columns: 1fr 1fr; }
+            .drone-models { grid-template-columns: 1fr; grid-template-rows: none; }
+        }
+        @media (max-width: 600px) {
+            .container { padding: 0 2vw; }
+            .intro-box { padding: 16px 8px 11px 8px; }
+            .applications-title, .intro-box h2 { font-size: 1.11em; }
+            .infographic { grid-template-columns: 1fr; gap: 11px; }
+            .drone-models { padding: 10px 2px; }
+            .drone-model a img { height: 140px; }
         }
 
         .language-switch {
@@ -232,26 +246,6 @@
             transition: background-color 0.3s ease;
         }
         .language-switch:hover { background-color: #1cc723; }
-
-        /* RESPONSIVE */
-        @media (max-width: 1025px) {
-            .container { flex-direction: column; gap: 24px; }
-            .content-section { flex-direction: column; gap: 24px; }
-            .drone-models { gap: 16px; }
-            .infographic { gap: 14px; }
-        }
-        @media (max-width: 900px) {
-            .infographic { grid-template-columns: 1fr 1fr; }
-            .drone-models { grid-template-columns: 1fr; }
-        }
-        @media (max-width: 600px) {
-            .container { padding: 0 2vw; }
-            .intro-box { padding: 16px 8px 11px 8px; }
-            .text-content h1 { font-size: 1.18em; }
-            .applications-title { font-size: 1em; }
-            .infographic { grid-template-columns: 1fr; gap: 11px; }
-            .drone-models { padding: 10px 2px; }
-        }
     </style>
 </head>
 <body>
@@ -261,7 +255,6 @@
     <div class="container">
         <div class="content-section">
             <div class="text-content">
-
                 <div class="shape-animation">
                     <div class="shape"></div>
                     <div class="shape"></div>
@@ -269,15 +262,12 @@
                     <div class="shape"></div>
                     <div class="shape"></div>
                 </div>
-
-                <h1>Drone Technology: Exploring the Future of Flight</h1>
                 <div class="intro-box">
                     <h2>Introduction to Drone Technology</h2>
                     <p>
                         Drone technology represents a revolutionary engineering field that integrates aerodynamics, electronics, computer science, and innovative design. <b><u>D</b></u>ynamic <b><u>R</b></u>emotely <b><u>O</b></u>perated <b><u>N</b></u>avigation <b><u>E</b></u>quipments <b>(Drones)</b>, or Unmanned Aerial Vehicles <b>(UAVs)</b>, comprise aircraft systems capable of remote control or autonomous operation. Their applications extend across cinematography, education, agriculture, and space exploration. Global Navigation Satellite System (GNSS) technology serves as a fundamental component in drone positioning, enabling precise navigation and location tracking that enhances operational effectiveness across diverse applications.
                     </p>
                 </div>
-
                 <div class="applications-section">
                     <div class="applications-title">Drone Technology Applications</div>
                     <div class="infographic">
@@ -359,7 +349,6 @@
     <script>
         const translations = {
             en: {
-                title: "Drone Technology: Exploring the Future of Flight",
                 intro_title: "Introduction to Drone Technology",
                 intro_text: "Drone technology represents a revolutionary engineering field that integrates aerodynamics, electronics, computer science, and innovative design. <b><u>D</b></u>ynamic <b><u>R</b></u>emotely <b><u>O</b></u>perated <b><u>N</b></u>avigation <b><u>E</b></u>quipments <b>(Drones)</b>, or Unmanned Aerial Vehicles <b>(UAVs)</b>, comprise aircraft systems capable of remote control or autonomous operation. Their applications extend across cinematography, education, agriculture, and space exploration. Global Navigation Satellite System (GNSS) technology serves as a fundamental component in drone positioning, enabling precise navigation and location tracking that enhances operational effectiveness across diverse applications.",
                 app_title: "Drone Technology Applications",
@@ -384,7 +373,6 @@
                 switch_lang: "繁體中文"
             },
             zh: {
-                title: "無人機技術：探索飛行的未來",
                 intro_title: "無人機技術簡介",
                 intro_text: "無人機技術為工程領域的重大突破，整合了空氣動力學、電子工程、計算機科學與創新設計等領域。動態遠端操控導航裝置（無人機）或稱無人航空載具（UAV），是指能透過遠端操控或自主運作的航空器。其應用領域廣泛，從影像捕捉、教育應用、農業作業到太空探測皆涵蓋在內。全球導航衛星系統（GNSS）為無人機定位之關鍵技術，使其能進行精確導航與位置追蹤，從而提升各類任務執行效能。",
                 app_title: "無人機技術應用",
@@ -420,7 +408,6 @@
 
         function updateContent() {
             const t = translations[currentLang];
-            document.querySelector('h1').textContent = t.title;
             document.querySelector('.intro-box h2').textContent = t.intro_title;
             document.querySelector('.intro-box p').innerHTML = t.intro_text;
             document.querySelector('.applications-title').textContent = t.app_title;
