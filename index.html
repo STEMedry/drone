@@ -34,7 +34,6 @@
         margin-bottom: 18px;
         position: relative;
     }
-    /* Distinct, vivid colors for first three buttons */
     .btn-home {
         background: #4267B2;
         color: #fff;
@@ -176,7 +175,6 @@
         font-weight: bold;
         padding-left: 32px;
     }
-    /* Language toggle */
     .button-language.language-toggle {
         position: absolute;
         background-color: #4CAF50;
@@ -257,58 +255,24 @@
         <button class="button-language language-toggle" onclick="toggleLanguage()" id="lang-toggle">繁體中文</button>
     </div>
 
-    <!-- IFRAME APPS -->
-    <div id="app-home" class="app">
-        <iframe src="home.html"></iframe>
-    </div>
-    <div id="app-framework" class="app">
-        <iframe src="framework.html"></iframe>
-    </div>
-    <div id="app1" class="app">
-        <iframe src="001_gallery.html"></iframe>
-    </div>
-    <div id="app2" class="app">
-        <iframe src="001a_GPS.html"></iframe>
-    </div>
-    <div id="app3" class="app">
-        <iframe src="002_control.html"></iframe>
-    </div>
-    <div id="app4" class="app">
-        <iframe src="002a_flight.html"></iframe>
-    </div>
-    <div id="app5" class="app">
-        <iframe src="003_force.html"></iframe>
-    </div>
-    <div id="app6" class="app">
-        <iframe src="003a_forcepair.html"></iframe>
-    </div>
-    <div id="app7" class="app">
-        <iframe src="004_Hor_Speed.html"></iframe>
-    </div>
-    <div id="app8" class="app">
-        <iframe src="004a_Speed_Test.html"></iframe>
-    </div>
-    <div id="app9" class="app">
-        <iframe src="005_AOV.html"></iframe>
-    </div>
-    <div id="app10" class="app">
-        <iframe src="006_Polygon.html"></iframe>
-    </div>
-    <div id="app11" class="app">
-        <iframe src="006a_spiral.html"></iframe>
-    </div>
-    <div id="app12" class="app">
-        <iframe src="007_Code.html"></iframe>
-    </div>
-    <div id="app13" class="app">
-        <iframe src="007a_Code_Game.html"></iframe>
-    </div>
-    <div id="app14" class="app">
-        <iframe src="008_Engineering.html"></iframe>
-    </div>
-    <div id="app15" class="app">
-        <iframe src="008a_Engineering.html"></iframe>
-    </div>
+    <!-- IFRAME APPS (ALL BLANK INITIALLY) -->
+    <div id="app-home" class="app"><iframe src=""></iframe></div>
+    <div id="app-framework" class="app"><iframe src=""></iframe></div>
+    <div id="app1" class="app"><iframe src=""></iframe></div>
+    <div id="app2" class="app"><iframe src=""></iframe></div>
+    <div id="app3" class="app"><iframe src=""></iframe></div>
+    <div id="app4" class="app"><iframe src=""></iframe></div>
+    <div id="app5" class="app"><iframe src=""></iframe></div>
+    <div id="app6" class="app"><iframe src=""></iframe></div>
+    <div id="app7" class="app"><iframe src=""></iframe></div>
+    <div id="app8" class="app"><iframe src=""></iframe></div>
+    <div id="app9" class="app"><iframe src=""></iframe></div>
+    <div id="app10" class="app"><iframe src=""></iframe></div>
+    <div id="app11" class="app"><iframe src=""></iframe></div>
+    <div id="app12" class="app"><iframe src=""></iframe></div>
+    <div id="app13" class="app"><iframe src=""></iframe></div>
+    <div id="app14" class="app"><iframe src=""></iframe></div>
+    <div id="app15" class="app"><iframe src=""></iframe></div>
 
 <script>
     // Language data
@@ -369,6 +333,27 @@
                 eng2: '系統設計二'
             }
         }
+    };
+
+    // Mapping from app DOM id to HTML filename
+    const appSrcMap = {
+        'app-home': 'home.html',
+        'app-framework': 'framework.html',
+        'app1': '001_gallery.html',
+        'app2': '001a_GPS.html',
+        'app3': '002_control.html',
+        'app4': '002a_flight.html',
+        'app5': '003_force.html',
+        'app6': '003a_forcepair.html',
+        'app7': '004_Hor_Speed.html',
+        'app8': '004a_Speed_Test.html',
+        'app9': '005_AOV.html',
+        'app10': '006_Polygon.html',
+        'app11': '006a_spiral.html',
+        'app12': '007_Code.html',
+        'app13': '007a_Code_Game.html',
+        'app14': '008_Engineering.html',
+        'app15': '008a_Engineering.html'
     };
 
     let currentLanguage = 'en';
@@ -435,11 +420,19 @@
         }
     });
 
-    // Track selected app/button
+    // Track selected app/button + lazy load iframe
     function showApp(appId, btn) {
         // Hide all apps
         document.querySelectorAll('.app').forEach(app => app.classList.remove('active'));
-        document.getElementById(appId).classList.add('active');
+        const targetApp = document.getElementById(appId);
+        targetApp.classList.add('active');
+
+        // Lazy-load iframe src only when needed
+        const iframe = targetApp.querySelector('iframe');
+        const wantedSrc = appSrcMap[appId];
+        if (iframe && (!iframe.src || !iframe.src.endsWith(wantedSrc))) {
+            iframe.src = wantedSrc;
+        }
 
         // Remove selection style from all buttons
         document.querySelectorAll('.mainbtn, .dropbtn, .dropdown-content button').forEach(b => b.classList.remove('selected-button'));
@@ -457,8 +450,9 @@
         document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
     }
 
-    // Default: show Home/app-home
+    // Default: show Home/app-home, set its iframe src
     window.onload = function() {
+        updateLanguage();
         showApp('app-home', document.getElementById('btn-home'));
     }
 </script>
