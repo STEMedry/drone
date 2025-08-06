@@ -11,54 +11,14 @@
       padding: 0;
     }
     body {
-      min-height: 100vh;
-      margin: 0;
-      box-sizing: border-box;
       background-color: #f5faff;
-      background-image:
-        linear-gradient(to right, #c3e0e9 1px, transparent 1px),
+      background-image: linear-gradient(to right, #c3e0e9 1px, transparent 1px),
         linear-gradient(to bottom, #c3e0e9 1px, transparent 1px);
       background-size: 40px 40px;
-      user-select: none;
       display: flex;
-      align-items: stretch;
-      justify-content: center;
-      min-height: 100vh;
-      width: 100vw;
-    }
-
-    .lang-switcher-fixed {
-      position: fixed;
-      top: 10px;
-      right: 84px;
-      z-index: 2000;
-      display: flex;
-      gap: 8px;
-      background: rgba(248,255,252,0.92);
-      border-radius: 11px;
-      box-shadow: 0 2px 13px #cae9e7a8;
-      padding: 4px 15px 4px 8px;
       align-items: center;
-      user-select: none;
-    }
-    .lang-btn {
-      background: #f0faf6;
-      color: #0e6b87;
-      border: 1px solid #b2e6e0;
-      font-family: inherit;
-      font-size: 1em;
-      font-weight: 600;
-      border-radius: 8px;
-      padding: 4px 16px 3px 14px;
-      cursor: pointer;
-      transition: background 0.14s, color 0.14s, border-color 0.14s;
-      margin-left: 0;
-      outline: none;
-    }
-    .lang-btn.active {
-      background: #0e6b87;
-      color: #fff;
-      border-color: #0e6b87;
+      justify-content: center;
+      height: 100vh;
     }
 
     .main-wrapper {
@@ -69,845 +29,83 @@
       height: 85vh;
       max-height: 720px;
       min-height: 520px;
-      margin: 3vh 0;
-      box-sizing: border-box;
     }
 
     .left-col {
-      width: 30%;
+      width: 40%;
       min-width: 270px;
-      background: none;
       display: flex;
       flex-direction: column;
-      justify-content: stretch;
-      align-items: stretch;
-      gap: 12px;
-      padding: 0px 8px 18px 0;
-      box-sizing: border-box;
-      height: 100%;
-      min-height: 0;
-    }
-    .right-col {
-      width: 70%;
-      min-width: 350px;
-      height: 100%;
-      box-sizing: border-box;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      background: none;
+      padding: 0 16px 18px 0;
     }
 
     .info-box {
       border-radius: 16px;
-      box-shadow: 0 4px 18px rgba(80,110,143,0.11), 0 2px 7px rgba(0,0,0,0.08);
+      box-shadow: 0 4px 18px rgba(80, 110, 143, 0.11), 0 2px 7px rgba(0, 0, 0, 0.08);
       padding: 30px 22px 22px 22px;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      font-size: 0.96rem;
-      line-height: 1.64;
-      font-weight: 400;
       background: linear-gradient(120deg, #f7f2e7 70%, #f9e2e2 100%);
-      color: #5b3d1c;
-      transition: box-shadow 0.18s;
-      margin-bottom: 0;
-      position: relative;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      min-height: 100%;
-      height: 100%;
       border: 2.3px solid #222;
     }
+
     .info-box-title {
       display: flex;
       align-items: center;
-      font-size: 1.55em;
+      font-size: 1.50em;
       font-weight: bold;
-      margin-bottom: 20px;
+      margin-bottom: 10px; /* Reduced spacing */
       color: #a25c0d;
       letter-spacing: 0.02em;
-      line-height: 1.22;
-      gap: 11px;
+      font-family: Arial, sans-serif; /* Font change */
     }
+
     .info-box-content {
-      margin: 0;
-      font-size: 1.0em;
+      font-size: 0.95em;
       color: #5b3d1c;
       white-space: pre-line;
+      font-family: Arial, sans-serif; /* Font change */
     }
+
     .info-box-content p {
-      margin-top: -0.4em;
-      margin-bottom: -0.4em;
+      margin-top: 0;
+      margin-bottom: 0.2em; /* Adjusted spacing between paragraphs */
     }
 
-    /* SVG Icon styling */
-    .info-icon {
-      display: inline-block;
-      vertical-align: middle;
-      width: 2.1em;
-      height: 2.1em;
-      min-width: 2.1em;
-      min-height: 2.1em;
-      margin-right: 3px;
-      margin-left: -4px;
-      background: none;
-      flex-shrink: 0;
-    }
-
-    @media (max-width: 1100px) {
-      .main-wrapper { flex-direction: column; height: auto; min-height: 0; }
-      .left-col, .right-col { width: 100%; min-width: 0; }
-      .left-col { padding: 19px 3vw 10px 3vw; }
-      .right-col { padding-top: 0; }
-      .container { max-width: 96vw; }
-    }
-    @media (max-width: 700px) {
-      .lang-switcher-fixed { top: 8px; right: 2vw; padding: 2.5px 8px 2.5px 5px; }
-      .main-wrapper { width: 100vw; max-width: 100vw; }
-      .left-col, .right-col { width: 100%; min-width: 0; }
-      .left-col { padding: 10px 1vw 10px 1vw; gap: 14px; }
-      .info-box { font-size: 0.97rem; padding: 13px 7px 14px 12px; }
-      .info-box-title { font-size: 1.08em; }
-      .info-icon { width: 2em; height: 2em; }
-      .container { width: 99vw; max-width: 99vw; height: auto; min-width: 0; }
-    }
-    @media (max-width: 500px) {
-      .lang-switcher-fixed { top: 3px; right: 0.5vw; }
-      .main-wrapper { width: 100vw; }
-      .info-box { font-size: 0.95rem; }
-      .info-box-title { font-size: 1.02em; }
-      .info-icon { width: 1.6em; height: 1.6em; }
-    }
-
-    /* ---- Framework Image and Hotspots ---- */
-    .container {
-      position: relative;
+    .right-col {
+      width: 60%;
+      min-width: 350px;
       display: flex;
-      align-items: center;
+      align-items: flex-start; /* Aligns content to the top */
       justify-content: center;
-      width: 95%;
-      max-width: 900px;
-      height: 85vh;
-      max-height: 700px;
-      min-width: 0;
-      min-height: 0;
-      user-select: none;
-      background: none;
     }
-    .framework-img {
-      width: 100%;
-      height: auto;
-      max-width: 900px;
-      max-height: 700px;
-      display: block;
+
+    .frame-image {
+      max-width: 100%;
+      max-height: 100%;
       border-radius: 12px;
-      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-      background: white;
-      user-select: none;
-      pointer-events: none;
+      border: 3px solid black;
     }
-    .overlay-blocker {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      width: 100%; height: 100%;
-      z-index: 3;
-      cursor: default;
-      background: transparent;
-      pointer-events: auto;
-    }
-    .creator-label {
-      position: absolute;
-      right: 10px;
-      bottom: -15px;
-      z-index: 4;
-      color: #5b6f8b;
-      font-size: 1.2em;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: rgba(255,255,255,0.77);
-      padding: 3px 13px 3px 11px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px #b0cbe044;
-      pointer-events: none;
-      user-select: none;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      transition: color 0.16s, background 0.14s;
-    }
-    .creator-label.zh { color: #1e406d; background: rgba(255,255,255,0.95); }
-
-    .hotspot {
-      position: absolute;
-      cursor: pointer;
-      border-radius: 50%;
-      z-index: 5;
-      background: transparent !important;
-      border: none !important;
-      outline: none;
-      box-shadow: none !important;
-      user-select: none;
-    }
-    .hotspot-label { display: none !important; }
-    .hotspot[data-type="S"] { width: 90px; height: 150px; left: 26.5%; top: 67%; }
-    .hotspot[data-type="M"] { width: 220px; height: 90px; left: 69.8%; top: 54.5%; }
-    .hotspot[data-type="T"] { width: 300px; height: 90px; left: 62.5%; top: 81.5%; }
-    .hotspot[data-type="E"] { width: 328px; height: 72px; left: 38.5%; top: 5%; }
-    .hotspot[data-type="S-T"] { width: 44px; height: 100px; left: 58.8%; top: 40.5%; }
-    .hotspot[data-type="M-S"] { width: 130px; height: 40px; left: 45%; top: 37%; }
-    .hotspot[data-type="T-M"] { width: 128px; height: 80px; left: 70.2%; top: 36.8%; }
-    :root {
-      --popup-gap-title-items: 5px;
-      --popup-gap-items: 2px;
-      --popup-padding: 13px 18px 11px 18px;
-      --popup-radius: 14px;
-      --popup-shadow: 0 8px 32px rgba(44,76,122,0.12), 0 2px 8px rgba(0,0,0,0.10);
-      --popup-font: 'Segoe UI', 'Arial', sans-serif;
-      --popup-width: 260px;
-    }
-    .tooltip {
-      position: absolute;
-      width: auto;
-      color: #2a2a2a;
-      box-shadow: var(--popup-shadow);
-      border-radius: var(--popup-radius);
-      padding: var(--popup-padding);
-      pointer-events: none;
-      opacity: 0;
-      font-family: var(--popup-font);
-      font-size: 1rem;
-      line-height: 1.45;
-      transition: opacity 0.22s;
-      z-index: 10;
-      border: 2px solid #fff6;
-      filter: drop-shadow(0 1px 10px #b0cbe0aa);
-      background: #fff;
-    }
-    .hotspot:hover .tooltip,
-    .hotspot:focus .tooltip {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .tooltip-title {
-      display: block;
-      font-size: 1.11em;
-      font-weight: bold;
-      margin-bottom: var(--popup-gap-title-items);
-      letter-spacing: 0.5px;
-      text-decoration: underline;
-      text-underline-offset: 4px;
-      text-decoration-thickness: 2px;
-      line-height: 1.25;
-    }
-    .tooltip-items {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      font-size: 1em;
-      display: flex;
-      flex-direction: column;
-      gap: var(--popup-gap-items);
-    }
-    .tooltip-items li {
-      position: relative;
-      padding-left: 1.3em;
-      margin-bottom: 0;
-      line-height: 1.5;
-    }
-    .tooltip-items li::before {
-      content: "•";
-      color: #2b86c5;
-      font-weight: bold;
-      position: absolute;
-      left: 0;
-      top: 0;
-      font-size: 1.12em;
-      line-height: 1.45;
-    }
-    .hotspot[data-type="S-T"] .tooltip-items li::before { color: #41547d; }
-    .hotspot[data-type="M-S"] .tooltip-items li::before { color: #a8905b; }
-    .hotspot[data-type="T-M"] .tooltip-items li::before { color: #f9a23b; }
-    .hotspot[data-type="E"] .tooltip-items li::before { color: #5ea35f; }
-    .hotspot[data-type="S"] .tooltip-items li::before { color: #5e97c8; }
-    .hotspot[data-type="M"] .tooltip-items li::before { color: #e99a99; }
-    .hotspot[data-type="T"] .tooltip-items li::before { color: #e3bb5c; }
-
-    .hotspot[data-type="S"] .tooltip {
-      left: 90%;
-      top: 20px;
-      transform: translate(-60%, -120%);
-      background: linear-gradient(120deg, #ecf7fd 60%, #d6eafd 100%);
-      border-color: #b9dfff;
-    }
-    .hotspot[data-type="S"] .tooltip-title {
-      color: #5e97c8; text-decoration-color: #b9dfff;
-    }
-    .hotspot[data-type="M"] .tooltip {
-      background: linear-gradient(120deg, #fdeaea 60%, #fad7d7 100%);
-      border-color: #f6bbbb;
-    }
-    .hotspot[data-type="M"] .tooltip-title {
-      color: #e99a99; text-decoration-color: #f6bbbb;
-    }
-    .hotspot[data-type="T"] .tooltip {
-      background: linear-gradient(120deg, #fdf7e6 60%, #faefc7 100%);
-      border-color: #f5e4a2;
-    }
-    .hotspot[data-type="T"] .tooltip-title {
-      color: #e3bb5c; text-decoration-color: #f5e4a2;
-    }
-    .hotspot[data-type="S-T"] .tooltip {
-      background: linear-gradient(120deg, #e6ecfa 60%, #cfd7ed 100%);
-      border-color: #b2c2dd;
-    }
-    .hotspot[data-type="S-T"] .tooltip-title {
-      color: #41547d; text-decoration-color: #b2c2dd;
-    }
-    .hotspot[data-type="M-S"] .tooltip {
-      background: linear-gradient(120deg, #f7eee6 60%, #e5d3b3 100%);
-      border-color: #c1a97a;
-      left: 50%;
-      top: -24px;
-      transform: translate(-50%, -100%);
-    }
-    .hotspot[data-type="M-S"] .tooltip-title {
-      color: #a8905b; text-decoration-color: #c1a97a;
-    }
-    .hotspot[data-type="T-M"] .tooltip {
-      background: linear-gradient(120deg, #fff3e3 60%, #ffe1bc 100%);
-      border-color: #f9a23b;
-      left: 51%;
-      top: -22px;
-      transform: translate(-50%, -100%);
-    }
-    .hotspot[data-type="T-M"] .tooltip-title {
-      color: #f9a23b; text-decoration-color: #f9a23b;
-    }
-    .hotspot[data-type="E"] .tooltip {
-      background: linear-gradient(120deg, #e6faea 60%, #d6f5de 100%);
-      border-color: #b9ebc1;
-      left: 50%;
-      top: 105%;
-      transform: translate(-50%, 0);
-    }
-    .hotspot[data-type="E"] .tooltip-title {
-      color: #5ea35f; text-decoration-color: #b9ebc1;
-    }
-    .tooltip:after {
-      content: "";
-      position: absolute;
-      width: 0; height: 0;
-      border-style: solid;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 100%;
-      border-width: 13px 13px 0 13px;
-      border-color: #fffbe5 transparent transparent transparent;
-      filter: drop-shadow(0 2px 2px #f0d28844);
-    }
-    .hotspot[data-type="S"] .tooltip:after { border-color: #d6eafd transparent transparent transparent; }
-    .hotspot[data-type="M"] .tooltip:after { border-color: #fad7d7 transparent transparent transparent; }
-    .hotspot[data-type="T"] .tooltip:after { border-color: #faefc7 transparent transparent transparent; }
-    .hotspot[data-type="S-T"] .tooltip:after { border-color: #cfd7ed transparent transparent transparent; }
-    .hotspot[data-type="M-S"] .tooltip:after {
-      border-color: #e5d3b3 transparent transparent transparent;
-      left: 50%;
-      top: 100%;
-      transform: translateX(-50%);
-      border-width: 13px 13px 0 13px;
-    }
-    .hotspot[data-type="T-M"] .tooltip:after {
-      border-color: #ffe1bc transparent transparent transparent;
-      left: 50%;
-      top: 100%;
-      transform: translateX(-50%);
-      border-width: 13px 13px 0 13px;
-    }
-    .hotspot[data-type="E"] .tooltip:after {
-      border-color: #d6f5de transparent transparent transparent;
-      left: 50%;
-      top: 0;
-      transform: translateX(-50%) rotate(180deg);
-      border-width: 0 13px 13px 13px;
-    }
-    .tooltip { left: 50%; top: 0; transform: translate(-50%, -110%); }
-    .hotspot[data-type="M-S"] .tooltip {
-      /* Overridden above */
-    }
-    .hotspot[data-type="M-S"] .tooltip:after {
-      /* Overridden above */
-    }
-    .hotspot[data-type="T-M"] .tooltip {
-      /* Overridden above */
-    }
-    .hotspot[data-type="T-M"] .tooltip:after {
-      /* Overridden above */
-    }
-    .hotspot[data-type="E"] .tooltip {
-      /* Overridden above */
-    }
-    .hotspot[data-type="E"] .tooltip:after {
-      /* Overridden above */
-    }
-
-    .integration-box {
-      position: absolute;
-      width: 140px;
-      max-width: 90vw;
-      min-height: 110px;
-      box-sizing: border-box;
-      padding: 16px 24px 15px 22px;
-      border-radius: 18px;
-      background: none;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      font-size: 1.07rem;
-      font-weight: 400;
-      box-shadow: 0 2px 12px rgba(60,100,130,0.08);
-      display: none;
-      z-index: 1005;
-      transition: border-color 0.2s;
-      pointer-events: none;
-      line-height: 1.56;
-      letter-spacing: 0.01em;
-      user-select: none;
-      animation: breathe 2.8s ease-in-out infinite;
-    }
-    .integration-multi {
-      border: 5.5px solid #f24747;
-      color: #d03131;
-      left: 0.5%;
-      top: 64%;
-      width: 200px;
-      min-height: 90px;
-      height: 190px;
-    }
-    .integration-inter {
-      border: 5.5px solid #1ba6a0;
-      color: #1a6f69;
-      left: 0.5%;
-      top: 36%;
-      width: 172px;
-      min-height: 120px;
-      height: 180px;
-    }
-    .integration-trans {
-      border: 5.5px solid #a85bb7;
-      color: #813f8c;
-      left: 0.5%;
-      top: 3.5%;
-      width: 180px;
-      min-height: 120px;
-      height: 200px;
-    }
-    @media (max-width: 700px) {
-      .container { width: 99vw; min-width: 0; max-width: 100vw; max-height: 70vw; height: 65vw; }
-      .framework-img { max-width: 100vw; max-height: 65vw; }
-      .integration-box { width: 40vw; min-width: 100px; min-height: 70px; padding: 12px 8px 12px 13px; font-size: 0.98rem;}
-      .integration-multi { left: 0.5%; top: 72%; }
-      .integration-inter { left: 0.5%; top: 45%; }
-      .integration-trans { left: 0.5%; top: 6%; }
-      .tooltip {
-        font-size: 0.95rem;
-        min-width: 140px;
-        max-width: 96vw;
-        padding: 11px 8px 10px 11px;
-      }
-      .tooltip-title { font-size: 1.04em; }
-      .creator-label {
-        right: 10px;
-        bottom: 7px;
-        font-size: 0.97em;
-        padding: 2px 8px 2px 8px;
-      }
-    }
-    @media (max-width: 500px) {
-      .container { height: 55vw; }
-      .framework-img { max-height: 55vw; }
-      .integration-box { font-size: 0.95rem;}
-      .tooltip { min-width: 100px; max-width: 90vw; }
-      .creator-label {
-        right: 4px;
-        bottom: 3px;
-        font-size: 0.87em;
-        padding: 2px 5px 2px 5px;
-      }
-    }
-
-    /* Blinking animation for integration boxes */
-@keyframes breathe {
-  0%   { opacity: 1;    transform: scale(1);}
-  30%  { opacity: 0.7;  transform: scale(1.025);}
-  50%  { opacity: 0.55; transform: scale(1.045);}
-  70%  { opacity: 0.7;  transform: scale(1.025);}
-  100% { opacity: 1;    transform: scale(1);}
-}
-    /* To adjust blinking frequency, change animation-duration above (default 2s, e.g. 1s for faster blink, 3s for slower) */
   </style>
 </head>
 <body>
-  <!-- Language Switcher fixed -->
-  <div class="lang-switcher-fixed">
-    <button class="lang-btn active" id="lang-btn" data-lang="en">繁體中文</button>
-  </div>
-  <div class="main-wrapper" id="main-wrapper">
+  <div class="main-wrapper">
     <!-- LEFT COLUMN -->
     <div class="left-col">
-      <div class="info-box" id="cognitive-box">
-        <div class="info-box-title" data-lang-en="Cognitive Development and Disciplinary Integration"
-             data-lang-zh="認知發展與學科整合">
-          <!-- Icon created by SVG, styled and responsive -->
-          <span class="info-icon" aria-hidden="true">
-            <svg viewBox="0 0 60 60" fill="none">
-              <!-- Outer circle -->
-              <circle cx="30" cy="30" r="28" fill="#ffebc8" stroke="#fdc154" stroke-width="3"/>
-              <!-- Brain shape (abstract) -->
-              <ellipse cx="30" cy="32" rx="14" ry="16" fill="#ffe6e6" stroke="#cf8ba6" stroke-width="2"/>
-              <ellipse cx="23" cy="28" rx="5.2" ry="6.2" fill="#fffbe4" stroke="#b3b88e" stroke-width="1.2"/>
-              <ellipse cx="37" cy="28" rx="5.2" ry="6.2" fill="#fffbe4" stroke="#b3b88e" stroke-width="1.2"/>
-              <!-- Gears (symbolizing integration/creation) -->
-              <g>
-                <circle cx="21" cy="41" r="3" fill="#fffbe4" stroke="#fdc154" stroke-width="1.2"/>
-                <rect x="20.1" y="38.2" width="1.8" height="5.6" rx="0.6" fill="#fdc154" transform="rotate(15 21 41)"/>
-                <rect x="18.2" y="40.1" width="5.6" height="1.8" rx="0.6" fill="#fdc154" transform="rotate(15 21 41)"/>
-              </g>
-              <g>
-                <circle cx="39" cy="41" r="2.3" fill="#fffbe4" stroke="#cf8ba6" stroke-width="1"/>
-                <rect x="38.3" y="39" width="1.4" height="4.2" rx="0.5" fill="#cf8ba6" transform="rotate(21 39 41)"/>
-                <rect x="36.2" y="40.3" width="4.2" height="1.4" rx="0.5" fill="#cf8ba6" transform="rotate(21 39 41)"/>
-              </g>
-              <!-- Lightning bolt (for creative/critical thinking) -->
-              <polyline points="30,21 33,26 29,26 32,33" fill="none" stroke="#fdc154" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"/>
-            </svg>
-          </span>
-          <span class="info-box-title-text" data-lang-en="Cognitive Development and Disciplinary Integration"
-                data-lang-zh="認知發展與學科整合">
-            Cognitive Development and Disciplinary Integration
-          </span>
+      <div class="info-box">
+        <div class="info-box-title">
+          Cognitive Development and Disciplinary Integration
         </div>
-        <div class="info-box-content"
-             data-lang-en='
-<p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
-<p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
-<p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
-<p>In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
-'
-             data-lang-zh='
-<p>課程結構促進學科整合逐步提升，並呼應 Bloom 的認知領域分類法，引導學生由低階思維（記憶、理解與應用）過渡至高階思維（分析、評估及創造）。</p>
-<p>在初始階段<b style="color:#C00000;">（多學科）</b>，學生運用於常規課堂中學到的科學、科技及數學知識，解決基礎問題。</p>
-<p>於中期階段<b style="color:#008080;">（跨學科）</b>，學生於跨學科場景中整合及驗證知識。</p>
-<p>最終階段<b style="color:#A02B93;">（跨領域）</b>，學生投入工程設計任務（自動無人機水樣採集系統），綜合運用所學知識解決真實世界挑戰，並展現批判性思維、創造力及計算思維。</p>
-'>
-          <p>The curriculum fosters a progressive escalation of disciplinary integration, transitioning from <b style="color:#C00000;">(multidisciplinary)</b> to <b style="color:#008080;">(interdisciplinary)</b> and ultimately <b style="color:#A02B93;">(transdisciplinary)</b> learning, in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
-          <p>In the <b style="color:#C00000;">(multidisciplinary)</b> phase, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
-          <p>In the <b style="color:#008080;">(interdisciplinary)</b> phase, they integrate and test their knowledge in interdisciplinary scenarios.</p>
-          <p>In the <b style="color:#A02B93;">(transdisciplinary)</b> phase, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
+        <div class="info-box-content">
+          <p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
+          <p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
+          <p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
+          <p>In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
         </div>
       </div>
     </div>
     <!-- RIGHT COLUMN -->
-    <div class="right-col" id="right-col">
-      <div class="container">
-        <img src="framework.jpg" alt="Drone-based STEM Curriculum Framework" class="framework-img"
-             draggable="false"
-             oncontextmenu="return false;"
-             ondragstart="return false;"
-             onselectstart="return false;">
-        <div class="overlay-blocker"
-             oncontextmenu="return false;"
-             onmousedown="if(event.button==2){event.preventDefault();return false;}"
-             ondragstart="return false;"
-             onselectstart="return false;">
-        </div>
-        <div class="creator-label" id="creator-label" data-lang-en="C Y YEUNG, EdUHK" data-lang-zh="楊仲堯，香港教育大學">
-          C Y YEUNG, EdUHK
-        </div>
-
-        <!-- Integration Boxes -->
-        <div class="integration-box integration-multi" id="integration-multi"></div>
-        <div class="integration-box integration-inter" id="integration-inter"></div>
-        <div class="integration-box integration-trans" id="integration-trans"></div>
-
-        <!-- Hotspots -->
-        <div class="hotspot" data-type="S" tabindex="0"
-             data-popup-width="190px" data-popup-height="auto"
-             data-lang-title-en="Science"
-             data-lang-title-zh="科學"
-             data-lang-items-en='["Science Process Skills","Atmospheric pressure","Speed, distance &amp; time","Forces"]'
-             data-lang-items-zh='["科學探究技能","大氣壓力","速度、距離與時間","力學"]'>
-          <span class="hotspot-label">S</span>
-          <div class="tooltip" style="width:190px;">
-            <span class="tooltip-title">Science</span>
-            <ul class="tooltip-items">
-              <li>Science Process Skills</li>
-              <li>Atmospheric pressure</li>
-              <li>Speed, distance &amp; time</li>
-              <li>Forces</li>
-            </ul>
-          </div>
-        </div>
-        <div class="hotspot" data-type="M" tabindex="0"
-             data-popup-width="180px" data-popup-height="auto"
-             data-lang-title-en="Mathematics"
-             data-lang-title-zh="數學"
-             data-lang-items-en='["Angles &amp; parallel lines","Polygons","Pythagoras’ theorem","Trigonometry"]'
-             data-lang-items-zh='["角與平行線","多邊形","畢氏定理","三角學"]'>
-          <span class="hotspot-label">M</span>
-          <div class="tooltip" style="width:190px;">
-            <span class="tooltip-title">Mathematics</span>
-            <ul class="tooltip-items">
-              <li>Angles &amp; parallel lines</li>
-              <li>Polygons</li>
-              <li>Pythagoras’ theorem</li>
-              <li>Trigonometry</li>
-            </ul>
-          </div>
-        </div>
-        <div class="hotspot" data-type="T" tabindex="0"
-             data-popup-width="200px" data-popup-height="auto"
-             data-lang-title-en="Technology"
-             data-lang-title-zh="科技"
-             data-lang-items-en='["Programming concepts","Structures &amp; mechanisms","Information processing &amp; presentation","Control and automation"]'
-             data-lang-items-zh='["編程概念","結構與機械","資訊處理與展示","控制與自動化"]'>
-          <span class="hotspot-label">T</span>
-          <div class="tooltip" style="width:295px;">
-            <span class="tooltip-title">Technology</span>
-            <ul class="tooltip-items">
-              <li>Programming concepts</li>
-              <li>Structures &amp; mechanisms</li>
-              <li>Information processing &amp; presentation</li>
-              <li>Control and automation</li>
-            </ul>
-          </div>
-        </div>
-        <div class="hotspot" data-type="E" tabindex="0"
-             data-popup-width="260px" data-popup-height="auto"
-             data-lang-title-en="Engineering Design"
-             data-lang-title-zh="工程設計"
-             data-lang-items-en='["Drone-assisted Water Sampling System Design","Automatic Drone-assisted Water Sampling &amp; Delivery"]'
-             data-lang-items-zh='["無人機水樣採集系統設計","自動無人機水樣採集與運送"]'>
-          <span class="hotspot-label">E</span>
-          <div class="tooltip" style="width:260px;">
-            <span class="tooltip-title">Engineering Design</span>
-            <ul class="tooltip-items">
-              <li>Drone-assisted Water Sampling System Design</li>
-              <li>Automatic Drone-assisted Water Sampling &amp; Delivery</li>
-            </ul>
-          </div>
-        </div>
-        <div class="hotspot" data-type="S-T" tabindex="0"
-             data-popup-width="270px" data-popup-height="auto"
-             data-lang-title-en="Sci-Tech"
-             data-lang-title-zh="科學–科技"
-             data-lang-items-en='["Drone Technology &amp; Piloting Skills","Scientific Inquiry Process"]'
-             data-lang-items-zh='["無人機科技與操作技能","科學探究歷程"]'>
-          <span class="hotspot-label">S-T</span>
-          <div class="tooltip" style="width:270px;">
-            <span class="tooltip-title">Sci-Tech</span>
-            <ul class="tooltip-items">
-              <li>Drone Technology &amp; Piloting Skills</li>
-              <li>Scientific Inquiry Process</li>
-            </ul>
-          </div>
-        </div>
-        <div class="hotspot" data-type="M-S" tabindex="0"
-             data-popup-width="190px" data-popup-height="auto"
-             data-lang-title-en="Mth-Sci"
-             data-lang-title-zh="數學–科學"
-             data-lang-items-en='["Flight Principle &amp; Flight Speed","Angle of View of Drone Camera"]'
-             data-lang-items-zh='["飛行原理與速度","無人機鏡頭視角"]'>
-          <span class="hotspot-label">M-S</span>
-          <div class="tooltip" style="width:245px;">
-            <span class="tooltip-title">Mth-Sci</span>
-            <ul class="tooltip-items">
-              <li>Flight Principle &amp; Flight Speed</li>
-              <li>Angle of View of Drone Camera</li>
-            </ul>
-          </div>
-        </div>
-        <div class="hotspot" data-type="T-M" tabindex="0"
-             data-popup-width="170px" data-popup-height="auto"
-             data-lang-title-en="Tech-Mth"
-             data-lang-title-zh="科技–數學"
-             data-lang-items-en='["Drone Coding &amp; Circumnavigation","Path Programming Design"]'
-             data-lang-items-zh='["無人機編程與繞行","路徑編程設計"]'>
-          <span class="hotspot-label">T-M</span>
-          <div class="tooltip" style="width:270px;">
-            <span class="tooltip-title">Tech-Mth</span>
-            <ul class="tooltip-items">
-              <li>Drone Coding &amp; Circumnavigation</li>
-              <li>Path Programming Design</li>
-            </ul>
-          </div>
-        </div>
-      </div>
+    <div class="right-col">
+      <img src="frame.gif" alt="Frame" class="frame-image">
     </div>
   </div>
-  <script>
-    // Language switcher logic for whole page
-    let curLang = 'en';
-    const langBtn = document.getElementById('lang-btn');
-
-    function switchLang(lang) {
-      // All elements with data-lang-en/data-lang-zh
-      document.querySelectorAll('[data-lang-en],[data-lang-zh]').forEach(function(el) {
-        if (lang === 'zh') {
-          if (el.hasAttribute('data-lang-zh')) {
-            // For info box content, allow HTML
-            if (el.classList.contains('info-box-content')) {
-              el.innerHTML = el.getAttribute('data-lang-zh').trim();
-            } else {
-              el.innerHTML = el.getAttribute('data-lang-zh').trim();
-            }
-          }
-        } else {
-          if (el.hasAttribute('data-lang-en')) {
-            if (el.classList.contains('info-box-content')) {
-              el.innerHTML = el.getAttribute('data-lang-en').trim();
-            } else {
-              el.innerHTML = el.getAttribute('data-lang-en').trim();
-            }
-          }
-        }
-      });
-      // Creator label
-      var creator = document.getElementById('creator-label');
-      if (lang === 'zh') {
-        creator.innerHTML = creator.getAttribute('data-lang-zh');
-        creator.classList.add('zh');
-      } else {
-        creator.innerHTML = creator.getAttribute('data-lang-en');
-        creator.classList.remove('zh');
-      }
-      // Hotspots (tooltips)
-      document.querySelectorAll('.hotspot').forEach(hotspot => {
-        var tooltip = hotspot.querySelector('.tooltip');
-        var title = hotspot.getAttribute('data-lang-title-' + lang);
-        var items = JSON.parse(hotspot.getAttribute('data-lang-items-' + lang));
-        // Update tooltip
-        tooltip.querySelector('.tooltip-title').innerHTML = title;
-        var ul = tooltip.querySelector('.tooltip-items');
-        ul.innerHTML = '';
-        items.forEach(function(item) {
-          var li = document.createElement('li');
-          li.innerHTML = item;
-          ul.appendChild(li);
-        });
-      });
-      // Update button label
-      if (lang === 'zh') {
-        langBtn.textContent = 'English';
-        langBtn.setAttribute('data-lang', 'zh');
-      } else {
-        langBtn.textContent = '繁體中文';
-        langBtn.setAttribute('data-lang', 'en');
-      }
-      curLang = lang;
-    }
-
-    // Language button event (toggle single button)
-    langBtn.addEventListener('click', function() {
-      let nextLang = (curLang === 'en') ? 'zh' : 'en';
-      switchLang(nextLang);
-      this.classList.add('active');
-    });
-
-    // Default to English on load
-    switchLang('en');
-
-    // Show correct integration box when a hotspot is hovered/focused
-    const multiIds = ['S', 'M', 'T'];
-    const interIds = ['S-T', 'M-S', 'T-M'];
-    const transIds = ['E'];
-    const integrationMulti = document.getElementById('integration-multi');
-    const integrationInter = document.getElementById('integration-inter');
-    const integrationTrans = document.getElementById('integration-trans');
-    const hotspots = document.querySelectorAll('.hotspot');
-
-    function hideAllIntegration() {
-      integrationMulti.style.display = 'none';
-      integrationInter.style.display = 'none';
-      integrationTrans.style.display = 'none';
-    }
-    function showIntegration(type) {
-      hideAllIntegration();
-      if (multiIds.includes(type)) {
-        integrationMulti.style.display = 'block';
-      } else if (interIds.includes(type)) {
-        integrationInter.style.display = 'block';
-      } else if (transIds.includes(type)) {
-        integrationTrans.style.display = 'block';
-      }
-    }
-
-    hotspots.forEach(hotspot => {
-      let timeout;
-      const type = hotspot.getAttribute('data-type');
-      // Adjust popup size if specified
-      const tooltip = hotspot.querySelector('.tooltip');
-      const popupWidth = hotspot.getAttribute('data-popup-width');
-      const popupHeight = hotspot.getAttribute('data-popup-height');
-      if (popupWidth) tooltip.style.width = popupWidth;
-      if (popupHeight && popupHeight !== 'auto') tooltip.style.height = popupHeight;
-
-      hotspot.addEventListener('mouseenter', () => {
-        showIntegration(type);
-      });
-      hotspot.addEventListener('mouseleave', () => {
-        timeout = setTimeout(hideAllIntegration, 100);
-      });
-      hotspot.addEventListener('focus', () => {
-        showIntegration(type);
-      });
-      hotspot.addEventListener('blur', () => {
-        timeout = setTimeout(hideAllIntegration, 100);
-      });
-      hotspot.addEventListener('mousemove', () => { if (timeout) clearTimeout(timeout); });
-      hotspot.addEventListener('mouseover', () => { if (timeout) clearTimeout(timeout); });
-      hotspot.addEventListener('mousedown', () => { if (timeout) clearTimeout(timeout); });
-    });
-
-    // Also hide boxes on click anywhere else
-    document.body.addEventListener('click', function(e) {
-      if (!e.target.closest('.hotspot')) hideAllIntegration();
-    });
-
-    // Prevent copying the picture or overlay
-    document.querySelector('.container').addEventListener('contextmenu', function(e) {
-      if (!e.target.closest('.hotspot')) {
-        e.preventDefault();
-        return false;
-      }
-    }, {capture: true});
-
-    document.querySelector('.overlay-blocker').addEventListener('dragstart', function(e){e.preventDefault();return false;});
-    document.querySelector('.overlay-blocker').addEventListener('selectstart', function(e){e.preventDefault();return false;});
-    document.querySelector('.overlay-blocker').addEventListener('mousedown', function(e){
-      if(e.button==2){e.preventDefault();return false;}
-    });
-
-    // Prevent keyboard copy (Ctrl+C, Cmd+C) when image or overlay is focused
-    document.addEventListener('keydown', function(e) {
-      const active = document.activeElement;
-      if (
-        (e.ctrlKey || e.metaKey) &&
-        e.key.toLowerCase() === 'c' &&
-        (
-          active === document.querySelector('.framework-img') ||
-          active === document.querySelector('.overlay-blocker')
-        )
-      ) {
-        e.preventDefault();
-        return false;
-      }
-    });
-  </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
