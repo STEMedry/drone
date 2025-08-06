@@ -14,14 +14,10 @@ body {
     margin: 3px;
     background-color: #f0f0f0;
 }
-
-/* 2a. Force both columns in #game-container to be same height */
 #game-container {
   display: flex;
   align-items: stretch;
 }
-
-/* 2b. Let obstacle-course fill the left column fully */
 #game-container > div:first-child {
   display: flex;
   flex-direction: column;
@@ -30,15 +26,12 @@ body {
   flex: 1 1 auto;
   height: 100%;
 }
-
 h2 {
-    margin: 10px 0; /* Adjust this value as needed */
+    margin: 10px 0;
 }
-
 #instructions {
-    margin-bottom: 0px; /* Reduce this value for less space */
+    margin-bottom: 0px;
 }
-
 #code-area {
     width: 400px;
     border: 2px solid #000;
@@ -48,14 +41,13 @@ h2 {
     display: flex;
     flex-direction: column;
     position: relative;
-    min-height: 400px; /* Match obstacle-course height */
+    min-height: 400px;
 }
 #code-area-content {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
 }
-
 #command-buttons {
     display: flex;
     flex-direction: column;
@@ -78,6 +70,7 @@ button {
     color: white;
     border: none;
     border-radius: 3px;
+    transition: background 0.16s, color 0.16s;
 }
 .green-button {
     background-color: #4CAF50;
@@ -93,8 +86,19 @@ button {
 #run-button {
     background-color: #FF0000;
 }
+#run-button:disabled {
+    background-color: #888 !important;
+    color: #fff !important;
+    cursor: not-allowed !important;
+    opacity: 1;
+}
 #home-button {
-    background-color: #FFC0CB;
+    background-color: #3ea86f !important; /* More moderate green */
+    color: #fff;
+    border: none;
+}
+#home-button:active, #home-button:focus {
+    background-color: #2d7d50 !important;
 }
 #path-preview-button {
     background-color: #0000FF;
@@ -201,7 +205,6 @@ button {
 .color-change {
     animation: colorChange 3s infinite;
 }
-/* Additional styles for Level Select */
 #level-container {
     display: flex;
     flex-direction: column;
@@ -217,7 +220,6 @@ button {
 #counters span {
     font-weight: bold;
 }
-/* Style for the language switch button */
 #language-switch {
     position: fixed;
     font-size: 18px;
@@ -840,21 +842,24 @@ codeInput.selectionStart = codeInput.selectionEnd = newCursorPosition;
 codeInput.focus();
 updateStepsCount();
 }
+// --- THIS IS THE RELEVANT CHANGE ---
+// Disable Run Code button immediately after click, not re-enabled until Home is pressed.
 async function runCode() {
-if (isExecuting) return;
-isExecuting = true;
-attemptsCount++;
-attemptsDisplay.textContent = attemptsCount;
-document.getElementById('run-button').disabled = true;
-commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
-commandTimeouts = [];
-const commands = codeInput.value.trim().split('\n').filter(cmd => cmd.trim() !== '');
-for (const command of commands) {
-await executeSingleCommand(command.trim());
-}
-checkGoal();
-isExecuting = false;
-document.getElementById('run-button').disabled = false;
+    const runBtn = document.getElementById('run-button');
+    if (runBtn.disabled || isExecuting) return; // Prevent double-execution
+    isExecuting = true;
+    runBtn.disabled = true; // Disable button right away!
+    attemptsCount++;
+    attemptsDisplay.textContent = attemptsCount;
+    commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+    commandTimeouts = [];
+    const commands = codeInput.value.trim().split('\n').filter(cmd => cmd.trim() !== '');
+    for (const command of commands) {
+        await executeSingleCommand(command.trim());
+    }
+    checkGoal();
+    isExecuting = false;
+    // DO NOT RE-ENABLE runBtn HERE!
 }
 async function executeSingleCommand(command) {
 return new Promise((resolve) => {
@@ -1116,43 +1121,45 @@ goalMarker.material.color.setHex(originalColor);
 }
 }, 300);
 }
+// --- THIS IS THE RELEVANT CHANGE ---
+// When Home is pressed, re-enable Run Code button!
 function homePosition() {
-commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
-commandTimeouts = [];
-Object.values(blinkIntervals).forEach(intervalId => clearInterval(intervalId));
-blinkIntervals = {};
-if (pathLine) {
-scene.remove(pathLine);
-pathLine = null;
-isPathPreviewShown = false;
-}
-commandQueue = [];
-isExecuting = false;
-document.getElementById('run-button').disabled = false;
-dronePosition.set(0, 0, 0);
-drone.rotation.set(0, 0, 0, 'XYZ');
-drone.position.copy(dronePosition);
-drone.quaternion.setFromEuler(drone.rotation);
-camera.position.set(10, 7, 10);
-camera.lookAt(drone.position);
-messageDiv.textContent = '';
-messageDiv.classList.remove('blink', 'color-change');
-obstacles.forEach(hoop => {
-hoop.children[0].material.color.setHex(0xff8c00);
-hoop.children[0].material.opacity = 0.7;
-});
-currentHoop = 1;
-alertShown = false;
-if (goalMarker) {
-goalMarker.material.color.setHex(0xff8c00);
-}
-clonedSounds.forEach(clone => {
-clone.pause();
-});
-clonedSounds.length = 0;
-if (obstacles.length > 0) {
-blinkHoop(obstacles[0]);
-}
+    commandTimeouts.forEach(timeoutId => clearTimeout(timeoutId));
+    commandTimeouts = [];
+    Object.values(blinkIntervals).forEach(intervalId => clearInterval(intervalId));
+    blinkIntervals = {};
+    if (pathLine) {
+        scene.remove(pathLine);
+        pathLine = null;
+        isPathPreviewShown = false;
+    }
+    commandQueue = [];
+    isExecuting = false;
+    document.getElementById('run-button').disabled = false; // <-- ENABLE RUN CODE BUTTON HERE!
+    dronePosition.set(0, 0, 0);
+    drone.rotation.set(0, 0, 0, 'XYZ');
+    drone.position.copy(dronePosition);
+    drone.quaternion.setFromEuler(drone.rotation);
+    camera.position.set(10, 7, 10);
+    camera.lookAt(drone.position);
+    messageDiv.textContent = '';
+    messageDiv.classList.remove('blink', 'color-change');
+    obstacles.forEach(hoop => {
+        hoop.children[0].material.color.setHex(0xff8c00);
+        hoop.children[0].material.opacity = 0.7;
+    });
+    currentHoop = 1;
+    alertShown = false;
+    if (goalMarker) {
+        goalMarker.material.color.setHex(0xff8c00);
+    }
+    clonedSounds.forEach(clone => {
+        clone.pause();
+    });
+    clonedSounds.length = 0;
+    if (obstacles.length > 0) {
+        blinkHoop(obstacles[0]);
+    }
 }
 function rotateView(direction) {
 const rotationAngle = direction === 'left' ? Math.PI / 18 : -Math.PI / 18;
