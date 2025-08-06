@@ -1,463 +1,442 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>GenAI Drone Cross-Disciplinary STEM Curriculum</title>
-<style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GenAI Drone Cross-Disciplinary STEM Curriculum</title>
+  <style>
     html, body {
-        font-family: Arial, sans-serif;
-        background: #f7fafc;
-        margin: 0;
-        padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f7fafc;
+      margin: 0;
+      padding: 0;
     }
     h1#main-title {
-        text-align: center;
-        font-size: 2.025em;
-        font-weight: bold;
-        margin: 22px 0 8px 0;
-        letter-spacing: 0.01em;
+      text-align: center;
+      font-size: 2.025em;
+      font-weight: bold;
+      margin: 22px 0 8px 0;
+      letter-spacing: 0.01em;
     }
     h3#author-name {
-        text-align: center;
-        font-size: 1.1em;
-        font-weight: normal;
-        margin: 0 0 16px 0;
-        color: #444;
+      text-align: center;
+      font-size: 1.1em;
+      font-weight: normal;
+      margin: 0 0 16px 0;
+      color: #444;
     }
     .button-container {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: center;
-        align-items: flex-start;
-        gap: 10px;
-        margin-bottom: 18px;
-        position: relative;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: flex-start;
+      gap: 10px;
+      margin-bottom: 18px;
+      position: relative;
     }
     .btn-home {
-        background: #4267B2;
-        color: #fff;
-        border: none !important;
-        outline: none !important;
+      background: #4267B2; color: #fff; border: none !important; outline: none !important;
     }
     .btn-framework {
-        background: #F5A623;
-        color: #fff;
-        border: none !important;
-        outline: none !important;
+      background: #F5A623; color: #fff; border: none !important; outline: none !important;
     }
     .btn-uav {
-        background: #E94F37;
-        color: #fff;
-        border: none !important;
-        outline: none !important;
+      background: #E94F37; color: #fff; border: none !important; outline: none !important;
     }
-    .btn-scitech {
-        background: #4A6FBA;
-        color: #fff;
-    }
-    .btn-mthsci {
-        background: #8B4F6B;
-        color: #fff;
-    }
-    .btn-techmth {
-        background: #F43919;
-        color: #fff;
-    }
-    .btn-engineering {
-        background: #2EB872;
-        color: #fff;
-    }
+    .btn-scitech { background: #4A6FBA; color: #fff; }
+    .btn-mthsci { background: #8B4F6B; color: #fff; }
+    .btn-techmth { background: #F43919; color: #fff; }
+    .btn-engineering { background: #2EB872; color: #fff; }
 
     .mainbtn, .dropbtn {
-        padding: 9px 22px;
-        font-size: 16px;
-        border: none;
-        border-radius: 8px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: box-shadow 0.2s, background 0.2s, transform 0.2s;
-        box-shadow: 0 3px 10px 0 rgba(40,40,70,0.04);
-        outline: none;
-        position: relative;
-        margin-right: 0;
-        margin-left: 0;
+      padding: 9px 22px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: box-shadow 0.2s, background 0.2s, transform 0.2s;
+      box-shadow: 0 3px 10px rgba(40,40,70,0.04);
+      outline: none;
+      position: relative;
+      margin: 0;
     }
     .mainbtn.selected-button,
     .dropbtn.selected-button {
-        box-shadow: 0 0 0 3px #5ecfff88, 0 3px 16px 0 rgba(40,60,120,0.10);
-        transform: scale(1.06);
-        z-index: 2;
-        border: 2px solid #5ecfff;
+      box-shadow: 0 0 0 3px #5ecfff88, 0 3px 16px rgba(40,60,120,0.10);
+      transform: scale(1.06);
+      z-index: 2;
+      border: 2px solid #5ecfff;
     }
     .dropdown {
-        position: relative;
-        display: inline-block;
+      position: relative;
+      display: inline-block;
     }
-    .dropbtn {
-        min-width: 140px;
-    }
+    .dropbtn { min-width: 140px; }
     .dropdown-content {
-        display: none;
-        position: absolute;
-        min-width: 220px;
-        left: 0;
-        top: 110%;
-        background: #fff;
-        border-radius: 12px;
-        box-shadow: 0 8px 36px 0 rgba(0,0,0,0.18);
-        padding: 8px 0;
-        z-index: 30;
-        font-size: 15px;
-        animation: fadeIn 0.22s;
-        border-top: 5px solid;
+      display: none;
+      position: absolute;
+      min-width: 220px;
+      left: 0;
+      top: 110%;
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 8px 36px rgba(0,0,0,0.18);
+      padding: 8px 0;
+      z-index: 30;
+      font-size: 15px;
+      animation: fadeIn 0.22s;
+      border-top: 5px solid;
     }
     .dropdown.open .dropdown-content {
-        display: block;
+      display: block;
     }
     .dropdown-scitech .dropdown-content { border-top-color: #4A6FBA; }
     .dropdown-mthsci .dropdown-content { border-top-color: #8B4F6B; }
     .dropdown-techmth .dropdown-content { border-top-color: #F43919; }
     .dropdown-engineering .dropdown-content { border-top-color: #2EB872; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-12px);} to { opacity: 1; transform: translateY(0);} }
-    .dropdown-scitech .dropdown-content button {
-        color: #244c9e;
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-12px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    .dropdown-mthsci .dropdown-content button {
-        color: #8B4F6B;
-    }
-    .dropdown-techmth .dropdown-content button {
-        color: #F43919;
-    }
-    .dropdown-engineering .dropdown-content button {
-        color: #2EB872;
-    }
+
     .dropdown-content button {
-        background: none;
-        padding: 10px 24px 10px 26px;
-        border: none;
-        width: 100%;
-        text-align: left;
-        font-size: 15px;
-        font-family: Arial, sans-serif;
-        font-weight: normal;
-        cursor: pointer;
-        transition: background 0.18s, color 0.15s, padding-left 0.15s;
-        border-radius: 0;
-        outline: none;
-        margin: 0;
+      background: none;
+      padding: 10px 24px 10px 26px;
+      border: none;
+      width: 100%;
+      text-align: left;
+      font-size: 15px;
+      font-family: Arial, sans-serif;
+      font-weight: normal;
+      cursor: pointer;
+      transition: background 0.18s, color 0.15s, padding-left 0.15s;
+      outline: none;
+      margin: 0;
     }
+    .dropdown-scitech .dropdown-content button { color: #244c9e; }
     .dropdown-scitech .dropdown-content button:hover,
     .dropdown-scitech .dropdown-content button.selected-button {
-        background: #e5eeff;
-        color: #4A6FBA;
-        font-weight: bold;
-        padding-left: 32px;
+      background: #e5eeff; color: #4A6FBA; font-weight: bold; padding-left: 32px;
     }
+    .dropdown-mthsci .dropdown-content button { color: #8B4F6B; }
     .dropdown-mthsci .dropdown-content button:hover,
     .dropdown-mthsci .dropdown-content button.selected-button {
-        background: #f1e8ee;
-        color: #8B4F6B;
-        font-weight: bold;
-        padding-left: 32px;
+      background: #f1e8ee; color: #8B4F6B; font-weight: bold; padding-left: 32px;
     }
+    .dropdown-techmth .dropdown-content button { color: #F43919; }
     .dropdown-techmth .dropdown-content button:hover,
     .dropdown-techmth .dropdown-content button.selected-button {
-        background: #ffe7e0;
-        color: #F43919;
-        font-weight: bold;
-        padding-left: 32px;
+      background: #ffe7e0; color: #F43919; font-weight: bold; padding-left: 32px;
     }
+    .dropdown-engineering .dropdown-content button { color: #2EB872; }
     .dropdown-engineering .dropdown-content button:hover,
     .dropdown-engineering .dropdown-content button.selected-button {
-        background: #e7f8ed;
-        color: #2EB872;
-        font-weight: bold;
-        padding-left: 32px;
+      background: #e7f8ed; color: #2EB872; font-weight: bold; padding-left: 32px;
     }
+
     .button-language.language-toggle {
-        position: absolute;
-        background-color: #4CAF50;
-        top: -52px;
-        right: 0;
-        margin: 5px;
-        font-size: 15px;
-        color: #fff;
-        border-radius: 6px;
-        padding: 8px 20px;
-        border: none;
-        font-weight: bold;
-        box-shadow: 0 3px 16px 0 rgba(40,60,120,0.10);
+      position: absolute;
+      background-color: #4CAF50;
+      top: -52px;
+      right: 0;
+      margin: 5px;
+      font-size: 15px;
+      color: #fff;
+      border-radius: 6px;
+      padding: 8px 20px;
+      border: none;
+      font-weight: bold;
+      box-shadow: 0 3px 16px rgba(40,60,120,0.10);
     }
+
     @media (max-width: 700px) {
-        h1#main-title { font-size: 1.17em;}
-        h3#author-name { font-size: 1em;}
-        .button-container { flex-direction: column; align-items: stretch; gap: 7px;}
-        .mainbtn, .dropbtn { min-width: 100px; font-size: 15px;}
-        .dropdown-content { min-width: 96vw; left: 0; right: 0; }
+      h1#main-title { font-size: 1.17em; }
+      h3#author-name { font-size: 1em; }
+      .button-container { flex-direction: column; align-items: stretch; gap: 7px; }
+      .mainbtn, .dropbtn { min-width: 100px; font-size: 15px; }
+      .dropdown-content { min-width: 96vw; left: 0; right: 0; }
     }
+
     .app { display: none; flex: 1; }
     .active { display: block; }
     .app iframe {
-        width: 100%;
-        height: calc(100vh - 180px);
-        border: none;
-        background: #fff;
+      width: 100%;
+      height: calc(100vh - 180px);
+      border: none;
+      background: #fff;
     }
-</style>
+
+    /* ── New: only on Windows, scale IFRAMES to 80% ───────────────────────── */
+    body.windows .app {
+      position: relative;
+      overflow: hidden;
+      height: calc(100vh - 180px);
+    }
+    body.windows .app iframe {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: calc(100% / 0.8);
+      height: calc(100% / 0.8);
+      transform: translateX(-50%) scale(0.8);
+      transform-origin: top center;
+    }
+  </style>
 </head>
 <body>
-    <h1 id="main-title">GenAI-Assisted Drone-Integrated Cross-Disciplinary STEM Curriculum</h1>
-    <h3 id="author-name">
-      By <a href="https://www.linkedin.com/in/rychw/" target="_blank" rel="noopener noreferrer">Richard C Y YEUNG</a> (Email: stemed.ry@gmail.com), The Education University of Hong Kong
-    </h3>
-    <div class="button-container">
-        <button class="mainbtn btn-home" onclick="showApp('app-home', this)" id="btn-home">Home</button>
-        <button class="mainbtn btn-framework" onclick="showApp('app-framework', this)" id="btn-framework">Framework</button>
-        <button class="mainbtn btn-uav" onclick="showApp('app1', this)" id="btn-uav">Overview</button>
-        <!-- Sci-Tech Category -->
-        <div class="dropdown dropdown-scitech" id="dropdown-scitech">
-            <button class="dropbtn btn-scitech" id="btn-scitech" type="button" onclick="toggleDropdown('dropdown-scitech')">Sci-Tech &#9662;</button>
-            <div class="dropdown-content" id="scitech-dropdown">
-                <button onclick="showApp('app2', this)" id="btn-gps">Satellite Positioning</button>
-                <button onclick="showApp('app3', this)" id="btn-movement">Movement Principle</button>
-                <button onclick="showApp('app4', this)" id="btn-virtual">Virtual Flight</button>
-                <button onclick="showApp('app5', this)" id="btn-quadphysics">QuadPhysics</button>
-                <button onclick="showApp('app6', this)" id="btn-concept">Concept Assessment</button>
-            </div>
-        </div>
-        <!-- Mth-Sci Category -->
-        <div class="dropdown dropdown-mthsci" id="dropdown-mthsci">
-            <button class="dropbtn btn-mthsci" id="btn-mthsci" type="button" onclick="toggleDropdown('dropdown-mthsci')">Mth-Sci &#9662;</button>
-            <div class="dropdown-content" id="mthsci-dropdown">
-                <button onclick="showApp('app7', this)" id="btn-motionspeed">Motion & Speed</button>
-                <button onclick="showApp('app8', this)" id="btn-expt">Expt Data Treatment</button>
-                <button onclick="showApp('app9', this)" id="btn-aov">Dronography AOV</button>
-            </div>
-        </div>
-        <!-- Tech-Mth Category -->
-        <div class="dropdown dropdown-techmth" id="dropdown-techmth">
-            <button class="dropbtn btn-techmth" id="btn-techmth" type="button" onclick="toggleDropdown('dropdown-techmth')">Tech-Mth &#9662;</button>
-            <div class="dropdown-content" id="techmth-dropdown">
-                <button onclick="showApp('app10', this)" id="btn-circum">Circumnavigation</button>
-                <button onclick="showApp('app11', this)" id="btn-spiral">2D/3D Spiral Navigation</button>
-                <button onclick="showApp('app12', this)" id="btn-codesim">Code Performance Simulation</button>
-                <button onclick="showApp('app13', this)" id="btn-obstacle">Obstacle Skirting Path Design</button>
-            </div>
-        </div>
-        <!-- Engineering Category -->
-        <div class="dropdown dropdown-engineering" id="dropdown-engineering">
-            <button class="dropbtn btn-engineering" id="btn-engineering" type="button" onclick="toggleDropdown('dropdown-engineering')">Engineering &#9662;</button>
-            <div class="dropdown-content" id="engineering-dropdown">
-                <button onclick="showApp('app14', this)" id="btn-eng1">System Design 1</button>
-                <button onclick="showApp('app15', this)" id="btn-eng2">System Design 2</button>
-            </div>
-        </div>
-        <!-- Language Toggle -->
-        <button class="button-language language-toggle" onclick="toggleLanguage()" id="lang-toggle">繁體中文</button>
+  <h1 id="main-title">GenAI-Assisted Drone-Integrated Cross-Disciplinary STEM Curriculum</h1>
+  <h3 id="author-name">
+    By <a href="https://www.linkedin.com/in/rychw/" target="_blank" rel="noopener noreferrer">Richard C Y YEUNG</a>
+    (Email: stemed.ry@gmail.com), The Education University of Hong Kong
+  </h3>
+
+  <div class="button-container">
+    <button class="mainbtn btn-home"       onclick="showApp('app-home', this)"      id="btn-home">Home</button>
+    <button class="mainbtn btn-framework"  onclick="showApp('app-framework', this)" id="btn-framework">Framework</button>
+    <button class="mainbtn btn-uav"        onclick="showApp('app1', this)"          id="btn-uav">Overview</button>
+
+    <div class="dropdown dropdown-scitech" id="dropdown-scitech">
+      <button class="dropbtn btn-scitech" id="btn-scitech"
+              onclick="toggleDropdown('dropdown-scitech')">Sci-Tech &#9662;</button>
+      <div class="dropdown-content">
+        <button onclick="showApp('app2', this)" id="btn-gps">Satellite Positioning</button>
+        <button onclick="showApp('app3', this)" id="btn-movement">Movement Principle</button>
+        <button onclick="showApp('app4', this)" id="btn-virtual">Virtual Flight</button>
+        <button onclick="showApp('app5', this)" id="btn-quadphysics">QuadPhysics</button>
+        <button onclick="showApp('app6', this)" id="btn-concept">Concept Assessment</button>
+      </div>
     </div>
 
-    <!-- IFRAME APPS (ALL BLANK INITIALLY) -->
-    <div id="app-home" class="app"><iframe src=""></iframe></div>
-    <div id="app-framework" class="app"><iframe src=""></iframe></div>
-    <div id="app1" class="app"><iframe src=""></iframe></div>
-    <div id="app2" class="app"><iframe src=""></iframe></div>
-    <div id="app3" class="app"><iframe src=""></iframe></div>
-    <div id="app4" class="app"><iframe src=""></iframe></div>
-    <div id="app5" class="app"><iframe src=""></iframe></div>
-    <div id="app6" class="app"><iframe src=""></iframe></div>
-    <div id="app7" class="app"><iframe src=""></iframe></div>
-    <div id="app8" class="app"><iframe src=""></iframe></div>
-    <div id="app9" class="app"><iframe src=""></iframe></div>
-    <div id="app10" class="app"><iframe src=""></iframe></div>
-    <div id="app11" class="app"><iframe src=""></iframe></div>
-    <div id="app12" class="app"><iframe src=""></iframe></div>
-    <div id="app13" class="app"><iframe src=""></iframe></div>
-    <div id="app14" class="app"><iframe src=""></iframe></div>
-    <div id="app15" class="app"><iframe src=""></iframe></div>
+    <div class="dropdown dropdown-mthsci" id="dropdown-mthsci">
+      <button class="dropbtn btn-mthsci" id="btn-mthsci"
+              onclick="toggleDropdown('dropdown-mthsci')">Mth-Sci &#9662;</button>
+      <div class="dropdown-content">
+        <button onclick="showApp('app7', this)" id="btn-motionspeed">Motion & Speed</button>
+        <button onclick="showApp('app8', this)" id="btn-expt">Expt Data Treatment</button>
+        <button onclick="showApp('app9', this)" id="btn-aov">Dronography AOV</button>
+      </div>
+    </div>
 
-<script>
+    <div class="dropdown dropdown-techmth" id="dropdown-techmth">
+      <button class="dropbtn btn-techmth" id="btn-techmth"
+              onclick="toggleDropdown('dropdown-techmth')">Tech-Mth &#9662;</button>
+      <div class="dropdown-content">
+        <button onclick="showApp('app10', this)" id="btn-circum">Circumnavigation</button>
+        <button onclick="showApp('app11', this)" id="btn-spiral">2D/3D Spiral Navigation</button>
+        <button onclick="showApp('app12', this)" id="btn-codesim">Code Performance Simulation</button>
+        <button onclick="showApp('app13', this)" id="btn-obstacle">Obstacle Skirting Path Design</button>
+      </div>
+    </div>
+
+    <div class="dropdown dropdown-engineering" id="dropdown-engineering">
+      <button class="dropbtn btn-engineering" id="btn-engineering"
+              onclick="toggleDropdown('dropdown-engineering')">Engineering &#9662;</button>
+      <div class="dropdown-content">
+        <button onclick="showApp('app14', this)" id="btn-eng1">System Design 1</button>
+        <button onclick="showApp('app15', this)" id="btn-eng2">System Design 2</button>
+      </div>
+    </div>
+
+    <button class="button-language language-toggle"
+            onclick="toggleLanguage()" id="lang-toggle">繁體中文</button>
+  </div>
+
+  <!-- IFRAME APPS (all start blank, will lazy-load) -->
+  <div id="app-home"      class="app"><iframe src=""></iframe></div>
+  <div id="app-framework" class="app"><iframe src=""></iframe></div>
+  <div id="app1"          class="app"><iframe src=""></iframe></div>
+  <div id="app2"          class="app"><iframe src=""></iframe></div>
+  <div id="app3"          class="app"><iframe src=""></iframe></div>
+  <div id="app4"          class="app"><iframe src=""></iframe></div>
+  <div id="app5"          class="app"><iframe src=""></iframe></div>
+  <div id="app6"          class="app"><iframe src=""></iframe></div>
+  <div id="app7"          class="app"><iframe src=""></iframe></div>
+  <div id="app8"          class="app"><iframe src=""></iframe></div>
+  <div id="app9"          class="app"><iframe src=""></iframe></div>
+  <div id="app10"         class="app"><iframe src=""></iframe></div>
+  <div id="app11"         class="app"><iframe src=""></iframe></div>
+  <div id="app12"         class="app"><iframe src=""></iframe></div>
+  <div id="app13"         class="app"><iframe src=""></iframe></div>
+  <div id="app14"         class="app"><iframe src=""></iframe></div>
+  <div id="app15"         class="app"><iframe src=""></iframe></div>
+
+  <script>
     // Language data
     const translations = {
-        en: {
-            mainTitle: 'GenAI-Assisted Drone-Integrated Cross-Disciplinary STEM Curriculum',
-            authorName: 'By <a href="https://www.linkedin.com/in/rychw/" target="_blank" rel="noopener noreferrer">Richard C Y YEUNG</a> (Email: stemed.ry@gmail.com), The Education University of Hong Kong',
-            languageButton: '繁體中文',
-            buttons: {
-                home: 'Home',
-                framework: 'Framework',
-                uav: 'Overview',
-                scitech: 'Sci-Tech',
-                mthsci: 'Mth-Sci',
-                techmth: 'Tech-Mth',
-                engineering: 'Engineering',
-                gps: 'Satellite Positioning',
-                movement: 'Movement Principle',
-                virtual: 'Virtual Flight',
-                quadphysics: 'QuadPhysics',
-                concept: 'Concept Assessment',
-                motionspeed: 'Motion & Speed',
-                expt: 'Expt Data Treatment',
-                aov: 'Dronography AOV',
-                circum: 'Circumnavigation',
-                spiral: '2D/3D Spiral Navigation',
-                codesim: 'Code Performance Simulation',
-                obstacle: 'Obstacle Skirting Path Design',
-                eng1: 'System Design 1',
-                eng2: 'System Design 2'
-            }
-        },
-        zh: {
-            mainTitle: 'GenAI 賦能無人機跨學科STEM課程',
-            authorName: '由 <a href="https://www.linkedin.com/in/rychw/" target="_blank" rel="noopener noreferrer">楊仲堯</a>（電郵：stemed.ry@gmail.com），香港教育大學',
-            languageButton: 'English',
-            buttons: {
-                home: '主頁',
-                framework: '架構',
-                uav: '概覽',
-                scitech: '科學技術',
-                mthsci: '數理科學',
-                techmth: '技術數學',
-                engineering: '工程設計',
-                gps: '衛星定位',
-                movement: '運動原理',
-                virtual: '虛擬飛行',
-                quadphysics: '四軸物理',
-                concept: '概念評估',
-                motionspeed: '運動與速度',
-                expt: '實驗數據處理',
-                aov: '無人機視角',
-                circum: '環繞導航',
-                spiral: '2D/3D螺旋導航',
-                codesim: '程式效能模擬',
-                obstacle: '障礙繞行路徑設計',
-                eng1: '系統設計一',
-                eng2: '系統設計二'
-            }
+      en: {
+        mainTitle: 'GenAI-Assisted Drone-Integrated Cross-Disciplinary STEM Curriculum',
+        authorName: 'By <a href="https://www.linkedin.com/in/rychw/" target="_blank" rel="noopener noreferrer">Richard C Y YEUNG</a> (Email: stemed.ry@gmail.com), The Education University of Hong Kong',
+        languageButton: '繁體中文',
+        buttons: {
+          home: 'Home',
+          framework: 'Framework',
+          uav: 'Overview',
+          scitech: 'Sci-Tech',
+          mthsci: 'Mth-Sci',
+          techmth: 'Tech-Mth',
+          engineering: 'Engineering',
+          gps: 'Satellite Positioning',
+          movement: 'Movement Principle',
+          virtual: 'Virtual Flight',
+          quadphysics: 'QuadPhysics',
+          concept: 'Concept Assessment',
+          motionspeed: 'Motion & Speed',
+          expt: 'Expt Data Treatment',
+          aov: 'Dronography AOV',
+          circum: 'Circumnavigation',
+          spiral: '2D/3D Spiral Navigation',
+          codesim: 'Code Performance Simulation',
+          obstacle: 'Obstacle Skirting Path Design',
+          eng1: 'System Design 1',
+          eng2: 'System Design 2'
         }
+      },
+      zh: {
+        mainTitle: 'GenAI 賦能無人機跨學科STEM課程',
+        authorName: '由 <a href="https://www.linkedin.com/in/rychw/" target="_blank" rel="noopener noreferrer">楊仲堯</a>（電郵：stemed.ry@gmail.com），香港教育大學',
+        languageButton: 'English',
+        buttons: {
+          home: '主頁',
+          framework: '架構',
+          uav: '概覽',
+          scitech: '科學技術',
+          mthsci: '數理科學',
+          techmth: '技術數學',
+          engineering: '工程設計',
+          gps: '衛星定位',
+          movement: '運動原理',
+          virtual: '虛擬飛行',
+          quadphysics: '四軸物理',
+          concept: '概念評估',
+          motionspeed: '運動與速度',
+          expt: '實驗數據處理',
+          aov: '無人機視角',
+          circum: '環繞導航',
+          spiral: '2D/3D螺旋導航',
+          codesim: '程式效能模擬',
+          obstacle: '障礙繞行路徑設計',
+          eng1: '系統設計一',
+          eng2: '系統設計二'
+        }
+      }
     };
 
-    // Mapping from app DOM id to HTML filename
+    // Mapping from app DOM id → filename
     const appSrcMap = {
-        'app-home': 'home.html',
-        'app-framework': 'framework.html',
-        'app1': '001_gallery.html',
-        'app2': '001a_GPS.html',
-        'app3': '002_control.html',
-        'app4': '002a_flight.html',
-        'app5': '003_force.html',
-        'app6': '003a_forcepair.html',
-        'app7': '004_Hor_Speed.html',
-        'app8': '004a_Speed_Test.html',
-        'app9': '005_AOV.html',
-        'app10': '006_Polygon.html',
-        'app11': '006a_spiral.html',
-        'app12': '007_Code.html',
-        'app13': '007a_Code_Game.html',
-        'app14': '008_Engineering.html',
-        'app15': '008a_Engineering.html'
+      'app-home':      'home.html',
+      'app-framework': 'framework.html',
+      'app1':          '001_gallery.html',
+      'app2':          '001a_GPS.html',
+      'app3':          '002_control.html',
+      'app4':          '002a_flight.html',
+      'app5':          '003_force.html',
+      'app6':          '003a_forcepair.html',
+      'app7':          '004_Hor_Speed.html',
+      'app8':          '004a_Speed_Test.html',
+      'app9':          '005_AOV.html',
+      'app10':         '006_Polygon.html',
+      'app11':         '006a_spiral.html',
+      'app12':         '007_Code.html',
+      'app13':         '007a_Code_Game.html',
+      'app14':         '008_Engineering.html',
+      'app15':         '008a_Engineering.html'
     };
 
     let currentLanguage = 'en';
 
     function toggleLanguage() {
-        currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
-        updateLanguage();
+      currentLanguage = currentLanguage === 'en' ? 'zh' : 'en';
+      updateLanguage();
     }
 
     function updateLanguage() {
-        const lang = translations[currentLanguage];
-        document.getElementById('main-title').textContent = lang.mainTitle;
-        // Use innerHTML for the author so that links and email formatting work
-        document.getElementById('author-name').innerHTML = lang.authorName;
-        document.getElementById('lang-toggle').textContent = lang.languageButton;
-        document.getElementById('btn-home').textContent = lang.buttons.home;
-        document.getElementById('btn-framework').textContent = lang.buttons.framework;
-        document.getElementById('btn-uav').textContent = lang.buttons.uav;
-        document.getElementById('btn-scitech').innerHTML = lang.buttons.scitech + ' &#9662;';
-        document.getElementById('btn-mthsci').innerHTML = lang.buttons.mthsci + ' &#9662;';
-        document.getElementById('btn-techmth').innerHTML = lang.buttons.techmth + ' &#9662;';
-        document.getElementById('btn-engineering').innerHTML = lang.buttons.engineering + ' &#9662;';
-        document.getElementById('btn-gps').textContent = lang.buttons.gps;
-        document.getElementById('btn-movement').textContent = lang.buttons.movement;
-        document.getElementById('btn-virtual').textContent = lang.buttons.virtual;
-        document.getElementById('btn-quadphysics').textContent = lang.buttons.quadphysics;
-        document.getElementById('btn-concept').textContent = lang.buttons.concept;
-        document.getElementById('btn-motionspeed').textContent = lang.buttons.motionspeed;
-        document.getElementById('btn-expt').textContent = lang.buttons.expt;
-        document.getElementById('btn-aov').textContent = lang.buttons.aov;
-        document.getElementById('btn-circum').textContent = lang.buttons.circum;
-        document.getElementById('btn-spiral').textContent = lang.buttons.spiral;
-        document.getElementById('btn-codesim').textContent = lang.buttons.codesim;
-        document.getElementById('btn-obstacle').textContent = lang.buttons.obstacle;
-        document.getElementById('btn-eng1').textContent = lang.buttons.eng1;
-        document.getElementById('btn-eng2').textContent = lang.buttons.eng2;
+      const lang = translations[currentLanguage];
+      document.getElementById('main-title').textContent = lang.mainTitle;
+      document.getElementById('author-name').innerHTML = lang.authorName;
+      document.getElementById('lang-toggle').textContent = lang.languageButton;
+      document.getElementById('btn-home').textContent = lang.buttons.home;
+      document.getElementById('btn-framework').textContent = lang.buttons.framework;
+      document.getElementById('btn-uav').textContent = lang.buttons.uav;
+      document.getElementById('btn-scitech').innerHTML = lang.buttons.scitech + ' &#9662;';
+      document.getElementById('btn-mthsci').innerHTML = lang.buttons.mthsci + ' &#9662;';
+      document.getElementById('btn-techmth').innerHTML = lang.buttons.techmth + ' &#9662;';
+      document.getElementById('btn-engineering').innerHTML = lang.buttons.engineering + ' &#9662;';
+      document.getElementById('btn-gps').textContent = lang.buttons.gps;
+      document.getElementById('btn-movement').textContent = lang.buttons.movement;
+      document.getElementById('btn-virtual').textContent = lang.buttons.virtual;
+      document.getElementById('btn-quadphysics').textContent = lang.buttons.quadphysics;
+      document.getElementById('btn-concept').textContent = lang.buttons.concept;
+      document.getElementById('btn-motionspeed').textContent = lang.buttons.motionspeed;
+      document.getElementById('btn-expt').textContent = lang.buttons.expt;
+      document.getElementById('btn-aov').textContent = lang.buttons.aov;
+      document.getElementById('btn-circum').textContent = lang.buttons.circum;
+      document.getElementById('btn-spiral').textContent = lang.buttons.spiral;
+      document.getElementById('btn-codesim').textContent = lang.buttons.codesim;
+      document.getElementById('btn-obstacle').textContent = lang.buttons.obstacle;
+      document.getElementById('btn-eng1').textContent = lang.buttons.eng1;
+      document.getElementById('btn-eng2').textContent = lang.buttons.eng2;
     }
 
-    // Dropdown toggling logic
     function toggleDropdown(dropdownId) {
-        document.querySelectorAll('.dropdown').forEach(dd => {
-            if (dd.id !== dropdownId) dd.classList.remove('open');
-        });
-        const dd = document.getElementById(dropdownId);
-        dd.classList.toggle('open');
+      document.querySelectorAll('.dropdown').forEach(dd => {
+        if (dd.id !== dropdownId) dd.classList.remove('open');
+      });
+      document.getElementById(dropdownId).classList.toggle('open');
     }
 
-    // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
-        const dropdowns = document.querySelectorAll('.dropdown');
-        let clickedDropdown = false;
-        dropdowns.forEach(dd => {
-            if (dd.contains(e.target)) {
-                clickedDropdown = true;
-            }
-        });
-        if (!clickedDropdown) {
-            dropdowns.forEach(dd => dd.classList.remove('open'));
-        }
+      let inside = false;
+      document.querySelectorAll('.dropdown').forEach(dd => {
+        if (dd.contains(e.target)) inside = true;
+      });
+      if (!inside) {
+        document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
+      }
     });
 
     document.addEventListener('keydown', function(e) {
-        if (e.key === "Escape") {
-            document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
-        }
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
+      }
     });
 
-    // Track selected app/button + lazy load iframe
     function showApp(appId, btn) {
-        // Hide all apps
-        document.querySelectorAll('.app').forEach(app => app.classList.remove('active'));
-        const targetApp = document.getElementById(appId);
-        targetApp.classList.add('active');
+      document.querySelectorAll('.app').forEach(a => a.classList.remove('active'));
+      const app = document.getElementById(appId);
+      app.classList.add('active');
 
-        // Lazy-load iframe src only when needed
-        const iframe = targetApp.querySelector('iframe');
-        const wantedSrc = appSrcMap[appId];
-        if (iframe && (!iframe.src || !iframe.src.endsWith(wantedSrc))) {
-            iframe.src = wantedSrc;
-        }
+      // lazy-load iframe
+      const ifr = app.querySelector('iframe');
+      const src = appSrcMap[appId];
+      if (ifr && (!ifr.src || !ifr.src.endsWith(src))) {
+        ifr.src = src;
+      }
 
-        // Remove selection style from all buttons
-        document.querySelectorAll('.mainbtn, .dropbtn, .dropdown-content button').forEach(b => b.classList.remove('selected-button'));
+      document.querySelectorAll('.mainbtn, .dropbtn, .dropdown-content button')
+              .forEach(b => b.classList.remove('selected-button'));
 
-        // For Home/main, highlight only that; for dropdowns, highlight dropbtn and sub-button
-        if (btn.classList.contains('mainbtn')) {
-            btn.classList.add('selected-button');
-        } else {
-            let parentDropdown = btn.closest('.dropdown');
-            if (parentDropdown) {
-                parentDropdown.querySelector('.dropbtn').classList.add('selected-button');
-            }
-            btn.classList.add('selected-button');
-        }
-        document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
+      if (btn.classList.contains('mainbtn')) {
+        btn.classList.add('selected-button');
+      } else {
+        const parent = btn.closest('.dropdown');
+        if (parent) parent.querySelector('.dropbtn').classList.add('selected-button');
+        btn.classList.add('selected-button');
+      }
+      document.querySelectorAll('.dropdown').forEach(dd => dd.classList.remove('open'));
     }
 
-    // Default: show Home/app-home, set its iframe src
+    // ─── New: detect Windows and add class ─────────────────────────────────────
+    if (navigator.platform.toLowerCase().includes('win')) {
+      document.body.classList.add('windows');
+    }
+
+    // Default on load
     window.onload = function() {
-        updateLanguage();
-        showApp('app-home', document.getElementById('btn-home'));
+      updateLanguage();
+      showApp('app-home', document.getElementById('btn-home'));
     }
-</script>
+  </script>
 </body>
 </html>
