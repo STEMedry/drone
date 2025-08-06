@@ -37,6 +37,7 @@
       display: flex;
       flex-direction: column;
       padding: 0 16px 18px 0;
+      position: relative;
     }
 
     .info-box {
@@ -49,32 +50,38 @@
 
     .info-box-title {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       font-size: 1.50em;
       font-weight: bold;
-      margin-bottom: 10px; /* Reduced spacing */
+      margin-bottom: 10px;
       color: #a25c0d;
       letter-spacing: 0.02em;
-      font-family: Arial, sans-serif; /* Font change */
+      font-family: Arial, sans-serif;
+    }
+
+    .info-box-title span {
+      display: block;
+      width: 100%;
     }
 
     .info-box-content {
       font-size: 0.95em;
       color: #5b3d1c;
       white-space: pre-line;
-      font-family: Arial, sans-serif; /* Font change */
+      font-family: Arial, sans-serif;
     }
 
     .info-box-content p {
       margin-top: 0;
-      margin-bottom: 0.2em; /* Adjusted spacing between paragraphs */
+      margin-bottom: 1em; /* Maintains gaps between paragraphs */
     }
 
     .right-col {
       width: 60%;
       min-width: 350px;
       display: flex;
-      align-items: flex-start; /* Aligns content to the top */
+      align-items: flex-start;
       justify-content: center;
     }
 
@@ -84,17 +91,37 @@
       border-radius: 12px;
       border: 3px solid black;
     }
+
+    .language-button {
+      position: absolute;
+      top: 10px;
+      right: 40px; /* Moved further left */
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 8px 12px;
+      font-size: 0.9em;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .language-button:hover {
+      background-color: #218838;
+    }
   </style>
 </head>
 <body>
   <div class="main-wrapper">
     <!-- LEFT COLUMN -->
     <div class="left-col">
-      <div class="info-box">
-        <div class="info-box-title">
-          Cognitive Development and Disciplinary Integration
+      <button class="language-button" id="languageButton">繁體中文</button>
+      <div class="info-box" id="infoBox">
+        <div class="info-box-title" id="infoTitle">
+          <span>Disciplinary Integration</span>
+          <span>and Cognitive Development</span>
         </div>
-        <div class="info-box-content">
+        <div class="info-box-content" id="infoContent">
           <p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
           <p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
           <p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
@@ -107,8 +134,45 @@
       <img src="frame.gif" alt="Frame" class="frame-image">
     </div>
   </div>
+  <script>
+    const languageButton = document.getElementById('languageButton');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoContent = document.getElementById('infoContent');
+
+    const englishContent = {
+      title: `<span>Disciplinary Integration</span><span>and Cognitive Development</span>`,
+      content: `
+        <p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
+        <p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
+        <p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
+        <p>In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
+      `
+    };
+
+    const chineseContent = {
+      title: `學科整合與認知發展`,
+      content: `
+        <p>課程按照布魯姆認知領域分類法，促進學科整合的逐步升級，引導學生從低階思維(記憶、理解和應用)到高階思維(分析、評估和創造)。</p>
+        <p>在初始階段（<b style="color:#C00000;">多學科</b>），學生利用在常規課堂中學到的科學、科技和數學知識來解決基礎問題。</p>
+        <p>在中級階段（<b style="color:#008080;">跨學科</b>），他們在跨學科的場景中整合和測試自己的知識。</p>
+        <p>在最終階段（<b style="color:#A02B93;">跨領域</b>），學生參與工程設計任務(無人機自動水樣本採集系統)，綜合他們所學，解決現實世界的挑戰，同時展現批判性思維、創造力和計算思維。</p>
+      `
+    };
+
+    let isEnglish = true;
+
+    languageButton.addEventListener('click', () => {
+      isEnglish = !isEnglish;
+      if (isEnglish) {
+        languageButton.textContent = "繁體中文";
+        infoTitle.innerHTML = englishContent.title;
+        infoContent.innerHTML = englishContent.content;
+      } else {
+        languageButton.textContent = "English";
+        infoTitle.innerHTML = chineseContent.title;
+        infoContent.innerHTML = chineseContent.content;
+      }
+    });
+  </script>
 </body>
 </html>
-
-
-
