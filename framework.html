@@ -29,6 +29,7 @@
       height: 85vh;
       max-height: 720px;
       min-height: 520px;
+      align-items: flex-start;
     }
 
     .left-col {
@@ -36,78 +37,189 @@
       min-width: 270px;
       display: flex;
       flex-direction: column;
+      gap: 14px;
       padding: 0 16px 18px 0;
       position: relative;
+      align-items: flex-start;
+      justify-content: flex-start;
     }
 
-    .info-box {
+    /* Uniform box styles */
+    .exp-box {
       border-radius: 14px;
       box-shadow: 0 4px 18px rgba(80, 110, 143, 0.11), 0 2px 7px rgba(0, 0, 0, 0.08);
-      padding: 20px 22px 22px 22px;
       background: linear-gradient(120deg, #f7f2e7 70%, #f9e2e2 100%);
       border: 2.3px solid #222;
+      overflow: hidden;
+      cursor: pointer;
+      width: 99%; /* Both boxes same width */
+      min-width: 0;
+      max-width: 100%;
+      margin-bottom: 0;
+      position: relative;
+      transition: box-shadow 0.22s;
+    }
+    .exp-box.expanded {
+      box-shadow: 0 6px 28px rgba(80, 110, 143, 0.21), 0 3px 10px rgba(0, 0, 0, 0.11);
+      z-index: 1;
     }
 
-    .info-box-title {
+    .exp-title-bar {
       display: flex;
-      flex-wrap: wrap;
       align-items: center;
-      font-size: 1.50em;
+      font-size: 1.27em;
       font-weight: bold;
-      margin-bottom: 10px;
       color: #a25c0d;
       letter-spacing: 0.02em;
       font-family: Arial, sans-serif;
-    }
-
-    .info-box-title span {
-      display: block;
+      padding: 17px 22px 8px 22px;
+      user-select: none;
       width: 100%;
+      box-sizing: border-box;
+    }
+    .exp-arrow {
+      margin-left: auto;
+      font-size: 1.25em;
+      transition: transform 0.22s;
+      user-select: none;
+    }
+    .exp-box.expanded .exp-arrow {
+      transform: rotate(90deg);
     }
 
-    .info-box-content {
-      font-size: 0.95em;
-      color: #5b3d1c;
+    .exp-title-text {
+      display: block;
+      line-height: 1.22;
       white-space: pre-line;
+    }
+
+    .exp-content {
+      font-size: 0.97em;
+      color: #5b3d1c;
+      font-family: Arial, sans-serif;
+      padding: 0 22px 16px 22px;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height 0.38s cubic-bezier(0.4,0,0.2,1), opacity 0.25s;
+      box-sizing: border-box;
+    }
+    .exp-box.expanded .exp-content {
+      max-height: 900px;
+      opacity: 1;
+      transition: max-height 0.48s cubic-bezier(0.4,0,0.2,1), opacity 0.31s;
+    }
+
+    /* Reduce paragraph spacing here */
+    .exp-content p {
+      margin-top: 0.18em;
+      margin-bottom: 1.00em; /* Adjust this value to control vertical paragraph gap */
+    }
+    /* For the lesson list */
+    .exp-list {
+      margin: 0;
+      padding-left: 0;
+      list-style: none;
+    }
+    .exp-list li {
+      padding: 2.5px 0 2.5px 0;
+      margin: 0;
       font-family: Arial, sans-serif;
     }
+    /* Lesson Topic color coding */
+    .lesson-st { color: #4A6FBA; }
+    .lesson-ms { color: #CC00FF; }
+    .lesson-tm { color: #8B4F6B; }
+    .lesson-stem { color: #008000; }
 
-    .info-box-content p {
-      margin-top: 0;
-      margin-bottom: 1em; /* Maintains gaps between paragraphs */
+    .exp-list .exp-list-group {
+      margin: 8px 0 2px 0;
+      font-weight: bold;
+      font-size: 1.02em;
+      color: #58320f;
+      font-family: Arial, sans-serif;
     }
 
     .right-col {
       width: 60%;
       min-width: 350px;
       display: flex;
-      align-items: flex-start;
-      justify-content: center;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-start;
+      position: relative;
+      /* To align gif top with left-col top */
+      padding-top: 0;
     }
 
+    .frame-image-wrapper {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-width: 100%;
+    }
     .frame-image {
       max-width: 100%;
       max-height: 100%;
       border-radius: 12px;
       border: 3px solid black;
+      display: block;
     }
 
     .language-button {
       position: absolute;
-      top: 10px;
-      right: 40px; /* Moved further left */
+      top: 14px;
+      right: 22px;
       background-color: #28a745;
       color: white;
       border: none;
       border-radius: 5px;
-      padding: 8px 12px;
-      font-size: 0.9em;
+      padding: 8px 14px;
+      font-size: 0.95em;
       cursor: pointer;
       transition: background-color 0.3s ease;
+      z-index: 6;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
     }
-
     .language-button:hover {
       background-color: #218838;
+    }
+
+    @media (max-width: 900px) {
+      .main-wrapper {
+        flex-direction: column;
+        height: auto;
+        max-height: none;
+        min-height: 0;
+        align-items: stretch;
+      }
+      .left-col, .right-col {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        align-items: stretch;
+      }
+      .left-col {
+        padding: 0 0 14px 0;
+        align-items: stretch;
+      }
+      .frame-image-wrapper {
+        width: 100vw;
+        min-width: 0;
+        max-width: 100vw;
+      }
+      .frame-image {
+        max-width: 100vw;
+      }
+      .language-button {
+        right: 12px;
+        top: 8px;
+      }
+      .exp-box {
+        width: 99vw;
+        min-width: 0;
+        max-width: 100%;
+      }
     }
   </style>
 </head>
@@ -115,64 +227,175 @@
   <div class="main-wrapper">
     <!-- LEFT COLUMN -->
     <div class="left-col">
-      <button class="language-button" id="languageButton">繁體中文</button>
-      <div class="info-box" id="infoBox">
-        <div class="info-box-title" id="infoTitle">
-          <span>Disciplinary Integration</span>
-          <span>and Cognitive Development</span>
+      <!-- Expandable Box 1 -->
+      <div class="exp-box" id="expBox1">
+        <div class="exp-title-bar" id="expTitleBar1">
+          <span class="exp-title-text" id="expTitle1">Disciplinary Integration<br>and Cognitive Development</span>
+          <span class="exp-arrow" id="expArrow1">&#9654;</span>
         </div>
-        <div class="info-box-content" id="infoContent">
-          <p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
-          <p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
-          <p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
-          <p>In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
+        <div class="exp-content" id="expContent1">
+          <p>
+            The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).
+          </p>
+          <p>
+            In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.
+          </p>
+          <p>
+            In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.
+          </p>
+          <p>
+            In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.
+          </p>
+        </div>
+      </div>
+      <!-- Expandable Box 2 -->
+      <div class="exp-box" id="expBox2">
+        <div class="exp-title-bar" id="expTitleBar2">
+          <span class="exp-title-text" id="expTitle2">Lesson Topic</span>
+          <span class="exp-arrow" id="expArrow2">&#9654;</span>
+        </div>
+        <div class="exp-content" id="expContent2" style="padding-bottom:13px;">
+          <ul class="exp-list">
+            <li class="lesson-st"><b>L01 (ST):</b> Drone Technology &amp; Piloting Skills</li>
+            <li class="lesson-st"><b>L02 (ST):</b> Newton’s Laws of Motion &amp; Flight Principle (1)</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-ms"><b>L03 (MS):</b> Flight Principle (2) &amp; Horizontal Flight Speed</li>
+            <li class="lesson-ms"><b>L04 (MS):</b> Angle of View (AOV) of Drone Camera</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-tm"><b>L05 (TM):</b> Drone Coding &amp; Circumnavigation</li>
+            <li class="lesson-tm"><b>L06 (TM):</b> Path Programming Design</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-stem"><b>L07 (STEM):</b> Drone-assisted Water Sampling System Design</li>
+            <li class="lesson-stem"><b>L08 (STEM):</b> Automatic Drone Water Sampling and Delivery</li>
+          </ul>
         </div>
       </div>
     </div>
     <!-- RIGHT COLUMN -->
     <div class="right-col">
-      <img src="frame.gif" alt="Frame" class="frame-image">
+      <div class="frame-image-wrapper">
+        <button class="language-button" id="languageButton">繁體中文</button>
+        <img src="frame.gif" alt="Frame" class="frame-image">
+      </div>
     </div>
   </div>
   <script>
+    // Language switching
     const languageButton = document.getElementById('languageButton');
-    const infoTitle = document.getElementById('infoTitle');
-    const infoContent = document.getElementById('infoContent');
+    const expTitle1 = document.getElementById('expTitle1');
+    const expContent1 = document.getElementById('expContent1');
+    const expTitle2 = document.getElementById('expTitle2');
+    const expContent2 = document.getElementById('expContent2');
 
-    const englishContent = {
-      title: `<span>Disciplinary Integration</span><span>and Cognitive Development</span>`,
-      content: `
-        <p>The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).</p>
-        <p>In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.</p>
-        <p>In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.</p>
-        <p>In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.</p>
-      `
+    const english = {
+      box1: {
+        title: "Disciplinary Integration<br>and Cognitive Development",
+        content: `
+          <p>
+            The curriculum fosters a progressive escalation of disciplinary integration in alignment with Bloom’s Taxonomy of Cognitive Domains. It guides students from lower-order thinking (remember, understand &amp; apply) to higher-order thinking (analyze, evaluate, and create).
+          </p>
+          <p>
+            In the initial phase <b style="color:#C00000;">(multidisciplinary)</b>, students use knowledge of science, technology, and mathematics learned in ordinary lessons to solve foundational problems.
+          </p>
+          <p>
+            In the intermediate phase <b style="color:#008080;">(interdisciplinary)</b>, they integrate and test their knowledge in interdisciplinary scenarios.
+          </p>
+          <p>
+            In the final phase <b style="color:#A02B93;">(transdisciplinary)</b>, students engage in engineering design tasks (automatic drone-based water sampling system), synthesizing their learning to solve real-world challenges while demonstrating critical thinking, creativity, and computational thinking.
+          </p>
+        `
+      },
+      box2: {
+        title: "Lesson Topic",
+        content: `
+          <ul class="exp-list">
+            <li class="lesson-st"><b>L01 (ST):</b> Drone Technology &amp; Piloting Skills</li>
+            <li class="lesson-st"><b>L02 (ST):</b> Newton’s Laws of Motion &amp; Flight Principle (1)</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-ms"><b>L03 (MS):</b> Flight Principle (2) &amp; Horizontal Flight Speed</li>
+            <li class="lesson-ms"><b>L04 (MS):</b> Angle of View (AOV) of Drone Camera</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-tm"><b>L05 (TM):</b> Drone Coding &amp; Circumnavigation</li>
+            <li class="lesson-tm"><b>L06 (TM):</b> Path Programming Design</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-stem"><b>L07 (STEM):</b> Drone-assisted Water Sampling System Design</li>
+            <li class="lesson-stem"><b>L08 (STEM):</b> Automatic Drone Water Sampling and Delivery</li>
+          </ul>
+        `
+      }
     };
 
-    const chineseContent = {
-      title: `學科整合與認知發展`,
-      content: `
-        <p>課程按照布魯姆認知領域分類法，促進學科整合的逐步升級，引導學生從低階思維(記憶、理解和應用)到高階思維(分析、評估和創造)。</p>
-        <p>在初始階段（<b style="color:#C00000;">多學科</b>），學生利用在常規課堂中學到的科學、科技和數學知識來解決基礎問題。</p>
-        <p>在中級階段（<b style="color:#008080;">跨學科</b>），他們在跨學科的場景中整合和測試自己的知識。</p>
-        <p>在最終階段（<b style="color:#A02B93;">跨領域</b>），學生參與工程設計任務(無人機自動水樣本採集系統)，綜合他們所學，解決現實世界的挑戰，同時展現批判性思維、創造力和計算思維。</p>
-      `
+    const chinese = {
+      box1: {
+        title: "學科整合<br>與認知發展",
+        content: `
+          <p>
+            課程設計根據布魯姆認知層次理論，推動學科整合層級的循序提升，引導學生由低階思維（記憶、理解、應用）邁向高階思維（分析、評估、創造）。
+          </p>
+          <p>
+            在初階 <b style="color:#C00000;">（多學科）</b>，學生運用在常規課堂獲得的科學、科技與數學知識，解決基礎問題。
+          </p>
+          <p>
+            在中階 <b style="color:#008080;">（跨學科）</b>，學生將不同領域知識整合並於跨學科情境中驗證。
+          </p>
+          <p>
+            在高階 <b style="color:#A02B93;">（跨領域）</b>，學生進行工程設計實踐（自動無人機水樣採集系統），統整所學，解決真實問題，展現批判性思維、創造力及運算思維。
+          </p>
+        `
+      },
+      box2: {
+        title: "課題主題",
+        content: `
+          <ul class="exp-list">
+            <li class="lesson-st"><b>L01（ST）:</b> 無人機技術與飛行操作技能</li>
+            <li class="lesson-st"><b>L02（ST）:</b> 牛頓運動定律與飛行原理（一）</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-ms"><b>L03（MS）:</b> 飛行原理（二）與水平飛行速度</li>
+            <li class="lesson-ms"><b>L04（MS）:</b> 無人機鏡頭視角（AOV）</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-tm"><b>L05（TM）:</b> 無人機編程與繞圈飛行</li>
+            <li class="lesson-tm"><b>L06（TM）:</b> 路徑編程設計</li>
+            <li class="exp-list-group"></li>
+            <li class="lesson-stem"><b>L07（STEM）:</b> 無人機輔助水樣採集系統設計</li>
+            <li class="lesson-stem"><b>L08（STEM）:</b> 無人機自動水樣採集與運送</li>
+          </ul>
+        `
+      }
     };
 
     let isEnglish = true;
 
+    function updateLanguage() {
+      expTitle1.innerHTML = isEnglish ? english.box1.title : chinese.box1.title;
+      expContent1.innerHTML = isEnglish ? english.box1.content : chinese.box1.content;
+      expTitle2.innerHTML = isEnglish ? english.box2.title : chinese.box2.title;
+      expContent2.innerHTML = isEnglish ? english.box2.content : chinese.box2.content;
+      languageButton.textContent = isEnglish ? "繁體中文" : "English";
+    }
+
     languageButton.addEventListener('click', () => {
       isEnglish = !isEnglish;
-      if (isEnglish) {
-        languageButton.textContent = "繁體中文";
-        infoTitle.innerHTML = englishContent.title;
-        infoContent.innerHTML = englishContent.content;
-      } else {
-        languageButton.textContent = "English";
-        infoTitle.innerHTML = chineseContent.title;
-        infoContent.innerHTML = chineseContent.content;
-      }
+      updateLanguage();
     });
+
+    // Expand/collapse logic
+    function setupExpander(boxId, barId, arrowId, contentId) {
+      const box = document.getElementById(boxId);
+      const bar = document.getElementById(barId);
+      bar.addEventListener('click', function(e) {
+        // Only allow one expanded at a time
+        document.querySelectorAll('.exp-box').forEach(function(b) {
+          if (b !== box) b.classList.remove('expanded');
+        });
+        box.classList.toggle('expanded');
+      });
+    }
+    setupExpander('expBox1', 'expTitleBar1', 'expArrow1', 'expContent1');
+    setupExpander('expBox2', 'expTitleBar2', 'expArrow2', 'expContent2');
+    // On load, default to collapsed
+    document.getElementById('expBox1').classList.remove('expanded');
+    document.getElementById('expBox2').classList.remove('expanded');
+    updateLanguage();
   </script>
 </body>
 </html>
