@@ -148,7 +148,6 @@
       align-items: flex-end;
       justify-content: flex-start;
       position: relative;
-      /* To align gif top with left-col top */
       padding-top: 0;
     }
 
@@ -248,7 +247,24 @@
           </p>
         </div>
       </div>
-      <!-- Expandable Box 2 -->
+      <!-- Expandable Box 2: Experiential Learning Cycle -->
+      <div class="exp-box" id="expBox3">
+        <div class="exp-title-bar" id="expTitleBar3">
+          <span class="exp-title-text" id="expTitle3">Experiential Learning Cycle</span>
+          <span class="exp-arrow" id="expArrow3">&#9654;</span>
+        </div>
+        <div class="exp-content" id="expContent3">
+          <p style="color: #0000FF;">&#9679; Concrete Experience (CE) facilitates direct engagement,</p>
+          <p style="color: #008000;">&#9679; Reflective Observation (RO) enables critical analysis,</p>
+          <p style="color: #996633;">&#9679; Abstract Conceptualization (AC) forms theoretical constructs, and</p>
+          <p style="color: #FF33CC;">&#9679; Active Experimentation (AE) implements applications.</p>
+          <img src="cycle.gif" alt="Experiential Learning Cycle" style="width:100%; max-width:400px; display:block; margin: 10px auto;">
+          <p style="font-size: 0.85em; text-align: center;">
+            Kolb, D. (1984). Experiential Learning: Experience as the source of learning and development. Englewood Cliffs, NJ: Prentice-Hall.
+          </p>
+        </div>
+      </div>
+      <!-- Expandable Box 3 -->
       <div class="exp-box" id="expBox2">
         <div class="exp-title-bar" id="expTitleBar2">
           <span class="exp-title-text" id="expTitle2">Lesson Topic</span>
@@ -286,6 +302,8 @@
     const expContent1 = document.getElementById('expContent1');
     const expTitle2 = document.getElementById('expTitle2');
     const expContent2 = document.getElementById('expContent2');
+    const expTitle3 = document.getElementById('expTitle3');
+    const expContent3 = document.getElementById('expContent3');
 
     const english = {
       box1: {
@@ -322,6 +340,19 @@
             <li class="lesson-stem"><b>L08 (STEM):</b> Automatic Drone Water Sampling and Delivery</li>
           </ul>
         `
+      },
+      box3: {
+        title: "Experiential Learning Cycle",
+        content: `
+          <p style="color: #0000FF;">&#9679; Concrete Experience (CE) facilitates direct engagement,</p>
+          <p style="color: #008000;">&#9679; Reflective Observation (RO) enables critical analysis,</p>
+          <p style="color: #996633;">&#9679; Abstract Conceptualization (AC) forms theoretical constructs, and</p>
+          <p style="color: #FF33CC;">&#9679; Active Experimentation (AE) implements applications.</p>
+          <img src="cycle.gif" alt="Experiential Learning Cycle" style="width:100%; max-width:400px; display:block; margin: 10px auto;">
+          <p style="font-size: 0.85em; text-align: left;">
+            Kolb, D. (1984). <i>Experiential Learning: Experience as the source of learning and development<i>. Englewood Cliffs, NJ: Prentice-Hall.
+          </p>
+        `
       }
     };
 
@@ -343,7 +374,7 @@
           </p>
         `
       },
-      box2: {
+box2: {
         title: "課題主題",
         content: `
           <ul class="exp-list">
@@ -360,6 +391,19 @@
             <li class="lesson-stem"><b>L08（STEM）:</b> 無人機自動水樣採集與運送</li>
           </ul>
         `
+      },
+      box3: {
+        title: "經驗學習循環",
+        content: `
+          <p style="color: #0000FF;">&#9679; 具體經驗（CE）促進直接參與，</p>
+          <p style="color: #008000;">&#9679; 反思觀察（RO）使得批判性分析成為可能，</p>
+          <p style="color: #996633;">&#9679; 抽象概念化（AC）形成理論構建，</p>
+          <p style="color: #FF33CC;">&#9679; 主動實驗（AE）實施應用。</p>
+          <img src="cycle.gif" alt="經驗學習循環" style="width:100%; max-width:400px; display:block; margin: 10px auto;">
+          <p style="font-size: 0.85em; text-align: left;">
+            Kolb, D. (1984). <i>Experiential Learning: Experience as the source of learning and development</i>. Englewood Cliffs, NJ: Prentice-Hall.
+          </p>
+        `
       }
     };
 
@@ -370,6 +414,8 @@
       expContent1.innerHTML = isEnglish ? english.box1.content : chinese.box1.content;
       expTitle2.innerHTML = isEnglish ? english.box2.title : chinese.box2.title;
       expContent2.innerHTML = isEnglish ? english.box2.content : chinese.box2.content;
+      expTitle3.innerHTML = isEnglish ? english.box3.title : chinese.box3.title;
+      expContent3.innerHTML = isEnglish ? english.box3.content : chinese.box3.content;
       languageButton.textContent = isEnglish ? "繁體中文" : "English";
     }
 
@@ -392,9 +438,11 @@
     }
     setupExpander('expBox1', 'expTitleBar1', 'expArrow1', 'expContent1');
     setupExpander('expBox2', 'expTitleBar2', 'expArrow2', 'expContent2');
+    setupExpander('expBox3', 'expTitleBar3', 'expArrow3', 'expContent3');
     // On load, default to collapsed
     document.getElementById('expBox1').classList.remove('expanded');
     document.getElementById('expBox2').classList.remove('expanded');
+    document.getElementById('expBox3').classList.remove('expanded');
     updateLanguage();
   </script>
 </body>
