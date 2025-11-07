@@ -486,7 +486,7 @@
       en: {
         button: "繁體中文",
         introTitle: "Introduction",
-        intro: "This web-based platform, developed under the Hybrid Intelligence and AI-TPACK frameworks, offers GenAI-powered interactive simulations that support guided inquiry-based learning in the Drone-integrated Cross-disciplinary STEM Curriculum (DCSC). Used alongside the DCSC instruction handbook, it provides a cost-effective and interdisciplinary approach to drone-enhanced STEM education.",
+        intro: "This web-based platform, developed under the Hybrid Intelligence and AI-TPACK frameworks, offers GenAI-powered interactive simulations that support guided inquiry-based learning in the Drone-integrated Cross-disciplinary STEM Curriculum (DCSC). Used alongside the <a href=\"https://heyzine.com/flip-book/1f6ed7cd63.html\" target=\"_blank\" rel=\"noopener noreferrer\">DCSC instruction handbook</a>, it provides a cost-effective and interdisciplinary approach to drone-enhanced STEM education.",
         introNote: "<b><u>(Recommended using a computer browser or iPad.)</u></b>",
         challengesTitle: "This simulation supports drone education strategies, including:",
         challenges: [
@@ -517,7 +517,7 @@
       zh: {
         button: "English",
         introTitle: "介紹",
-        intro: "本網上平台依據「混合智慧」與「AI-TPACK」理論建構，透過生成式人工智慧互動模擬，支援「無人機融合跨學科STEM課程」（DCSC）中的引導式探究學習。此平台與DCSC教學手冊搭配使用，提供具成本效益的跨學科無人機STEM教育方案。",
+        intro: "本網上平台依據「混合智慧」與「AI-TPACK」理論建構，透過生成式人工智能互動模擬，支援「無人機整合跨學科STEM課程」（DCSC）中的引導式探究學習。此平台與 <a href=\"https://heyzine.com/flip-book/1f6ed7cd63.html\" target=\"_blank\" rel=\"noopener noreferrer\">DCSC 教學手冊</a> 搭配使用，提供具成本效益的跨學科無人機STEM教育方案。",
         introNote: "<b><u>（建議使用電腦瀏覽器或 iPad 進行體驗）</u></b>",
         challengesTitle: "本模擬支援無人機教育的策略包括：",
         challenges: [
@@ -538,7 +538,7 @@
         qpPedagogy: "發現式學習|反思性可視化",
         daTitle: "無人機攝影視角",
         daDesc: "探索視角、視野和高度的關係，測量可攝面積和建築物大小。",
-        daPedagogy: "計算思維|情境模擬學習",
+        daPedagogy: "運算思維|情境模擬學習",
         csTitle: "代碼模擬",
         csDesc: "使用路徑預覽功能，設計、測試和修訂無人機巡航編程。",
         csPedagogy: "問題導向學習|算法設計",
@@ -567,7 +567,7 @@
 
     function renderIntro() {
       const translation = translations[currentLang];
-      document.getElementById('intro-text').innerText = translation.intro;
+      document.getElementById('intro-text').innerHTML = translation.intro;
       document.getElementById('intro-note').innerHTML = translation.introNote;
     }
 
@@ -624,8 +624,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
