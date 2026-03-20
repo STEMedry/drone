@@ -256,7 +256,7 @@
       width: 100%;
       height: 100%;
       background-color: rgba(0,0,0,0.8);
-      z-index: 2000;
+      z-index: 20000;
       justify-content: center;
       align-items: center;
     }
@@ -299,20 +299,33 @@
     #tutorialNavigation button:hover {
       background-color: #45a049;
     }
-    #highlightBox {
-      position: fixed;
-      border: 3px solid #FFA500;
-      border-radius: 5px;
-      z-index: 2500;
-      pointer-events: none;
-      box-sizing: border-box;
-      display: none;
-      transition: all 0.3s ease;
-      background: transparent;
-    }
-    #tutorialOverlay.active {
-      background-color: rgba(0, 0, 0, 0.8);
-    }
+#highlightBox{
+  position: fixed;
+  z-index: 2147483647;   /* sit on the absolute top */
+  pointer-events: none;
+
+  /* frame */
+  border: 4px solid #FFA500;
+  border-radius: 7px;
+
+  /* bright orange glow */
+  box-shadow:
+      0 0 10px 4px rgba(255,165,0,0.9),
+      0 0 30px 8px rgba(255,165,0,0.5) inset;
+
+  /* make the area inside the frame VERY slightly tinted so the
+     user sees it immediately, without actually dimming anything */
+  background: rgba(255,165,0,0.06);
+
+  display: none;
+  transition: all .25s ease;
+}
+#tutorialOverlay{
+  position: fixed;
+  inset: 0;              /* whatever your file currently has here */
+  z-index: 9998;         /* NEW – lift the entire overlay above the panels */
+  background-color: transparent;   /* or rgba(0,0,0,.15) if you kept the wash */
+}
     #calc1Results .aovRow {
       display: flex;
       justify-content: space-between;
@@ -515,6 +528,7 @@
   </style>
 </head>
 <body>
+<div id="highlightBox"></div>
   <!-- Title -->
   <div id="title">
     <h1 data-i18n="Dronography AOV Simulation" data-i18n-zh="航拍視角模擬">Dronography AOV Simulation</h1>
@@ -675,6 +689,7 @@
           This tutorial will guide you through the various features of the Dronography AOV Simulation. Let's get started!
         </p>
       </div>
+
       <div class="step" data-step="2">
         <h2 data-i18n="Aspect Ratio Selection" data-i18n-zh="畫幅比例選擇">Aspect Ratio Selection</h2>
         <p data-i18n="Use the Aspect Ratio buttons to select the desired aspect ratio. This changes how the camera view is proportioned." data-i18n-zh="使用畫幅比例按鈕選擇所需的畫幅比例。這將改變相機視圖的比例。">
@@ -713,15 +728,7 @@
       </div>
       <div class="step" data-step="7">
         <h2 data-i18n="Calculation Controls" data-i18n-zh="計算控制">Calculation Controls</h2>
-
-<div class="step" data-step="7">
-  <h2 data-i18n="Calculation Controls" data-i18n-zh="計算控制">Calculation Controls</h2>
-  <p data-i18n="The right panel displays the horizontal and vertical AOV values along with the FOV Width and Diagonal AOV. These values synchronize with the drone altitude and FOV measurements shown in section 1 and 2." 
-     data-i18n-zh="右側面板自動顯示水平與垂直視角、視角寬度與對角視角，並與第1與第2部分顯示的無人機高度與FOV測量數據同步。">
-    The right panel displays the horizontal and vertical AOV values along with the FOV Width and Diagonal AOV. These values synchronize with the drone altitude and FOV measurements shown in section 1 and 2.
-  </p>
-</div>
-
+</div>  
       <div class="step" data-step="8">
         <h2 data-i18n="View Controls" data-i18n-zh="視圖控制">View Controls</h2>
         <p data-i18n="Use the view control buttons at the bottom to manipulate the camera view. You can tilt, rotate, zoom, and move the camera to better observe the simulation." data-i18n-zh="使用底部的視圖控制按鈕移動相機。您可以傾斜、旋轉、縮放及移動相機，以更好地觀察模擬。">
@@ -747,10 +754,7 @@
     </div>
   </div>
 
-  <!-- Highlight Box for Tutorial -->
-  <div id="highlightBox"></div>
-
-  
+ 
   <!-- Three.js Library -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   
@@ -792,6 +796,8 @@
     
     let showFOVWidthLabel = false;
     let showFOVHeightLabel = false;
+
+    let currentLang = 'en';
 
 
     /*******************************************************
@@ -2073,18 +2079,7 @@ if (altitude > 0) {
     }
     
     init();
-
-// Add the event listeners for the "Show" buttons for Panel 1 FOV Width and Height
-document.getElementById('showFOVWidthBtn').addEventListener('click', function() {
-  showFOVWidthLabel = !showFOVWidthLabel;
-  this.textContent = showFOVWidthLabel ? 'Hide' : 'Show';
-  updateFOV();
-});
-document.getElementById('showFOVHeightBtn').addEventListener('click', function() {
-  showFOVHeightLabel = !showFOVHeightLabel;
-  this.textContent = showFOVHeightLabel ? 'Hide' : 'Show';
-  updateFOV();
-});
+  updateShowHideButtons();
 
     animate();
     updateAltitudeAreaCurve();
@@ -2197,24 +2192,23 @@ document.getElementById('showFOVHeightBtn').addEventListener('click', function()
     document.getElementById('moveBackward').addEventListener('click', moveBackward);
     
     // Language Switching
+const languageToggle = document.getElementById('languageToggle');
 const elements = document.querySelectorAll('[data-i18n], [data-i18n-zh]');
 
 languageToggle.addEventListener('click', () => {
-  if (languageToggle.textContent === '繁體中文') {
-    languageToggle.textContent = 'English';
-    elements.forEach(element => {
-      if (element.hasAttribute('data-i18n-zh')) {
-        element.textContent = element.getAttribute('data-i18n-zh');
-      }
-    });
-  } else {
-    languageToggle.textContent = '繁體中文';
-    elements.forEach(element => {
-      if (element.hasAttribute('data-i18n')) {
-        element.textContent = element.getAttribute('data-i18n');
-      }
-    });
-  }
+  // flip the flag
+  currentLang = currentLang === 'en' ? 'zh' : 'en';
+
+  // change the button label so the user knows what the NEXT click will do
+  languageToggle.textContent = currentLang === 'en' ? '繁體中文' : 'English';
+
+  // translate every element that carries the data-i18n attributes
+  updateLanguageText();
+
+  // make the “Show / Hide” buttons follow the new language
+  updateShowHideButtons();
+
+  // tutorial / hint pop-ups, etc.
   updateTutorialTranslation();
   updateHintModalsLanguage();
 });
@@ -2235,10 +2229,41 @@ function updateLanguageText() {
 }
 
 
-    function getTranslation(en, zh) {
-      return languageToggle.textContent === '繁體中文' ? en : zh;
-    }
-    
+function getTranslation(en, zh) {
+  return currentLang === 'en' ? en : zh;
+}
+
+function updateShowHideButtons () {
+  const showTxt = getTranslation('Show','顯示');
+  const hideTxt = getTranslation('Hide','隱藏');
+
+  const wBtn = document.getElementById('showFOVWidthBtn');
+  const hBtn = document.getElementById('showFOVHeightBtn');
+
+  if (wBtn) wBtn.textContent = showFOVWidthLabel  ? hideTxt : showTxt;
+  if (hBtn) hBtn.textContent = showFOVHeightLabel ? hideTxt : showTxt;
+}
+
+const widthBtn  = document.getElementById('showFOVWidthBtn');
+const heightBtn = document.getElementById('showFOVHeightBtn');
+
+if (widthBtn) {
+  widthBtn.addEventListener('click', () => {
+    showFOVWidthLabel = !showFOVWidthLabel;   // flip flag
+    updateShowHideButtons();                  // change button caption
+    updateFOV();                              // redraw scene
+  });
+}
+
+if (heightBtn) {
+  heightBtn.addEventListener('click', () => {
+    showFOVHeightLabel = !showFOVHeightLabel;
+    updateShowHideButtons();
+    updateFOV();
+  });
+}
+
+
     /*****************
      * Tutorial Functionality & Highlighting
      *****************/
@@ -2259,9 +2284,10 @@ function updateLanguageText() {
     });
     
     closeTutorialButton.addEventListener('click', () => {
-      tutorialOverlay.style.display = 'none';
-      removeHighlight();
-    });
+    tutorialOverlay.style.display = 'none';
+    removeHighlight();
+    updateLanguageText();        // keep overlay texts in sync next time
+});
     
     nextStepButton.addEventListener('click', () => {
       if (currentStep < steps.length - 1) {
@@ -2271,6 +2297,7 @@ function updateLanguageText() {
       } else {
         tutorialOverlay.style.display = 'none';
         removeHighlight();
+        currentStep = 0;
       }
     });
     
@@ -2294,26 +2321,9 @@ function updateLanguageText() {
         nextStepButton.setAttribute('data-i18n', 'Next');
         nextStepButton.setAttribute('data-i18n-zh', '下一頁');
       }
-      if (languageToggle.textContent === '繁體中文') {
-        nextStepButton.textContent = nextStepButton.getAttribute('data-i18n');
-      } else {
-        nextStepButton.textContent = nextStepButton.getAttribute('data-i18n-zh');
-      }
+      updateLanguageText();   // <<< new line
     }
     
-    function updateLanguageText() {
-      elements.forEach(element => {
-        if (languageToggle.textContent === '繁體中文') {
-          if (element.hasAttribute('data-i18n')) {
-            element.textContent = element.getAttribute('data-i18n');
-          }
-        } else {
-          if (element.hasAttribute('data-i18n-zh')) {
-            element.textContent = element.getAttribute('data-i18n-zh');
-          }
-        }
-      });
-    }
     
     function highlightCurrentStep() {
       const targetSelector = getTargetSelector(currentStep);
@@ -2712,6 +2722,7 @@ renderer.domElement.addEventListener("touchend", function(e) {
 }, {passive:false});
 
   </script>
+
 </body>
 </html>
 
