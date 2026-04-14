@@ -2486,25 +2486,40 @@
       updateReplayButtonsState();
     }
 
-    document.getElementById("rthBtn").addEventListener("click", function () {
-      if (flightEnded) { showEndMessage(translations[currentLanguage].resetToRestart); return; }
-      if (drone.position.y < 1 || crashActive) return;
+document.getElementById("rthBtn").addEventListener("click", function () {
+  if (flightEnded) { showEndMessage(translations[currentLanguage].resetToRestart); return; }
+  if (drone.position.y < 1 || crashActive) return;
 
-      stopDemoMode();
-      manualRTH = true; rthActive = true;
-      rthActivationTime = totalFlightTime;
-      this.style.backgroundColor = "grey";
-      resetJoystickVisualsAndInputs();
+  if (rthActive) {
+    // STOP RTH: Return to manual control
+    rthActive = false;
+    manualRTH = false;
+    landingStartTime = null; 
+    this.style.backgroundColor = "#2196f3"; // Reset to default blue
+    document.getElementById("message").style.display = "none";
+    
+    // Stop RTH audio and restart normal flight audio
+    if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
+    if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
+    startFlyAudioIfNeeded(0.05);
+  } else {
+    // START RTH: Take over controls
+    stopDemoMode();
+    manualRTH = true; 
+    rthActive = true;
+    rthActivationTime = totalFlightTime;
+    this.style.backgroundColor = "grey";
+    resetJoystickVisualsAndInputs();
 
-      const msgDiv = document.getElementById("message");
-      msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
-      msgDiv.style.display = "block";
-      msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
+    const msgDiv = document.getElementById("message");
+    msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
+    msgDiv.style.display = "block";
+    msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
 
-      if (rth12Audio.paused) { rth12Audio.currentTime = 0; rth12Audio.play().catch(() => {}); }
-      stopFlyAudio();
-    });
-
+    if (rth12Audio.paused) { rth12Audio.currentTime = 0; rth12Audio.play().catch(() => {}); }
+    stopFlyAudio();
+  }
+});
     const translations = {
       en: {
         title: "Virtual Flight Simulator",
