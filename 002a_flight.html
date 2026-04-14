@@ -39,79 +39,49 @@
     }
 
     #advancedCongrats {
-      position: absolute;
-      top: 22%;
-      left: 50%;
-      transform: translate(-50%, -50%) scale(0.8);
-      z-index: 210;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
+      position: absolute; top: 22%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+      z-index: 210; opacity: 0; pointer-events: none; transition: opacity 0.25s ease;
     }
-    #advancedCongrats.show {
-      opacity: 1;
-      animation: popIn 0.5s ease forwards, floatPulse 1.6s ease-in-out infinite;
-    }
+    #advancedCongrats.show { opacity: 1; animation: popIn 0.5s ease forwards, floatPulse 1.6s ease-in-out infinite; }
     #advancedCongrats .badge {
-      padding: 14px 24px;
-      border-radius: 14px;
-      font-size: 30px;
-      font-weight: 900;
-      color: #fff;
-      letter-spacing: 1px;
-      text-align: center;
-      background: linear-gradient(135deg, #7b1fa2, #ff9800);
+      padding: 14px 24px; border-radius: 14px; font-size: 30px; font-weight: 900; color: #fff;
+      letter-spacing: 1px; text-align: center; background: linear-gradient(135deg, #7b1fa2, #ff9800);
       box-shadow: 0 10px 24px rgba(0,0,0,0.35), 0 0 24px rgba(255,193,7,0.55);
-      border: 2px solid rgba(255,255,255,0.85);
-      text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+      border: 2px solid rgba(255,255,255,0.85); text-shadow: 0 2px 6px rgba(0,0,0,0.35);
     }
     @keyframes popIn {
       0% { transform: translate(-50%, -50%) scale(0.6) rotate(-3deg); }
       70% { transform: translate(-50%, -50%) scale(1.08) rotate(1deg); }
       100% { transform: translate(-50%, -50%) scale(1) rotate(0); }
     }
-    @keyframes floatPulse {
-      0%, 100% { filter: brightness(1); }
-      50% { filter: brightness(1.15); }
-    }
+    @keyframes floatPulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.15); } }
 
     #encouragePopup {
-      position: absolute; top: 120px; left: 50%; transform: translateX(-50%);
+      position: absolute; left: 50%; transform: translateX(-50%);
       background: rgba(33, 150, 243, 0.95); color: #fff; padding: 12px 20px;
       font-size: 22px; font-weight: bold; border-radius: 8px; z-index: 125; display: none;
       box-shadow: 0 6px 16px rgba(0,0,0,0.25); text-align: center; max-width: 86vw;
     }
     #orderAlert {
-      position: absolute; top: 165px; left: 50%; transform: translateX(-50%);
+      position: absolute; left: 50%; transform: translateX(-50%);
       background: rgba(255, 152, 0, 0.95); color: #fff; padding: 10px 18px;
       font-size: 20px; font-weight: bold; border-radius: 8px; z-index: 126; display: none;
       box-shadow: 0 6px 16px rgba(0,0,0,0.25); text-align: center; max-width: 90vw;
     }
 
-    #obstacleWarning {
-      position: absolute;
-      top: 78px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: none;
-      z-index: 140;
-      padding: 10px 18px;
-      border-radius: 8px;
-      background: rgba(220, 0, 0, 0.92);
-      color: #fff;
-      font-size: 20px;
-      font-weight: 800;
-      letter-spacing: 0.5px;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.32);
-      text-align: center;
-      max-width: 92vw;
+    #obstacleWarning, #lakeAlert {
+      position: absolute; left: 50%; transform: translateX(-50%); display: none; z-index: 140;
+      padding: 10px 18px; border-radius: 8px; color: #fff; font-size: 20px; font-weight: 800;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.32); text-align: center; max-width: 92vw;
     }
+    #obstacleWarning { background: rgba(220, 0, 0, 0.92); }
+    #lakeAlert { background: rgba(0, 99, 184, 0.95); z-index: 141; }
 
     @keyframes blinking { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     .blinking { animation: blinking 1s infinite; }
 
     #alertMessage {
-      position: absolute; top: 100px; left: 50%; transform: translateX(-50%);
+      position: absolute; left: 50%; transform: translateX(-50%);
       background-color: rgba(255, 0, 0, 0.9); color: #fff;
       padding: 10px 20px; font-size: 20px; border: 2px solid #cc0000;
       border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 120;
@@ -130,15 +100,13 @@
       position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%);
       z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 10px;
       background: rgba(255,255,255,0.86); padding: 12px 14px; border-radius: 8px;
-      width: min(92vw, 1100px);
-      border: 1px solid rgba(0,0,0,0.08);
+      width: min(92vw, 1100px); border: 1px solid rgba(0,0,0,0.08);
     }
     #info { font-size: 18px; color: red; font-weight: bold; }
     #main-controls { display: flex; align-items: center; gap: 20px; }
 
     #speedContainer {
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      transform: translateY(-8px);
+      display: flex; flex-direction: column; align-items: center; gap: 8px; transform: translateY(-8px);
       width: 420px;
     }
     #speedLabel { font-size: 18px; font-weight: bold; }
@@ -150,15 +118,12 @@
     }
 
     #demoBtn, #fpvBtn, #landscapeBtn, #elementaryBtn, #intermediateBtn, #advancedBtn {
-      width: 130px; height: 42px; font-size: 13px; padding: 8px 8px;
-      white-space: nowrap; line-height: 1; text-align: center;
-      overflow: hidden; text-overflow: ellipsis;
-      border: none; border-radius: 5px; color: #fff;
+      width: 130px; height: 42px; font-size: 13px; padding: 8px 8px; white-space: nowrap; line-height: 1;
+      text-align: center; overflow: hidden; text-overflow: ellipsis; border: none; border-radius: 5px; color: #fff;
     }
 
     #rthBtn, #btn-reset {
-      width: 205px; height: 40px; font-size: 16px;
-      border: none; border-radius: 5px; font-weight: bold;
+      width: 205px; height: 40px; font-size: 16px; border: none; border-radius: 5px; font-weight: bold;
     }
 
     .joystick-container { width: 250px; height: 230px; position: relative; touch-action: none; }
@@ -170,8 +135,7 @@
     #rightJoystick .joystick-base { background: #FFDAB9; }
     .joystick-thumb {
       width: 70px; height: 70px; border: 2px solid #555; border-radius: 50%;
-      position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%);
-      touch-action: none;
+      position: absolute; left: 50%; top: 46%; transform: translate(-50%, -50%); touch-action: none;
     }
     #leftJoystick .joystick-thumb { background-color: darkgreen; }
     #rightJoystick .joystick-thumb { background-color: darkorange; }
@@ -197,29 +161,25 @@
 
     #replayBox {
       position: absolute; top: 20px; left: 20px; width: 230px;
-      background: rgba(255,255,255,0.9); border: 2px solid #ccc; border-radius: 5px;
-      padding: 10px; z-index: 30;
+      background: rgba(255,255,255,0.9); border: 2px solid #ccc; border-radius: 5px; padding: 10px; z-index: 30;
     }
     #replayTitle { margin: 5px 0; font-size: 16px; text-align: center; }
     #replayCanvas {
-      width: 180px; height: 180px; background: #f0f0f0; border: 1px solid #ccc;
-      display: block; margin: 5px auto; transform: rotate(180deg);
+      width: 180px; height: 180px; background: #f0f0f0; border: 1px solid #ccc; display: block; margin: 5px auto;
     }
     #replayInfo p { margin: 2px 0; font-size: 12px; text-align: center; }
     #replayButtons { display: flex; justify-content: center; gap: 5px; }
     #playReplay, #stopReplay {
-      padding: 5px 10px; font-size: 12px; border: none; border-radius: 5px;
-      cursor: pointer; background-color: #2196f3; color: white;
+      padding: 5px 10px; font-size: 12px; border: none; border-radius: 5px; cursor: pointer;
+      background-color: #2196f3; color: white;
     }
     #playReplay:disabled, #stopReplay:disabled {
       background-color: #9e9e9e !important; color: #fff; cursor: not-allowed; opacity: 1;
     }
 
     #statsBox {
-      position: absolute; top: 180px; right: 20px; width: 250px;
-      background: rgba(255,255,255,0.82); padding: 10px; border: 1px solid #ccc;
-      font-family: Arial, sans-serif; font-weight: bold; font-size: 15px;
-      text-align: left; line-height: 1.7;
+      position: absolute; top: 180px; right: 20px; width: 250px; background: rgba(255,255,255,0.82); padding: 10px;
+      border: 1px solid #ccc; font-family: Arial, sans-serif; font-weight: bold; font-size: 15px; text-align: left; line-height: 1.7;
     }
 
     .btn-green { background-color: #4caf50; color: white; }
@@ -227,24 +187,20 @@
     .btn-default { background-color: #2196f3; color: white; }
 
     #tutorialModal {
-      display: none; position: fixed; z-index: 200; left: 0; top: 0;
-      width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.8);
+      display: none; position: fixed; z-index: 200; left: 0; top: 0; width: 100%; height: 100%; overflow: auto;
+      background-color: rgba(0,0,0,0.8);
     }
     #tutorialContent {
       background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888;
       width: 80%; max-width: 800px; border-radius: 10px; position: relative;
     }
     .closeTutorial {
-      color: #aaa; position: absolute; top: 10px; right: 25px;
-      font-size: 30px; font-weight: bold; cursor: pointer;
+      color: #aaa; position: absolute; top: 10px; right: 25px; font-size: 30px; font-weight: bold; cursor: pointer;
     }
     .closeTutorial:hover, .closeTutorial:focus { color: black; text-decoration: none; }
-    .tutorial-image { width: 100%; height: auto; margin: 10px 0; }
     .tutorial-section { margin-bottom: 20px; }
     .tutorial-section h2 { margin-bottom: 10px; color: #2196f3; }
     .tutorial-section p, .tutorial-section ul { line-height: 1.6; }
-    .tutorial-section ul { padding-left: 20px; }
-    .tutorial-section li { margin-bottom: 5px; }
 
     @media only screen and (max-width: 768px) {
       #controls { width: 95%; padding: 12px 10px 14px; }
@@ -268,10 +224,12 @@
       #replayButtons { gap: 3px; }
       #playReplay, #stopReplay { padding: 4px 8px; font-size: 10px; }
       #edgePopup { font-size: 16px; min-width: 220px; }
-      #encouragePopup { font-size: 18px; top: 95px; }
-      #orderAlert { font-size: 16px; top: 135px; }
-      #obstacleWarning { font-size: 16px; top: 70px; }
       #advancedCongrats .badge { font-size: 20px; padding: 10px 14px; }
+
+      #encouragePopup { font-size: 18px; }
+      #orderAlert { font-size: 16px; }
+      #obstacleWarning { font-size: 16px; }
+      #lakeAlert { font-size: 16px; }
     }
   </style>
 </head>
@@ -287,6 +245,7 @@
   <div id="encouragePopup"></div>
   <div id="orderAlert"></div>
   <div id="obstacleWarning"></div>
+  <div id="lakeAlert"></div>
   <div id="alertMessage"></div>
   <div id="edgePopup"></div>
 
@@ -370,61 +329,12 @@
     <div id="tutorialContent">
       <span class="closeTutorial">&times;</span>
       <h1 id="tutorialHeading"></h1>
-
-      <div class="tutorial-section">
-        <h2 data-key="tutorial_intro_title">Welcome Pilot!</h2>
-        <p data-key="tutorial_intro_text">You are on a hoop-run mission. Take off, pass every hoop in order, and bring your drone home safely to win.</p>
-      </div>
-      <div class="tutorial-section">
-        <h2 data-key="tutorial_spatial_title">Read the Arena</h2>
-        <p data-key="tutorial_spatial_text">Think in three directions while flying: left-right, forward-backward, and up-down. Smooth control in all three is the key to clean runs.</p>
-        <img src="F01.jpg" alt="3D Axes" class="tutorial-image">
-      </div>
-      <div class="tutorial-section">
-        <h2 data-key="tutorial_movement_title">Core Moves You’ll Use</h2>
-        <p data-key="tutorial_movement_intro">Master these moves and you’ll clear hoops faster and safer:</p>
-        <ul>
-          <li><strong data-key="tutorial_movement_throttle_up">Throttle Up</strong> <span data-key="tutorial_movement_throttle_up_desc">Climb to match hoop height.</span></li>
-          <li><strong data-key="tutorial_movement_throttle_down">Throttle Down</strong> <span data-key="tutorial_movement_throttle_down_desc">Descend for low lines and landing.</span></li>
-          <li><strong data-key="tutorial_movement_yaw_left">Yaw Left</strong> <span data-key="tutorial_movement_yaw_left_desc">Turn left to line up your next target.</span></li>
-          <li><strong data-key="tutorial_movement_yaw_right">Yaw Right</strong> <span data-key="tutorial_movement_yaw_right_desc">Turn right to set your approach.</span></li>
-          <li><strong data-key="tutorial_movement_pitch_forward">Pitch Forward</strong> <span data-key="tutorial_movement_pitch_forward_desc">Drive forward through the course.</span></li>
-          <li><strong data-key="tutorial_movement_pitch_backward">Pitch Backward</strong> <span data-key="tutorial_movement_pitch_backward_desc">Slow and pull back to recover spacing.</span></li>
-          <li><strong data-key="tutorial_movement_roll_left">Roll Left</strong> <span data-key="tutorial_movement_roll_left_desc">Slide left for side-to-side correction.</span></li>
-          <li><strong data-key="tutorial_movement_roll_right">Roll Right</strong> <span data-key="tutorial_movement_roll_right_desc">Slide right to center in the hoop.</span></li>
-        </ul>
-        <img src="F02.jpg" alt="Drone Movements" class="tutorial-image">
-      </div>
-      <div class="tutorial-section">
-        <h2 data-key="tutorial_controls_title">How to Play</h2>
-        <p data-key="tutorial_controls_text">Use touch joysticks or keyboard—whatever feels best for your flying style:</p>
-        <ul>
-          <li><strong data-key="tutorial_controls_left_joystick">Left Joystick:</strong> <span data-key="tutorial_controls_left_joystick_desc">Altitude and turning.</span></li>
-          <li><strong data-key="tutorial_controls_right_joystick">Right Joystick:</strong> <span data-key="tutorial_controls_right_joystick_desc">Forward/back and side movement.</span></li>
-          <li><strong data-key="tutorial_controls_keyboard">Keyboard Controls:</strong>
-            <ul>
-              <li><strong>W/S:</strong> Throttle Up/Down</li>
-              <li><strong>A/D:</strong> Yaw Left/Right</li>
-              <li><strong>Arrow Up/Down:</strong> Pitch Forward/Backward</li>
-              <li><strong>Arrow Left/Right:</strong> Roll Left/Right</li>
-              <li><strong>Space:</strong> <span data-key="tutorial_controls_advanced_toggle">Toggle Advanced mode.</span></li>
-              <li><strong>F:</strong> <span data-key="tutorial_controls_fpv_toggle">Toggle FPV view.</span></li>
-              <li><strong>L:</strong> <span data-key="tutorial_controls_landscape_toggle">Toggle Landscape mountains.</span></li>
-              <li><strong>H:</strong> <span data-key="tutorial_controls_rth_toggle">Start Return-to-Home (RTH).</span></li>
-              <li><strong>R:</strong> <span data-key="tutorial_controls_reset">Reset mission.</span></li>
-            </ul>
-          </li>
-          <li><strong data-key="tutorial_controls_demo_button">DEMO Button:</strong> <span data-key="tutorial_controls_demo_button_desc">Auto-fly all hoops and land at home. You can turn it off anytime and continue manually.</span></li>
-        </ul>
-      </div>
-      <div class="tutorial-section">
-        <h2 data-key="tutorial_landscape_title">Landscape Challenge</h2>
-        <p data-key="tutorial_landscape_text">Landscape creates mountain ranges whose feet are sealed by flat ground-touching base planes. Some ranges contain large fly-through holes, and one resembles Mount Rushmore style.</p>
-      </div>
-      <div class="tutorial-section">
-        <h2 data-key="tutorial_flightpath_title">Mission Goal</h2>
-        <p data-key="tutorial_flightpath_text">Pass all hoops in sequence. Keep your line clean, avoid edge contact, then return and land at the home marker.</p>
-      </div>
+      <div class="tutorial-section"><h2 data-key="tutorial_intro_title"></h2><p data-key="tutorial_intro_text"></p></div>
+      <div class="tutorial-section"><h2 data-key="tutorial_spatial_title"></h2><p data-key="tutorial_spatial_text"></p></div>
+      <div class="tutorial-section"><h2 data-key="tutorial_movement_title"></h2><p data-key="tutorial_movement_intro"></p></div>
+      <div class="tutorial-section"><h2 data-key="tutorial_controls_title"></h2><p data-key="tutorial_controls_text"></p></div>
+      <div class="tutorial-section"><h2 data-key="tutorial_landscape_title"></h2><p data-key="tutorial_landscape_text"></p></div>
+      <div class="tutorial-section"><h2 data-key="tutorial_flightpath_title"></h2><p data-key="tutorial_flightpath_text"></p></div>
     </div>
   </div>
 
@@ -433,30 +343,43 @@
     function lerp(a, b, t) { return a + (b - a) * t; }
     function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
     function normalizeAngle(a) { while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; return a; }
+    function lerpAngle(a, b, t) { return normalizeAngle(a + normalizeAngle(b - a) * t); }
+
     function pseudoNoise2D(x, y) {
-      return (
-        Math.sin(x * 0.052 + y * 0.071) * 0.55 +
-        Math.sin(x * 0.117 - y * 0.049) * 0.30 +
-        Math.cos(x * 0.081 + y * 0.133) * 0.15
-      );
+      return Math.sin(x * 0.052 + y * 0.071) * 0.55 + Math.sin(x * 0.117 - y * 0.049) * 0.30 + Math.cos(x * 0.081 + y * 0.133) * 0.15;
+    }
+    function distPointToSegment2D(px, pz, ax, az, bx, bz) {
+      const vx = bx - ax, vz = bz - az;
+      const wx = px - ax, wz = pz - az;
+      const vv = vx * vx + vz * vz;
+      if (vv < 0.000001) return Math.hypot(px - ax, pz - az);
+      const t = clamp((wx * vx + wz * vz) / vv, 0, 1);
+      const cx = ax + vx * t, cz = az + vz * t;
+      return Math.hypot(px - cx, pz - cz);
     }
 
     const JOYSTICK_MAX_DIST = 34;
     const HOOP_MIN_HOME_RADIUS = 55;
     const HOOP_MAX_SAFE_RADIUS = 390;
+    const BIOME_HOME_BUFFER = 34;
+    const HOOP_TREE_CLEAR_RADIUS = 32;
+    const HOOP_LAKE_CLEAR_RADIUS = 28;
+    const MOUNTAIN_HOOP_BUFFER = 46;
+    const LAKE_MIN_HOVER_ALT = 1.05; // keep propellers active over lake
+
+    const CORRIDOR_HALF_WIDTH = 24;
+    const CORRIDOR_SAMPLE_STEP = 6;
+    const CORRIDOR_MTN_CLEAR = 20;
+    const CORRIDOR_TREE_CLEAR = 7;
+    const CORRIDOR_LAKE_CLEAR = 10;
 
     function clampPointToHoopSafeRadius(pt, minR = HOOP_MIN_HOME_RADIUS, maxR = HOOP_MAX_SAFE_RADIUS) {
       let x = pt.x, z = pt.z;
       let r = Math.hypot(x, z);
-
-      if (r > maxR) {
-        const s = maxR / (r || 1);
-        x *= s; z *= s; r = maxR;
-      }
+      if (r > maxR) { const s = maxR / (r || 1); x *= s; z *= s; r = maxR; }
       if (r < minR) {
         const ang = (r > 0.001) ? Math.atan2(z, x) : Math.random() * Math.PI * 2;
-        x = Math.cos(ang) * minR;
-        z = Math.sin(ang) * minR;
+        x = Math.cos(ang) * minR; z = Math.sin(ang) * minR;
       }
       return { x, z };
     }
@@ -473,7 +396,7 @@
 
     const DEMO_POST_THROUGH_SEC = 2.0, DEMO_YAW_RATE_SLOW = 0.35, DEMO_YAW_RATE_NORMAL = 0.65;
     let completionMessageShown = false, milestone3Shown = false, milestone6Shown = false;
-    let encourageTimer = null, wrongOrderTimer = null, obstacleWarnTimer = null;
+    let encourageTimer = null, wrongOrderTimer = null, obstacleWarnTimer = null, lakeAlertTimer = null;
 
     let recordedFlightPath = [], recordedDistance = 0, recordedTime = 0;
     let replayAnimationId = null, replayPaused = false, replayStartTime = 0, replayElapsedOffset = 0, replayInControl = false;
@@ -483,10 +406,8 @@
     const replayCtx = replayCanvas.getContext("2d");
 
     let flightPathPoints = [], flightPathLine = null, flightPathActive = false;
-
     let advancedMode = false, advancedModeStartTime = 0;
     const ADVANCED_STRETCH_CYCLE_SEC = 10, ADVANCED_SPIN_CYCLE_SEC = 10, ADVANCED_STRETCH_PHASE = 0, ADVANCED_SPIN_PHASE = Math.PI / 2;
-
     let difficultyMode = "elementary";
     let crashDetectionEnabled = false;
 
@@ -509,8 +430,34 @@
     const mountains = [];
     const intendedMoveVec = new THREE.Vector3();
 
+    const biomeGroup = new THREE.Group();
+    const grassGroup = new THREE.Group();
+    const lakeGroup = new THREE.Group();
+    const forestGroup = new THREE.Group();
+    biomeGroup.add(grassGroup); biomeGroup.add(lakeGroup); biomeGroup.add(forestGroup);
+
+    const lakes = [];
+    const treeColliders = [];
+    const grassClumpColliders = [];
+
     function isEdgeFunctionsActive() { return advancedMode || crashDetectionEnabled; }
     function isElementaryAvoidanceActive() { return difficultyMode === "elementary" && !advancedMode && !flightEnded && !crashActive; }
+
+    function layoutTopAlerts() {
+      const stack = ["alertMessage", "obstacleWarning", "lakeAlert", "encouragePopup", "orderAlert"];
+      let top = 72;
+      for (let i = 0; i < stack.length; i++) {
+        const el = document.getElementById(stack[i]);
+        if (!el) continue;
+        const visible = getComputedStyle(el).display !== "none";
+        if (visible) {
+          el.style.top = top + "px";
+          el.style.left = "50%";
+          el.style.transform = "translateX(-50%)";
+          top += (el.offsetHeight || 32) + 8;
+        }
+      }
+    }
 
     function showEdgePopup(text) {
       const popup = document.getElementById("edgePopup");
@@ -522,29 +469,57 @@
       const popup = document.getElementById("encouragePopup");
       popup.textContent = text; popup.style.display = "block";
       clearTimeout(encourageTimer);
-      encourageTimer = setTimeout(() => { popup.style.display = "none"; }, 3000);
+      encourageTimer = setTimeout(() => { popup.style.display = "none"; layoutTopAlerts(); }, 3000);
+      layoutTopAlerts();
     }
     function showWrongOrderAlert(text) {
       const popup = document.getElementById("orderAlert");
       popup.textContent = text; popup.style.display = "block";
       clearTimeout(wrongOrderTimer);
-      wrongOrderTimer = setTimeout(() => { popup.style.display = "none"; }, 3000);
+      wrongOrderTimer = setTimeout(() => { popup.style.display = "none"; layoutTopAlerts(); }, 3000);
+      layoutTopAlerts();
     }
     function showObstacleWarning(text) {
       const box = document.getElementById("obstacleWarning");
-      box.textContent = text;
-      box.style.display = "block";
+      box.textContent = text; box.style.display = "block";
       clearTimeout(obstacleWarnTimer);
-      obstacleWarnTimer = setTimeout(() => { box.style.display = "none"; }, 280);
+      obstacleWarnTimer = setTimeout(() => { box.style.display = "none"; layoutTopAlerts(); }, 320);
+      layoutTopAlerts();
     }
     function hideObstacleWarning() {
       clearTimeout(obstacleWarnTimer);
       document.getElementById("obstacleWarning").style.display = "none";
+      layoutTopAlerts();
     }
-
+    function showLakeAlert(text) {
+      const box = document.getElementById("lakeAlert");
+      box.textContent = text; box.style.display = "block";
+      clearTimeout(lakeAlertTimer);
+      lakeAlertTimer = setTimeout(() => { box.style.display = "none"; layoutTopAlerts(); }, 1200);
+      layoutTopAlerts();
+    }
+    function hideLakeAlert() {
+      clearTimeout(lakeAlertTimer);
+      document.getElementById("lakeAlert").style.display = "none";
+      layoutTopAlerts();
+    }
     function getWrongOrderText() {
       return (translations[currentLanguage].wrongOrderAlert || "Wrong order! Please fly through hoop {n} next.")
         .replace("{n}", String(currentExpectedHoop));
+    }
+
+    function startFlyAudioIfNeeded(minVolume = 0) {
+      if (flyAudioPlaying) return;
+      flyAudio.volume = Math.max(flyAudio.volume || 0, minVolume);
+      flyAudio.play().then(() => { flyAudioPlaying = true; }).catch(() => {});
+    }
+    function stopFlyAudio(resetVol = false) {
+      if (!flyAudio.paused || flyAudioPlaying) {
+        flyAudio.pause();
+        flyAudio.currentTime = 0;
+      }
+      flyAudioPlaying = false;
+      if (resetVol) flyAudio.volume = 0;
     }
 
     function startAdvancedFlightAudio() {
@@ -555,9 +530,7 @@
     }
     function stopAdvancedFlightAudio() {
       if (advancedFlightAudioPlaying) {
-        advancedFlightAudio.pause();
-        advancedFlightAudio.currentTime = 0;
-        advancedFlightAudioPlaying = false;
+        advancedFlightAudio.pause(); advancedFlightAudio.currentTime = 0; advancedFlightAudioPlaying = false;
       }
     }
 
@@ -620,16 +593,10 @@
 
     function createHoopGlowMesh(geometry) {
       const glowMat = new THREE.MeshBasicMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.58,
-        side: THREE.DoubleSide,
-        depthWrite: false,
-        blending: THREE.AdditiveBlending
+        color: 0xffffff, transparent: true, opacity: 0.58, side: THREE.DoubleSide, depthWrite: false, blending: THREE.AdditiveBlending
       });
       const glow = new THREE.Mesh(geometry, glowMat);
-      glow.scale.set(1.12, 1.12, 1.12);
-      glow.renderOrder = 1;
+      glow.scale.set(1.12, 1.12, 1.12); glow.renderOrder = 1;
       return glow;
     }
 
@@ -666,8 +633,7 @@
         const rect = container.getBoundingClientRect();
         center.x = rect.left + rect.width / 2; center.y = rect.top + rect.height / 2;
         updateThumb(e.clientX - center.x, e.clientY - center.y);
-        container.setPointerCapture(e.pointerId);
-        e.preventDefault();
+        container.setPointerCapture(e.pointerId); e.preventDefault();
       }
       function onPointerMove(e) {
         if (!dragging || e.pointerId !== pointerId) return;
@@ -675,9 +641,7 @@
       }
       function onPointerUp(e) {
         if (e.pointerId !== pointerId) return;
-        resetThumb();
-        container.releasePointerCapture(e.pointerId);
-        e.preventDefault();
+        resetThumb(); container.releasePointerCapture(e.pointerId); e.preventDefault();
       }
 
       function onTouchStart(e) {
@@ -716,6 +680,7 @@
 
     const scene = new THREE.Scene();
     scene.add(mountainGroup);
+    scene.add(biomeGroup);
 
     const mainNorthSprite = createDirectionSprite("NORTH"); mainNorthSprite.position.set(0, 8, 540); mainNorthSprite.layers.set(2); scene.add(mainNorthSprite);
     const mainEastSprite = createDirectionSprite("EAST"); mainEastSprite.position.set(-540, 8, 0); mainEastSprite.layers.set(2); scene.add(mainEastSprite);
@@ -724,8 +689,7 @@
 
     function drawHomeMarker(ctx, padColor) {
       ctx.clearRect(0, 0, 256, 256);
-      ctx.fillStyle = padColor;
-      ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = padColor; ctx.beginPath(); ctx.arc(128, 128, 120, 0, Math.PI * 2); ctx.fill();
       ctx.strokeStyle = "black"; ctx.lineWidth = 10; ctx.stroke();
       ctx.fillStyle = "black"; ctx.font = "bold 100px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText("H", 128, 128);
@@ -740,7 +704,8 @@
       const geometry = new THREE.CircleGeometry(5, 32);
       const mesh = new THREE.Mesh(geometry, material);
       mesh.rotation.x = -Math.PI / 2;
-      mesh.position.set(0, 0.01, 0);
+      mesh.position.set(0, 0.08, 0);
+      mesh.renderOrder = 20;
       mesh.userData = { canvas, ctx, texture };
       return mesh;
     }
@@ -790,9 +755,7 @@
     const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
     propellers.forEach((prop, index) => {
       const blinkSpot = new THREE.Mesh(blinkSphereGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-      prop.mesh.add(blinkSpot);
-      prop.blinkOffset = index * (Math.PI / 2);
-      prop.blinkSpot = blinkSpot;
+      prop.mesh.add(blinkSpot); prop.blinkOffset = index * (Math.PI / 2); prop.blinkSpot = blinkSpot;
     });
 
     function createCircularHoop(number) {
@@ -800,17 +763,14 @@
       const hoopGeo = new THREE.TorusGeometry(mainRadius, tubeRadius, 16, 100);
       const hoopMesh = new THREE.Mesh(hoopGeo, new THREE.MeshLambertMaterial({ color: 0xffa500 }));
       hoopMesh.add(createHoopGlowMesh(hoopGeo.clone()));
-
       const labelSprites = createHoopLabels(number);
       labelSprites.main.position.set(0, mainRadius + 2, 0); hoopMesh.add(labelSprites.main);
-
       return {
         mesh: hoopMesh, mainRadius, tubeRadius, number, labelSprites, type: "circular", originalColor: 0xffa500,
         entered: false, passed: false, attemptActive: false, attemptTouchedEdge: false, edgeContactActive: false, needsCleanPass: false,
         throughFront: false, throughBack: false, throughCenter: false, wrongOrderInside: false
       };
     }
-
     function createSquareHoop(number) {
       const outer = 9, inner = outer - 0.2;
       const shape = new THREE.Shape();
@@ -818,21 +778,17 @@
       const hole = new THREE.Path();
       hole.moveTo(-inner, -inner); hole.lineTo(-inner, inner); hole.lineTo(inner, inner); hole.lineTo(inner, -inner); hole.lineTo(-inner, -inner);
       shape.holes.push(hole);
-
       const shapeGeo = new THREE.ShapeGeometry(shape);
       const hoopMesh = new THREE.Mesh(shapeGeo, new THREE.MeshLambertMaterial({ color: 0xff69b4, side: THREE.DoubleSide }));
       hoopMesh.add(createHoopGlowMesh(shapeGeo.clone()));
-
       const labelSprites = createHoopLabels(number);
       labelSprites.main.position.set(0, outer + 2, 0); hoopMesh.add(labelSprites.main);
-
       return {
         mesh: hoopMesh, mainRadius: outer, tubeRadius: outer - inner, number, labelSprites, type: "square", originalColor: 0xff69b4,
         entered: false, passed: false, attemptActive: false, attemptTouchedEdge: false, edgeContactActive: false, needsCleanPass: false,
         throughFront: false, throughBack: false, throughCenter: false, wrongOrderInside: false
       };
     }
-
     function createTriangleHoop(number) {
       const baseOuter = 9, scaleFactor = 1.2, rOuter = baseOuter * scaleFactor, ringThickness = 0.2 * scaleFactor, rInner = rOuter - ringThickness;
       const shape = new THREE.Shape();
@@ -871,43 +827,46 @@
       };
     }
 
-    function generateHoopXZPositions(count, minDistFromHome = HOOP_MIN_HOME_RADIUS, range = 80, minSeparation = 24) {
+    function generateHoopXZPositions(count, minDistFromHome = HOOP_MIN_HOME_RADIUS, range = 80, minSeparation = 28) {
       const positions = [];
       for (let i = 0; i < count; i++) {
         let placed = false;
-        for (let tries = 0; tries < 800 && !placed; tries++) {
+        for (let tries = 0; tries < 900 && !placed; tries++) {
           const x = (Math.random() - 0.5) * (range * 2), z = (Math.random() - 0.5) * (range * 2);
           const clamped = clampPointToHoopSafeRadius({ x, z }, minDistFromHome, HOOP_MAX_SAFE_RADIUS);
           if (Math.hypot(clamped.x, clamped.z) < minDistFromHome || Math.hypot(clamped.x, clamped.z) > HOOP_MAX_SAFE_RADIUS) continue;
           let farEnough = true;
           for (let j = 0; j < positions.length; j++) {
-            const dx = clamped.x - positions[j].x, dz = clamped.z - positions[j].z;
-            if (Math.hypot(dx, dz) < minSeparation) { farEnough = false; break; }
+            if (Math.hypot(clamped.x - positions[j].x, clamped.z - positions[j].z) < minSeparation) { farEnough = false; break; }
           }
           if (farEnough) { positions.push({ x: clamped.x, z: clamped.z }); placed = true; }
         }
         if (!placed) {
           const angle = (i / count) * Math.PI * 2 + Math.random() * 0.35;
-          let radius = minDistFromHome + 15 + (i % 4) * 8;
+          let radius = minDistFromHome + 20 + (i % 4) * 10;
           radius = clamp(radius, minDistFromHome, HOOP_MAX_SAFE_RADIUS - 4);
-          let x = Math.cos(angle) * radius, z = Math.sin(angle) * radius;
-          let guard = 0;
-          while (guard < 30) {
-            const c = clampPointToHoopSafeRadius({ x, z }, minDistFromHome, HOOP_MAX_SAFE_RADIUS);
-            x = c.x; z = c.z;
-            let conflict = false;
-            for (let j = 0; j < positions.length; j++) {
-              const dx = x - positions[j].x, dz = z - positions[j].z;
-              if (Math.hypot(dx, dz) < minSeparation) { conflict = true; break; }
-            }
-            if (!conflict && Math.hypot(x, z) >= minDistFromHome && Math.hypot(x, z) <= HOOP_MAX_SAFE_RADIUS) break;
-            radius = Math.min(HOOP_MAX_SAFE_RADIUS - 4, radius + 3);
-            x = Math.cos(angle) * radius; z = Math.sin(angle) * radius; guard++;
-          }
-          positions.push({ x, z });
+          positions.push({ x: Math.cos(angle) * radius, z: Math.sin(angle) * radius });
         }
       }
       return positions;
+    }
+
+    function getHoopCorridorSegments() {
+      const segs = [];
+      for (let i = 0; i < hoops.length - 1; i++) {
+        const a = hoops[i].mesh.position, b = hoops[i + 1].mesh.position;
+        segs.push({ ax: a.x, az: a.z, bx: b.x, bz: b.z });
+      }
+      return segs;
+    }
+    function isNearAnyCorridor(x, z, extra = 0) {
+      const segs = getHoopCorridorSegments();
+      const limit = CORRIDOR_HALF_WIDTH + extra;
+      for (let i = 0; i < segs.length; i++) {
+        const s = segs[i];
+        if (distPointToSegment2D(x, z, s.ax, s.az, s.bx, s.bz) < limit) return true;
+      }
+      return false;
     }
 
     function minMountainClearance(x, z) {
@@ -929,341 +888,26 @@
       return y;
     }
 
-    function generateValleyHoopXZPositions(count = 10) {
-      if (mountains.length < 2) return generateHoopXZPositions(count, HOOP_MIN_HOME_RADIUS, 90, 24);
-
-      const candidates = [];
-      for (let i = 0; i < mountains.length; i++) {
-        for (let j = i + 1; j < mountains.length; j++) {
-          const a = mountains[i], b = mountains[j];
-          const vx = b.x - a.x, vz = b.z - a.z;
-          const d = Math.hypot(vx, vz);
-          if (d < 140 || d > 380) continue;
-
-          const mx = (a.x + b.x) * 0.5;
-          const mz = (a.z + b.z) * 0.5;
-          const nx = -vz / d, nz = vx / d;
-          const shifts = [0, 14, -14, 26, -26, 36, -36];
-
-          for (let s = 0; s < shifts.length; s++) {
-            let x = mx + nx * shifts[s];
-            let z = mz + nz * shifts[s];
-
-            const clamped = clampPointToHoopSafeRadius({ x, z }, HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-            x = clamped.x; z = clamped.z;
-
-            const rr = Math.hypot(x, z);
-            if (rr < HOOP_MIN_HOME_RADIUS || rr > HOOP_MAX_SAFE_RADIUS) continue;
-
-            const clear = minMountainClearance(x, z);
-            if (clear < 9) continue;
-
-            const toA = Math.hypot(x - a.x, z - a.z) - a.radius;
-            const toB = Math.hypot(x - b.x, z - b.z) - b.radius;
-            const corridor = Math.min(toA, toB);
-
-            const score =
-              (d * 0.35) +
-              (30 - Math.abs(clear - 18)) * 2.2 +
-              (24 - Math.abs(corridor - 16)) * 1.6 -
-              Math.abs(shifts[s]) * 0.2;
-
-            candidates.push({ x, z, score });
-          }
-        }
-      }
-
-      candidates.sort((p, q) => q.score - p.score);
-
-      const selected = [];
-      for (let i = 0; i < candidates.length && selected.length < count; i++) {
-        const c = candidates[i];
-        let ok = true;
-        for (let j = 0; j < selected.length; j++) {
-          if (Math.hypot(c.x - selected[j].x, c.z - selected[j].z) < 24) { ok = false; break; }
-        }
-        if (ok) selected.push({ x: c.x, z: c.z });
-      }
-
-      while (selected.length < count) {
-        const ring = 70 + selected.length * 18;
-        const ang = (selected.length / count) * Math.PI * 2 + Math.random() * 0.3;
-        let x = Math.cos(ang) * ring, z = Math.sin(ang) * ring;
-        let tries = 0;
-        while (tries < 60) {
-          const c = clampPointToHoopSafeRadius({ x, z }, HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-          x = c.x; z = c.z;
-          if (Math.hypot(x, z) >= HOOP_MIN_HOME_RADIUS && Math.hypot(x, z) <= HOOP_MAX_SAFE_RADIUS && minMountainClearance(x, z) >= 9) break;
-          x += (Math.random() - 0.5) * 8;
-          z += (Math.random() - 0.5) * 8;
-          tries++;
-        }
-        selected.push({ x, z });
-      }
-
-      return selected.slice(0, count);
-    }
-
-    function generateBehindMountainHoopXZPositions(targetCount = 3) {
-      const picks = [];
-      if (mountains.length === 0) return picks;
-
-      const sorted = mountains
-        .slice()
-        .sort((a, b) => Math.hypot(b.x, b.z) - Math.hypot(a.x, a.z));
-
-      for (let i = 0; i < sorted.length && picks.length < targetCount; i++) {
-        const m = sorted[i];
-        const d = Math.hypot(m.x, m.z);
-        if (d < 120) continue;
-
-        const ux = m.x / d, uz = m.z / d;
-        const px = -uz, pz = ux;
-        const backDist = (m.radius || 0) + 30;
-        const lateralOffsets = [0, 18, -18, 30, -30];
-
-        for (let k = 0; k < lateralOffsets.length && picks.length < targetCount; k++) {
-          const off = lateralOffsets[k];
-          let x = m.x + ux * backDist + px * off;
-          let z = m.z + uz * backDist + pz * off;
-
-          const clamped = clampPointToHoopSafeRadius({ x, z }, HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-          x = clamped.x; z = clamped.z;
-
-          const rr = Math.hypot(x, z);
-          if (rr < HOOP_MIN_HOME_RADIUS || rr > HOOP_MAX_SAFE_RADIUS) continue;
-          if (minMountainClearance(x, z) < 7) continue;
-
-          let ok = true;
-          for (let j = 0; j < picks.length; j++) {
-            if (Math.hypot(x - picks[j].x, z - picks[j].z) < 24) { ok = false; break; }
-          }
-          if (ok) picks.push({ x, z });
-        }
-      }
-
-      return picks;
-    }
-
-    function generateAdvancedLandscapeHoopXZPositions(count = 10) {
-      const behindCount = Math.min(3, count);
-      const behind = generateBehindMountainHoopXZPositions(behindCount);
-
-      const valley = generateValleyHoopXZPositions(count * 2);
-      const selected = [];
-
-      for (let i = 0; i < behind.length && selected.length < count; i++) selected.push(behind[i]);
-
-      for (let i = 0; i < valley.length && selected.length < count; i++) {
-        const c = valley[i];
-        let ok = true;
-        for (let j = 0; j < selected.length; j++) {
-          if (Math.hypot(c.x - selected[j].x, c.z - selected[j].z) < 24) { ok = false; break; }
-        }
-        if (ok) {
-          const cc = clampPointToHoopSafeRadius(c, HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-          selected.push({ x: cc.x, z: cc.z });
-        }
-      }
-
-      while (selected.length < count) {
-        const fallback = generateHoopXZPositions(1, HOOP_MIN_HOME_RADIUS, 160, 24)[0];
-        const ff = clampPointToHoopSafeRadius(fallback, HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-        if (minMountainClearance(ff.x, ff.z) < 7) continue;
-        selected.push(ff);
-      }
-
-      return selected.slice(0, count);
-    }
-
-    const altitudes = [10,15,20,25,30,35,40,45,50,55];
-    const valleyAltitudes = [12,16,20,24,28,32,36,40,44,48];
-
-    const hoops = [];
-    for (let i = 1; i <= 10; i++) {
-      let hoop = (i <= 4) ? createCircularHoop(i) : (i <= 7 ? createSquareHoop(i) : createTriangleHoop(i));
-      scene.add(hoop.mesh);
-      hoops.push(hoop);
-    }
-
-    function assignRandomHoopPositions() {
-      const hoopXZ = generateHoopXZPositions(10, HOOP_MIN_HOME_RADIUS, 80, 24);
-      for (let i = 0; i < hoops.length; i++) {
-        const safe = clampPointToHoopSafeRadius(hoopXZ[i], HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-        hoops[i].mesh.position.set(safe.x, altitudes[i], safe.z);
-        hoops[i].mesh.rotation.set(0, 0, 0);
-      }
-    }
-
-    function assignValleyHoopPositions() {
-      // Advanced + Landscape:
-      // mix of valley hoops + some hoops behind mountain ranges
-      const hoopXZ = generateAdvancedLandscapeHoopXZPositions(10);
-
-      for (let i = 0; i < hoops.length; i++) {
-        const p = clampPointToHoopSafeRadius(hoopXZ[i], HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
-        const groundY = terrainSurfaceAt(p.x, p.z);
-
-        // first few are "behind mountain" picks in generator; give a bit more height for visibility/clearance
-        const extra = (i < 3) ? 4 : 0;
-        const y = Math.max(valleyAltitudes[i], groundY + 8 + extra);
-
-        hoops[i].mesh.position.set(p.x, y, p.z);
-        hoops[i].mesh.rotation.set(0, 0, 0);
-      }
-    }
-
-    function clearHoopProgressOnly() {
-      currentExpectedHoop = 1;
-      allHoopsPassed = false;
-      completionMessageShown = false;
-      missionCompletionMode = null;
-      milestone3Shown = false;
-      milestone6Shown = false;
-      hideAdvancedCongrats();
-
-      const msg = document.getElementById("message");
-      msg.style.display = "none";
-      msg.innerHTML = "";
-
+    function isNearAnyHoop(x, z, extra = 0) {
       for (let i = 0; i < hoops.length; i++) {
         const h = hoops[i];
-        h.entered = false;
-        h.passed = false;
-        h.attemptActive = false;
-        h.attemptTouchedEdge = false;
-        h.edgeContactActive = false;
-        h.needsCleanPass = false;
-        h.throughFront = false;
-        h.throughBack = false;
-        h.throughCenter = false;
-        h.wrongOrderInside = false;
-        setHoopDefault(h);
-
-        const cell = document.getElementById("hoopCell-" + h.number);
-        if (cell) {
-          cell.classList.remove("passed");
-          cell.classList.remove("crashed");
-        }
+        const safe = h.mainRadius + HOOP_TREE_CLEAR_RADIUS + extra;
+        if (Math.hypot(x - h.mesh.position.x, z - h.mesh.position.z) < safe) return true;
       }
-    }
-
-    function applyValleyHoopLayoutIfNeeded() {
-      if (advancedMode && landscapeEnabled && !takenOff && !flightEnded) {
-        clearHoopProgressOnly();
-        assignValleyHoopPositions();
-      }
-    }
-
-    function makeRockTexture() {
-      const canvas = document.createElement("canvas");
-      canvas.width = 256; canvas.height = 256;
-      const ctx = canvas.getContext("2d");
-      ctx.fillStyle = "#6f6f72";
-      ctx.fillRect(0, 0, 256, 256);
-
-      for (let y = 0; y < 256; y += 4) {
-        for (let x = 0; x < 256; x += 4) {
-          const g = Math.floor(90 + Math.random() * 90);
-          ctx.fillStyle = `rgb(${g},${g},${g + Math.floor(Math.random() * 8)})`;
-          ctx.fillRect(x, y, 4, 4);
-        }
-      }
-
-      for (let i = 0; i < 240; i++) {
-        const x1 = Math.random() * 256, y1 = Math.random() * 256;
-        const len = 8 + Math.random() * 26, ang = Math.random() * Math.PI * 2;
-        ctx.strokeStyle = Math.random() < 0.5 ? "rgba(40,40,40,0.30)" : "rgba(210,210,210,0.18)";
-        ctx.lineWidth = 1 + Math.random() * 1.2;
-        ctx.beginPath();
-        ctx.moveTo(x1, y1);
-        ctx.lineTo(x1 + Math.cos(ang) * len, y1 + Math.sin(ang) * len);
-        ctx.stroke();
-      }
-
-      const tex = new THREE.CanvasTexture(canvas);
-      tex.wrapS = THREE.RepeatWrapping;
-      tex.wrapT = THREE.RepeatWrapping;
-      tex.repeat.set(6, 6);
-      tex.minFilter = THREE.LinearMipMapLinearFilter;
-      tex.magFilter = THREE.LinearFilter;
-      return tex;
-    }
-
-    function createTree(scale = 1) {
-      const g = new THREE.Group();
-      const trunkH = 1.2 * scale;
-      const trunk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.12 * scale, 0.16 * scale, trunkH, 6),
-        new THREE.MeshLambertMaterial({ color: 0x6d4c41, transparent: true, opacity: 0.9 })
-      );
-      trunk.position.y = trunkH * 0.5;
-      trunk.castShadow = true;
-      g.add(trunk);
-
-      const leavesH = 2.0 * scale;
-      const leaves = new THREE.Mesh(
-        new THREE.ConeGeometry(0.55 * scale, leavesH, 7),
-        new THREE.MeshLambertMaterial({ color: 0x2e7d32, transparent: true, opacity: 0.9 })
-      );
-      leaves.position.y = trunkH + leavesH * 0.45;
-      leaves.castShadow = true;
-      g.add(leaves);
-      return g;
-    }
-
-    function disposeObjectDeep(obj) {
-      obj.traverse(child => {
-        if (child.geometry) child.geometry.dispose();
-        if (child.material) {
-          if (Array.isArray(child.material)) child.material.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); });
-          else { if (child.material.map) child.material.map.dispose(); child.material.dispose(); }
-        }
-      });
-    }
-
-    function disposeMountainObjects() {
-      while (mountainGroup.children.length > 0) {
-        const child = mountainGroup.children.pop();
-        disposeObjectDeep(child);
-      }
-      mountains.length = 0;
-    }
-
-    function farFromHoopsAndHome(x, z, radius) {
-      const homeSafe = radius + 80;
-      if (Math.hypot(x, z) < homeSafe) return false;
-
-      for (let i = 0; i < hoops.length; i++) {
-        const h = hoops[i];
-        const safe = radius + h.mainRadius + 30;
-        if (Math.hypot(x - h.mesh.position.x, z - h.mesh.position.z) < safe) return false;
-      }
-      for (let i = 0; i < mountains.length; i++) {
-        const m = mountains[i];
-        if (Math.hypot(x - m.x, z - m.z) < (radius + m.radius + 28)) return false;
-      }
-      return true;
+      return false;
     }
 
     function sampleRangeHeight(rangeObj, lx, lz) {
       const { width, depth, segX, segZ, heights } = rangeObj;
       const hx = width / 2, hz = depth / 2;
       if (lx < -hx || lx > hx || lz < -hz || lz > hz) return -Infinity;
-
-      const u = (lx + hx) / width * segX;
-      const v = (lz + hz) / depth * segZ;
+      const u = (lx + hx) / width * segX, v = (lz + hz) / depth * segZ;
       const x0 = Math.floor(u), z0 = Math.floor(v);
       const x1 = Math.min(segX, x0 + 1), z1 = Math.min(segZ, z0 + 1);
       const tx = u - x0, tz = v - z0;
-
       const idx = (zz, xx) => zz * (segX + 1) + xx;
-      const h00 = heights[idx(z0, x0)];
-      const h10 = heights[idx(z0, x1)];
-      const h01 = heights[idx(z1, x0)];
-      const h11 = heights[idx(z1, x1)];
-      const h0 = h00 * (1 - tx) + h10 * tx;
-      const h1 = h01 * (1 - tx) + h11 * tx;
+      const h00 = heights[idx(z0, x0)], h10 = heights[idx(z0, x1)], h01 = heights[idx(z1, x0)], h11 = heights[idx(z1, x1)];
+      const h0 = h00 * (1 - tx) + h10 * tx, h1 = h01 * (1 - tx) + h11 * tx;
       return h0 * (1 - tz) + h1 * tz;
     }
 
@@ -1273,10 +917,8 @@
       const hR = sampleRangeHeight(rangeObj, lx + eps, lz);
       const hD = sampleRangeHeight(rangeObj, lx, lz - eps);
       const hU = sampleRangeHeight(rangeObj, lx, lz + eps);
-
       if (!isFinite(hL) || !isFinite(hR) || !isFinite(hD) || !isFinite(hU)) return new THREE.Vector3(0, 1, 0);
-      const dHx = (hR - hL) / (2 * eps);
-      const dHz = (hU - hD) / (2 * eps);
+      const dHx = (hR - hL) / (2 * eps), dHz = (hU - hD) / (2 * eps);
       return new THREE.Vector3(-dHx, 1, -dHz).normalize();
     }
 
@@ -1284,77 +926,52 @@
       const vtxCount = (segX + 1) * (segZ + 1);
       const positions = new Float32Array(vtxCount * 3);
       const uvs = new Float32Array(vtxCount * 2);
-
       let pi = 0, ui = 0;
       for (let iz = 0; iz <= segZ; iz++) {
         const z = -depth / 2 + (iz / segZ) * depth;
         for (let ix = 0; ix <= segX; ix++) {
           const x = -width / 2 + (ix / segX) * width;
           const h = heights[iz * (segX + 1) + ix];
-          positions[pi++] = x;
-          positions[pi++] = h;
-          positions[pi++] = z;
-
-          uvs[ui++] = ix / segX;
-          uvs[ui++] = iz / segZ;
+          positions[pi++] = x; positions[pi++] = h; positions[pi++] = z;
+          uvs[ui++] = ix / segX; uvs[ui++] = iz / segZ;
         }
       }
-
       const indices = [];
       for (let iz = 0; iz < segZ; iz++) {
         for (let ix = 0; ix < segX; ix++) {
-          const a = iz * (segX + 1) + ix;
-          const b = a + 1;
-          const c = a + (segX + 1);
-          const d = c + 1;
-          indices.push(a, c, b);
-          indices.push(b, c, d);
+          const a = iz * (segX + 1) + ix, b = a + 1, c = a + (segX + 1), d = c + 1;
+          indices.push(a, c, b); indices.push(b, c, d);
         }
       }
-
       const geo = new THREE.BufferGeometry();
       geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
       geo.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
-      geo.setIndex(indices);
-      geo.computeVertexNormals();
+      geo.setIndex(indices); geo.computeVertexNormals();
       return geo;
     }
 
     function createSkirtMesh(edgePoints, material, baseY = 0) {
-      const verts = [];
-      const idx = [];
-
+      const verts = [], idx = [];
       for (let i = 0; i < edgePoints.length; i++) {
         const p = edgePoints[i];
-        verts.push(p.x, p.h, p.z);
-        verts.push(p.x, baseY, p.z);
+        verts.push(p.x, p.h, p.z); verts.push(p.x, baseY, p.z);
       }
       for (let i = 0; i < edgePoints.length - 1; i++) {
-        const a = i * 2;
-        const b = a + 1;
-        const c = a + 2;
-        const d = a + 3;
-        idx.push(a, b, c);
-        idx.push(b, d, c);
+        const a = i * 2, b = a + 1, c = a + 2, d = a + 3;
+        idx.push(a, b, c); idx.push(b, d, c);
       }
-
       const g = new THREE.BufferGeometry();
       g.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
-      g.setIndex(idx);
-      g.computeVertexNormals();
-
+      g.setIndex(idx); g.computeVertexNormals();
       const mesh = new THREE.Mesh(g, material);
-      mesh.castShadow = true;
-      mesh.receiveShadow = true;
+      mesh.castShadow = true; mesh.receiveShadow = true;
       return mesh;
     }
 
     function createMountainRange(cx, cz, width, depth, maxHeight, peakCount, withTrees = false, options = {}) {
-      const segX = options.segX || 64;
-      const segZ = options.segZ || 44;
+      const segX = options.segX || 64, segZ = options.segZ || 44;
       const heights = new Float32Array((segX + 1) * (segZ + 1));
       const customHeightFn = options.customHeightFn || null;
-
       const peaks = [];
       for (let i = 0; i < peakCount; i++) {
         peaks.push({
@@ -1383,29 +1000,21 @@
         for (let ix = 0; ix <= segX; ix++) {
           const x = -width / 2 + (ix / segX) * width;
           let h = 0;
-
-          if (customHeightFn) {
-            h = customHeightFn(x, z, width, depth, maxHeight);
-          } else {
+          if (customHeightFn) h = customHeightFn(x, z, width, depth, maxHeight);
+          else {
             const edgeFade = Math.max(0, 1 - Math.pow(Math.abs(x) / (width * 0.52), 2.2) - Math.pow(Math.abs(z) / (depth * 0.52), 2.2));
             for (let p = 0; p < peaks.length; p++) {
-              const pk = peaks[p];
-              const dx = x - pk.x, dz = z - pk.z;
+              const pk = peaks[p], dx = x - pk.x, dz = z - pk.z;
               h += pk.amp * Math.exp(-((dx * dx) / (pk.sx * pk.sx) + (dz * dz) / (pk.sz * pk.sz)));
             }
             for (let v = 0; v < valleys.length; v++) {
-              const vl = valleys[v];
-              const dx = x - vl.x, dz = z - vl.z;
+              const vl = valleys[v], dx = x - vl.x, dz = z - vl.z;
               h -= vl.amp * Math.exp(-((dx * dx) / (vl.sx * vl.sx) + (dz * dz) / (vl.sz * vl.sz)));
             }
-
             const ridge = Math.abs(pseudoNoise2D(x * 0.9, z * 0.9));
-            const rough = pseudoNoise2D(x * 1.6 + 17, z * 1.3 - 9) * (maxHeight * 0.09)
-                      + pseudoNoise2D(x * 2.5 - 11, z * 2.1 + 4) * (maxHeight * 0.04);
-
+            const rough = pseudoNoise2D(x * 1.6 + 17, z * 1.3 - 9) * (maxHeight * 0.09) + pseudoNoise2D(x * 2.5 - 11, z * 2.1 + 4) * (maxHeight * 0.04);
             h = Math.max(0, h * 0.42 * edgeFade + ridge * (maxHeight * 0.18) + rough + maxHeight * 0.04);
           }
-
           heights[iz * (segX + 1) + ix] = Math.max(0, h);
         }
       }
@@ -1423,30 +1032,19 @@
       }
 
       const rockTex = makeRockTexture();
-      const rockMat = new THREE.MeshLambertMaterial({
-        map: rockTex,
-        color: 0xb1aba2,
-        flatShading: true,
-        transparent: true,
-        opacity: 0.8
-      });
+      const rockMat = new THREE.MeshLambertMaterial({ map: rockTex, color: 0xb1aba2, flatShading: true, transparent: true, opacity: 0.8 });
 
       const group = new THREE.Group();
       group.position.set(cx, 0, cz);
 
       const topGeo = buildHeightfieldGeometry(width, depth, segX, segZ, heights);
       const topMesh = new THREE.Mesh(topGeo, rockMat);
-      topMesh.castShadow = true;
-      topMesh.receiveShadow = true;
-      group.add(topMesh);
+      topMesh.castShadow = true; topMesh.receiveShadow = true; group.add(topMesh);
 
-      const north = [];
+      const north = [], south = [], west = [], east = [];
       for (let ix = 0; ix <= segX; ix++) north.push({ x: -width / 2 + (ix / segX) * width, z: -depth / 2, h: heights[ix] });
-      const south = [];
       for (let ix = 0; ix <= segX; ix++) south.push({ x: -width / 2 + (ix / segX) * width, z: depth / 2, h: heights[segZ * (segX + 1) + ix] });
-      const west = [];
       for (let iz = 0; iz <= segZ; iz++) west.push({ x: -width / 2, z: -depth / 2 + (iz / segZ) * depth, h: heights[iz * (segX + 1)] });
-      const east = [];
       for (let iz = 0; iz <= segZ; iz++) east.push({ x: width / 2, z: -depth / 2 + (iz / segZ) * depth, h: heights[iz * (segX + 1) + segX] });
 
       group.add(createSkirtMesh(north, rockMat, 0));
@@ -1458,71 +1056,62 @@
         new THREE.PlaneGeometry(width * 1.10, depth * 1.10),
         new THREE.MeshLambertMaterial({ color: 0x8f8a82, transparent: true, opacity: 0.85, side: THREE.DoubleSide })
       );
-      footPlane.rotation.x = -Math.PI / 2;
-      footPlane.position.y = 0.001;
-      footPlane.receiveShadow = true;
-      group.add(footPlane);
+      footPlane.rotation.x = -Math.PI / 2; footPlane.position.y = 0.001; footPlane.receiveShadow = true; group.add(footPlane);
 
       mountainGroup.add(group);
 
       const rangeObj = {
         type: options.type || "range",
-        x: cx, z: cz,
-        width, depth, segX, segZ, heights,
+        x: cx, z: cz, width, depth, segX, segZ, heights,
         radius: Math.sqrt(width * width + depth * depth) * 0.52,
-        height: topH + 1.0,
-        baseY: group.position.y,
-        mesh: group
+        height: topH + 1.0, baseY: group.position.y, mesh: group
       };
-
       if (options.tunnel) rangeObj.tunnel = options.tunnel;
       mountains.push(rangeObj);
 
       if (withTrees) {
-        const treeCount = Math.floor((width * depth) / 2600);
+        const treeCount = Math.floor((width * depth) / 3000);
         for (let i = 0; i < treeCount; i++) {
           const lx = (Math.random() - 0.5) * width * 0.88;
           const lz = (Math.random() - 0.5) * depth * 0.88;
           const y = sampleRangeHeight(rangeObj, lx, lz);
-          if (!isFinite(y) || y < 4 || y > topH * 0.65) continue;
+          if (!isFinite(y) || y < 4 || y > topH * 0.72) continue;
+          const wx = cx + lx, wz = cz + lz;
+          if (isNearAnyHoop(wx, wz, 8) || isNearAnyCorridor(wx, wz, 5)) continue;
 
-          const yx = sampleRangeHeight(rangeObj, lx + 2.2, lz);
-          const yz = sampleRangeHeight(rangeObj, lx, lz + 2.2);
-          const slope = Math.hypot(yx - y, yz - y) / 2.2;
+          const slope = Math.hypot(
+            sampleRangeHeight(rangeObj, lx + 2.2, lz) - y,
+            sampleRangeHeight(rangeObj, lx, lz + 2.2) - y
+          ) / 2.2;
           if (slope > 0.95) continue;
 
-          const s = clamp(0.8 + Math.random() * 1.4, 0.7, 2.2);
-          const tree = createTree(s);
-          tree.position.set(cx + lx, y + 0.2, cz + lz);
+          const h = 5.2 + Math.random() * 7.5;
+          const tree = createIrregularTree(h);
+          tree.position.set(wx, y + 0.2, wz);
           tree.rotation.y = Math.random() * Math.PI * 2;
           mountainGroup.add(tree);
+
+          treeColliders.push({
+            x: wx, z: wz, radius: 1.2 + h * 0.10,
+            baseY: y + 0.2, topY: y + 0.2 + h, source: "mountain"
+          });
         }
       }
-
       return rangeObj;
     }
 
     function createTunnelMountainRange(cx, cz, width, depth, maxHeight, withTrees = false) {
-      const tunnelHalfW = 16;
-      const tunnelHalfL = Math.max(20, depth * 0.18);
-      const tunnelCenterY = 14;
-      const tunnelHalfH = 8;
-      const tunnelWall = 9;
-      const bridgeThick = 10;
-
+      const tunnelHalfW = 16, tunnelHalfL = Math.max(20, depth * 0.18), tunnelCenterY = 14, tunnelHalfH = 8, tunnelWall = 9, bridgeThick = 10;
       const customHeightFn = (x, z, W, D, H) => {
         const edgeFade = Math.max(0, 1 - Math.pow(Math.abs(x) / (W * 0.52), 2.15) - Math.pow(Math.abs(z) / (D * 0.52), 2.15));
-
         const leftPeak = Math.exp(-(((x + W * 0.22) ** 2) / (W * W * 0.030) + (z * z) / (D * D * 0.080))) * H * 0.95;
         const rightPeak = Math.exp(-(((x - W * 0.22) ** 2) / (W * W * 0.030) + (z * z) / (D * D * 0.080))) * H * 0.95;
         const backRidge = Math.exp(-(((x) ** 2) / (W * W * 0.18) + ((z + D * 0.18) ** 2) / (D * D * 0.06))) * H * 0.45;
         const frontRidge = Math.exp(-(((x) ** 2) / (W * W * 0.18) + ((z - D * 0.18) ** 2) / (D * D * 0.06))) * H * 0.45;
-
         let h = (leftPeak + rightPeak + backRidge + frontRidge) * edgeFade;
         h += Math.abs(pseudoNoise2D(x * 1.0, z * 1.0)) * (H * 0.12);
         h += pseudoNoise2D(x * 2.0 + 13, z * 1.7 - 8) * (H * 0.05);
         h = Math.max(0, h);
-
         if (Math.abs(x) < tunnelHalfW + 2 && Math.abs(z) < tunnelHalfL + 2) {
           const wx = clamp(1 - Math.abs(x) / (tunnelHalfW + 2), 0, 1);
           const wz = clamp(1 - Math.abs(z) / (tunnelHalfL + 2), 0, 1);
@@ -1530,48 +1119,22 @@
           const floorTarget = 1.5 + Math.abs(pseudoNoise2D(x * 2.8, z * 2.4)) * 1.2;
           h = lerp(h, floorTarget, carve);
         }
-
         return Math.max(0, h);
       };
 
       const rangeObj = createMountainRange(
         cx, cz, width, depth, maxHeight, 6, withTrees,
-        {
-          type: "tunnelRange",
-          customHeightFn,
-          tunnel: {
-            halfW: tunnelHalfW,
-            halfL: tunnelHalfL,
-            centerY: tunnelCenterY,
-            halfH: tunnelHalfH,
-            wall: tunnelWall,
-            bridgeThick
-          }
-        }
+        { type: "tunnelRange", customHeightFn, tunnel: { halfW: tunnelHalfW, halfL: tunnelHalfL, centerY: tunnelCenterY, halfH: tunnelHalfH, wall: tunnelWall, bridgeThick } }
       );
 
-      const mat = new THREE.MeshLambertMaterial({
-        map: makeRockTexture(),
-        color: 0xb5aea5,
-        transparent: true,
-        opacity: 0.8,
-        flatShading: true
-      });
-
-      const bridge = new THREE.Mesh(
-        new THREE.BoxGeometry((tunnelHalfW * 2) + (tunnelWall * 2), bridgeThick, tunnelHalfL * 2.0),
-        mat
-      );
-      bridge.position.set(0, tunnelCenterY + tunnelHalfH + bridgeThick * 0.5, 0);
-      bridge.castShadow = true; bridge.receiveShadow = true; rangeObj.mesh.add(bridge);
+      const mat = new THREE.MeshLambertMaterial({ map: makeRockTexture(), color: 0xb5aea5, transparent: true, opacity: 0.8, flatShading: true });
+      const bridge = new THREE.Mesh(new THREE.BoxGeometry((tunnelHalfW * 2) + (tunnelWall * 2), bridgeThick, tunnelHalfL * 2.0), mat);
+      bridge.position.set(0, tunnelCenterY + tunnelHalfH + bridgeThick * 0.5, 0); bridge.castShadow = true; bridge.receiveShadow = true; rangeObj.mesh.add(bridge);
 
       const buttL = new THREE.Mesh(new THREE.BoxGeometry(tunnelWall * 1.15, tunnelCenterY + tunnelHalfH + bridgeThick, tunnelHalfL * 2.0), mat);
-      buttL.position.set(-(tunnelHalfW + tunnelWall * 0.58), (tunnelCenterY + tunnelHalfH + bridgeThick) * 0.5, 0);
-      buttL.castShadow = true; buttL.receiveShadow = true; rangeObj.mesh.add(buttL);
-
+      buttL.position.set(-(tunnelHalfW + tunnelWall * 0.58), (tunnelCenterY + tunnelHalfH + bridgeThick) * 0.5, 0); buttL.castShadow = true; buttL.receiveShadow = true; rangeObj.mesh.add(buttL);
       const buttR = new THREE.Mesh(new THREE.BoxGeometry(tunnelWall * 1.15, tunnelCenterY + tunnelHalfH + bridgeThick, tunnelHalfL * 2.0), mat);
-      buttR.position.set((tunnelHalfW + tunnelWall * 0.58), (tunnelCenterY + tunnelHalfH + bridgeThick) * 0.5, 0);
-      buttR.castShadow = true; buttR.receiveShadow = true; rangeObj.mesh.add(buttR);
+      buttR.position.set((tunnelHalfW + tunnelWall * 0.58), (tunnelCenterY + tunnelHalfH + bridgeThick) * 0.5, 0); buttR.castShadow = true; buttR.receiveShadow = true; rangeObj.mesh.add(buttR);
 
       rangeObj.height = Math.max(rangeObj.height, tunnelCenterY + tunnelHalfH + bridgeThick + 2);
       return rangeObj;
@@ -1579,63 +1142,519 @@
 
     function createRushmoreMountainRange(cx, cz) {
       const width = 210, depth = 130, maxHeight = 98;
-
       const customHeightFn = (x, z, W, D, H) => {
         const edgeFade = Math.max(0, 1 - Math.pow(Math.abs(x) / (W * 0.53), 2.3) - Math.pow(Math.abs(z) / (D * 0.53), 2.3));
-
         const baseMass = Math.exp(-((x * x) / (W * W * 0.24) + ((z + D * 0.12) ** 2) / (D * D * 0.10))) * H * 0.92;
         const shoulderL = Math.exp(-(((x + W * 0.22) ** 2) / (W * W * 0.07) + ((z + D * 0.02) ** 2) / (D * D * 0.10))) * H * 0.62;
         const shoulderR = Math.exp(-(((x - W * 0.22) ** 2) / (W * W * 0.07) + ((z + D * 0.02) ** 2) / (D * D * 0.10))) * H * 0.62;
         const frontCliff = Math.exp(-((x * x) / (W * W * 0.18) + ((z - D * 0.16) ** 2) / (D * D * 0.028))) * H * 0.68;
-
         let h = (baseMass + shoulderL + shoulderR + frontCliff) * edgeFade;
         h += Math.abs(pseudoNoise2D(x * 1.1, z * 1.1)) * (H * 0.10);
         h += pseudoNoise2D(x * 2.4 - 5, z * 2.1 + 9) * (H * 0.04);
         return Math.max(0, h);
       };
+      const rangeObj = createMountainRange(cx, cz, width, depth, maxHeight, 7, true, { type: "rushmoreRange", customHeightFn });
 
-      const rangeObj = createMountainRange(cx, cz, width, depth, maxHeight, 7, false, {
-        type: "rushmoreRange",
-        customHeightFn
-      });
-
-      const faceMat = new THREE.MeshLambertMaterial({
-        color: 0xc5beb4,
-        transparent: true,
-        opacity: 0.8
-      });
-
-      const bustGroup = new THREE.Group();
-      bustGroup.position.set(0, 0, depth * 0.13);
-
+      const faceMat = new THREE.MeshLambertMaterial({ color: 0xc5beb4, transparent: true, opacity: 0.8 });
+      const bustGroup = new THREE.Group(); bustGroup.position.set(0, 0, depth * 0.13);
       const headXs = [-44, -14, 16, 46];
       headXs.forEach((x, i) => {
         const yBase = 48 + (i % 2) * 3;
         const head = new THREE.Mesh(new THREE.SphereGeometry(7.5, 18, 14), faceMat);
-        head.position.set(x, yBase + 8, 0);
-        head.scale.set(1, 1.15, 0.9);
-        head.castShadow = true; head.receiveShadow = true; bustGroup.add(head);
-
+        head.position.set(x, yBase + 8, 0); head.scale.set(1, 1.15, 0.9); head.castShadow = true; head.receiveShadow = true; bustGroup.add(head);
         const torso = new THREE.Mesh(new THREE.BoxGeometry(12, 16, 6), faceMat);
-        torso.position.set(x, yBase - 2, -1.0);
-        torso.castShadow = true; torso.receiveShadow = true; bustGroup.add(torso);
-
-        const nose = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.3, 2.4), faceMat);
-        nose.position.set(x + 0.6, yBase + 8.2, 5.5);
-        bustGroup.add(nose);
-
-        const brow = new THREE.Mesh(new THREE.BoxGeometry(6.5, 1.1, 1.5), faceMat);
-        brow.position.set(x, yBase + 10.7, 4.7);
-        bustGroup.add(brow);
+        torso.position.set(x, yBase - 2, -1.0); torso.castShadow = true; torso.receiveShadow = true; bustGroup.add(torso);
       });
-
       rangeObj.mesh.add(bustGroup);
       rangeObj.height = Math.max(rangeObj.height, 72);
       return rangeObj;
     }
 
+    function pointInPolygon2D(px, pz, verts) {
+      let inside = false;
+      for (let i = 0, j = verts.length - 1; i < verts.length; j = i++) {
+        const xi = verts[i].x, zi = verts[i].y;
+        const xj = verts[j].x, zj = verts[j].y;
+        const intersect = ((zi > pz) !== (zj > pz)) && (px < (xj - xi) * (pz - zi) / ((zj - zi) || 1e-9) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    }
+    function pointToSegmentDistance2D(px, pz, ax, az, bx, bz) {
+      const vx = bx - ax, vz = bz - az;
+      const wx = px - ax, wz = pz - az;
+      const vv = vx * vx + vz * vz;
+      if (vv < 1e-9) return Math.hypot(px - ax, pz - az);
+      const t = clamp((wx * vx + wz * vz) / vv, 0, 1);
+      const cx = ax + vx * t, cz = az + vz * t;
+      return Math.hypot(px - cx, pz - cz);
+    }
+    function lakeWorldToLocal(x, z, lk) {
+      const dx = x - lk.x, dz = z - lk.z;
+      const ca = Math.cos(-lk.angle), sa = Math.sin(-lk.angle);
+      return { x: dx * ca - dz * sa, z: dx * sa + dz * ca };
+    }
+    function lakeSignedClearance(x, z, lk) {
+      const lp = lakeWorldToLocal(x, z, lk);
+      const inside = pointInPolygon2D(lp.x, lp.z, lk.points);
+      let minD = Infinity;
+      for (let i = 0; i < lk.points.length; i++) {
+        const a = lk.points[i];
+        const b = lk.points[(i + 1) % lk.points.length];
+        const d = pointToSegmentDistance2D(lp.x, lp.z, a.x, a.y, b.x, b.y);
+        if (d < minD) minD = d;
+      }
+      return inside ? -minD : minD;
+    }
+    function nearestLakeInfo(x, z) {
+      let best = null;
+      for (let i = 0; i < lakes.length; i++) {
+        const lk = lakes[i];
+        const c = lakeSignedClearance(x, z, lk);
+        if (!best || c < best.clearance) best = { lk, clearance: c };
+      }
+      return best;
+    }
+    function isPointInLakeRaw(x, z) {
+      for (let i = 0; i < lakes.length; i++) {
+        const lk = lakes[i];
+        const lp = lakeWorldToLocal(x, z, lk);
+        if (pointInPolygon2D(lp.x, lp.z, lk.points)) return true;
+      }
+      return false;
+    }
+    function isPointInLake(x, z) { return landscapeEnabled && isPointInLakeRaw(x, z); }
+
+    function createIrregularLakePolygon(rx, rz) {
+      const count = 16 + Math.floor(Math.random() * 10);
+      const pts = [];
+      for (let i = 0; i < count; i++) {
+        const a = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * (Math.PI * 2 / count) * 0.35;
+        const wr = 0.70 + Math.random() * 0.52;
+        const x = Math.cos(a) * rx * wr;
+        const z = Math.sin(a) * rz * (0.72 + Math.random() * 0.5);
+        pts.push({ a, x, z });
+      }
+      pts.sort((p, q) => p.a - q.a);
+
+      const smoothed = [];
+      for (let i = 0; i < pts.length; i++) {
+        const p0 = pts[(i - 1 + pts.length) % pts.length];
+        const p1 = pts[i];
+        const p2 = pts[(i + 1) % pts.length];
+        smoothed.push(new THREE.Vector2(
+          (p0.x * 0.22 + p1.x * 0.56 + p2.x * 0.22),
+          (p0.z * 0.22 + p1.z * 0.56 + p2.z * 0.22)
+        ));
+      }
+      return smoothed;
+    }
+    function scalePolygon(points, s) {
+      const out = [];
+      for (let i = 0; i < points.length; i++) out.push(new THREE.Vector2(points[i].x * s, points[i].y * s));
+      return out;
+    }
+    function polygonToShape(points) {
+      const sh = new THREE.Shape();
+      if (!points || points.length < 3) return sh;
+      sh.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) sh.lineTo(points[i].x, points[i].y);
+      sh.closePath();
+      return sh;
+    }
+    function polygonToPath(points, reverse = false) {
+      const p = new THREE.Path();
+      if (!points || points.length < 3) return p;
+      if (!reverse) {
+        p.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) p.lineTo(points[i].x, points[i].y);
+      } else {
+        p.moveTo(points[points.length - 1].x, points[points.length - 1].y);
+        for (let i = points.length - 2; i >= 0; i--) p.lineTo(points[i].x, points[i].y);
+      }
+      p.closePath();
+      return p;
+    }
+    function polygonMaxRadius(points) {
+      let m = 0;
+      for (let i = 0; i < points.length; i++) {
+        const r = Math.hypot(points[i].x, points[i].y);
+        if (r > m) m = r;
+      }
+      return m;
+    }
+
+    function disposeObjectDeep(obj) {
+      obj.traverse(child => {
+        if (child.geometry) child.geometry.dispose();
+        if (child.material) {
+          if (Array.isArray(child.material)) child.material.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); });
+          else { if (child.material.map) child.material.map.dispose(); child.material.dispose(); }
+        }
+      });
+    }
+
+    function disposeMountainObjects() {
+      while (mountainGroup.children.length > 0) {
+        const child = mountainGroup.children.pop();
+        disposeObjectDeep(child);
+      }
+      mountains.length = 0;
+      for (let i = treeColliders.length - 1; i >= 0; i--) if (treeColliders[i].source === "mountain") treeColliders.splice(i, 1);
+    }
+
+    function disposeBiomeObjects() {
+      [grassGroup, lakeGroup, forestGroup].forEach(grp => {
+        while (grp.children.length > 0) {
+          const child = grp.children.pop();
+          disposeObjectDeep(child);
+        }
+      });
+      lakes.length = 0;
+      grassClumpColliders.length = 0;
+      for (let i = treeColliders.length - 1; i >= 0; i--) if (treeColliders[i].source === "ground") treeColliders.splice(i, 1);
+    }
+
+    function isInHomeClearZone(x, z, r = BIOME_HOME_BUFFER) { return Math.hypot(x, z) < r; }
+
+    function farFromHoopsAndHome(x, z, radius) {
+      const homeSafe = radius + 80;
+      if (Math.hypot(x, z) < homeSafe) return false;
+      for (let i = 0; i < hoops.length; i++) {
+        const h = hoops[i];
+        const safe = radius + h.mainRadius + MOUNTAIN_HOOP_BUFFER;
+        if (Math.hypot(x - h.mesh.position.x, z - h.mesh.position.z) < safe) return false;
+      }
+      const segs = getHoopCorridorSegments();
+      for (let i = 0; i < segs.length; i++) {
+        const s = segs[i];
+        if (distPointToSegment2D(x, z, s.ax, s.az, s.bx, s.bz) < (radius + CORRIDOR_HALF_WIDTH + 20)) return false;
+      }
+      for (let i = 0; i < mountains.length; i++) {
+        const m = mountains[i];
+        if (Math.hypot(x - m.x, z - m.z) < (radius + m.radius + 28)) return false;
+      }
+      return true;
+    }
+
+    function makeRockTexture() {
+      const canvas = document.createElement("canvas");
+      canvas.width = 256; canvas.height = 256;
+      const ctx = canvas.getContext("2d");
+      ctx.fillStyle = "#6f6f72"; ctx.fillRect(0, 0, 256, 256);
+
+      for (let y = 0; y < 256; y += 4) {
+        for (let x = 0; x < 256; x += 4) {
+          const g = Math.floor(90 + Math.random() * 90);
+          ctx.fillStyle = `rgb(${g},${g},${g + Math.floor(Math.random() * 8)})`;
+          ctx.fillRect(x, y, 4, 4);
+        }
+      }
+      for (let i = 0; i < 240; i++) {
+        const x1 = Math.random() * 256, y1 = Math.random() * 256;
+        const len = 8 + Math.random() * 26, ang = Math.random() * Math.PI * 2;
+        ctx.strokeStyle = Math.random() < 0.5 ? "rgba(40,40,40,0.30)" : "rgba(210,210,210,0.18)";
+        ctx.lineWidth = 1 + Math.random() * 1.2;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x1 + Math.cos(ang) * len, y1 + Math.sin(ang) * len); ctx.stroke();
+      }
+
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(6, 6);
+      tex.minFilter = THREE.LinearMipMapLinearFilter;
+      tex.magFilter = THREE.LinearFilter;
+      return tex;
+    }
+
+    function makeGrassTexture() {
+      const c = document.createElement("canvas");
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext("2d");
+      ctx.fillStyle = "#6ea941";
+      ctx.fillRect(0, 0, 256, 256);
+      for (let i = 0; i < 2200; i++) {
+        const x = Math.random() * 256, y = Math.random() * 256;
+        const g = 90 + Math.floor(Math.random() * 90);
+        ctx.fillStyle = `rgb(${40 + Math.floor(Math.random()*25)}, ${g}, ${35 + Math.floor(Math.random()*25)})`;
+        ctx.fillRect(x, y, 2, 2);
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(24, 24);
+      return tex;
+    }
+
+    function makeWaterTexture() {
+      const c = document.createElement("canvas");
+      c.width = 256; c.height = 256;
+      const ctx = c.getContext("2d");
+      const grd = ctx.createLinearGradient(0, 0, 256, 256);
+      grd.addColorStop(0, "#7ec8ff");
+      grd.addColorStop(0.5, "#42a5f5");
+      grd.addColorStop(1, "#1565c0");
+      ctx.fillStyle = grd; ctx.fillRect(0, 0, 256, 256);
+      ctx.strokeStyle = "rgba(255,255,255,0.35)";
+      for (let i = 0; i < 70; i++) {
+        const y = Math.random() * 256;
+        ctx.beginPath();
+        for (let x = 0; x <= 256; x += 8) {
+          const yy = y + Math.sin((x / 256) * Math.PI * 4 + i * 0.33) * (1 + Math.random() * 2);
+          if (x === 0) ctx.moveTo(x, yy); else ctx.lineTo(x, yy);
+        }
+        ctx.stroke();
+      }
+      const tex = new THREE.CanvasTexture(c);
+      tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.RepeatWrapping;
+      tex.repeat.set(3, 3);
+      return tex;
+    }
+
+    function createIrregularTree(totalH = 8) {
+      const g = new THREE.Group();
+      const trunkH = totalH * (0.32 + Math.random() * 0.12);
+      const trunkRTop = totalH * 0.05;
+      const trunkRBot = totalH * 0.07;
+      const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(trunkRTop, trunkRBot, trunkH, 7),
+        new THREE.MeshLambertMaterial({ color: 0x6d4c41, transparent: true, opacity: 0.7 })
+      );
+      trunk.position.y = trunkH * 0.5; trunk.castShadow = true; g.add(trunk);
+
+      const crownBaseY = trunkH;
+      const blobCount = 4 + Math.floor(Math.random() * 4);
+      for (let i = 0; i < blobCount; i++) {
+        const r = totalH * (0.14 + Math.random() * 0.10);
+        const blob = new THREE.Mesh(
+          new THREE.SphereGeometry(r, 10, 8),
+          new THREE.MeshLambertMaterial({ color: (Math.random() < 0.5 ? 0x2e7d32 : 0x388e3c), transparent: true, opacity: 0.7 })
+        );
+        blob.position.set((Math.random() - 0.5) * totalH * 0.22, crownBaseY + totalH * (0.10 + Math.random() * 0.35), (Math.random() - 0.5) * totalH * 0.22);
+        blob.scale.set(0.9 + Math.random() * 0.6, 0.8 + Math.random() * 0.7, 0.9 + Math.random() * 0.6);
+        blob.castShadow = true; g.add(blob);
+      }
+      return g;
+    }
+
+    function createTallGrassClump(radius = 2.4, height = 2.1) {
+      const grp = new THREE.Group();
+      const bladeGeo = new THREE.PlaneGeometry(0.25, height);
+      const bladeMat = new THREE.MeshLambertMaterial({ color: 0x43a047, transparent: true, opacity: 0.72, side: THREE.DoubleSide });
+      for (let i = 0; i < 38; i++) {
+        const b = new THREE.Mesh(bladeGeo, bladeMat);
+        const a = Math.random() * Math.PI * 2;
+        const r = Math.random() * radius;
+        b.position.set(Math.cos(a) * r, height * 0.5, Math.sin(a) * r);
+        b.rotation.y = Math.random() * Math.PI * 2;
+        b.rotation.z = (Math.random() - 0.5) * 0.24;
+        grp.add(b);
+      }
+      return grp;
+    }
+
+    function generateBiomeGround() {
+      disposeBiomeObjects();
+
+      const carpet = new THREE.Mesh(
+        new THREE.PlaneGeometry(1000, 1000),
+        new THREE.MeshLambertMaterial({
+          map: makeGrassTexture(), color: 0x77b255, transparent: true, opacity: 0.7, side: THREE.DoubleSide
+        })
+      );
+      carpet.rotation.x = -Math.PI / 2;
+      carpet.position.y = 0.002;
+      carpet.receiveShadow = true;
+      grassGroup.add(carpet);
+
+      const lakeCount = 7 + Math.floor(Math.random() * 3);
+      const waterTex = makeWaterTexture();
+
+      for (let i = 0; i < lakeCount; i++) {
+        let placed = false;
+        for (let t = 0; t < 500 && !placed; t++) {
+          const rx = 12 + Math.random() * 56;
+          const rz = 9 + Math.random() * 42;
+          const points = createIrregularLakePolygon(rx, rz);
+          const maxR = polygonMaxRadius(points);
+          const x = (Math.random() - 0.5) * 760;
+          const z = (Math.random() - 0.5) * 760;
+          const angle = Math.random() * Math.PI * 2;
+
+          if (isInHomeClearZone(x, z, BIOME_HOME_BUFFER + maxR)) continue;
+          if (isNearAnyHoop(x, z, HOOP_LAKE_CLEAR_RADIUS + maxR)) continue;
+          if (isNearAnyCorridor(x, z, HOOP_LAKE_CLEAR_RADIUS + maxR)) continue;
+          if (minMountainClearance(x, z) < 40) continue;
+
+          const sampleRad = maxR * 0.7;
+          const samples = [
+            [0,0], [sampleRad,0], [-sampleRad,0], [0,sampleRad], [0,-sampleRad],
+            [sampleRad*0.7, sampleRad*0.7], [sampleRad*0.7,-sampleRad*0.7], [-sampleRad*0.7,sampleRad*0.7], [-sampleRad*0.7,-sampleRad*0.7]
+          ];
+          let mountainLike = false;
+          for (let s = 0; s < samples.length; s++) {
+            const sx = x + samples[s][0], sz = z + samples[s][1];
+            if (terrainSurfaceAt(sx, sz) > 1.3) { mountainLike = true; break; }
+          }
+          if (mountainLike) continue;
+
+          let overlap = false;
+          for (let j = 0; j < lakes.length; j++) {
+            const lk = lakes[j];
+            if (Math.hypot(x - lk.x, z - lk.z) < (maxR + lk.maxR + 24)) { overlap = true; break; }
+          }
+          if (overlap) continue;
+
+          const y = terrainSurfaceAt(x, z);
+
+          // Riverland ring (shore) with hole so water remains visible
+          const shoreOuter = scalePolygon(points, 1.25);
+          const shoreInner = scalePolygon(points, 1.05);
+          const shoreShape = polygonToShape(shoreOuter);
+          shoreShape.holes.push(polygonToPath(shoreInner, true));
+
+          const shore = new THREE.Mesh(
+            new THREE.ShapeGeometry(shoreShape),
+            new THREE.MeshLambertMaterial({ color: 0xc9b58a, transparent: true, opacity: 0.86, side: THREE.DoubleSide })
+          );
+          shore.rotation.x = -Math.PI / 2;
+          shore.rotation.z = angle;
+          shore.position.set(x, y + 0.010, z);
+          shore.receiveShadow = true;
+          lakeGroup.add(shore);
+
+          // water inside ring, slightly lower than floor
+          const waterShape = polygonToShape(points);
+          const water = new THREE.Mesh(
+            new THREE.ShapeGeometry(waterShape),
+            new THREE.MeshLambertMaterial({ map: waterTex, color: 0x64b5f6, transparent: true, opacity: 1.0, side: THREE.DoubleSide })
+          );
+          water.rotation.x = -Math.PI / 2;
+          water.rotation.z = angle;
+          water.position.set(x, y + 0.005, z);
+          water.receiveShadow = false;
+          water.renderOrder = 2;
+          lakeGroup.add(water);
+
+          lakes.push({ x, z, angle, points, maxR, y });
+          placed = true;
+        }
+      }
+
+      const bladeGeo = new THREE.PlaneGeometry(0.22, 1.35);
+      const bladeMat = new THREE.MeshLambertMaterial({ color: 0x4caf50, transparent: true, opacity: 0.7, side: THREE.DoubleSide });
+      const tuftCount = 3600;
+      const grassMesh = new THREE.InstancedMesh(bladeGeo, bladeMat, tuftCount);
+      grassMesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+      grassMesh.castShadow = false;
+      grassMesh.receiveShadow = true;
+
+      const dummy = new THREE.Object3D();
+      let idx = 0, guard = 0;
+      while (idx < tuftCount && guard < tuftCount * 10) {
+        guard++;
+        const x = (Math.random() - 0.5) * 980;
+        const z = (Math.random() - 0.5) * 980;
+        if (isInHomeClearZone(x, z, BIOME_HOME_BUFFER + 6)) continue;
+        if (isPointInLakeRaw(x, z)) continue;
+        if (isNearAnyHoop(x, z, 12)) continue;
+        if (isNearAnyCorridor(x, z, 10)) continue;
+
+        const y = terrainSurfaceAt(x, z) + 0.03;
+        const s = 0.8 + Math.random() * 1.2;
+        dummy.position.set(x, y + (0.5 * s), z);
+        dummy.rotation.set(0, Math.random() * Math.PI * 2, 0);
+        dummy.scale.set(s, s, s);
+        dummy.updateMatrix();
+        grassMesh.setMatrixAt(idx, dummy.matrix);
+        idx++;
+      }
+      grassMesh.count = idx;
+      grassGroup.add(grassMesh);
+
+      const clumpCount = 130;
+      for (let i = 0; i < clumpCount; i++) {
+        let placed = false;
+        for (let t = 0; t < 100 && !placed; t++) {
+          const x = (Math.random() - 0.5) * 920;
+          const z = (Math.random() - 0.5) * 920;
+          const r = 1.8 + Math.random() * 1.9;
+          if (Math.hypot(x, z) > 470) continue;
+          if (isInHomeClearZone(x, z, BIOME_HOME_BUFFER + r + 3)) continue;
+          if (isPointInLakeRaw(x, z)) continue;
+          if (isNearAnyHoop(x, z, 10 + r)) continue;
+          if (isNearAnyCorridor(x, z, 10 + r)) continue;
+          if (minMountainClearance(x, z) < 20) continue;
+          const y = terrainSurfaceAt(x, z) + 0.04;
+          const h = 1.6 + Math.random() * 1.2;
+          const clump = createTallGrassClump(r, h);
+          clump.position.set(x, y, z);
+          forestGroup.add(clump);
+          grassClumpColliders.push({ x, z, radius: r, baseY: y, topY: y + h, source: "grass" });
+          placed = true;
+        }
+      }
+
+      const treeCount = 300;
+      for (let i = 0; i < treeCount; i++) {
+        let placed = false;
+        for (let t = 0; t < 80 && !placed; t++) {
+          const x = (Math.random() - 0.5) * 920;
+          const z = (Math.random() - 0.5) * 920;
+          if (Math.hypot(x, z) > 470) continue;
+          if (isInHomeClearZone(x, z, BIOME_HOME_BUFFER)) continue;
+          if (isPointInLakeRaw(x, z)) continue;
+          if (isNearAnyHoop(x, z, 8)) continue;
+          if (isNearAnyCorridor(x, z, 8)) continue;
+
+          let blocked = false;
+          for (let m = 0; m < mountains.length; m++) {
+            if (Math.hypot(x - mountains[m].x, z - mountains[m].z) < mountains[m].radius * 0.30) { blocked = true; break; }
+          }
+          if (blocked) continue;
+
+          const groundY = terrainSurfaceAt(x, z) + 0.05;
+          const h = 5.2 + Math.random() * 9.5;
+          const tree = createIrregularTree(h);
+          tree.position.set(x, groundY, z);
+          tree.rotation.y = Math.random() * Math.PI * 2;
+          forestGroup.add(tree);
+
+          treeColliders.push({ x, z, radius: 1.2 + h * 0.10, baseY: groundY, topY: groundY + h, source: "ground" });
+          placed = true;
+        }
+      }
+    }
+
+    function allHoopCorridorsClear() {
+      if (!landscapeEnabled) return true;
+      const offsets = [-CORRIDOR_HALF_WIDTH, -CORRIDOR_HALF_WIDTH * 0.5, 0, CORRIDOR_HALF_WIDTH * 0.5, CORRIDOR_HALF_WIDTH];
+      for (let i = 0; i < hoops.length - 1; i++) {
+        const a = hoops[i].mesh.position, b = hoops[i + 1].mesh.position;
+        const dx = b.x - a.x, dz = b.z - a.z;
+        const len = Math.hypot(dx, dz);
+        if (len < 1) continue;
+        const nx = -dz / len, nz = dx / len;
+        const samples = Math.max(8, Math.ceil(len / CORRIDOR_SAMPLE_STEP));
+        for (let s = 0; s <= samples; s++) {
+          const t = s / samples;
+          const cx = lerp(a.x, b.x, t), cz = lerp(a.z, b.z, t);
+          for (let k = 0; k < offsets.length; k++) {
+            const px = cx + nx * offsets[k], pz = cz + nz * offsets[k];
+            if (minMountainClearance(px, pz) < CORRIDOR_MTN_CLEAR) return false;
+            for (let tr = 0; tr < treeColliders.length; tr++) {
+              const tc = treeColliders[tr];
+              if (Math.hypot(px - tc.x, pz - tc.z) < (tc.radius + CORRIDOR_TREE_CLEAR)) return false;
+            }
+            const lk = nearestLakeInfo(px, pz);
+            if (lk && lk.clearance < CORRIDOR_LAKE_CLEAR) return false;
+          }
+        }
+      }
+      return true;
+    }
+
     function generateLandscape() {
       disposeMountainObjects();
+      disposeBiomeObjects();
 
       const total = 12;
       const tunnelIndices = new Set([1, 5, 9]);
@@ -1647,54 +1666,49 @@
 
         for (let t = 0; t < 240 && !placed; t++) {
           const a = sectorAngle + (Math.random() - 0.5) * (Math.PI / total) * 0.75;
-          const r = 225 + Math.random() * 120;
-          const x = Math.cos(a) * r;
-          const z = Math.sin(a) * r;
+          const r = 235 + Math.random() * 120;
+          const x = Math.cos(a) * r, z = Math.sin(a) * r;
 
           if (i === rushmoreIndex) {
             const rad = Math.sqrt(210 * 210 + 130 * 130) * 0.52;
             if (!farFromHoopsAndHome(x, z, rad)) continue;
-            createRushmoreMountainRange(x, z);
-            placed = true;
+            createRushmoreMountainRange(x, z); placed = true;
           } else if (tunnelIndices.has(i)) {
-            const width = 170 + Math.random() * 70;
-            const depth = 120 + Math.random() * 40;
-            const maxH = 82 + Math.random() * 34;
+            const width = 170 + Math.random() * 70, depth = 120 + Math.random() * 40, maxH = 82 + Math.random() * 34;
             const rad = Math.sqrt(width * width + depth * depth) * 0.52;
             if (!farFromHoopsAndHome(x, z, rad)) continue;
-            createTunnelMountainRange(x, z, width, depth, maxH, Math.random() < 0.2);
-            placed = true;
+            createTunnelMountainRange(x, z, width, depth, maxH, Math.random() < 0.45); placed = true;
           } else {
-            const width = 140 + Math.random() * 120;
-            const depth = 95 + Math.random() * 85;
-            const maxH = 62 + Math.random() * 95;
-            const peaks = 5 + Math.floor(Math.random() * 5);
+            const width = 140 + Math.random() * 120, depth = 95 + Math.random() * 85, maxH = 62 + Math.random() * 95, peaks = 5 + Math.floor(Math.random() * 5);
             const rad = Math.sqrt(width * width + depth * depth) * 0.52;
             if (!farFromHoopsAndHome(x, z, rad)) continue;
-            createMountainRange(x, z, width, depth, maxH, peaks, Math.random() < 0.35, { type: "range" });
-            placed = true;
+            createMountainRange(x, z, width, depth, maxH, peaks, Math.random() < 0.55, { type: "range" }); placed = true;
           }
         }
 
         if (!placed) {
-          const fallbackA = sectorAngle;
-          const fallbackR = 320;
-          const x = Math.cos(fallbackA) * fallbackR;
-          const z = Math.sin(fallbackA) * fallbackR;
+          const fallbackA = sectorAngle, fallbackR = 320, x = Math.cos(fallbackA) * fallbackR, z = Math.sin(fallbackA) * fallbackR;
           if (i === rushmoreIndex) createRushmoreMountainRange(x, z);
-          else if (tunnelIndices.has(i)) createTunnelMountainRange(x, z, 190, 130, 92, false);
-          else createMountainRange(x, z, 165, 115, 85, 6, false, { type: "range" });
+          else if (tunnelIndices.has(i)) createTunnelMountainRange(x, z, 190, 130, 92, true);
+          else createMountainRange(x, z, 165, 115, 85, 6, true, { type: "range" });
         }
       }
 
+      let pass = 0;
+      do {
+        generateBiomeGround();
+        pass++;
+        if (allHoopCorridorsClear() || pass >= 6) break;
+        disposeBiomeObjects();
+      } while (true);
+
       mountainGroup.visible = landscapeEnabled;
-      applyValleyHoopLayoutIfNeeded();
+      biomeGroup.visible = landscapeEnabled;
     }
 
     function getMountainSurfaceY(mountain, x, z) {
       if (mountain.type === "range" || mountain.type === "tunnelRange" || mountain.type === "rushmoreRange") {
-        const lx = x - mountain.x;
-        const lz = z - mountain.z;
+        const lx = x - mountain.x, lz = z - mountain.z;
         const h = sampleRangeHeight(mountain, lx, lz);
         if (!isFinite(h) || h < 0) return -Infinity;
         return h + (mountain.baseY || 0);
@@ -1704,8 +1718,7 @@
 
     function collidesWithMountain(m, px, py, pz) {
       if (m.type === "range" || m.type === "rushmoreRange") {
-        const lx = px - m.x;
-        const lz = pz - m.z;
+        const lx = px - m.x, lz = pz - m.z;
         const h = sampleRangeHeight(m, lx, lz);
         if (!isFinite(h)) return false;
         const surfaceY = h + (m.baseY || 0);
@@ -1713,39 +1726,53 @@
       }
 
       if (m.type === "tunnelRange") {
-        const lx = px - m.x;
-        const lz = pz - m.z;
-        const ly = py - (m.baseY || 0);
+        const lx = px - m.x, lz = pz - m.z, ly = py - (m.baseY || 0);
         const h = sampleRangeHeight(m, lx, lz);
         const t = m.tunnel;
-
         if (isFinite(h)) {
           const surfaceY = h + (m.baseY || 0);
           if (py <= surfaceY + 0.9) return true;
         }
-
         const inZ = Math.abs(lz) <= (t.halfL + 0.8);
         const inXRoof = Math.abs(lx) <= (t.halfW + t.wall + 0.8);
-
-        const roofBottom = t.centerY + t.halfH;
-        const roofTop = roofBottom + t.bridgeThick;
+        const roofBottom = t.centerY + t.halfH, roofTop = roofBottom + t.bridgeThick;
         const hitRoof = inZ && inXRoof && ly >= roofBottom && ly <= roofTop;
 
-        const sideMinX = t.halfW;
-        const sideMaxX = t.halfW + t.wall + 0.9;
+        const sideMinX = t.halfW, sideMaxX = t.halfW + t.wall + 0.9;
         const hitSide = inZ && Math.abs(lx) >= sideMinX && Math.abs(lx) <= sideMaxX && ly >= 0 && ly <= roofTop;
 
         return hitRoof || hitSide;
       }
-
       return false;
     }
 
     function touchingMountain() {
       if (!landscapeEnabled) return false;
       const px = drone.position.x, py = drone.position.y, pz = drone.position.z;
-      for (let i = 0; i < mountains.length; i++) {
-        if (collidesWithMountain(mountains[i], px, py, pz)) return true;
+      for (let i = 0; i < mountains.length; i++) if (collidesWithMountain(mountains[i], px, py, pz)) return true;
+      return false;
+    }
+
+    function touchingTree() {
+      if (!landscapeEnabled) return false;
+      const px = drone.position.x, py = drone.position.y, pz = drone.position.z;
+      const dronePad = 1.4;
+      for (let i = 0; i < treeColliders.length; i++) {
+        const t = treeColliders[i];
+        const d = Math.hypot(px - t.x, pz - t.z);
+        if (d <= (t.radius + dronePad) && py >= (t.baseY + 0.1) && py <= (t.topY + 0.8)) return true;
+      }
+      return false;
+    }
+
+    function touchingGrassClump() {
+      if (!landscapeEnabled) return false;
+      const px = drone.position.x, py = drone.position.y, pz = drone.position.z;
+      const pad = 1.2;
+      for (let i = 0; i < grassClumpColliders.length; i++) {
+        const g = grassClumpColliders[i];
+        if (py > g.topY + 0.9 || py < g.baseY - 0.1) continue;
+        if (Math.hypot(px - g.x, pz - g.z) <= (g.radius + pad)) return true;
       }
       return false;
     }
@@ -1753,15 +1780,24 @@
     function nearestMountainCenterInfo(x, z) {
       let best = null;
       for (let i = 0; i < mountains.length; i++) {
-        const m = mountains[i];
-        const dx = x - m.x, dz = z - m.z;
-        const dist = Math.hypot(dx, dz);
+        const m = mountains[i], dx = x - m.x, dz = z - m.z, dist = Math.hypot(dx, dz);
         if (!best || dist < best.dist) best = { m, dx, dz, dist };
       }
       return best;
     }
 
-    // Elementary avoidance tuned for tighter valley/peak-gap flight
+    function nearestTreeInfo(x, z) {
+      let best = null;
+      for (let i = 0; i < treeColliders.length; i++) {
+        const t = treeColliders[i], dx = x - t.x, dz = z - t.z;
+        const dist = Math.hypot(dx, dz);
+        if (!best || dist < best.dist) best = { t, dx, dz, dist };
+      }
+      return best;
+    }
+
+    // Elementary avoidance: mountains + trees ONLY
+    // (inactive for lakes and 3D grass clumps)
     function applyElementaryObstacleAvoidance(delta, intendedMove) {
       if (!isElementaryAvoidanceActive() || !landscapeEnabled) {
         hideObstacleWarning();
@@ -1772,89 +1808,122 @@
       const correction = new THREE.Vector3(0, 0, 0);
       let warn = false;
 
-      const warnClear = 3.4;
-      const minClear = 0.35;   // further minimized
-      const tunnelMin = 0.25;  // further minimized in tunnel
-
-      const desired = (intendedMove && intendedMove.lengthSq() > 0.0001)
+      const hasIntent = intendedMove && intendedMove.lengthSq() > 0.0001;
+      const desired = hasIntent
         ? intendedMove.clone().setY(0).normalize()
         : new THREE.Vector3(Math.sin(drone.yaw), 0, Math.cos(drone.yaw)).normalize();
 
+      const warnClear = 2.6;
+      const minClear = 0.35;
+      const tunnelMin = 0.25;
+
+      // Mountains
       for (let i = 0; i < mountains.length; i++) {
         const m = mountains[i];
-        const lx = p.x - m.x;
-        const lz = p.z - m.z;
-        const ly = p.y - (m.baseY || 0);
+        const lx = p.x - m.x, lz = p.z - m.z, ly = p.y - (m.baseY || 0);
+        const radial = Math.hypot(lx, lz);
+        if (radial > m.radius + 10) continue;
 
         const h = sampleRangeHeight(m, lx, lz);
-        if (isFinite(h)) {
+        if (isFinite(h) && h > 0.9) {
           const surfaceY = h + (m.baseY || 0);
           const clearance = p.y - surfaceY;
-          if (clearance < warnClear) warn = true;
 
+          if (clearance < warnClear) warn = true;
           if (clearance < minClear) {
             const n = sampleRangeNormal(m, lx, lz);
             const pen = minClear - clearance;
-            // include small tangential bypass so it glides around obstacles
             const t1 = new THREE.Vector3(-n.z, 0, n.x).normalize();
-            if (t1.dot(desired) < 0) t1.multiplyScalar(-1);
-
-            correction.addScaledVector(n, pen * 0.88);
-            correction.addScaledVector(t1, pen * 0.42);
-            correction.y += pen * 0.35;
+            if (hasIntent && t1.dot(desired) < 0) t1.multiplyScalar(-1);
+            correction.addScaledVector(n, pen * 0.82);
+            if (hasIntent) correction.addScaledVector(t1, pen * 0.20);
+            correction.y += pen * 0.34;
           }
         }
 
         if (m.type === "tunnelRange") {
           const t = m.tunnel;
           const inZ = Math.abs(lz) <= (t.halfL + 1.2);
-
           if (inZ) {
             const roofBottom = t.centerY + t.halfH;
-
             if (ly >= 0 && ly <= roofBottom + 1.0) {
               const sideInnerClear = t.halfW - Math.abs(lx);
               if (sideInnerClear < 3.2) warn = true;
               if (sideInnerClear < tunnelMin) {
-                const pen = (tunnelMin - sideInnerClear);
-                const sx = (lx === 0) ? 1 : Math.sign(lx);
-                correction.x += sx * pen * 0.95;
+                const pen = tunnelMin - sideInnerClear, sx = (lx === 0) ? 1 : Math.sign(lx);
+                correction.x += sx * pen * 0.9;
               }
             }
-
             if (Math.abs(lx) < t.halfW - 0.3) {
               const roofClear = (t.centerY + t.halfH) - ly;
               if (roofClear < 3.2) warn = true;
-              if (roofClear < tunnelMin) correction.y -= (tunnelMin - roofClear) * 0.9;
+              if (roofClear < tunnelMin) correction.y -= (tunnelMin - roofClear) * 0.85;
             }
           }
+        }
+      }
+
+      // Trees
+      for (let i = 0; i < treeColliders.length; i++) {
+        const t = treeColliders[i];
+        if (p.y < t.baseY - 0.2 || p.y > t.topY + 1.0) continue;
+        const dx = p.x - t.x, dz = p.z - t.z;
+        const d = Math.hypot(dx, dz);
+        const warnD = t.radius + 2.6;
+        const minD = t.radius + 1.0;
+        if (d < warnD) warn = true;
+        if (d < minD) {
+          const pen = minD - d;
+          const away = new THREE.Vector3(dx, 0, dz);
+          if (away.lengthSq() < 0.000001) away.set(1, 0, 0);
+          away.normalize();
+          correction.addScaledVector(away, pen * 1.05);
+          if (hasIntent) {
+            let tangent = new THREE.Vector3(-away.z, 0, away.x);
+            if (tangent.dot(desired) < 0) tangent.multiplyScalar(-1);
+            correction.addScaledVector(tangent, pen * 0.20);
+          }
+          if (p.y < t.topY) correction.y += pen * 0.20;
         }
       }
 
       if (warn) showObstacleWarning(translations[currentLanguage].obstacleWarning);
       else hideObstacleWarning();
 
-      if (correction.lengthSq() > 0.000001) {
-        const gain = clamp(delta * 2.7, 0.06, 0.28);
-        p.addScaledVector(correction, gain);
-        p.y = Math.max(0.45, p.y);
-
-        drone.pitch = lerp(drone.pitch, 0, 0.14);
-        drone.roll = lerp(drone.roll, 0, 0.14);
+      // prevent idle drift when no control input
+      if (!hasIntent && !touchingMountain() && !touchingTree()) {
+        correction.x = 0; correction.z = 0;
       }
 
-      for (let it = 0; it < 3 && touchingMountain(); it++) {
-        const nInfo = nearestMountainCenterInfo(p.x, p.z);
-        if (!nInfo) break;
-        const away = new THREE.Vector3(nInfo.dx, 0, nInfo.dz);
-        if (away.lengthSq() < 0.000001) away.set(1, 0, 0);
-        away.normalize();
-        const tangent = new THREE.Vector3(-away.z, 0, away.x);
-        if (tangent.dot(desired) < 0) tangent.multiplyScalar(-1);
+      if (correction.lengthSq() > 0.000001) {
+        const maxCorr = 1.5;
+        if (correction.length() > maxCorr) correction.setLength(maxCorr);
+        const gain = clamp(delta * 2.0, 0.03, 0.18);
+        p.addScaledVector(correction, gain);
+        p.y = Math.max(0.45, p.y);
+        drone.pitch = lerp(drone.pitch, 0, 0.10);
+        drone.roll = lerp(drone.roll, 0, 0.10);
+      }
 
-        p.addScaledVector(away, 0.45);
-        p.addScaledVector(tangent, 0.30);
-        p.y += 0.25;
+      for (let it = 0; it < 2 && (touchingMountain() || touchingTree()); it++) {
+        let moved = false;
+        const nInfo = nearestMountainCenterInfo(p.x, p.z);
+        if (nInfo && touchingMountain()) {
+          const away = new THREE.Vector3(nInfo.dx, 0, nInfo.dz);
+          if (away.lengthSq() < 0.000001) away.set(1, 0, 0);
+          away.normalize();
+          p.addScaledVector(away, 0.35);
+          p.y += 0.20; moved = true;
+        }
+        const tInfo = nearestTreeInfo(p.x, p.z);
+        if (tInfo && touchingTree()) {
+          const awayT = new THREE.Vector3(tInfo.dx, 0, tInfo.dz);
+          if (awayT.lengthSq() < 0.000001) awayT.set(1, 0, 0);
+          awayT.normalize();
+          p.addScaledVector(awayT, 0.42);
+          p.y += 0.12; moved = true;
+        }
+        if (!moved) break;
       }
     }
 
@@ -1879,29 +1948,20 @@
 
       if (hoop.type === "circular") {
         const r = Math.sqrt(x * x + y * y), inner = hoop.mainRadius - hoop.tubeRadius, outer = hoop.mainRadius + hoop.tubeRadius, innerSafe = Math.max(0.1, inner - safeMargin);
-        inHole = nearPlane && r < innerSafe;
-        touchingEdge = nearPlane && r >= innerSafe && r <= outer + edgeTol;
-        inProximity = Math.abs(z) <= 3.8 && r <= (outer + 2.5);
+        inHole = nearPlane && r < innerSafe; touchingEdge = nearPlane && r >= innerSafe && r <= outer + edgeTol; inProximity = Math.abs(z) <= 3.8 && r <= (outer + 2.5);
       } else if (hoop.type === "square") {
         const m = Math.max(Math.abs(x), Math.abs(y)), inner = hoop.mainRadius - hoop.tubeRadius, outer = hoop.mainRadius, innerSafe = Math.max(0.1, inner - safeMargin);
-        inHole = nearPlane && m < innerSafe;
-        touchingEdge = nearPlane && m >= innerSafe && m <= outer + edgeTol;
-        inProximity = Math.abs(z) <= 3.8 && m <= outer + 2.5;
+        inHole = nearPlane && m < innerSafe; touchingEdge = nearPlane && m >= innerSafe && m <= outer + edgeTol; inProximity = Math.abs(z) <= 3.8 && m <= outer + 2.5;
       } else {
         const p = new THREE.Vector2(x, y);
-        const outerTri = triangleVerts(hoop.mainRadius);
-        const outerTriEdge = triangleVerts(hoop.mainRadius + edgeTol);
+        const outerTri = triangleVerts(hoop.mainRadius), outerTriEdge = triangleVerts(hoop.mainRadius + edgeTol);
         const innerSafeTri = triangleVerts(Math.max(0.1, hoop.mainRadius - hoop.tubeRadius - safeMargin));
         const outerTriProx = triangleVerts(hoop.mainRadius + 2.0);
-
         const inOuter = pointInTriangle2D(p, outerTri[0], outerTri[1], outerTri[2]);
         const inOuterEdge = pointInTriangle2D(p, outerTriEdge[0], outerTriEdge[1], outerTriEdge[2]);
         const inInnerSafe = pointInTriangle2D(p, innerSafeTri[0], innerSafeTri[1], innerSafeTri[2]);
         const inOuterExpanded = pointInTriangle2D(p, outerTriProx[0], outerTriProx[1], outerTriProx[2]);
-
-        inHole = nearPlane && inInnerSafe;
-        touchingEdge = nearPlane && inOuterEdge && !inInnerSafe;
-        inProximity = Math.abs(z) <= 3.8 && (inOuterExpanded || inOuter);
+        inHole = nearPlane && inInnerSafe; touchingEdge = nearPlane && inOuterEdge && !inInnerSafe; inProximity = Math.abs(z) <= 3.8 && (inOuterExpanded || inOuter);
       }
       return { inHole, touchingEdge, inProximity, localX: x, localY: y, localZ: z };
     }
@@ -1924,9 +1984,7 @@
       if (state.localZ < -0.35) hoop.throughBack = true;
       if (Math.abs(state.localZ) <= 0.45) hoop.throughCenter = true;
     }
-    function cleanThroughAchieved(hoop) {
-      return hoop.entered && hoop.throughFront && hoop.throughBack && hoop.throughCenter && !hoop.attemptTouchedEdge;
-    }
+    function cleanThroughAchieved(hoop) { return hoop.entered && hoop.throughFront && hoop.throughBack && hoop.throughCenter && !hoop.attemptTouchedEdge; }
 
     function markHoopPassed(hoop) {
       hoop.passed = true; hoop.needsCleanPass = false; setHoopGreen(hoop);
@@ -1958,8 +2016,7 @@
         for (let i = 0; i < mountains.length; i++) {
           const m = mountains[i];
           const dx = drone.position.x - m.x, dz = drone.position.z - m.z;
-          const dist = Math.hypot(dx, dz);
-          const trigger = m.radius + 18;
+          const dist = Math.hypot(dx, dz), trigger = m.radius + 18;
           if (dist < trigger) {
             hasThreat = true;
             const away = new THREE.Vector3(dx, 0, dz);
@@ -1969,6 +2026,20 @@
             avoid.add(away.multiplyScalar(2.1 * strength));
             const peakY = m.height + 10;
             if (drone.position.y < peakY) avoid.y += 1.25 * strength;
+          }
+        }
+        for (let i = 0; i < treeColliders.length; i++) {
+          const t = treeColliders[i];
+          const dx = drone.position.x - t.x, dz = drone.position.z - t.z;
+          const dist = Math.hypot(dx, dz), trigger = t.radius + 5;
+          if (dist < trigger && drone.position.y <= t.topY + 1.2) {
+            hasThreat = true;
+            const away = new THREE.Vector3(dx, 0, dz);
+            if (away.lengthSq() < 0.00001) away.set(1, 0, 0);
+            away.normalize();
+            const s = (trigger - dist) / trigger;
+            avoid.add(away.multiplyScalar(1.1 * s));
+            if (drone.position.y < t.topY) avoid.y += 0.45 * s;
           }
         }
       }
@@ -2000,6 +2071,7 @@
       btn.style.backgroundColor = landscapeEnabled ? "#f44336" : "#2196f3";
       btn.textContent = landscapeEnabled ? translations[currentLanguage].landscapeOn : translations[currentLanguage].landscape;
       mountainGroup.visible = landscapeEnabled;
+      biomeGroup.visible = landscapeEnabled;
     }
 
     function updateDifficultyButtonsVisual() {
@@ -2053,10 +2125,11 @@
       resetJoystickVisualsAndInputs(); setDemoButtonVisual();
     }
     function toggleDemoMode() { if (demoMode) stopDemoMode(); else startDemoMode(); }
+
     function toggleLandscape() {
       landscapeEnabled = !landscapeEnabled;
       setLandscapeButtonVisual();
-      applyValleyHoopLayoutIfNeeded();
+      if (landscapeEnabled) generateLandscape();
     }
 
     function renderJoystickThumb(containerId, dx, dy) {
@@ -2073,10 +2146,8 @@
       demoStickVisual.ldy = lerp(demoStickVisual.ldy, clamp(leftDy, -1, 1), 0.22);
       demoStickVisual.rdx = lerp(demoStickVisual.rdx, clamp(rightDx, -1, 1), 0.22);
       demoStickVisual.rdy = lerp(demoStickVisual.rdy, clamp(rightDy, -1, 1), 0.22);
-
       leftJoystickInput.dx = demoStickVisual.ldx; leftJoystickInput.dy = demoStickVisual.ldy;
       rightJoystickInput.dx = demoStickVisual.rdx; rightJoystickInput.dy = demoStickVisual.rdy;
-
       renderJoystickThumb("leftJoystick", demoStickVisual.ldx, demoStickVisual.ldy);
       renderJoystickThumb("rightJoystick", demoStickVisual.rdx, demoStickVisual.rdy);
     }
@@ -2104,11 +2175,9 @@
       const center = hoop.mesh.position.clone();
       let normal = new THREE.Vector3(0, 0, 1).applyQuaternion(hoop.mesh.quaternion).normalize();
       if (normal.dot(drone.position.clone().sub(center)) < 0) normal.multiplyScalar(-1);
-
       const rightAxis = new THREE.Vector3(normal.z, 0, -normal.x).normalize(), upAxis = new THREE.Vector3(0, 1, 0);
       const approachDist = advancedMode ? Math.max(18, hoop.mainRadius + 8) : Math.max(16, hoop.mainRadius + 6);
       const gateDist = advancedMode ? 2.6 : Math.max(3.4, hoop.mainRadius * 0.38);
-
       const humanity = advancedMode ? 0.08 : 1.0;
       const sideBias = (Math.random() - 0.5) * 1.2 * humanity, upBias = (Math.random() - 0.5) * 0.8 * humanity;
       const seed = Math.random() * Math.PI * 2; demoLegCounter++;
@@ -2228,7 +2297,6 @@
             toNextFlat.normalize();
             demoForward.lerp(toNextFlat, clamp(0.23 * delta, 0, 1)).normalize();
           }
-
           const flowTarget = drone.position.clone().add(demoForward.clone().multiplyScalar(16));
           flowTarget.y = lerp(drone.position.y, hoop.mesh.position.y, 0.025);
           const humanFlow = addHumanOffset(flowTarget, demoLeg, advancedMode ? 0.05 : 0.45, 0.8);
@@ -2236,7 +2304,6 @@
           updateDemoJoysticksToward(humanFlow, { yawDiv: 2.5, yawLimit: 0.22, pitchScale: 1.1, rollScale: 0.62, humanLag: 1.6 });
           setDemoJoystickState(demoStickVisual.ldx, demoStickVisual.ldy, demoStickVisual.rdx, -0.72);
           demoMoveToward(humanFlow, cruiseSpeed * 0.90, delta, DEMO_YAW_RATE_SLOW, 0.95);
-
           if (nowSec >= demoPostUntil) { demoLeg = null; demoSubPhase = "to-approach"; }
         } else demoSubPhase = "to-approach";
       } else {
@@ -2257,14 +2324,9 @@
       updateDemoAttitude(delta);
 
       if (drone.position.y > 1.0) {
-        if (!flyAudioPlaying) {
-          flyAudio.currentTime = 0; flyAudio.play().catch(() => {});
-          flyAudioPlaying = true; flyAudio.volume = 0;
-        }
+        startFlyAudioIfNeeded(0.05);
         if (flyAudio.volume < 1.0) flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
-      } else if (flyAudioPlaying) {
-        flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false;
-      }
+      } else stopFlyAudio();
     }
 
     function triggerCrashCommon(crashedHoopNumber = null) {
@@ -2274,13 +2336,12 @@
       resetJoystickVisualsAndInputs(); stopDemoMode();
 
       warnAudio.pause(); warnAudio.currentTime = 0; warnAudio.play().catch(() => {});
-
       if (crashedHoopNumber !== null) {
         const cell = document.getElementById("hoopCell-" + crashedHoopNumber);
         if (cell) cell.classList.add("crashed");
       }
 
-      if (flyAudioPlaying) { flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false; }
+      stopFlyAudio();
       if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
       if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
 
@@ -2295,11 +2356,8 @@
       if (crashActive || flightEnded || rthActive || demoMode) return;
       triggerCrashCommon(crashedHoopNumber);
     }
-
-    function triggerMountainCrash() {
-      if (crashActive || flightEnded) return;
-      triggerCrashCommon(null);
-    }
+    function triggerMountainCrash() { if (!crashActive && !flightEnded) triggerCrashCommon(null); }
+    function triggerTreeCrash() { if (!crashActive && !flightEnded) triggerCrashCommon(null); }
 
     let translationSpeed = 50, horizontalSpeed = 0;
     const yawSpeed = 0.5, throttleSpeed = 10, maxTilt = 0.5 * Math.PI / 6, throttleDeadZone = 0.2;
@@ -2316,13 +2374,11 @@
       const nextState = (forceState === null) ? !advancedMode : !!forceState;
       advancedMode = nextState;
       const btn = document.getElementById("advancedBtn");
-
       if (advancedMode) {
         advancedModeStartTime = performance.now() / 1000;
         startAdvancedFlightAudio();
         btn.style.backgroundColor = "#f44336";
         hideObstacleWarning();
-        applyValleyHoopLayoutIfNeeded();
       } else {
         hoops.forEach(h => { h.mesh.scale.set(1, 1, 1); h.mesh.rotation.y = 0; });
         stopAdvancedFlightAudio();
@@ -2357,7 +2413,7 @@
     });
     ["pointerup", "mouseup", "touchend", "change"].forEach(evt => speedSlider.addEventListener(evt, () => speedSlider.blur(), { passive: true }));
 
-    document.getElementById("advancedBtn").addEventListener("click", () => toggleAdvancedMode(true));
+    document.getElementById("advancedBtn").addEventListener("click", () => toggleAdvancedMode());
     document.getElementById("fpvBtn").addEventListener("click", toggleFPVMode);
     document.getElementById("demoBtn").addEventListener("click", toggleDemoMode);
     document.getElementById("landscapeBtn").addEventListener("click", toggleLandscape);
@@ -2366,8 +2422,7 @@
 
     function showEndMessage(text) {
       const msgDiv = document.getElementById("message");
-      msgDiv.style.display = "block";
-      msgDiv.style.backgroundColor = "rgba(0,0,0,0.78)";
+      msgDiv.style.display = "block"; msgDiv.style.backgroundColor = "rgba(0,0,0,0.78)";
       msgDiv.innerHTML = text;
     }
 
@@ -2375,15 +2430,13 @@
       const box = document.getElementById("advancedCongrats");
       const txt = document.getElementById("advancedCongratsText");
       txt.textContent = translations[currentLanguage].advancedCongratsBadge;
-      box.classList.remove("show"); void box.offsetWidth;
-      box.classList.add("show");
+      box.classList.remove("show"); void box.offsetWidth; box.classList.add("show");
       clearTimeout(advancedCongratsTimer);
       advancedCongratsTimer = setTimeout(() => box.classList.remove("show"), 5000);
     }
     function hideAdvancedCongrats() {
       const box = document.getElementById("advancedCongrats");
-      box.classList.remove("show");
-      clearTimeout(advancedCongratsTimer);
+      box.classList.remove("show"); clearTimeout(advancedCongratsTimer);
     }
 
     function updateReplayButtonsState() {
@@ -2403,15 +2456,14 @@
     }
 
     function finalizeLandingAtHome(isMissionComplete) {
-      drone.position.set(0, 0.45, 0);
-      drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
+      drone.position.set(0, 0.45, 0); drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
       landedAtHome = true; flightEnded = true; disableDroneControls = true;
       rthActive = false; manualRTH = false;
       if (landingCompleteTime === null) landingCompleteTime = totalFlightTime;
       stopDemoMode(); stopAdvancedFlightAudio(); resetJoystickVisualsAndInputs();
-      hideObstacleWarning();
+      hideObstacleWarning(); hideLakeAlert();
 
-      if (flyAudioPlaying) { flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false; }
+      stopFlyAudio();
       if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
       if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
 
@@ -2419,8 +2471,7 @@
       document.getElementById("rthBtn").style.backgroundColor = "#2196f3";
 
       if (isMissionComplete) {
-        completionMessageShown = true;
-        missionCompletionMode = advancedMode ? "advanced" : "normal";
+        completionMessageShown = true; missionCompletionMode = advancedMode ? "advanced" : "normal";
         if (homeMarker?.userData?.ctx) {
           drawHomeMarker(homeMarker.userData.ctx, "yellow");
           homeMarker.userData.texture.needsUpdate = true;
@@ -2451,7 +2502,7 @@
       msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
 
       if (rth12Audio.paused) { rth12Audio.currentTime = 0; rth12Audio.play().catch(() => {}); }
-      if (flyAudioPlaying) { flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false; }
+      stopFlyAudio();
     });
 
     const translations = {
@@ -2475,10 +2526,11 @@
         playReplay: "Play", pauseReplay: "Pause", resumeReplay: "Resume",
         noFlightData: "No Flight Data", replayTotalDistance: "Total Distance: ", replayFlightTime: "Flight Time: ",
         timeLabel: "Time: ", rthActivatedLabel: "RTH Activated", landingLabel: "Landing",
-        north: "NORTH", east: "EAST", south: "SOUTH", west: "WEST",
+        north: "N", east: "E", south: "S", west: "W",
         heightAlert: "Altitude limit reached",
         nearDistanceAlert: "Warning: Approaching distance limit",
         distanceAlert: "Distance limit reached - initiating RTH",
+        lakeLandingForbidden: "Landing on lake is forbidden!",
         hoopStatus: "Hoop Status",
         tutorialTitle: "Tutorial", tutorial_heading: "Pilot Mission Briefing",
         edgeTouched: "Warning: Hoop edge touched!",
@@ -2496,32 +2548,15 @@
         tutorial_intro_title: "Welcome Pilot!",
         tutorial_intro_text: "You are on a hoop-run mission. Take off, pass every hoop in order, and bring your drone home safely to win.",
         tutorial_spatial_title: "Read the Arena",
-        tutorial_spatial_text: "Think in three directions while flying: left-right, forward-backward, and up-down. Smooth control in all three is the key to clean runs.",
+        tutorial_spatial_text: "Think in three directions while flying: left-right, forward-backward, and up-down.",
         tutorial_movement_title: "Core Moves You’ll Use",
         tutorial_movement_intro: "Master these moves and you’ll clear hoops faster and safer:",
-        tutorial_movement_throttle_up: "Throttle Up", tutorial_movement_throttle_up_desc: "Climb to match hoop height.",
-        tutorial_movement_throttle_down: "Throttle Down", tutorial_movement_throttle_down_desc: "Descend for low lines and landing.",
-        tutorial_movement_yaw_left: "Yaw Left", tutorial_movement_yaw_left_desc: "Turn left to line up your next target.",
-        tutorial_movement_yaw_right: "Yaw Right", tutorial_movement_yaw_right_desc: "Turn right to set your approach.",
-        tutorial_movement_pitch_forward: "Pitch Forward", tutorial_movement_pitch_forward_desc: "Drive forward through the course.",
-        tutorial_movement_pitch_backward: "Pitch Backward", tutorial_movement_pitch_backward_desc: "Slow and pull back to recover spacing.",
-        tutorial_movement_roll_left: "Roll Left", tutorial_movement_roll_left_desc: "Slide left for side-to-side correction.",
-        tutorial_movement_roll_right: "Roll Right", tutorial_movement_roll_right_desc: "Slide right to center in the hoop.",
         tutorial_controls_title: "How to Play",
         tutorial_controls_text: "Use touch joysticks or keyboard—whatever feels best for your flying style:",
-        tutorial_controls_left_joystick: "Left Joystick:", tutorial_controls_left_joystick_desc: "Altitude and turning.",
-        tutorial_controls_right_joystick: "Right Joystick:", tutorial_controls_right_joystick_desc: "Forward/back and side movement.",
-        tutorial_controls_keyboard: "Keyboard Controls",
-        tutorial_controls_advanced_toggle: "Toggle Advanced mode.",
-        tutorial_controls_fpv_toggle: "Toggle FPV view.",
-        tutorial_controls_landscape_toggle: "Toggle Landscape mountains.",
-        tutorial_controls_rth_toggle: "Start Return-to-Home (RTH).",
-        tutorial_controls_reset: "Reset mission.",
-        tutorial_controls_demo_button: "DEMO Button:", tutorial_controls_demo_button_desc: "Auto-fly all hoops and land at home. You can turn it off anytime and continue manually.",
         tutorial_landscape_title: "Landscape Challenge",
-        tutorial_landscape_text: "Landscape creates mountain ranges whose feet are sealed by flat ground-touching base planes. Some ranges contain large fly-through holes, and one resembles Mount Rushmore style.",
+        tutorial_landscape_text: "Landscape includes mountains, trees, full-floor grassland, and lakes.",
         tutorial_flightpath_title: "Mission Goal",
-        tutorial_flightpath_text: "Pass all hoops in sequence. Keep your line clean, avoid edge contact, then return and land at the home marker."
+        tutorial_flightpath_text: "Pass all hoops in sequence, then return to home and land."
       },
       zh: {
         title: "四軸無人機飛行模擬",
@@ -2547,6 +2582,7 @@
         heightAlert: "高度限制已達",
         nearDistanceAlert: "警告：接近距離上限",
         distanceAlert: "距離限制已達 - 啟動自動返航",
+        lakeLandingForbidden: "禁止在湖面降落！",
         hoopStatus: "環門狀態",
         tutorialTitle: "教程", tutorial_heading: "玩家任務教學",
         edgeTouched: "警告：碰到環門邊緣！",
@@ -2564,33 +2600,15 @@
         tutorial_intro_title: "歡迎，飛手！",
         tutorial_intro_text: "你的任務是完成環門挑戰：起飛、依序穿越所有環門，最後安全返航降落。",
         tutorial_spatial_title: "先看懂場地",
-        tutorial_spatial_text: "飛行時要同時掌握三個方向：左右、前後、上下。三個方向都穩，路線就會漂亮。",
-        tutorial_movement_title: "比賽中最常用的操作",
+        tutorial_spatial_text: "飛行時要同時掌握左右、前後、上下三個方向。",
+        tutorial_movement_title: "常用操作",
         tutorial_movement_intro: "熟悉以下操作，你會更快更穩地過門：",
-        tutorial_movement_throttle_up: "上升", tutorial_movement_throttle_up_desc: "抬高機身，對準環門高度。",
-        tutorial_movement_throttle_down: "下降", tutorial_movement_throttle_down_desc: "降低高度，準備低位路線與降落。",
-        tutorial_movement_yaw_left: "左轉", tutorial_movement_yaw_left_desc: "向左調頭，對準下一個環門。",
-        tutorial_movement_yaw_right: "右轉", tutorial_movement_yaw_right_desc: "向右調頭，建立進門角度。",
-        tutorial_movement_pitch_forward: "前進", tutorial_movement_pitch_forward_desc: "推進機身，朝目標前進。",
-        tutorial_movement_pitch_backward: "後退", tutorial_movement_pitch_backward_desc: "回拉減速，重新拉開距離。",
-        tutorial_movement_roll_left: "左橫移", tutorial_movement_roll_left_desc: "向左微調位置，回到中線。",
-        tutorial_movement_roll_right: "右橫移", tutorial_movement_roll_right_desc: "向右微調位置，對準門心。",
-        tutorial_controls_title: "怎麼玩",
-        tutorial_controls_text: "可用螢幕搖桿或鍵盤，選你最順手的方式：",
-        tutorial_controls_left_joystick: "左搖桿：", tutorial_controls_left_joystick_desc: "控制高度與轉向。",
-        tutorial_controls_right_joystick: "右搖桿：", tutorial_controls_right_joystick_desc: "控制前後與左右平移。",
-        tutorial_controls_keyboard: "鍵盤操作",
-        tutorial_controls_advanced_toggle: "切換進階模式。",
-        tutorial_controls_fpv_toggle: "切換第一人稱視角（FPV）。",
-        tutorial_controls_landscape_toggle: "切換地景山脈。",
-        tutorial_controls_rth_toggle: "啟動自動返航（RTH）。",
-        tutorial_controls_reset: "重置任務。",
-        tutorial_controls_demo_button: "示範按鈕：",
-        tutorial_controls_demo_button_desc: "自動穿越 10 個環門並返航降落。你可隨時關閉示範並接手手動飛行。",
+        tutorial_controls_title: "操作方式",
+        tutorial_controls_text: "可使用螢幕搖桿或鍵盤。",
         tutorial_landscape_title: "地景挑戰",
-        tutorial_landscape_text: "地景模式中所有山脈的山腳均以平面與地面貼合，部分山脈含大型可穿越洞口，並包含一座類似拉什莫爾山風格的山體。",
+        tutorial_landscape_text: "地景模式包含山脈、樹木、全地面草地與湖泊。",
         tutorial_flightpath_title: "任務目標",
-        tutorial_flightpath_text: "依序通過所有環門。保持穩定路線、避免擦邊，最後回到起飛點降落。"
+        tutorial_flightpath_text: "依序通過所有環門，然後返航降落。"
       }
     };
 
@@ -2635,8 +2653,7 @@
 
       const sections = document.getElementById("tutorialContent").getElementsByClassName("tutorial-section");
       for (let i = 0; i < sections.length; i++) {
-        const section = sections[i], heading = section.querySelector("h2"), hk = heading?.getAttribute("data-key");
-        if (hk && translations[currentLanguage][hk]) heading.textContent = translations[currentLanguage][hk];
+        const section = sections[i];
         section.querySelectorAll("[data-key]").forEach(el => {
           const k = el.getAttribute("data-key");
           if (translations[currentLanguage][k]) el.textContent = translations[currentLanguage][k];
@@ -2653,6 +2670,7 @@
       }
 
       updateReplayButtonsState();
+      layoutTopAlerts();
     }
 
     document.getElementById("langToggle").addEventListener("click", function () {
@@ -2681,104 +2699,175 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshLambertMaterial({ color: 0xededed }));
+    const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshLambertMaterial({ color: 0x5d8f42 }));
     ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
     scene.add(new THREE.GridHelper(1000, 50, 0x000000, 0x000000));
 
-    const clock = new THREE.Clock();
-
-    function computeReplayTransform(points) {
-      let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
-      points.forEach(obj => { const pt = obj.pos; if (pt.x < minX) minX = pt.x; if (pt.x > maxX) maxX = pt.x; if (pt.z < minZ) minZ = pt.z; if (pt.z > maxZ) maxZ = pt.z; });
-      const width = maxX - minX, height = maxZ - minZ;
-      const scaleX = replayCanvas.width / ((width * 1.2) || 1), scaleY = replayCanvas.height / ((height * 1.2) || 1);
-      const scale = Math.min(scaleX, scaleY);
-      const centerX = (minX + maxX) / 2, centerZ = (minZ + maxZ) / 2;
-      return { scale, offsetX: replayCanvas.width / 2 - centerX * scale, offsetY: replayCanvas.height / 2 - centerZ * scale };
+    const hoops = [];
+    for (let i = 1; i <= 10; i++) {
+      const hoop = (i <= 4) ? createCircularHoop(i) : (i <= 7 ? createSquareHoop(i) : createTriangleHoop(i));
+      scene.add(hoop.mesh); hoops.push(hoop);
+    }
+    const altitudes = [10,15,20,25,30,35,40,45,50,55];
+    function assignRandomHoopPositions() {
+      const hoopXZ = generateHoopXZPositions(10, HOOP_MIN_HOME_RADIUS, 95, 30);
+      for (let i = 0; i < hoops.length; i++) {
+        const safe = clampPointToHoopSafeRadius(hoopXZ[i], HOOP_MIN_HOME_RADIUS, HOOP_MAX_SAFE_RADIUS);
+        hoops[i].mesh.position.set(safe.x, altitudes[i], safe.z);
+        hoops[i].mesh.rotation.set(0, 0, 0);
+      }
     }
 
-    function getInterpolatedPosition(currentReplayTime) {
-      if (recordedFlightPath.length === 0) return null;
-      if (currentReplayTime <= recordedFlightPath[0].t) return recordedFlightPath[0].pos.clone();
-      if (currentReplayTime >= recordedFlightPath[recordedFlightPath.length - 1].t) return recordedFlightPath[recordedFlightPath.length - 1].pos.clone();
+    const clock = new THREE.Clock();
 
+    // Topview orientation fix: rotate world -> drone frame by +heading
+    function rotateToDroneFrame(wx, wz, cx, cz, heading) {
+      const dx = wx - cx, dz = wz - cz;
+      const c = Math.cos(heading), s = Math.sin(heading);
+      return { x: dx * c - dz * s, z: dx * s + dz * c };
+    }
+
+    function computeTopviewScale(pathData, centerPos, heading) {
+      let maxAbs = 20;
+      for (let i = 0; i < pathData.length; i++) {
+        const p = rotateToDroneFrame(pathData[i].pos.x, pathData[i].pos.z, centerPos.x, centerPos.z, heading);
+        maxAbs = Math.max(maxAbs, Math.abs(p.x), Math.abs(p.z));
+      }
+      for (let i = 0; i < hoops.length; i++) {
+        const h = rotateToDroneFrame(hoops[i].mesh.position.x, hoops[i].mesh.position.z, centerPos.x, centerPos.z, heading);
+        maxAbs = Math.max(maxAbs, Math.abs(h.x), Math.abs(h.z));
+      }
+      maxAbs = Math.max(maxAbs, 12);
+      return (Math.min(replayCanvas.width, replayCanvas.height) * 0.42) / maxAbs;
+    }
+
+    function drawCompassBoxes(heading) {
+      const cx = replayCanvas.width / 2, cy = replayCanvas.height / 2;
+      const r = Math.min(replayCanvas.width, replayCanvas.height) * 0.44;
+      const dirs = [
+        { label: translations[currentLanguage].north, vx: 0, vz: 1 },
+        { label: translations[currentLanguage].east,  vx: -1, vz: 0 },
+        { label: translations[currentLanguage].west,  vx: 1, vz: 0 },
+        { label: translations[currentLanguage].south, vx: 0, vz: -1 }
+      ];
+
+      const c = Math.cos(heading), s = Math.sin(heading);
+      for (let i = 0; i < dirs.length; i++) {
+        const d = dirs[i];
+        const rx = d.vx * c - d.vz * s;
+        const rz = d.vx * s + d.vz * c;
+        const x = cx + rx * r;
+        const y = cy - rz * r;
+
+        const w = 16, h = 16;
+        replayCtx.fillStyle = "rgba(255,255,255,0.95)";
+        replayCtx.strokeStyle = "#222";
+        replayCtx.lineWidth = 1.2;
+        replayCtx.fillRect(x - w / 2, y - h / 2, w, h);
+        replayCtx.strokeRect(x - w / 2, y - h / 2, w, h);
+
+        replayCtx.font = "bold 10px Arial";
+        replayCtx.fillStyle = "#000";
+        replayCtx.textAlign = "center";
+        replayCtx.textBaseline = "middle";
+        replayCtx.fillText(d.label, x, y + 0.5);
+      }
+    }
+
+    function getInterpolatedState(currentReplayTime) {
+      if (recordedFlightPath.length === 0) return null;
+      if (currentReplayTime <= recordedFlightPath[0].t) {
+        const p = recordedFlightPath[0];
+        return { pos: p.pos.clone(), yaw: p.yaw || 0 };
+      }
+      if (currentReplayTime >= recordedFlightPath[recordedFlightPath.length - 1].t) {
+        const p = recordedFlightPath[recordedFlightPath.length - 1];
+        return { pos: p.pos.clone(), yaw: p.yaw || 0 };
+      }
       for (let i = 0; i < recordedFlightPath.length - 1; i++) {
         const a = recordedFlightPath[i], b = recordedFlightPath[i + 1];
         if (currentReplayTime >= a.t && currentReplayTime <= b.t) {
           const ratio = (currentReplayTime - a.t) / (b.t - a.t);
-          return a.pos.clone().lerp(b.pos, ratio);
+          const pos = a.pos.clone().lerp(b.pos, ratio);
+          const ay = (a.yaw || 0), by = (b.yaw || 0);
+          const yaw = lerpAngle(ay, by, ratio);
+          return { pos, yaw };
         }
       }
-      return recordedFlightPath[recordedFlightPath.length - 1].pos.clone();
+      const last = recordedFlightPath[recordedFlightPath.length - 1];
+      return { pos: last.pos.clone(), yaw: last.yaw || 0 };
     }
 
-    function drawTopviewCanvas(pathData, currentPos, timeValue, showReplayFlags) {
+    function drawTopviewCanvas(pathData, currentPos, timeValue, showReplayFlags, heading = 0) {
       replayCtx.clearRect(0, 0, replayCanvas.width, replayCanvas.height);
-
       if (!pathData || pathData.length === 0) {
-        replayCtx.save();
-        replayCtx.translate(replayCanvas.width / 2, replayCanvas.height / 2);
-        replayCtx.rotate(Math.PI);
-        replayCtx.fillStyle = "#000"; replayCtx.font = "14px Arial"; replayCtx.textAlign = "center";
-        replayCtx.fillText(translations[currentLanguage].noFlightData, 0, 0);
-        replayCtx.restore();
+        replayCtx.fillStyle = "#000";
+        replayCtx.font = "14px Arial";
+        replayCtx.textAlign = "center";
+        replayCtx.textBaseline = "middle";
+        replayCtx.fillText(translations[currentLanguage].noFlightData, replayCanvas.width / 2, replayCanvas.height / 2);
         return;
       }
 
-      const { scale, offsetX, offsetY } = computeReplayTransform(pathData);
+      const center = currentPos ? currentPos.clone() : pathData[pathData.length - 1].pos.clone();
+      const scale = computeTopviewScale(pathData, center, heading);
+      const cx = replayCanvas.width / 2, cy = replayCanvas.height / 2;
+
       replayCtx.strokeStyle = "#ff0000"; replayCtx.lineWidth = 2; replayCtx.beginPath();
-      replayCtx.moveTo(pathData[0].pos.x * scale + offsetX, pathData[0].pos.z * scale + offsetY);
-      pathData.forEach(obj => replayCtx.lineTo(obj.pos.x * scale + offsetX, obj.pos.z * scale + offsetY));
+      for (let i = 0; i < pathData.length; i++) {
+        const p = rotateToDroneFrame(pathData[i].pos.x, pathData[i].pos.z, center.x, center.z, heading);
+        const sx = cx - p.x * scale, sy = cy - p.z * scale;
+        if (i === 0) replayCtx.moveTo(sx, sy); else replayCtx.lineTo(sx, sy);
+      }
       replayCtx.stroke();
 
-      if (currentPos) {
-        replayCtx.fillStyle = "#0000ff";
-        replayCtx.beginPath();
-        replayCtx.arc(currentPos.x * scale + offsetX, currentPos.z * scale + offsetY, 4, 0, Math.PI * 2);
-        replayCtx.fill();
+      // hoop numbers
+      for (let i = 0; i < hoops.length; i++) {
+        const h = hoops[i];
+        const p = rotateToDroneFrame(h.mesh.position.x, h.mesh.position.z, center.x, center.z, heading);
+        const sx = cx - p.x * scale, sy = cy - p.z * scale;
+        replayCtx.fillStyle = "#111";
+        replayCtx.font = "12px Arial";
+        replayCtx.textAlign = "center";
+        replayCtx.textBaseline = "middle";
+        replayCtx.fillText(h.number.toString(), sx, sy);
       }
 
-      hoops.forEach(hoop => {
-        const x = hoop.mesh.position.x * scale + offsetX, y = hoop.mesh.position.z * scale + offsetY;
-        replayCtx.save();
-        replayCtx.translate(x, y); replayCtx.rotate(Math.PI);
-        replayCtx.fillStyle = "black"; replayCtx.font = "14px Arial"; replayCtx.textAlign = "center"; replayCtx.textBaseline = "middle";
-        replayCtx.fillText(hoop.number.toString(), 0, 0);
-        replayCtx.restore();
-      });
+      const dx = currentPos ? cx : (cx + rotateToDroneFrame(pathData[pathData.length - 1].pos.x, pathData[pathData.length - 1].pos.z, center.x, center.z, heading).x * scale);
+      const dy = currentPos ? cy : (cy - rotateToDroneFrame(pathData[pathData.length - 1].pos.x, pathData[pathData.length - 1].pos.z, center.x, center.z, heading).z * scale);
+      replayCtx.fillStyle = "#0b4dff";
+      replayCtx.beginPath();
+      replayCtx.arc(dx, dy, 4, 0, Math.PI * 2);
+      replayCtx.fill();
 
-      replayCtx.save();
-      replayCtx.setTransform(1, 0, 0, 1, 0, 0);
-      replayCtx.translate(replayCanvas.width / 2, replayCanvas.height / 2);
-      replayCtx.rotate(Math.PI);
-      replayCtx.translate(-replayCanvas.width / 2, -replayCanvas.height / 2);
-      replayCtx.font = "bold 14px Arial";
+      // N/E/W/S boxed labels
+      drawCompassBoxes(heading);
+
+      replayCtx.font = "bold 12px Arial";
       replayCtx.fillStyle = "blue";
       replayCtx.textAlign = "right";
-      replayCtx.fillText(translations[currentLanguage].timeLabel + timeValue.toFixed(1) + " s", replayCanvas.width - 10, 20);
+      replayCtx.fillText(translations[currentLanguage].timeLabel + timeValue.toFixed(1) + " s", replayCanvas.width - 8, 14);
 
       if (showReplayFlags) {
         if (rthActivationTime !== null && timeValue >= rthActivationTime && (landingStartTime === null || timeValue < landingStartTime)) {
           replayCtx.fillStyle = "red";
-          replayCtx.fillText(translations[currentLanguage].rthActivatedLabel, replayCanvas.width - 10, 40);
+          replayCtx.fillText(translations[currentLanguage].rthActivatedLabel, replayCanvas.width - 8, 30);
         } else if (landingStartTime !== null && timeValue >= landingStartTime && timeValue < landingCompleteTime) {
           replayCtx.fillStyle = "red";
-          replayCtx.fillText(translations[currentLanguage].landingLabel, replayCanvas.width - 10, 40);
+          replayCtx.fillText(translations[currentLanguage].landingLabel, replayCanvas.width - 8, 30);
         }
       }
-      replayCtx.restore();
     }
 
     function animateReplay() {
       if (!replayInControl) return;
-      if (recordedFlightPath.length === 0) { drawTopviewCanvas([], null, 0, false); replayInControl = false; return; }
+      if (recordedFlightPath.length === 0) { drawTopviewCanvas([], null, 0, false, 0); replayInControl = false; return; }
 
       if (!replayPaused) {
         const elapsed = (performance.now() - replayStartTime) / 1000 + replayElapsedOffset;
         const currentReplayTime = Math.min(elapsed, recordedTime);
-        const currentPos = getInterpolatedPosition(currentReplayTime);
-        drawTopviewCanvas(recordedFlightPath, currentPos, currentReplayTime, true);
-
+        const st = getInterpolatedState(currentReplayTime);
+        drawTopviewCanvas(recordedFlightPath, st ? st.pos : null, currentReplayTime, true, st ? st.yaw : 0);
         if (elapsed < recordedTime) replayAnimationId = requestAnimationFrame(animateReplay);
         else {
           replayInControl = false; replayPaused = false;
@@ -2789,7 +2878,7 @@
 
     document.getElementById("playReplay").addEventListener("click", function () {
       if (this.disabled) return;
-      if (recordedFlightPath.length === 0) { drawTopviewCanvas([], null, 0, false); return; }
+      if (recordedFlightPath.length === 0) { drawTopviewCanvas([], null, 0, false, 0); return; }
       replayInControl = true; replayPaused = false; replayElapsedOffset = 0; replayStartTime = performance.now();
       document.getElementById("stopReplay").textContent = translations[currentLanguage].pauseReplay;
       document.getElementById("replayDistance").textContent = recordedDistance.toFixed(1) + " m";
@@ -2813,10 +2902,10 @@
     function drawLiveTopviewIfNeeded() {
       if (replayInControl) return;
       if (takenOff && recordedFlightPath.length > 0) {
-        drawTopviewCanvas(recordedFlightPath, drone.position.clone(), totalFlightTime, false);
+        drawTopviewCanvas(recordedFlightPath, drone.position.clone(), totalFlightTime, false, drone.yaw);
         document.getElementById("replayDistance").textContent = totalDistance.toFixed(1) + " m";
         document.getElementById("replayTime").textContent = totalFlightTime.toFixed(1) + " s";
-      } else drawTopviewCanvas([], null, 0, false);
+      } else drawTopviewCanvas([], null, 0, false, 0);
     }
 
     function animate() {
@@ -2825,7 +2914,8 @@
 
       if (advancedMode) {
         const t = (performance.now() / 1000) - advancedModeStartTime;
-        const stretchOmega = (2 * Math.PI / ADVANCED_STRETCH_CYCLE_SEC), scale = (1 / 3) + ((1 + Math.cos(stretchOmega * t + ADVANCED_STRETCH_PHASE)) / 2) * (2 / 3);
+        const stretchOmega = (2 * Math.PI / ADVANCED_STRETCH_CYCLE_SEC);
+        const scale = (1 / 3) + ((1 + Math.cos(stretchOmega * t + ADVANCED_STRETCH_PHASE)) / 2) * (2 / 3);
         const spinOmega = (2 * Math.PI / ADVANCED_SPIN_CYCLE_SEC), spinAngle = (spinOmega * t + ADVANCED_SPIN_PHASE);
         hoops.forEach(h => { h.mesh.scale.set(scale, scale, 1); h.mesh.rotation.y = spinAngle; });
       } else {
@@ -2835,9 +2925,8 @@
         });
       }
 
-      if (advancedFlightAudioPlaying) {
-        if (!advancedMode || flightEnded) stopAdvancedFlightAudio();
-      } else if (advancedMode && !flightEnded) startAdvancedFlightAudio();
+      if (advancedFlightAudioPlaying) { if (!advancedMode || flightEnded) stopAdvancedFlightAudio(); }
+      else if (advancedMode && !flightEnded) startAdvancedFlightAudio();
 
       if (previousPosition) {
         const dx = drone.position.x - previousPosition.x, dz = drone.position.z - previousPosition.z;
@@ -2845,7 +2934,6 @@
       }
 
       if (takenOff && !flightEnded) totalFlightTime += delta;
-
       if (previousPosition) {
         const dx = drone.position.x - previousPosition.x, dz = drone.position.z - previousPosition.z;
         totalDistance += Math.sqrt(dx * dx + dz * dz);
@@ -2858,7 +2946,7 @@
         translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s<br>" +
         translations[currentLanguage].crashes + crashCount;
 
-      if (takenOff) recordedFlightPath.push({ pos: drone.position.clone(), t: totalFlightTime });
+      if (takenOff) recordedFlightPath.push({ pos: drone.position.clone(), t: totalFlightTime, yaw: drone.yaw });
 
       if (flightEnded && recordedFlightPath.length > 0 && recordedDistance === 0 && recordedTime === 0) {
         recordedDistance = totalDistance; recordedTime = totalFlightTime;
@@ -2869,7 +2957,6 @@
       const alertMessages = [];
       if (drone.position.y >= 250) { drone.position.y = 250; alertMessages.push(translations[currentLanguage].heightAlert); }
       if (homeDistance >= 450 && homeDistance < 500) alertMessages.push(translations[currentLanguage].nearDistanceAlert);
-
       if (homeDistance >= 500 && !manualRTH && !demoMode && !flightEnded) {
         rthActive = true;
         if (rthActivationTime === null) rthActivationTime = totalFlightTime;
@@ -2890,13 +2977,14 @@
       if (crashActive && !flightEnded) {
         drone.pitch += 6 * delta; drone.roll += 8 * delta;
         drone.position.y = Math.max(0.45, drone.position.y - 25 * delta);
-
         if (drone.position.y <= 0.45 && !crashGrounded) { crashGrounded = true; crashRecoverAt = performance.now() + 1000; }
         if (crashGrounded && performance.now() >= crashRecoverAt) {
           drone.position.set(0, 2.0, 0); drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
           previousPosition = drone.position.clone(); takenOff = true;
           crashActive = false; crashGrounded = false; disableDroneControls = false;
           document.getElementById("message").style.display = "none";
+          stopFlyAudio(true);
+          startFlyAudioIfNeeded(0.15);
         }
       } else if (!disableDroneControls && !flightEnded) {
         if (demoMode) {
@@ -2928,13 +3016,11 @@
 
             drone.yaw = lerp(drone.yaw, Math.atan2(moveDir.x, moveDir.z), 0.05);
             const step = moveDir.clone().multiplyScalar(30 * delta);
-            drone.position.x += step.x;
-            drone.position.z += step.z;
+            drone.position.x += step.x; drone.position.z += step.z;
             intendedMoveVec.copy(step);
           } else {
             const msgDiv = document.getElementById("message");
-            msgDiv.style.display = "block";
-            msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
+            msgDiv.style.display = "block"; msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
             msgDiv.innerHTML = translations[currentLanguage].automaticLanding;
 
             if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
@@ -2945,7 +3031,6 @@
             drone.pitch = lerp(drone.pitch, 0, 0.1);
             drone.roll = lerp(drone.roll, 0, 0.1);
             if (landingStartTime === null) landingStartTime = totalFlightTime;
-
             if (drone.position.y <= 0.46) finalizeLandingAtHome(allHoopsPassed);
           }
         } else {
@@ -2955,6 +3040,13 @@
           const throttleInput = (Math.abs(rawThrottle) >= throttleDeadZone) ? rawThrottle : 0;
           drone.position.y += throttleInput * throttleSpeed * delta;
           if (drone.position.y < 0.45) drone.position.y = 0.45;
+
+          // forbid lake landing but keep flying sound (hover)
+          if (isPointInLake(drone.position.x, drone.position.z) && homeDistance > 10 && drone.position.y < LAKE_MIN_HOVER_ALT) {
+            drone.position.y = LAKE_MIN_HOVER_ALT;
+            showLakeAlert(translations[currentLanguage].lakeLandingForbidden);
+            startFlyAudioIfNeeded(0.2);
+          }
 
           if (!takenOff && throttleInput !== 0 && drone.position.y > 1.0) {
             takenOff = true; recordedFlightPath = []; recordedDistance = 0; recordedTime = 0;
@@ -2984,26 +3076,26 @@
           }
 
           if (drone.position.y > 1.0) {
-            if (!flyAudioPlaying) {
-              flyAudio.currentTime = 0; flyAudio.play().catch(() => {});
-              flyAudioPlaying = true; flyAudio.volume = 0;
-            }
+            startFlyAudioIfNeeded(0.05);
             if (flyAudio.volume < 1.0) flyAudio.volume = Math.min(1.0, flyAudio.volume + delta * 0.5);
-          } else if (flyAudioPlaying) {
-            flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false;
-          }
+          } else stopFlyAudio();
         }
-      } else if (flyAudioPlaying) {
-        flyAudio.pause(); flyAudio.currentTime = 0; flyAudioPlaying = false;
-      }
+      } else stopFlyAudio();
 
       applyElementaryObstacleAvoidance(delta, intendedMoveVec);
 
       if (takenOff && drone.position.y <= 0.46 && !crashActive && !rthActive && !flightEnded) {
         const ddx = drone.position.x - previousPosition.x, dz = drone.position.z - previousPosition.z;
         if (Math.sqrt(ddx * ddx + dz * dz) < 10) {
-          if (homeDistance < 10) finalizeLandingAtHome(allHoopsPassed);
-          else takenOff = false;
+          if (isPointInLake(drone.position.x, drone.position.z) && homeDistance > 10) {
+            drone.position.y = LAKE_MIN_HOVER_ALT;
+            showLakeAlert(translations[currentLanguage].lakeLandingForbidden);
+            startFlyAudioIfNeeded(0.2);
+          } else if (homeDistance < 10) {
+            finalizeLandingAtHome(allHoopsPassed);
+          } else {
+            takenOff = false;
+          }
           resetJoystickVisualsAndInputs();
         }
       }
@@ -3017,9 +3109,9 @@
         prop.blinkSpot.visible = Math.sin(clock.getElapsedTime() * 5 + prop.blinkOffset) > 0;
       });
 
-      if (!crashActive && touchingMountain()) {
-        if (!isElementaryAvoidanceActive()) triggerMountainCrash();
-      }
+      if (!crashActive && touchingTree()) { if (!isElementaryAvoidanceActive()) triggerTreeCrash(); }
+      if (!crashActive && touchingMountain()) { if (!isElementaryAvoidanceActive()) triggerMountainCrash(); }
+      if (!crashActive && touchingGrassClump()) { if (!isElementaryAvoidanceActive()) triggerTreeCrash(); }
 
       if (!crashActive) {
         if (demoMode && takenOff && !flightEnded) {
@@ -3080,7 +3172,6 @@
         let count = 0; hoops.forEach(hoop => { if (hoop.passed) count++; });
         if (count >= 3 && !milestone3Shown) { milestone3Shown = true; showEncouragement(translations[currentLanguage].encourage3); }
         if (count >= 6 && !milestone6Shown) { milestone6Shown = true; showEncouragement(translations[currentLanguage].encourage6); }
-
         if (count === hoops.length) {
           allHoopsPassed = true;
           if (!crashActive && !flightEnded) {
@@ -3140,14 +3231,13 @@
 
       drawLiveTopviewIfNeeded();
       updateReplayButtonsState();
+      layoutTopAlerts();
       renderer.render(scene, camera);
     }
     animate();
 
     function resetDrone() {
-      drone.position.set(0, 0.45, 0);
-      drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
-
+      drone.position.set(0, 0.45, 0); drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
       takenOff = false; landedAtHome = false; allHoopsPassed = false; rthActive = false; manualRTH = false;
       currentExpectedHoop = 1; stopDemoMode();
 
@@ -3156,7 +3246,7 @@
 
       clearTimeout(encourageTimer); document.getElementById("encouragePopup").style.display = "none";
       clearTimeout(wrongOrderTimer); document.getElementById("orderAlert").style.display = "none";
-      hideObstacleWarning();
+      hideObstacleWarning(); hideLakeAlert();
 
       recordedFlightPath = []; recordedDistance = 0; recordedTime = 0;
       replayInControl = false; replayPaused = false; replayElapsedOffset = 0;
@@ -3188,7 +3278,6 @@
 
       const alertEl = document.getElementById("alertMessage");
       alertEl.style.display = "none"; alertEl.classList.remove("blinking");
-
       document.getElementById("edgePopup").style.display = "none";
 
       for (let i = 1; i <= hoops.length; i++) {
@@ -3197,10 +3286,7 @@
       }
 
       document.getElementById("rthBtn").style.backgroundColor = "#2196f3";
-
-      translationSpeed = 50;
-      document.getElementById("speedSlider").value = "50";
-      document.getElementById("speedSlider").blur();
+      translationSpeed = 50; document.getElementById("speedSlider").value = "50"; document.getElementById("speedSlider").blur();
 
       disableDroneControls = false; flightEnded = false; totalDistance = 0; totalFlightTime = 0; previousPosition = null; horizontalSpeed = 0;
       intendedMoveVec.set(0, 0, 0);
@@ -3208,7 +3294,7 @@
       document.getElementById("replayDistance").textContent = "0.0 m";
       document.getElementById("replayTime").textContent = "0.0 s";
 
-      if (flyAudioPlaying) { flyAudio.pause(); flyAudio.currentTime = 0; flyAudio.volume = 0; flyAudioPlaying = false; }
+      stopFlyAudio(true);
       stopAdvancedFlightAudio();
       [rth12Audio, land1Audio, warnAudio].forEach(a => { if (!a.paused) { a.pause(); a.currentTime = 0; } });
 
@@ -3217,6 +3303,7 @@
       updateUIText();
       updateReplayButtonsState();
       drawLiveTopviewIfNeeded();
+      layoutTopAlerts();
     }
 
     document.getElementById("btn-reset").addEventListener("click", resetDrone);
@@ -3251,6 +3338,7 @@
     updateUIText();
     updateReplayButtonsState();
     drawLiveTopviewIfNeeded();
+    layoutTopAlerts();
   </script>
 </body>
 </html>
