@@ -122,8 +122,8 @@
       text-align: center; overflow: hidden; text-overflow: ellipsis; border: none; border-radius: 5px; color: #fff;
     }
 
-    #rthBtn, #btn-reset {
-      width: 205px; height: 40px; font-size: 16px; border: none; border-radius: 5px; font-weight: bold;
+    #rthBtn, #dronographBtn, #btn-reset {
+      width: 130px; height: 40px; font-size: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
     }
 
     .joystick-container { width: 250px; height: 230px; position: relative; touch-action: none; }
@@ -231,6 +231,33 @@
       #obstacleWarning { font-size: 16px; }
       #lakeAlert { font-size: 16px; }
     }
+    /* Updated Dronography UI */
+    #cameraControls { 
+      position: absolute; top: 10px; width: calc(100% - 28px); 
+      pointer-events: none; display: flex; justify-content: space-between; 
+      z-index: 10; left: 14px;
+    }
+    .cam-btn { 
+      pointer-events: auto; width: 44px; height: 44px; border-radius: 50%; 
+      border: 2px solid white; cursor: pointer; background: #2196f3; 
+      color: white; font-size: 18px; display: flex; align-items: center; 
+      justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    /* Style for disabled buttons on land */
+    .cam-btn:disabled { background: #9e9e9e !important; cursor: not-allowed; border-color: #ccc; }
+    
+    /* Flashing animation for Dronograph button */
+    @keyframes flashBtn { 0% { opacity: 1; } 50% { opacity: 0.4; background-color: #ff9800; } 100% { opacity: 1; } }
+    .flashing { animation: flashBtn 0.8s infinite; }
+
+    #recBtn.recording { background: red !important; animation: blinking 1s infinite; }
+
+    #dronographModal { display: none; position: fixed; z-index: 600; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); overflow-y: auto; padding: 20px; color: white; text-align: center; }
+    .gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; padding: 20px; }
+    .gallery-item { background: #333; padding: 10px; border-radius: 5px; }
+    .gallery-item img, .gallery-item video { width: 100%; border-radius: 3px; }
+    .download-link { display: block; margin-top: 5px; color: #2196f3; text-decoration: none; font-size: 14px; }
+    #closeDronograph { position: absolute; top: 10px; right: 20px; font-size: 40px; cursor: pointer; }
   </style>
 </head>
 <body>
@@ -281,6 +308,12 @@
   </div>
 
   <div id="controls">
+
+  <div id="cameraControls">
+    <button id="snapBtn" class="cam-btn">📸</button>
+    <button id="recBtn" class="cam-btn">📹</button>
+  </div>
+
     <div id="info">Altitude: 0.0 m | Distance: 0.0 m</div>
     <div id="main-controls">
       <div class="joystick-container" id="leftJoystick">
@@ -309,8 +342,9 @@
         </div>
 
         <div id="actionButtons">
-          <button id="rthBtn" class="btn-default">Return-to-Home (RTH)</button>
-          <button id="btn-reset" class="btn-red">Reset</button>
+          <button id="rthBtn" class="btn-default">RTH</button>
+        <button id="dronographBtn" class="btn-default">Dronograph</button>
+        <button id="btn-reset" class="btn-red">Reset</button>
         </div>
       </div>
 
@@ -336,6 +370,12 @@
       <div class="tutorial-section"><h2 data-key="tutorial_landscape_title"></h2><p data-key="tutorial_landscape_text"></p></div>
       <div class="tutorial-section"><h2 data-key="tutorial_flightpath_title"></h2><p data-key="tutorial_flightpath_text"></p></div>
     </div>
+  </div>
+
+  <div id="dronographModal">
+    <span id="closeDronograph">&times;</span>
+    <h1 id="galleryTitle">Dronography</h1>
+    <div id="galleryContainer" class="gallery"></div>
   </div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -401,6 +441,8 @@
     let recordedFlightPath = [], recordedDistance = 0, recordedTime = 0;
     let replayAnimationId = null, replayPaused = false, replayStartTime = 0, replayElapsedOffset = 0, replayInControl = false;
     let rthActivationTime = null, landingStartTime = null, landingCompleteTime = null;
+    let capturedPics = [], recordedVids = [], mediaRecorder, chunks = [], isRecording = false;
+
 
     const replayCanvas = document.getElementById("replayCanvas");
     const replayCtx = replayCanvas.getContext("2d");
@@ -751,12 +793,19 @@
 
     droneGroup.scale.set(3, 3, 3);
     droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
+    droneGroup.traverse(child => { child.layers.set(1); }); 
 
     const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-    propellers.forEach((prop, index) => {
-      const blinkSpot = new THREE.Mesh(blinkSphereGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-      prop.mesh.add(blinkSpot); prop.blinkOffset = index * (Math.PI / 2); prop.blinkSpot = blinkSpot;
-    });
+propellers.forEach((prop, index) => {
+  const blinkSpot = new THREE.Mesh(blinkSphereGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+  
+  // INSERT THIS LINE HERE:
+  blinkSpot.layers.set(1); 
+
+  prop.mesh.add(blinkSpot); 
+  prop.blinkOffset = index * (Math.PI / 2); 
+  prop.blinkSpot = blinkSpot;
+});
 
     function createCircularHoop(number) {
       const mainRadius = 9, tubeRadius = 0.2;
@@ -2487,39 +2536,39 @@
     }
 
 document.getElementById("rthBtn").addEventListener("click", function () {
-  if (flightEnded) { showEndMessage(translations[currentLanguage].resetToRestart); return; }
-  if (drone.position.y < 1 || crashActive) return;
+
+  if (flightEnded || drone.position.y < 1 || crashActive) return;
+
+  rthActive = !rthActive;
+  manualRTH = rthActive;
+
+  const msgDiv = document.getElementById("message");
 
   if (rthActive) {
-    // STOP RTH: Return to manual control
-    rthActive = false;
-    manualRTH = false;
-    landingStartTime = null; 
-    this.style.backgroundColor = "#2196f3"; // Reset to default blue
-    document.getElementById("message").style.display = "none";
-    
-    // Stop RTH audio and restart normal flight audio
-    if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
-    if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
-    startFlyAudioIfNeeded(0.05);
-  } else {
-    // START RTH: Take over controls
     stopDemoMode();
-    manualRTH = true; 
-    rthActive = true;
     rthActivationTime = totalFlightTime;
     this.style.backgroundColor = "grey";
-    resetJoystickVisualsAndInputs();
 
-    const msgDiv = document.getElementById("message");
-    msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
     msgDiv.style.display = "block";
+    msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
     msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
 
-    if (rth12Audio.paused) { rth12Audio.currentTime = 0; rth12Audio.play().catch(() => {}); }
     stopFlyAudio();
+    rth12Audio.currentTime = 0;
+    rth12Audio.play().catch(()=>{});
+  } 
+  else {
+    this.style.backgroundColor = "#2196f3";
+    msgDiv.style.display = "none";
+
+    rth12Audio.pause();
+    rth12Audio.currentTime = 0;
+
+    startFlyAudioIfNeeded(0.05);
   }
+
 });
+
     const translations = {
       en: {
         title: "Virtual Flight Simulator",
@@ -2535,7 +2584,7 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         pitchForward: "Pitch Forward", pitchBackward: "Pitch Backward", rollLeft: "Roll Left", rollRight: "Roll Right",
         altitude: "Altitude", distance: "Distance",
         totalFlightDistance: "Total Flight Distance: ", flightSpeed: "Horizontal Speed: ", flightTime: "Flight Time: ", crashes: "Crashes: ",
-        rthInProgress: "Return-to-Home in Progress", returnToHome: "Return-to-Home (RTH)",
+        rthInProgress: "Return-to-Home in Progress", returnToHome: "RTH",
         speed: "Speed",
         replayTitle: "Flight Path Topview",
         playReplay: "Play", pauseReplay: "Pause", resumeReplay: "Resume",
@@ -2560,18 +2609,23 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         encourage6: "Excellent control! 6 hoops passed!",
         obstacleWarning: "Obstacle Avoidance: Obstacle Ahead",
 
-        tutorial_intro_title: "Welcome Pilot!",
-        tutorial_intro_text: "You are on a hoop-run mission. Take off, pass every hoop in order, and bring your drone home safely to win.",
-        tutorial_spatial_title: "Read the Arena",
-        tutorial_spatial_text: "Think in three directions while flying: left-right, forward-backward, and up-down.",
-        tutorial_movement_title: "Core Moves You’ll Use",
-        tutorial_movement_intro: "Master these moves and you’ll clear hoops faster and safer:",
-        tutorial_controls_title: "How to Play",
-        tutorial_controls_text: "Use touch joysticks or keyboard—whatever feels best for your flying style:",
-        tutorial_landscape_title: "Landscape Challenge",
-        tutorial_landscape_text: "Landscape includes mountains, trees, full-floor grassland, and lakes.",
-        tutorial_flightpath_title: "Mission Goal",
-        tutorial_flightpath_text: "Pass all hoops in sequence, then return to home and land."
+tutorial_intro_title: "Welcome, Pilot.",
+tutorial_intro_text: "This is your drone. Your mission is simple: take off, clear every hoop in order, and make it back home in one piece.",
+
+tutorial_spatial_title: "Own the Airspace",
+tutorial_spatial_text: "You’re flying in full 3D. Think in altitude, direction, and positioning. Smooth control beats speed every time.",
+
+tutorial_movement_title: "How You Fly",
+tutorial_movement_intro: "You control everything. Climb, turn, glide, and strafe. Stay steady. Line up your approach. Commit to the pass.",
+
+tutorial_controls_title: "Your Controls",
+tutorial_controls_text: "Left joystick controls altitude and rotation. Right joystick controls movement direction. Prefer keyboard? That works too. Fly your way.",
+
+tutorial_landscape_title: "When Landscape is On",
+tutorial_landscape_text: "Now it gets serious. Mountains block your path. Trees punish sloppy turns. Lakes won’t let you land. Read the terrain. Pick your line.",
+
+tutorial_flightpath_title: "Win the Mission",
+tutorial_flightpath_text: "Pass all hoops in sequence. No skipping. No shortcuts. After the final hoop, return to the home point (H) and land clean to complete the run."
       },
       zh: {
         title: "四軸無人機飛行模擬",
@@ -2587,7 +2641,7 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         pitchForward: "前進", pitchBackward: "後退", rollLeft: "左移", rollRight: "右移",
         altitude: "高度", distance: "距離",
         totalFlightDistance: "飛行總距離：", flightSpeed: "水平速度：", flightTime: "飛行時間：", crashes: "墜毀次數：",
-        rthInProgress: "正在返航", returnToHome: "自動返航 (RTH)",
+        rthInProgress: "正在返航", returnToHome: "自動返航",
         speed: "速度",
         replayTitle: "飛行路徑頂視圖",
         playReplay: "播放", pauseReplay: "暫停", resumeReplay: "繼續",
@@ -2612,18 +2666,23 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         encourage6: "操控出色！已通過 6 個環門！",
         obstacleWarning: "避障警示：前方有障礙物",
 
-        tutorial_intro_title: "歡迎，飛手！",
-        tutorial_intro_text: "你的任務是完成環門挑戰：起飛、依序穿越所有環門，最後安全返航降落。",
-        tutorial_spatial_title: "先看懂場地",
-        tutorial_spatial_text: "飛行時要同時掌握左右、前後、上下三個方向。",
-        tutorial_movement_title: "常用操作",
-        tutorial_movement_intro: "熟悉以下操作，你會更快更穩地過門：",
-        tutorial_controls_title: "操作方式",
-        tutorial_controls_text: "可使用螢幕搖桿或鍵盤。",
-        tutorial_landscape_title: "地景挑戰",
-        tutorial_landscape_text: "地景模式包含山脈、樹木、全地面草地與湖泊。",
-        tutorial_flightpath_title: "任務目標",
-        tutorial_flightpath_text: "依序通過所有環門，然後返航降落。"
+tutorial_intro_title: "準備起飛，飛手。",
+tutorial_intro_text: "這是你的無人機。任務很簡單：起飛、依序穿越所有環門，然後安全返航降落。",
+
+tutorial_spatial_title: "掌控整個空域",
+tutorial_spatial_text: "這是三維飛行。你要同時控制高度、方向與位置。穩定，比速度更重要。",
+
+tutorial_movement_title: "你的飛行方式",
+tutorial_movement_intro: "上升、轉向、滑行、側移，全由你掌控。穩住姿態，對準環門，一次到位。",
+
+tutorial_controls_title: "操作方式",
+tutorial_controls_text: "左搖桿控制高度與旋轉。右搖桿控制前後左右移動。也可以使用鍵盤。選擇你最順手的方式。",
+
+tutorial_landscape_title: "地景模式開啟時",
+tutorial_landscape_text: "真正的挑戰開始。山脈會擋路，樹木會懲罰失誤，湖面不能降落。觀察地形，選好你的飛行路線。",
+
+tutorial_flightpath_title: "完成任務",
+tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最後一個後，飛回起飛點 (H) 並平穩降落，才算成功。"
       }
     };
 
@@ -2699,14 +2758,14 @@ document.getElementById("rthBtn").addEventListener("click", function () {
     document.querySelector(".closeTutorial").onclick = () => { tutorialModal.style.display = "none"; };
     window.onclick = e => { if (e.target === tutorialModal) tutorialModal.style.display = "none"; };
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x87ceeb);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
     const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-    camera.layers.disableAll(); camera.layers.enable(0); camera.layers.enable(2);
+    camera.layers.disableAll(); camera.layers.enable(0); camera.layers.enable(1); camera.layers.enable(2);
 
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
@@ -3033,6 +3092,7 @@ document.getElementById("rthBtn").addEventListener("click", function () {
             const step = moveDir.clone().multiplyScalar(30 * delta);
             drone.position.x += step.x; drone.position.z += step.z;
             intendedMoveVec.copy(step);
+            drone.pitch = lerp(drone.pitch, 0.2, 0.05); 
           } else {
             const msgDiv = document.getElementById("message");
             msgDiv.style.display = "block"; msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
@@ -3198,43 +3258,27 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         }
       }
 
-      if (fpvMode) {
-        if (camera.fov !== 90) { camera.fov = 90; camera.updateProjectionMatrix(); }
-        const q = droneGroup.quaternion.clone();
-        const camOffset = new THREE.Vector3(0, 0.85, -0.35).applyQuaternion(q);
-        camera.position.copy(drone.position.clone().add(camOffset));
-        const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
-        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
-        camera.up.copy(up);
-        camera.lookAt(camera.position.clone().add(forward.multiplyScalar(120)));
-      } else {
-        if (camera.fov !== 75) { camera.fov = 75; camera.updateProjectionMatrix(); }
-        camera.up.set(0, 1, 0);
-        const cameraOffset = new THREE.Vector3(0, 5, -15);
-        const quat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, drone.yaw, 0));
-        camera.position.copy(drone.position.clone().add(cameraOffset.clone().applyQuaternion(quat)));
-        camera.lookAt(drone.position);
-      }
-
+      // 1. Calculate and update UI values (Altitude, Distance, Labels)
       const altitudeM = Math.max(0, drone.position.y - 0.45);
       const distanceM = Math.max(0, Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z));
       document.getElementById("info").textContent =
         translations[currentLanguage].altitude + ": " + altitudeM.toFixed(1) + " m | " +
         translations[currentLanguage].distance + ": " + distanceM.toFixed(1) + " m";
 
-      let leftActiveCommand = "";
-      if (keys["KeyW"] || (leftJoystickInput.dy < -0.2 && Math.abs(leftJoystickInput.dy) >= Math.abs(leftJoystickInput.dx))) leftActiveCommand = "top";
-      else if (keys["KeyS"] || (leftJoystickInput.dy > 0.2 && Math.abs(leftJoystickInput.dy) >= Math.abs(leftJoystickInput.dx))) leftActiveCommand = "bottom";
-      else if (keys["KeyA"] || (leftJoystickInput.dx < -0.2 && Math.abs(leftJoystickInput.dx) >= Math.abs(leftJoystickInput.dy))) leftActiveCommand = "left";
-      else if (keys["KeyD"] || (leftJoystickInput.dx > 0.2 && Math.abs(leftJoystickInput.dx) >= Math.abs(leftJoystickInput.dy))) leftActiveCommand = "right";
-      document.querySelectorAll("#leftJoystick .joystick-label").forEach(el => { el.style.color = el.classList.contains("label-" + leftActiveCommand) ? "green" : "black"; });
+      // Update Joystick UI colors
+      let lAct = "";
+      if (keys["KeyW"] || (leftJoystickInput.dy < -0.2)) lAct = "top";
+      else if (keys["KeyS"] || (leftJoystickInput.dy > 0.2)) lAct = "bottom";
+      else if (keys["KeyA"] || (leftJoystickInput.dx < -0.2)) lAct = "left";
+      else if (keys["KeyD"] || (leftJoystickInput.dx > 0.2)) lAct = "right";
+      document.querySelectorAll("#leftJoystick .joystick-label").forEach(el => { el.style.color = el.classList.contains("label-" + lAct) ? "green" : "black"; });
 
-      let rightActiveCommand = "";
-      if (keys["ArrowUp"] || (rightJoystickInput.dy < -0.2 && Math.abs(rightJoystickInput.dy) >= Math.abs(rightJoystickInput.dx))) rightActiveCommand = "top";
-      else if (keys["ArrowDown"] || (rightJoystickInput.dy > 0.2 && Math.abs(rightJoystickInput.dy) >= Math.abs(rightJoystickInput.dx))) rightActiveCommand = "bottom";
-      else if (keys["ArrowLeft"] || (rightJoystickInput.dx < -0.2 && Math.abs(rightJoystickInput.dx) >= Math.abs(rightJoystickInput.dy))) rightActiveCommand = "left";
-      else if (keys["ArrowRight"] || (rightJoystickInput.dx > 0.2 && Math.abs(rightJoystickInput.dx) >= Math.abs(rightJoystickInput.dy))) rightActiveCommand = "right";
-      document.querySelectorAll("#rightJoystick .joystick-label").forEach(el => { el.style.color = el.classList.contains("label-" + rightActiveCommand) ? "orange" : "black"; });
+      let rAct = "";
+      if (keys["ArrowUp"] || (rightJoystickInput.dy < -0.2)) rAct = "top";
+      else if (keys["ArrowDown"] || (rightJoystickInput.dy > 0.2)) rAct = "bottom";
+      else if (keys["ArrowLeft"] || (rightJoystickInput.dx < -0.2)) rAct = "left";
+      else if (keys["ArrowRight"] || (rightJoystickInput.dx > 0.2)) rAct = "right";
+      document.querySelectorAll("#rightJoystick .joystick-label").forEach(el => { el.style.color = el.classList.contains("label-" + rAct) ? "orange" : "black"; });
 
       if (flightPathActive && takenOff && !crashActive) {
         flightPathPoints.push(drone.position.clone());
@@ -3243,15 +3287,74 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         flightPathLine = new THREE.Line(new THREE.BufferGeometry().setFromPoints(flightPathPoints), new THREE.LineBasicMaterial({ color: 0xff0000 }));
         scene.add(flightPathLine);
       }
-
       drawLiveTopviewIfNeeded();
       updateReplayButtonsState();
       layoutTopAlerts();
-      renderer.render(scene, camera);
+
+      // 2. RENDERING LOGIC (The "Double Render" trick)
+      
+      // Helper to set camera to FPV
+      function switchToFPV() {
+        camera.fov = 90; camera.updateProjectionMatrix();
+        const q = droneGroup.quaternion.clone();
+        const camOffset = new THREE.Vector3(0, 0.85, -0.35).applyQuaternion(q);
+        camera.position.copy(drone.position.clone().add(camOffset));
+        const forward = new THREE.Vector3(0, 0, 1).applyQuaternion(q);
+        const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
+        camera.up.copy(up);
+        camera.lookAt(camera.position.clone().add(forward.multiplyScalar(120)));
+        camera.layers.disable(1); // Hide drone for clean video
+      }
+
+      // Helper to set camera to Third Person (Drone Mode)
+      function switchToDroneMode() {
+        camera.fov = 75; camera.updateProjectionMatrix(); camera.up.set(0, 1, 0);
+        const cameraOffset = new THREE.Vector3(0, 5, -15);
+        const quat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, drone.yaw, 0));
+        camera.position.copy(drone.position.clone().add(cameraOffset.clone().applyQuaternion(quat)));
+        camera.lookAt(drone.position);
+        camera.layers.enable(1); // Show drone to pilot
+      }
+
+      if (isRecording || window.isCapturing) {
+        // 1. Force the FPV camera view and hide the drone
+        switchToFPV();
+        renderer.render(scene, camera);
+
+        // 2. If a photo was requested, save the FPV frame NOW
+        if (window.isCapturing) {
+          capturedPics.push(renderer.domElement.toDataURL("image/png"));
+          window.isCapturing = false; // Reset the request flag
+          document.getElementById("dronographBtn").classList.add("flashing");
+          showEncouragement("FPV Photo Saved!");
+        }
+
+        // 3. If the player is in Third-Person mode, render again for their screen
+        if (!fpvMode) {
+          switchToDroneMode();
+          renderer.render(scene, camera);
+        }
+      } else {
+        // Normal rendering when not capturing/recording
+        if (fpvMode) switchToFPV();
+        else switchToDroneMode();
+        renderer.render(scene, camera);
+      }
+
+      document.getElementById("snapBtn").disabled = !takenOff;
+      document.getElementById("recBtn").disabled = !takenOff;
     }
     animate();
 
     function resetDrone() {
+
+  capturedPics = [];
+  recordedVids = [];
+  isRecording = false;
+  window.isCapturing = false;
+  document.getElementById("dronographBtn").classList.remove("flashing");
+  document.getElementById("recBtn").classList.remove("recording");
+
       drone.position.set(0, 0.45, 0); drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
       takenOff = false; landedAtHome = false; allHoopsPassed = false; rthActive = false; manualRTH = false;
       currentExpectedHoop = 1; stopDemoMode();
@@ -3354,6 +3457,65 @@ document.getElementById("rthBtn").addEventListener("click", function () {
     updateReplayButtonsState();
     drawLiveTopviewIfNeeded();
     layoutTopAlerts();
+
+function captureImage() {
+    if (!takenOff) return;
+    // We set this flag to true. The 'animate' loop will see this,
+    // switch to FPV, render the frame, and then save the photo.
+    window.isCapturing = true; 
+}
+
+function toggleRecording() {
+    if (!takenOff) return;
+    const btn = document.getElementById("recBtn");
+    if (!isRecording) {
+        chunks = [];
+        // Change to 30 for smoothness
+        const stream = renderer.domElement.captureStream(30); 
+        
+        // Use VP8 - it is faster for browsers to process than VP9
+        mediaRecorder = new MediaRecorder(stream, { 
+            mimeType: 'video/webm;codecs=vp8', 
+            videoBitsPerSecond: 2500000 // 2.5 Mbps is good quality
+        });
+        
+        mediaRecorder.ondataavailable = e => chunks.push(e.data);
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(chunks, { type: 'video/webm' });
+            recordedVids.push(URL.createObjectURL(blob));
+            document.getElementById("dronographBtn").classList.add("flashing");
+        };
+        mediaRecorder.start();
+        isRecording = true;
+        btn.classList.add("recording");
+    } else {
+        mediaRecorder.stop();
+        isRecording = false;
+        btn.classList.remove("recording");
+        showEncouragement("Video Saved!");
+    }
+}
+
+    document.getElementById("dronographBtn").onclick = () => {
+      const container = document.getElementById("galleryContainer");
+      container.innerHTML = "";
+      capturedPics.forEach((src, i) => {
+        container.innerHTML += `<div class="gallery-item"><img src="${src}"><a class="download-link" href="${src}" download="pic_${i}.png">Download</a></div>`;
+      });
+      recordedVids.forEach((src, i) => {
+        container.innerHTML += `<div class="gallery-item">
+          <video src="${src}" controls></video>
+          <a class="download-link" href="${src}" download="video_${i}.mp4">Download MP4</a>
+        </div>`;
+      });
+      document.getElementById("dronographModal").style.display = "block";
+      document.getElementById("dronographBtn").classList.remove("flashing");
+    };
+
+    document.getElementById("snapBtn").onclick = captureImage;
+    document.getElementById("recBtn").onclick = toggleRecording;	
+    document.getElementById("closeDronograph").onclick = () => document.getElementById("dronographModal").style.display = "none";
+
   </script>
 </body>
 </html>
