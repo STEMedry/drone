@@ -2,29 +2,44 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
   <title>Virtual Flight Simulator</title>
   <style>
     * { box-sizing: border-box; }
-    html, body {
-      margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden;
-      font-family: Arial, sans-serif; touch-action: none; user-select: none;
+
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      min-height: 100dvh;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+      touch-action: none;
+      user-select: none;
+      position: relative;
+    }
+
     canvas { display: block; }
 
     #title {
-      position: absolute; top: 10px; left: 50%; transform: translateX(-50%);
+      position: absolute; top: calc(var(--safe-top) + 10px); left: 50%; transform: translateX(-50%);
       font-size: 32px; font-weight: bold;
       text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
       z-index: 100;
     }
     #description {
-      position: absolute; top: 50px; left: 50%; transform: translateX(-50%);
+      position: absolute; top: calc(var(--safe-top) + 52px); left: 50%; transform: translateX(-50%);
       font-size: 16px; color: #333; z-index: 100;
     }
 
     #langToggle, #tutorialButton {
-      position: absolute; top: 10px; z-index: 110;
+      position: absolute; top: calc(var(--safe-top) + 10px); z-index: 110;
       padding: 8px 12px; font-size: 16px; border: none; border-radius: 5px;
       cursor: pointer; color: white;
     }
@@ -97,16 +112,26 @@
     }
 
     #controls {
-      position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%);
-      z-index: 20; display: flex; flex-direction: column; align-items: center; gap: 10px;
-      background: rgba(255,255,255,0.86); padding: 12px 14px; border-radius: 8px;
-      width: min(92vw, 1100px); border: 1px solid rgba(0,0,0,0.08);
+      position: absolute;
+      bottom: calc(var(--safe-bottom) + 6px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,0.86);
+      padding: 10px 12px;
+      border-radius: 8px;
+      width: min(92vw, 1100px);
+      border: 1px solid rgba(0,0,0,0.08);
     }
     #info { font-size: 18px; color: red; font-weight: bold; }
-    #main-controls { display: flex; align-items: center; gap: 20px; }
+    #main-controls { display: flex; align-items: center; gap: 14px; }
 
     #speedContainer {
-      display: flex; flex-direction: column; align-items: center; gap: 8px; transform: translateY(-8px);
+      display: flex; flex-direction: column; align-items: center; gap: 6px; transform: translateY(-6px);
       width: 420px;
     }
     #speedLabel { font-size: 18px; font-weight: bold; }
@@ -114,16 +139,16 @@
 
     #topModeButtons, #difficultyButtons, #actionButtons {
       display: flex; align-items: center; justify-content: center;
-      gap: 8px; margin-top: 2px; width: 420px;
+      gap: 6px; margin-top: 0; width: 420px;
     }
 
     #demoBtn, #fpvBtn, #landscapeBtn, #elementaryBtn, #intermediateBtn, #advancedBtn {
-      width: 130px; height: 42px; font-size: 13px; padding: 8px 8px; white-space: nowrap; line-height: 1;
+      width: 130px; height: 38px; font-size: 13px; padding: 6px 8px; white-space: nowrap; line-height: 1;
       text-align: center; overflow: hidden; text-overflow: ellipsis; border: none; border-radius: 5px; color: #fff;
     }
 
     #rthBtn, #dronographBtn, #btn-reset {
-      width: 130px; height: 40px; font-size: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
+      width: 130px; height: 36px; font-size: 14px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
     }
 
     .joystick-container { width: 250px; height: 230px; position: relative; touch-action: none; }
@@ -147,7 +172,7 @@
     #leftJoystick .label-right, #rightJoystick .label-right { right: 2px; top: 46%; transform: translateY(-50%); }
 
     #hoopTableContainer {
-      position: absolute; top: 60px; right: 20px; z-index: 100;
+      position: absolute; top: calc(var(--safe-top) + 60px); right: 20px; z-index: 100;
       background: rgba(255,255,255,0.82); padding: 10px; border: 1px solid #ccc;
     }
     #hoopStatusTitle { font-size: 16px; font-weight: bold; text-align: center; margin-bottom: 5px; }
@@ -160,7 +185,7 @@
     #hoopTable .hoopCell.crashed { color: red; }
 
     #replayBox {
-      position: absolute; top: 20px; left: 20px; width: 230px;
+      position: absolute; top: calc(var(--safe-top) + 20px); left: 20px; width: 230px;
       background: rgba(255,255,255,0.9); border: 2px solid #ccc; border-radius: 5px; padding: 10px; z-index: 30;
     }
     #replayTitle { margin: 5px 0; font-size: 16px; text-align: center; }
@@ -178,7 +203,7 @@
     }
 
     #statsBox {
-      position: absolute; top: 180px; right: 20px; width: 250px; background: rgba(255,255,255,0.82); padding: 10px;
+      position: absolute; top: calc(var(--safe-top) + 180px); right: 20px; width: 250px; background: rgba(255,255,255,0.82); padding: 10px;
       border: 1px solid #ccc; font-family: Arial, sans-serif; font-weight: bold; font-size: 15px; text-align: left; line-height: 1.7;
     }
 
@@ -203,21 +228,21 @@
     .tutorial-section p, .tutorial-section ul { line-height: 1.6; }
 
     @media only screen and (max-width: 768px) {
-      #controls { width: 95%; padding: 12px 10px 14px; }
-      #main-controls { gap: 10px; }
+      #controls { width: 95%; padding: 10px 10px 12px; gap: 5px; bottom: calc(var(--safe-bottom) + 4px); }
+      #main-controls { gap: 8px; }
       .joystick-container { width: 170px; height: 180px; }
       .joystick-base { width: 130px; height: 130px; top: 46%; }
       .joystick-thumb { width: 56px; height: 56px; top: 46%; }
       .joystick-label { font-size: 11px; }
 
-      #speedContainer { width: 320px; transform: none; }
-      #topModeButtons, #difficultyButtons, #actionButtons { width: 320px; gap: 4px; }
+      #speedContainer { width: 320px; transform: none; gap: 5px; }
+      #topModeButtons, #difficultyButtons, #actionButtons { width: 320px; gap: 3px; margin-top: 0; }
       #demoBtn, #fpvBtn, #landscapeBtn, #elementaryBtn, #intermediateBtn, #advancedBtn {
-        width: 102px; font-size: 11px; padding: 6px 4px;
+        width: 102px; height: 34px; font-size: 11px; padding: 5px 4px;
       }
-      #rthBtn, #btn-reset { width: 158px; font-size: 13px; }
+      #rthBtn, #btn-reset, #dronographBtn { width: 102px; height: 34px; font-size: 12px; }
 
-      #replayBox { top: 10px; left: 10px; width: 190px; }
+      #replayBox { top: calc(var(--safe-top) + 10px); left: 10px; width: 190px; }
       #replayCanvas { width: 140px; height: 140px; }
       #replayTitle { font-size: 14px; }
       #replayInfo p { font-size: 10px; }
@@ -231,21 +256,22 @@
       #obstacleWarning { font-size: 16px; }
       #lakeAlert { font-size: 16px; }
     }
+
     /* Updated Dronography UI */
-    #cameraControls { 
-      position: absolute; top: 10px; width: calc(100% - 28px); 
-      pointer-events: none; display: flex; justify-content: space-between; 
+    #cameraControls {
+      position: absolute; top: 10px; width: calc(100% - 28px);
+      pointer-events: none; display: flex; justify-content: space-between;
       z-index: 10; left: 14px;
     }
-    .cam-btn { 
-      pointer-events: auto; width: 44px; height: 44px; border-radius: 50%; 
-      border: 2px solid white; cursor: pointer; background: #2196f3; 
-      color: white; font-size: 18px; display: flex; align-items: center; 
+    .cam-btn {
+      pointer-events: auto; width: 44px; height: 44px; border-radius: 50%;
+      border: 2px solid white; cursor: pointer; background: #2196f3;
+      color: white; font-size: 18px; display: flex; align-items: center;
       justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
     /* Style for disabled buttons on land */
     .cam-btn:disabled { background: #9e9e9e !important; cursor: not-allowed; border-color: #ccc; }
-    
+
     /* Flashing animation for Dronograph button */
     @keyframes flashBtn { 0% { opacity: 1; } 50% { opacity: 0.4; background-color: #ff9800; } 100% { opacity: 1; } }
     .flashing { animation: flashBtn 0.8s infinite; }
@@ -259,23 +285,11 @@
     .download-link { display: block; margin-top: 5px; color: #2196f3; text-decoration: none; font-size: 14px; }
     #closeDronograph { position: absolute; top: 10px; right: 20px; font-size: 40px; cursor: pointer; }
 
-/* Performance grade colouring */
-.grade-a {
-  color: #2e7d32; /* green */
-}
-
-.grade-b {
-  color: #ef6c00; /* orange */
-}
-
-.grade-c {
-  color: #c62828; /* red */
-}
-
-.grade-nil {
-  color: #9e9e9e; /* grey */
-}
-
+    /* Performance grade colouring */
+    .grade-a { color: #2e7d32; } /* green */
+    .grade-b { color: #ef6c00; } /* orange */
+    .grade-c { color: #c62828; } /* red */
+    .grade-nil { color: #9e9e9e; } /* grey */
   </style>
 </head>
 <body>
@@ -361,8 +375,8 @@
 
         <div id="actionButtons">
           <button id="rthBtn" class="btn-default">RTH</button>
-        <button id="dronographBtn" class="btn-default">Dronograph</button>
-        <button id="btn-reset" class="btn-red">Reset</button>
+          <button id="dronographBtn" class="btn-default">Dronograph</button>
+          <button id="btn-reset" class="btn-red">Reset</button>
         </div>
       </div>
 
@@ -511,7 +525,7 @@ const TW = 800;
 
     function layoutTopAlerts() {
       const stack = ["alertMessage", "obstacleWarning", "lakeAlert", "encouragePopup", "orderAlert"];
-      let top = 72;
+      let top = 72 + (parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--safe-top")) || 0);
       for (let i = 0; i < stack.length; i++) {
         const el = document.getElementById(stack[i]);
         if (!el) continue;
@@ -817,17 +831,17 @@ const TW = 800;
 
     droneGroup.scale.set(3, 3, 3);
     droneGroup.traverse(child => { if (child instanceof THREE.Mesh) child.castShadow = true; });
-    droneGroup.traverse(child => { child.layers.set(1); }); 
+    droneGroup.traverse(child => { child.layers.set(1); });
 
     const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
 propellers.forEach((prop, index) => {
   const blinkSpot = new THREE.Mesh(blinkSphereGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-  
-  // INSERT THIS LINE HERE:
-  blinkSpot.layers.set(1); 
 
-  prop.mesh.add(blinkSpot); 
-  prop.blinkOffset = index * (Math.PI / 2); 
+  // INSERT THIS LINE HERE:
+  blinkSpot.layers.set(1);
+
+  prop.mesh.add(blinkSpot);
+  prop.blinkOffset = index * (Math.PI / 2);
   prop.blinkSpot = blinkSpot;
 });
 
@@ -2626,7 +2640,7 @@ document.getElementById("rthBtn").addEventListener("click", function () {
     stopFlyAudio();
     rth12Audio.currentTime = 0;
     rth12Audio.play().catch(()=>{});
-  } 
+  }
   else {
     this.style.backgroundColor = "#2196f3";
     msgDiv.style.display = "none";
@@ -2830,19 +2844,33 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
     window.onclick = e => { if (e.target === tutorialModal) tutorialModal.style.display = "none"; };
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setClearColor(0x87ceeb);
     renderer.shadowMap.enabled = true;
     document.body.appendChild(renderer.domElement);
 
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+    const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 2000);
     camera.layers.disableAll(); camera.layers.enable(0); camera.layers.enable(1); camera.layers.enable(2);
 
-    window.addEventListener("resize", () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
+    function getViewportSize() {
+      const vv = window.visualViewport;
+      const w = Math.round(vv ? vv.width : window.innerWidth);
+      const h = Math.round(vv ? vv.height : window.innerHeight);
+      return { w: Math.max(1, w), h: Math.max(1, h) };
+    }
+
+    function resizeRendererToViewport() {
+      const { w, h } = getViewportSize();
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    });
+      renderer.setSize(w, h, false);
+      layoutTopAlerts();
+    }
+
+    window.addEventListener("resize", resizeRendererToViewport);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", resizeRendererToViewport);
+      window.visualViewport.addEventListener("scroll", resizeRendererToViewport);
+    }
 
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), new THREE.MeshLambertMaterial({ color: 0x5d8f42 }));
     ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true; scene.add(ground);
@@ -3164,7 +3192,7 @@ translations[currentLanguage].performanceResult +
             const step = moveDir.clone().multiplyScalar(30 * delta);
             drone.position.x += step.x; drone.position.z += step.z;
             intendedMoveVec.copy(step);
-            drone.pitch = lerp(drone.pitch, 0.2, 0.05); 
+            drone.pitch = lerp(drone.pitch, 0.2, 0.05);
           } else {
             const msgDiv = document.getElementById("message");
             msgDiv.style.display = "block"; msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
@@ -3364,7 +3392,7 @@ translations[currentLanguage].performanceResult +
       layoutTopAlerts();
 
       // 2. RENDERING LOGIC (The "Double Render" trick)
-      
+
       // Helper to set camera to FPV
       function switchToFPV() {
         camera.fov = 90; camera.updateProjectionMatrix();
@@ -3528,13 +3556,14 @@ translations[currentLanguage].performanceResult +
     updateUIText();
     updateReplayButtonsState();
     drawLiveTopviewIfNeeded();
+    resizeRendererToViewport();
     layoutTopAlerts();
 
 function captureImage() {
     if (!takenOff) return;
     // We set this flag to true. The 'animate' loop will see this,
     // switch to FPV, render the frame, and then save the photo.
-    window.isCapturing = true; 
+    window.isCapturing = true;
 }
 
 function toggleRecording() {
@@ -3543,14 +3572,14 @@ function toggleRecording() {
     if (!isRecording) {
         chunks = [];
         // Change to 30 for smoothness
-        const stream = renderer.domElement.captureStream(30); 
-        
+        const stream = renderer.domElement.captureStream(30);
+
         // Use VP8 - it is faster for browsers to process than VP9
-        mediaRecorder = new MediaRecorder(stream, { 
-            mimeType: 'video/webm;codecs=vp8', 
+        mediaRecorder = new MediaRecorder(stream, {
+            mimeType: 'video/webm;codecs=vp8',
             videoBitsPerSecond: 2500000 // 2.5 Mbps is good quality
         });
-        
+
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
         mediaRecorder.onstop = () => {
             const blob = new Blob(chunks, { type: 'video/webm' });
@@ -3585,7 +3614,7 @@ function toggleRecording() {
     };
 
     document.getElementById("snapBtn").onclick = captureImage;
-    document.getElementById("recBtn").onclick = toggleRecording;	
+    document.getElementById("recBtn").onclick = toggleRecording;
     document.getElementById("closeDronograph").onclick = () => document.getElementById("dronographModal").style.display = "none";
 
   </script>
