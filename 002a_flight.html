@@ -257,7 +257,6 @@
       #lakeAlert { font-size: 16px; }
     }
 
-    /* Updated Dronography UI */
     #cameraControls {
       position: absolute; top: 10px; width: calc(100% - 28px);
       pointer-events: none; display: flex; justify-content: space-between;
@@ -269,10 +268,8 @@
       color: white; font-size: 18px; display: flex; align-items: center;
       justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
-    /* Style for disabled buttons on land */
     .cam-btn:disabled { background: #9e9e9e !important; cursor: not-allowed; border-color: #ccc; }
 
-    /* Flashing animation for Dronograph button */
     @keyframes flashBtn { 0% { opacity: 1; } 50% { opacity: 0.4; background-color: #ff9800; } 100% { opacity: 1; } }
     .flashing { animation: flashBtn 0.8s infinite; }
 
@@ -285,11 +282,10 @@
     .download-link { display: block; margin-top: 5px; color: #2196f3; text-decoration: none; font-size: 14px; }
     #closeDronograph { position: absolute; top: 10px; right: 20px; font-size: 40px; cursor: pointer; }
 
-    /* Performance grade colouring */
-    .grade-a { color: #2e7d32; } /* green */
-    .grade-b { color: #ef6c00; } /* orange */
-    .grade-c { color: #c62828; } /* red */
-    .grade-nil { color: #9e9e9e; } /* grey */
+    .grade-a { color: #2e7d32; }
+    .grade-b { color: #ef6c00; }
+    .grade-c { color: #c62828; }
+    .grade-nil { color: #9e9e9e; }
   </style>
 </head>
 <body>
@@ -341,10 +337,10 @@
 
   <div id="controls">
 
-  <div id="cameraControls">
-    <button id="snapBtn" class="cam-btn">📸</button>
-    <button id="recBtn" class="cam-btn">📹</button>
-  </div>
+    <div id="cameraControls">
+      <button id="snapBtn" class="cam-btn">📸</button>
+      <button id="recBtn" class="cam-btn">📹</button>
+    </div>
 
     <div id="info">Altitude: 0.0 m | Distance: 0.0 m</div>
     <div id="main-controls">
@@ -442,7 +438,7 @@
     const HOOP_TREE_CLEAR_RADIUS = 32;
     const HOOP_LAKE_CLEAR_RADIUS = 28;
     const MOUNTAIN_HOOP_BUFFER = 46;
-    const LAKE_MIN_HOVER_ALT = 1.05; // keep propellers active over lake
+    const LAKE_MIN_HOVER_ALT = 1.05;
 
     const CORRIDOR_HALF_WIDTH = 24;
     const CORRIDOR_SAMPLE_STEP = 6;
@@ -481,7 +477,6 @@
     let rthActivationTime = null, landingStartTime = null, landingCompleteTime = null;
     let capturedPics = [], recordedVids = [], mediaRecorder, chunks = [], isRecording = false;
 
-
     const replayCanvas = document.getElementById("replayCanvas");
     const replayCtx = replayCanvas.getContext("2d");
 
@@ -501,12 +496,86 @@
     const rth12Audio = new Audio("rth12.mp3");
     const land1Audio = new Audio("land1.mp3");
     const warnAudio = new Audio("warn1.mp3");
-const DB = 2000;
-const DW = 6000;
-const TB = 60;
-const TW = 800;
+
+    const DB = 2000;
+    const DW = 6000;
+    const TB = 60;
+    const TW = 800;
 
     let flyAudioPlaying = false, advancedFlightAudioPlaying = false;
+
+    // --------- Professional cross-platform audio unlock fix ----------
+    const audioPool = [flyAudio, advancedFlightAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio, warnAudio];
+    let audioUnlocked = false;
+    let audioUnlocking = false;
+
+    audioPool.forEach(a => {
+      try {
+        a.preload = "auto";
+        a.setAttribute("playsinline", "");
+        a.setAttribute("webkit-playsinline", "");
+        a.load();
+      } catch (e) {}
+    });
+
+    function safePlay(audioElem, { restart = false, volume = null } = {}) {
+      if (!audioUnlocked) return Promise.resolve(false);
+      try {
+        if (restart) audioElem.currentTime = 0;
+        if (typeof volume === "number") audioElem.volume = clamp(volume, 0, 1);
+        return audioElem.play().then(() => true).catch(() => false);
+      } catch (e) {
+        return Promise.resolve(false);
+      }
+    }
+
+    async function unlockAudioFromGesture() {
+      if (audioUnlocked || audioUnlocking) return audioUnlocked;
+      audioUnlocking = true;
+
+      const jobs = audioPool.map(a => {
+        try {
+          const prevMuted = a.muted;
+          const prevVol = a.volume;
+          a.muted = true;
+          a.volume = 0;
+
+          return Promise.resolve(a.play())
+            .then(() => {
+              a.pause();
+              a.currentTime = 0;
+              a.muted = prevMuted;
+              a.volume = prevVol;
+              return true;
+            })
+            .catch(() => {
+              a.muted = prevMuted;
+              a.volume = prevVol;
+              return false;
+            });
+        } catch (e) {
+          return Promise.resolve(false);
+        }
+      });
+
+      const results = await Promise.all(jobs);
+      audioUnlocked = results.some(Boolean);
+      audioUnlocking = false;
+
+      if (audioUnlocked) {
+        document.removeEventListener("touchstart", unlockAudioFromGesture, true);
+        document.removeEventListener("pointerdown", unlockAudioFromGesture, true);
+        document.removeEventListener("click", unlockAudioFromGesture, true);
+        document.removeEventListener("keydown", unlockAudioFromGesture, true);
+      }
+      return audioUnlocked;
+    }
+
+    document.addEventListener("touchstart", unlockAudioFromGesture, { capture: true, passive: true });
+    document.addEventListener("pointerdown", unlockAudioFromGesture, { capture: true, passive: true });
+    document.addEventListener("click", unlockAudioFromGesture, { capture: true, passive: true });
+    document.addEventListener("keydown", unlockAudioFromGesture, { capture: true });
+    // ---------------------------------------------------------------
 
     let crashActive = false, crashGrounded = false, crashRecoverAt = 0;
     let edgePopupTimer = null;
@@ -593,15 +662,12 @@ const TW = 800;
         .replace("{n}", String(currentExpectedHoop));
     }
 
-function startFlyAudioIfNeeded(minVolume = 0) {
-  if (!audioUnlocked) return; // wait for real user gesture unlock
-  if (flyAudioPlaying) return;
+    function startFlyAudioIfNeeded(minVolume = 0) {
+      if (!audioUnlocked || flyAudioPlaying) return;
+      flyAudio.volume = Math.max(flyAudio.volume || 0, minVolume);
+      safePlay(flyAudio).then(ok => { if (ok) flyAudioPlaying = true; });
+    }
 
-  flyAudio.volume = Math.max(flyAudio.volume || 0, minVolume);
-  flyAudio.play()
-    .then(() => { flyAudioPlaying = true; })
-    .catch(() => {});
-}
     function stopFlyAudio(resetVol = false) {
       if (!flyAudio.paused || flyAudioPlaying) {
         flyAudio.pause();
@@ -612,57 +678,17 @@ function startFlyAudioIfNeeded(minVolume = 0) {
     }
 
     function startAdvancedFlightAudio() {
-      if (!advancedFlightAudioPlaying) {
-        advancedFlightAudio.currentTime = 0;
-        advancedFlightAudio.play().then(() => { advancedFlightAudioPlaying = true; }).catch(() => {});
-      }
+      if (!audioUnlocked || advancedFlightAudioPlaying) return;
+      safePlay(advancedFlightAudio, { restart: true }).then(ok => { if (ok) advancedFlightAudioPlaying = true; });
     }
+
     function stopAdvancedFlightAudio() {
       if (advancedFlightAudioPlaying) {
-        advancedFlightAudio.pause(); advancedFlightAudio.currentTime = 0; advancedFlightAudioPlaying = false;
+        advancedFlightAudio.pause();
+        advancedFlightAudio.currentTime = 0;
+        advancedFlightAudioPlaying = false;
       }
     }
-
-let audioUnlocked = false;
-
-async function initAudio() {
-  if (audioUnlocked) return true;
-
-  const audioList = [flyAudio, advancedFlightAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio, warnAudio];
-  let unlockedAny = false;
-
-  for (const audioElem of audioList) {
-    try {
-      const prevMuted = audioElem.muted;
-      const prevVolume = audioElem.volume;
-      audioElem.muted = true;
-      audioElem.volume = 0;
-      await audioElem.play();
-      audioElem.pause();
-      audioElem.currentTime = 0;
-      audioElem.muted = prevMuted;
-      audioElem.volume = prevVolume;
-      unlockedAny = true;
-    } catch (e) {
-      // keep trying others
-    }
-  }
-
-  if (unlockedAny) {
-    audioUnlocked = true;
-    document.removeEventListener("touchstart", initAudio);
-    document.removeEventListener("pointerdown", initAudio);
-    document.removeEventListener("click", initAudio);
-    document.removeEventListener("keydown", initAudio);
-  }
-
-  return audioUnlocked;
-}
-
-document.addEventListener("touchstart", initAudio, { passive: true });
-document.addEventListener("pointerdown", initAudio, { passive: true });
-document.addEventListener("click", initAudio, { passive: true });
-document.addEventListener("keydown", initAudio); // important for desktop keyboard users
 
     function createDirectionSprite(text, color = "black") {
       const canvas = document.createElement("canvas");
@@ -676,6 +702,7 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
       sprite.scale.set(250, 250, 1);
       return sprite;
     }
+
     function updateDirectionSprite(sprite, text) {
       const canvas = document.createElement("canvas");
       canvas.width = 512; canvas.height = 512;
@@ -698,6 +725,7 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
       sprite.scale.set(8, 8, 1); sprite.layers.set(2);
       return { main: sprite };
     }
+
     function updateHoopLabelSprites(spriteObj, number, color, fontSize) {
       const sprite = spriteObj.main;
       const canvas = sprite.material.map.image;
@@ -745,6 +773,7 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
       }
 
       function onPointerDown(e) {
+        unlockAudioFromGesture();
         if (e.pointerType === "mouse" && e.button !== 0) return;
         dragging = true; joystickObj.active = true; pointerId = e.pointerId;
         const rect = container.getBoundingClientRect();
@@ -762,6 +791,7 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
       }
 
       function onTouchStart(e) {
+        unlockAudioFromGesture();
         if (e.targetTouches.length > 0) {
           dragging = true; joystickObj.active = true;
           const touch = e.targetTouches[0]; activeTouchId = touch.identifier;
@@ -811,6 +841,7 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
       ctx.fillStyle = "black"; ctx.font = "bold 100px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillText("H", 128, 128);
     }
+
     function createHomeMarker() {
       const canvas = document.createElement("canvas");
       canvas.width = 256; canvas.height = 256;
@@ -826,6 +857,7 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
       mesh.userData = { canvas, ctx, texture };
       return mesh;
     }
+
     const homeMarker = createHomeMarker(); scene.add(homeMarker);
 
     const ambientLight = new THREE.AmbientLight(0x404040); scene.add(ambientLight);
@@ -871,16 +903,13 @@ document.addEventListener("keydown", initAudio); // important for desktop keyboa
     droneGroup.traverse(child => { child.layers.set(1); });
 
     const blinkSphereGeometry = new THREE.SphereGeometry(0.08, 16, 16);
-propellers.forEach((prop, index) => {
-  const blinkSpot = new THREE.Mesh(blinkSphereGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-
-  // INSERT THIS LINE HERE:
-  blinkSpot.layers.set(1);
-
-  prop.mesh.add(blinkSpot);
-  prop.blinkOffset = index * (Math.PI / 2);
-  prop.blinkSpot = blinkSpot;
-});
+    propellers.forEach((prop, index) => {
+      const blinkSpot = new THREE.Mesh(blinkSphereGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+      blinkSpot.layers.set(1);
+      prop.mesh.add(blinkSpot);
+      prop.blinkOffset = index * (Math.PI / 2);
+      prop.blinkSpot = blinkSpot;
+    });
 
     function createCircularHoop(number) {
       const mainRadius = 9, tubeRadius = 0.2;
@@ -895,6 +924,7 @@ propellers.forEach((prop, index) => {
         throughFront: false, throughBack: false, throughCenter: false, wrongOrderInside: false
       };
     }
+
     function createSquareHoop(number) {
       const outer = 9, inner = outer - 0.2;
       const shape = new THREE.Shape();
@@ -913,6 +943,7 @@ propellers.forEach((prop, index) => {
         throughFront: false, throughBack: false, throughCenter: false, wrongOrderInside: false
       };
     }
+
     function createTriangleHoop(number) {
       const baseOuter = 9, scaleFactor = 1.2, rOuter = baseOuter * scaleFactor, ringThickness = 0.2 * scaleFactor, rInner = rOuter - ringThickness;
       const shape = new THREE.Shape();
@@ -950,8 +981,7 @@ propellers.forEach((prop, index) => {
         throughFront: false, throughBack: false, throughCenter: false, wrongOrderInside: false
       };
     }
-
-    function generateHoopXZPositions(count, minDistFromHome = HOOP_MIN_HOME_RADIUS, range = 80, minSeparation = 28) {
+function generateHoopXZPositions(count, minDistFromHome = HOOP_MIN_HOME_RADIUS, range = 80, minSeparation = 28) {
       const positions = [];
       for (let i = 0; i < count; i++) {
         let placed = false;
@@ -1629,7 +1659,6 @@ propellers.forEach((prop, index) => {
 
           const y = terrainSurfaceAt(x, z);
 
-          // Riverland ring (shore) with hole so water remains visible
           const shoreOuter = scalePolygon(points, 1.25);
           const shoreInner = scalePolygon(points, 1.05);
           const shoreShape = polygonToShape(shoreOuter);
@@ -1645,7 +1674,6 @@ propellers.forEach((prop, index) => {
           shore.receiveShadow = true;
           lakeGroup.add(shore);
 
-          // water inside ring, slightly lower than floor
           const waterShape = polygonToShape(points);
           const water = new THREE.Mesh(
             new THREE.ShapeGeometry(waterShape),
@@ -1920,8 +1948,6 @@ propellers.forEach((prop, index) => {
       return best;
     }
 
-    // Elementary avoidance: mountains + trees ONLY
-    // (inactive for lakes and 3D grass clumps)
     function applyElementaryObstacleAvoidance(delta, intendedMove) {
       if (!isElementaryAvoidanceActive() || !landscapeEnabled) {
         hideObstacleWarning();
@@ -1941,7 +1967,6 @@ propellers.forEach((prop, index) => {
       const minClear = 0.35;
       const tunnelMin = 0.25;
 
-      // Mountains
       for (let i = 0; i < mountains.length; i++) {
         const m = mountains[i];
         const lx = p.x - m.x, lz = p.z - m.z, ly = p.y - (m.baseY || 0);
@@ -1987,7 +2012,6 @@ propellers.forEach((prop, index) => {
         }
       }
 
-      // Trees
       for (let i = 0; i < treeColliders.length; i++) {
         const t = treeColliders[i];
         if (p.y < t.baseY - 0.2 || p.y > t.topY + 1.0) continue;
@@ -2014,7 +2038,6 @@ propellers.forEach((prop, index) => {
       if (warn) showObstacleWarning(translations[currentLanguage].obstacleWarning);
       else hideObstacleWarning();
 
-      // prevent idle drift when no control input
       if (!hasIntent && !touchingMountain() && !touchingTree()) {
         correction.x = 0; correction.z = 0;
       }
@@ -2112,7 +2135,7 @@ propellers.forEach((prop, index) => {
 
     function markHoopPassed(hoop) {
       hoop.passed = true; hoop.needsCleanPass = false; setHoopGreen(hoop);
-      bonusAudio.pause(); bonusAudio.currentTime = 0; setTimeout(() => bonusAudio.play().catch(() => {}), 10);
+      bonusAudio.pause(); bonusAudio.currentTime = 0; setTimeout(() => safePlay(bonusAudio, { restart: true }), 10);
       const cell = document.getElementById("hoopCell-" + hoop.number); if (cell) cell.classList.add("passed");
       currentExpectedHoop++; resetAttemptState(hoop);
     }
@@ -2459,7 +2482,7 @@ propellers.forEach((prop, index) => {
       rthActive = false; manualRTH = false; crashCount += 1;
       resetJoystickVisualsAndInputs(); stopDemoMode();
 
-      warnAudio.pause(); warnAudio.currentTime = 0; warnAudio.play().catch(() => {});
+      warnAudio.pause(); warnAudio.currentTime = 0; safePlay(warnAudio, { restart: true });
       if (crashedHoopNumber !== null) {
         const cell = document.getElementById("hoopCell-" + crashedHoopNumber);
         if (cell) cell.classList.add("crashed");
@@ -2537,12 +2560,12 @@ propellers.forEach((prop, index) => {
     });
     ["pointerup", "mouseup", "touchend", "change"].forEach(evt => speedSlider.addEventListener(evt, () => speedSlider.blur(), { passive: true }));
 
-    document.getElementById("advancedBtn").addEventListener("click", () => toggleAdvancedMode());
-    document.getElementById("fpvBtn").addEventListener("click", toggleFPVMode);
-    document.getElementById("demoBtn").addEventListener("click", toggleDemoMode);
-    document.getElementById("landscapeBtn").addEventListener("click", toggleLandscape);
-    document.getElementById("elementaryBtn").addEventListener("click", () => setDifficulty("elementary"));
-    document.getElementById("intermediateBtn").addEventListener("click", () => setDifficulty("intermediate"));
+    document.getElementById("advancedBtn").addEventListener("click", () => { unlockAudioFromGesture(); toggleAdvancedMode(); });
+    document.getElementById("fpvBtn").addEventListener("click", () => { unlockAudioFromGesture(); toggleFPVMode(); });
+    document.getElementById("demoBtn").addEventListener("click", () => { unlockAudioFromGesture(); toggleDemoMode(); });
+    document.getElementById("landscapeBtn").addEventListener("click", () => { unlockAudioFromGesture(); toggleLandscape(); });
+    document.getElementById("elementaryBtn").addEventListener("click", () => { unlockAudioFromGesture(); setDifficulty("elementary"); });
+    document.getElementById("intermediateBtn").addEventListener("click", () => { unlockAudioFromGesture(); setDifficulty("intermediate"); });
 
     function showEndMessage(text) {
       const msgDiv = document.getElementById("message");
@@ -2579,43 +2602,38 @@ propellers.forEach((prop, index) => {
       }
     }
 
-function computePerformanceGrade(level, distance, time, crashes) {
+    function computePerformanceGrade(level, distance, time, crashes) {
+      let Sd = 100 * (DW - distance) / (DW - DB);
+      Sd = Math.max(0, Math.min(100, Sd));
 
- // Distance score
- let Sd = 100 * (DW - distance) / (DW - DB);
- Sd = Math.max(0, Math.min(100, Sd));
+      let St = 100 * (TW - time) / (TW - TB);
+      St = Math.max(0, Math.min(100, St));
 
- // Time score
- let St = 100 * (TW - time) / (TW - TB);
- St = Math.max(0, Math.min(100, St));
+      let Pc = 20;
+      if (level === "intermediate") Pc = 15;
+      if (level === "advanced") Pc = 10;
 
- // Crash penalty
- let Pc = 20; // Elementary
- if (level === "intermediate") Pc = 15;
- if (level === "advanced") Pc = 10;
+      let Sc = 100 - (crashes * Pc);
+      Sc = Math.max(0, Math.min(100, Sc));
 
- let Sc = 100 - (crashes * Pc);
- Sc = Math.max(0, Math.min(100, Sc));
+      let S = 0.4 * Sd + 0.3 * St + 0.3 * Sc;
 
- // Final score
- let S = 0.4 * Sd + 0.3 * St + 0.3 * Sc;
+      if (S >= 90) return "A+";
+      if (S >= 85) return "A";
+      if (S >= 80) return "A-";
+      if (S >= 75) return "B+";
+      if (S >= 70) return "B";
+      if (S >= 65) return "B-";
 
- if (S >= 90) return "A+";
- if (S >= 85) return "A";
- if (S >= 80) return "A-";
- if (S >= 75) return "B+";
- if (S >= 70) return "B";
- if (S >= 65) return "B-";
+      return "Below B-";
+    }
 
- return "Below B-";
-}
-
-function getGradeClass(grade) {
-  if (grade === "Nil") return "grade-nil";
-  if (grade.startsWith("A")) return "grade-a";
-  if (grade.startsWith("B")) return "grade-b";
-  return "grade-c";
-}
+    function getGradeClass(grade) {
+      if (grade === "Nil") return "grade-nil";
+      if (grade.startsWith("A")) return "grade-a";
+      if (grade.startsWith("B")) return "grade-b";
+      return "grade-c";
+    }
 
     function finalizeLandingAtHome(isMissionComplete) {
       drone.position.set(0, 0.45, 0); drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
@@ -2633,62 +2651,62 @@ function getGradeClass(grade) {
       document.getElementById("rthBtn").style.backgroundColor = "#2196f3";
 
       if (isMissionComplete) {
-
-performanceGrade = computePerformanceGrade(
- advancedMode ? "advanced" : difficultyMode,
- totalDistance,
- totalFlightTime,
- crashCount
- );
+        performanceGrade = computePerformanceGrade(
+          advancedMode ? "advanced" : difficultyMode,
+          totalDistance,
+          totalFlightTime,
+          crashCount
+        );
 
         completionMessageShown = true; missionCompletionMode = advancedMode ? "advanced" : "normal";
         if (homeMarker?.userData?.ctx) {
           drawHomeMarker(homeMarker.userData.ctx, "yellow");
           homeMarker.userData.texture.needsUpdate = true;
         }
-        sweetAudio.currentTime = 0; sweetAudio.play().catch(() => {});
+        sweetAudio.currentTime = 0; safePlay(sweetAudio, { restart: true });
         if (missionCompletionMode === "advanced") { showAdvancedCongrats(); showEndMessage(translations[currentLanguage].advancedLandingMessage); }
         else { hideAdvancedCongrats(); showEndMessage(translations[currentLanguage].landingMessage); }
-      } else { performanceGrade = "Nil";
+      } else {
+        performanceGrade = "Nil";
         missionCompletionMode = null; hideAdvancedCongrats();
         showEndMessage(translations[currentLanguage].resetToRestart);
       }
       updateReplayButtonsState();
     }
 
-document.getElementById("rthBtn").addEventListener("click", function () {
+    document.getElementById("rthBtn").addEventListener("click", function () {
+      unlockAudioFromGesture();
 
-  if (flightEnded || drone.position.y < 1 || crashActive) return;
+      if (flightEnded || drone.position.y < 1 || crashActive) return;
 
-  rthActive = !rthActive;
-  manualRTH = rthActive;
+      rthActive = !rthActive;
+      manualRTH = rthActive;
 
-  const msgDiv = document.getElementById("message");
+      const msgDiv = document.getElementById("message");
 
-  if (rthActive) {
-    stopDemoMode();
-    rthActivationTime = totalFlightTime;
-    this.style.backgroundColor = "grey";
+      if (rthActive) {
+        stopDemoMode();
+        rthActivationTime = totalFlightTime;
+        this.style.backgroundColor = "grey";
 
-    msgDiv.style.display = "block";
-    msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
-    msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
+        msgDiv.style.display = "block";
+        msgDiv.style.backgroundColor = "rgba(0,128,0,0.9)";
+        msgDiv.innerHTML = translations[currentLanguage].rthInProgress;
 
-    stopFlyAudio();
-    rth12Audio.currentTime = 0;
-    rth12Audio.play().catch(()=>{});
-  }
-  else {
-    this.style.backgroundColor = "#2196f3";
-    msgDiv.style.display = "none";
+        stopFlyAudio();
+        rth12Audio.currentTime = 0;
+        safePlay(rth12Audio, { restart: true });
+      }
+      else {
+        this.style.backgroundColor = "#2196f3";
+        msgDiv.style.display = "none";
 
-    rth12Audio.pause();
-    rth12Audio.currentTime = 0;
+        rth12Audio.pause();
+        rth12Audio.currentTime = 0;
 
-    startFlyAudioIfNeeded(0.05);
-  }
-
-});
+        startFlyAudioIfNeeded(0.05);
+      }
+    });
 
     const translations = {
       en: {
@@ -2730,23 +2748,18 @@ document.getElementById("rthBtn").addEventListener("click", function () {
         encourage6: "Excellent control! 6 hoops passed!",
         obstacleWarning: "Obstacle Avoidance: Obstacle Ahead",
 
-tutorial_intro_title: "Welcome, Pilot.",
-tutorial_intro_text: "This is your drone. Your mission is simple: take off, clear every hoop in order, and make it back home in one piece.",
-
-tutorial_spatial_title: "Own the Airspace",
-tutorial_spatial_text: "You’re flying in full 3D. Think in altitude, direction, and positioning. Smooth control beats speed every time.",
-
-tutorial_movement_title: "How You Fly",
-tutorial_movement_intro: "You control everything. Climb, turn, glide, and strafe. Stay steady. Line up your approach. Commit to the pass.",
-
-tutorial_controls_title: "Your Controls",
-tutorial_controls_text: "Left joystick controls altitude and rotation. Right joystick controls movement direction. Prefer keyboard? That works too. Fly your way.",
-
-tutorial_landscape_title: "When Landscape is On",
-tutorial_landscape_text: "Now it gets serious. Mountains block your path. Trees punish sloppy turns. Lakes won’t let you land. Read the terrain. Pick your line.",
-
-tutorial_flightpath_title: "Win the Mission",
-tutorial_flightpath_text: "Pass all hoops in sequence. No skipping. No shortcuts. After the final hoop, return to the home point (H) and land clean to complete the run."
+        tutorial_intro_title: "Welcome, Pilot.",
+        tutorial_intro_text: "This is your drone. Your mission is simple: take off, clear every hoop in order, and make it back home in one piece.",
+        tutorial_spatial_title: "Own the Airspace",
+        tutorial_spatial_text: "You’re flying in full 3D. Think in altitude, direction, and positioning. Smooth control beats speed every time.",
+        tutorial_movement_title: "How You Fly",
+        tutorial_movement_intro: "You control everything. Climb, turn, glide, and strafe. Stay steady. Line up your approach. Commit to the pass.",
+        tutorial_controls_title: "Your Controls",
+        tutorial_controls_text: "Left joystick controls altitude and rotation. Right joystick controls movement direction. Prefer keyboard? That works too. Fly your way.",
+        tutorial_landscape_title: "When Landscape is On",
+        tutorial_landscape_text: "Now it gets serious. Mountains block your path. Trees punish sloppy turns. Lakes won’t let you land. Read the terrain. Pick your line.",
+        tutorial_flightpath_title: "Win the Mission",
+        tutorial_flightpath_text: "Pass all hoops in sequence. No skipping. No shortcuts. After the final hoop, return to the home point (H) and land clean to complete the run."
       },
       zh: {
         title: "四軸無人機飛行模擬",
@@ -2787,23 +2800,18 @@ tutorial_flightpath_text: "Pass all hoops in sequence. No skipping. No shortcuts
         encourage6: "操控出色！已通過 6 個環門！",
         obstacleWarning: "避障警示：前方有障礙物",
 
-tutorial_intro_title: "準備起飛，飛手。",
-tutorial_intro_text: "這是你的無人機。任務很簡單：起飛、依序穿越所有環門，然後安全返航降落。",
-
-tutorial_spatial_title: "掌控整個空域",
-tutorial_spatial_text: "這是三維飛行。你要同時控制高度、方向與位置。穩定，比速度更重要。",
-
-tutorial_movement_title: "你的飛行方式",
-tutorial_movement_intro: "上升、轉向、滑行、側移，全由你掌控。穩住姿態，對準環門，一次到位。",
-
-tutorial_controls_title: "操作方式",
-tutorial_controls_text: "左搖桿控制高度與旋轉。右搖桿控制前後左右移動。也可以使用鍵盤。選擇你最順手的方式。",
-
-tutorial_landscape_title: "地景模式開啟時",
-tutorial_landscape_text: "真正的挑戰開始。山脈會擋路，樹木會懲罰失誤，湖面不能降落。觀察地形，選好你的飛行路線。",
-
-tutorial_flightpath_title: "完成任務",
-tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最後一個後，飛回起飛點 (H) 並平穩降落，才算成功。"
+        tutorial_intro_title: "準備起飛，飛手。",
+        tutorial_intro_text: "這是你的無人機。任務很簡單：起飛、依序穿越所有環門，然後安全返航降落。",
+        tutorial_spatial_title: "掌控整個空域",
+        tutorial_spatial_text: "這是三維飛行。你要同時控制高度、方向與位置。穩定，比速度更重要。",
+        tutorial_movement_title: "你的飛行方式",
+        tutorial_movement_intro: "上升、轉向、滑行、側移，全由你掌控。穩住姿態，對準環門，一次到位。",
+        tutorial_controls_title: "操作方式",
+        tutorial_controls_text: "左搖桿控制高度與旋轉。右搖桿控制前後左右移動。也可以使用鍵盤。選擇你最順手的方式。",
+        tutorial_landscape_title: "地景模式開啟時",
+        tutorial_landscape_text: "真正的挑戰開始。山脈會擋路，樹木會懲罰失誤，湖面不能降落。觀察地形，選好你的飛行路線。",
+        tutorial_flightpath_title: "完成任務",
+        tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最後一個後，飛回起飛點 (H) 並平穩降落，才算成功。"
       }
     };
 
@@ -2870,13 +2878,14 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
     }
 
     document.getElementById("langToggle").addEventListener("click", function () {
+      unlockAudioFromGesture();
       if (currentLanguage === "en") { currentLanguage = "zh"; this.innerHTML = "English"; }
       else { currentLanguage = "en"; this.innerHTML = "繁體中文"; }
       updateUIText();
     });
 
     const tutorialModal = document.getElementById("tutorialModal");
-    document.getElementById("tutorialButton").onclick = () => { tutorialModal.style.display = "block"; };
+    document.getElementById("tutorialButton").onclick = () => { unlockAudioFromGesture(); tutorialModal.style.display = "block"; };
     document.querySelector(".closeTutorial").onclick = () => { tutorialModal.style.display = "none"; };
     window.onclick = e => { if (e.target === tutorialModal) tutorialModal.style.display = "none"; };
 
@@ -2930,7 +2939,6 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
 
     const clock = new THREE.Clock();
 
-    // Topview orientation fix: rotate world -> drone frame by +heading
     function rotateToDroneFrame(wx, wz, cx, cz, heading) {
       const dx = wx - cx, dz = wz - cz;
       const c = Math.cos(heading), s = Math.sin(heading);
@@ -3031,7 +3039,6 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
       }
       replayCtx.stroke();
 
-      // hoop numbers
       for (let i = 0; i < hoops.length; i++) {
         const h = hoops[i];
         const p = rotateToDroneFrame(h.mesh.position.x, h.mesh.position.z, center.x, center.z, heading);
@@ -3050,7 +3057,6 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
       replayCtx.arc(dx, dy, 4, 0, Math.PI * 2);
       replayCtx.fill();
 
-      // N/E/W/S boxed labels
       drawCompassBoxes(heading);
 
       replayCtx.font = "bold 12px Arial";
@@ -3087,6 +3093,7 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
     }
 
     document.getElementById("playReplay").addEventListener("click", function () {
+      unlockAudioFromGesture();
       if (this.disabled) return;
       if (recordedFlightPath.length === 0) { drawTopviewCanvas([], null, 0, false, 0); return; }
       replayInControl = true; replayPaused = false; replayElapsedOffset = 0; replayStartTime = performance.now();
@@ -3098,6 +3105,7 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
     });
 
     document.getElementById("stopReplay").addEventListener("click", function () {
+      unlockAudioFromGesture();
       if (this.disabled) return;
       if (!replayInControl) return;
       if (!replayPaused) {
@@ -3150,13 +3158,14 @@ tutorial_flightpath_text: "依序通過所有環門。不能跳過。完成最�
       } else previousPosition = drone.position.clone();
       previousPosition = drone.position.clone();
 
-document.getElementById("statsBox").innerHTML =
- translations[currentLanguage].totalFlightDistance + totalDistance.toFixed(1) + " m<br>" +
- translations[currentLanguage].flightSpeed + horizontalSpeed.toFixed(1) + " m s<sup>-1</sup><br>" +
- translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s<br>" +
- translations[currentLanguage].crashes + crashCount + "<br>" +
-translations[currentLanguage].performanceResult +
-"<span class='" + getGradeClass(performanceGrade) + "'>" + performanceGrade + "</span>";
+      document.getElementById("statsBox").innerHTML =
+        translations[currentLanguage].totalFlightDistance + totalDistance.toFixed(1) + " m<br>" +
+        translations[currentLanguage].flightSpeed + horizontalSpeed.toFixed(1) + " m s<sup>-1</sup><br>" +
+        translations[currentLanguage].flightTime + totalFlightTime.toFixed(1) + " s<br>" +
+        translations[currentLanguage].crashes + crashCount + "<br>" +
+        translations[currentLanguage].performanceResult +
+        "<span class='" + getGradeClass(performanceGrade) + "'>" + performanceGrade + "</span>";
+
       if (takenOff) recordedFlightPath.push({ pos: drone.position.clone(), t: totalFlightTime, yaw: drone.yaw });
 
       if (flightEnded && recordedFlightPath.length > 0 && recordedDistance === 0 && recordedTime === 0) {
@@ -3211,7 +3220,7 @@ translations[currentLanguage].performanceResult +
               ? translations[currentLanguage].rthInProgress
               : (translations[currentLanguage].rthInProgress + "<br>" + translations[currentLanguage].distanceAlert);
 
-            if (rth12Audio.paused) { rth12Audio.currentTime = 0; rth12Audio.play().catch(() => {}); }
+            if (rth12Audio.paused) { rth12Audio.currentTime = 0; safePlay(rth12Audio, { restart: true }); }
             if (!land1Audio.paused) { land1Audio.pause(); land1Audio.currentTime = 0; }
 
             const baseDir = new THREE.Vector3(-drone.position.x, 0, -drone.position.z).normalize();
@@ -3236,7 +3245,7 @@ translations[currentLanguage].performanceResult +
             msgDiv.innerHTML = translations[currentLanguage].automaticLanding;
 
             if (!rth12Audio.paused) { rth12Audio.pause(); rth12Audio.currentTime = 0; }
-            if (land1Audio.paused) { land1Audio.currentTime = 0; land1Audio.play().catch(() => {}); }
+            if (land1Audio.paused) { land1Audio.currentTime = 0; safePlay(land1Audio, { restart: true }); }
 
             if (drone.position.y > 0.45) drone.position.y -= 5 * delta;
             drone.yaw = lerp(drone.yaw, 0, 0.05);
@@ -3253,7 +3262,6 @@ translations[currentLanguage].performanceResult +
           drone.position.y += throttleInput * throttleSpeed * delta;
           if (drone.position.y < 0.45) drone.position.y = 0.45;
 
-          // forbid lake landing but keep flying sound (hover)
           if (isPointInLake(drone.position.x, drone.position.z) && homeDistance > 10 && drone.position.y < LAKE_MIN_HOVER_ALT) {
             drone.position.y = LAKE_MIN_HOVER_ALT;
             showLakeAlert(translations[currentLanguage].lakeLandingForbidden);
@@ -3348,7 +3356,7 @@ translations[currentLanguage].performanceResult +
                 hoop.edgeContactActive = true;
                 hoop.attemptTouchedEdge = true; hoop.needsCleanPass = true;
                 setHoopRed(hoop);
-                warnAudio.pause(); warnAudio.currentTime = 0; warnAudio.play().catch(() => {});
+                warnAudio.pause(); warnAudio.currentTime = 0; safePlay(warnAudio, { restart: true });
                 showEdgePopup(translations[currentLanguage].edgeTouched);
               }
               if (!state.touchingEdge || !isEdgeFunctionsActive()) hoop.edgeContactActive = false;
@@ -3395,14 +3403,12 @@ translations[currentLanguage].performanceResult +
         }
       }
 
-      // 1. Calculate and update UI values (Altitude, Distance, Labels)
       const altitudeM = Math.max(0, drone.position.y - 0.45);
       const distanceM = Math.max(0, Math.sqrt(drone.position.x * drone.position.x + drone.position.z * drone.position.z));
       document.getElementById("info").textContent =
         translations[currentLanguage].altitude + ": " + altitudeM.toFixed(1) + " m | " +
         translations[currentLanguage].distance + ": " + distanceM.toFixed(1) + " m";
 
-      // Update Joystick UI colors
       let lAct = "";
       if (keys["KeyW"] || (leftJoystickInput.dy < -0.2)) lAct = "top";
       else if (keys["KeyS"] || (leftJoystickInput.dy > 0.2)) lAct = "bottom";
@@ -3428,9 +3434,6 @@ translations[currentLanguage].performanceResult +
       updateReplayButtonsState();
       layoutTopAlerts();
 
-      // 2. RENDERING LOGIC (The "Double Render" trick)
-
-      // Helper to set camera to FPV
       function switchToFPV() {
         camera.fov = 90; camera.updateProjectionMatrix();
         const q = droneGroup.quaternion.clone();
@@ -3440,39 +3443,34 @@ translations[currentLanguage].performanceResult +
         const up = new THREE.Vector3(0, 1, 0).applyQuaternion(q);
         camera.up.copy(up);
         camera.lookAt(camera.position.clone().add(forward.multiplyScalar(120)));
-        camera.layers.disable(1); // Hide drone for clean video
+        camera.layers.disable(1);
       }
 
-      // Helper to set camera to Third Person (Drone Mode)
       function switchToDroneMode() {
         camera.fov = 75; camera.updateProjectionMatrix(); camera.up.set(0, 1, 0);
         const cameraOffset = new THREE.Vector3(0, 5, -15);
         const quat = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, drone.yaw, 0));
         camera.position.copy(drone.position.clone().add(cameraOffset.clone().applyQuaternion(quat)));
         camera.lookAt(drone.position);
-        camera.layers.enable(1); // Show drone to pilot
+        camera.layers.enable(1);
       }
 
       if (isRecording || window.isCapturing) {
-        // 1. Force the FPV camera view and hide the drone
         switchToFPV();
         renderer.render(scene, camera);
 
-        // 2. If a photo was requested, save the FPV frame NOW
         if (window.isCapturing) {
           capturedPics.push(renderer.domElement.toDataURL("image/png"));
-          window.isCapturing = false; // Reset the request flag
+          window.isCapturing = false;
           document.getElementById("dronographBtn").classList.add("flashing");
           showEncouragement("FPV Photo Saved!");
         }
 
-        // 3. If the player is in Third-Person mode, render again for their screen
         if (!fpvMode) {
           switchToDroneMode();
           renderer.render(scene, camera);
         }
       } else {
-        // Normal rendering when not capturing/recording
         if (fpvMode) switchToFPV();
         else switchToDroneMode();
         renderer.render(scene, camera);
@@ -3484,13 +3482,12 @@ translations[currentLanguage].performanceResult +
     animate();
 
     function resetDrone() {
-
-  capturedPics = [];
-  recordedVids = [];
-  isRecording = false;
-  window.isCapturing = false;
-  document.getElementById("dronographBtn").classList.remove("flashing");
-  document.getElementById("recBtn").classList.remove("recording");
+      capturedPics = [];
+      recordedVids = [];
+      isRecording = false;
+      window.isCapturing = false;
+      document.getElementById("dronographBtn").classList.remove("flashing");
+      document.getElementById("recBtn").classList.remove("recording");
 
       drone.position.set(0, 0.45, 0); drone.yaw = 0; drone.pitch = 0; drone.roll = 0;
       takenOff = false; landedAtHome = false; allHoopsPassed = false; rthActive = false; manualRTH = false;
@@ -3561,7 +3558,7 @@ translations[currentLanguage].performanceResult +
       layoutTopAlerts();
     }
 
-    document.getElementById("btn-reset").addEventListener("click", resetDrone);
+    document.getElementById("btn-reset").addEventListener("click", () => { unlockAudioFromGesture(); resetDrone(); });
 
     function syncJoystickWithKeyboard() {
       const lHalf = getThumbHalf("leftJoystick"), rHalf = getThumbHalf("rightJoystick");
@@ -3596,45 +3593,42 @@ translations[currentLanguage].performanceResult +
     resizeRendererToViewport();
     layoutTopAlerts();
 
-function captureImage() {
-    if (!takenOff) return;
-    // We set this flag to true. The 'animate' loop will see this,
-    // switch to FPV, render the frame, and then save the photo.
-    window.isCapturing = true;
-}
+    function captureImage() {
+      if (!takenOff) return;
+      window.isCapturing = true;
+    }
 
-function toggleRecording() {
-    if (!takenOff) return;
-    const btn = document.getElementById("recBtn");
-    if (!isRecording) {
+    function toggleRecording() {
+      if (!takenOff) return;
+      const btn = document.getElementById("recBtn");
+      if (!isRecording) {
         chunks = [];
-        // Change to 30 for smoothness
         const stream = renderer.domElement.captureStream(30);
 
-        // Use VP8 - it is faster for browsers to process than VP9
         mediaRecorder = new MediaRecorder(stream, {
-            mimeType: 'video/webm;codecs=vp8',
-            videoBitsPerSecond: 2500000 // 2.5 Mbps is good quality
+          mimeType: "video/webm;codecs=vp8",
+          videoBitsPerSecond: 2500000
         });
 
         mediaRecorder.ondataavailable = e => chunks.push(e.data);
         mediaRecorder.onstop = () => {
-            const blob = new Blob(chunks, { type: 'video/webm' });
-            recordedVids.push(URL.createObjectURL(blob));
-            document.getElementById("dronographBtn").classList.add("flashing");
+          const blob = new Blob(chunks, { type: "video/webm" });
+          recordedVids.push(URL.createObjectURL(blob));
+          document.getElementById("dronographBtn").classList.add("flashing");
         };
         mediaRecorder.start();
         isRecording = true;
         btn.classList.add("recording");
-    } else {
+      } else {
         mediaRecorder.stop();
         isRecording = false;
         btn.classList.remove("recording");
         showEncouragement("Video Saved!");
+      }
     }
-}
 
     document.getElementById("dronographBtn").onclick = () => {
+      unlockAudioFromGesture();
       const container = document.getElementById("galleryContainer");
       container.innerHTML = "";
       capturedPics.forEach((src, i) => {
@@ -3650,10 +3644,9 @@ function toggleRecording() {
       document.getElementById("dronographBtn").classList.remove("flashing");
     };
 
-    document.getElementById("snapBtn").onclick = captureImage;
-    document.getElementById("recBtn").onclick = toggleRecording;
+    document.getElementById("snapBtn").onclick = () => { unlockAudioFromGesture(); captureImage(); };
+    document.getElementById("recBtn").onclick = () => { unlockAudioFromGesture(); toggleRecording(); };
     document.getElementById("closeDronograph").onclick = () => document.getElementById("dronographModal").style.display = "none";
-
   </script>
 </body>
 </html>
