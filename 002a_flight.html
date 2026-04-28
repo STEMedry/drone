@@ -410,6 +410,11 @@
     <div id="galleryContainer" class="gallery"></div>
   </div>
 
+  <audio id="flySound" preload="auto" playsinline webkit-playsinline style="display:none;">
+    <source src="flysound.mp3" type="audio/mpeg" />
+    <source src="flysound.m4a" type="audio/mp4" />
+  </audio>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <script>
     function lerp(a, b, t) { return a + (b - a) * t; }
@@ -489,7 +494,7 @@
     let missionCompletionMode = null;
     let advancedCongratsTimer = null;
 
-    const flyAudio = new Audio("flysound.mp3"); flyAudio.loop = true;
+    const flyAudio = document.getElementById("flySound"); flyAudio.loop = true;
     const advancedFlightAudio = new Audio("flight.mp3"); advancedFlightAudio.loop = true;
     const bonusAudio = new Audio("bonus.mp3");
     const sweetAudio = new Audio("sweet.mp3");
@@ -588,11 +593,15 @@ const TW = 800;
         .replace("{n}", String(currentExpectedHoop));
     }
 
-    function startFlyAudioIfNeeded(minVolume = 0) {
-      if (flyAudioPlaying) return;
-      flyAudio.volume = Math.max(flyAudio.volume || 0, minVolume);
-      flyAudio.play().then(() => { flyAudioPlaying = true; }).catch(() => {});
-    }
+function startFlyAudioIfNeeded(minVolume = 0) {
+  if (!audioUnlocked) return; // wait for real user gesture unlock
+  if (flyAudioPlaying) return;
+
+  flyAudio.volume = Math.max(flyAudio.volume || 0, minVolume);
+  flyAudio.play()
+    .then(() => { flyAudioPlaying = true; })
+    .catch(() => {});
+}
     function stopFlyAudio(resetVol = false) {
       if (!flyAudio.paused || flyAudioPlaying) {
         flyAudio.pause();
@@ -614,18 +623,46 @@ const TW = 800;
       }
     }
 
-    function initAudio() {
-      [flyAudio, advancedFlightAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio, warnAudio].forEach(audioElem => {
-        const prevVolume = audioElem.volume;
-        audioElem.muted = true;
-        audioElem.play().then(() => {
-          audioElem.pause(); audioElem.currentTime = 0;
-          audioElem.muted = false; audioElem.volume = prevVolume;
-        }).catch(() => {});
-      });
-      document.removeEventListener("touchstart", initAudio);
+let audioUnlocked = false;
+
+async function initAudio() {
+  if (audioUnlocked) return true;
+
+  const audioList = [flyAudio, advancedFlightAudio, bonusAudio, sweetAudio, rth12Audio, land1Audio, warnAudio];
+  let unlockedAny = false;
+
+  for (const audioElem of audioList) {
+    try {
+      const prevMuted = audioElem.muted;
+      const prevVolume = audioElem.volume;
+      audioElem.muted = true;
+      audioElem.volume = 0;
+      await audioElem.play();
+      audioElem.pause();
+      audioElem.currentTime = 0;
+      audioElem.muted = prevMuted;
+      audioElem.volume = prevVolume;
+      unlockedAny = true;
+    } catch (e) {
+      // keep trying others
     }
-    document.addEventListener("touchstart", initAudio, false);
+  }
+
+  if (unlockedAny) {
+    audioUnlocked = true;
+    document.removeEventListener("touchstart", initAudio);
+    document.removeEventListener("pointerdown", initAudio);
+    document.removeEventListener("click", initAudio);
+    document.removeEventListener("keydown", initAudio);
+  }
+
+  return audioUnlocked;
+}
+
+document.addEventListener("touchstart", initAudio, { passive: true });
+document.addEventListener("pointerdown", initAudio, { passive: true });
+document.addEventListener("click", initAudio, { passive: true });
+document.addEventListener("keydown", initAudio); // important for desktop keyboard users
 
     function createDirectionSprite(text, color = "black") {
       const canvas = document.createElement("canvas");
