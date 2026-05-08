@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D GNSS Positioning Simulation</title>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --panel:#ffffff;
+      --border:#d8e2ee;
+      --text:#1d2835;
+      --muted:#5d6f84;
+      --blue:#2563eb;
+      --green:#1f9d3a;
+      --orange:#d78500;
+      --red:#c6342f;
+      --teal:#0f766e;
+      --purple:#6d28d9;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family:Inter,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      padding:10px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+    .error{
+      width:100%;
+      max-width:1360px;
+      display:none;
+      border:1px solid #ffb8b8;
+      background:#ffe9e9;
+      color:#8e1010;
+      border-radius:8px;
+      padding:10px;
+      white-space:pre-wrap;
+      font-size:13px;
+    }
+    .header{
+      width:100%;
+      max-width:1360px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    h1{ margin:0; font-size:24px; line-height:1.2; }
+    .header-actions{ display:flex; gap:8px; flex-wrap:wrap; }
+    .header-btn{
+      border:none; border-radius:8px; padding:8px 12px; color:#fff; font-weight:700;
+      cursor:pointer; font-size:13px; white-space:nowrap; background:var(--blue);
+    }
+    .header-btn:hover{ background:#1d4ed8; }
+    .tutorial-btn{ background:var(--orange); }
+    .tutorial-btn:hover{ background:#b86f00; }
+    .lang-btn{ background:var(--green); }
+    .lang-btn:hover{ background:#187d2f; }
+
+    .app{
+      width:100%;
+      max-width:1360px;
+      min-height:680px;
+      display:flex;
+      gap:10px;
+    }
+    .left{
+      flex:2.2;
+      min-width:0;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .right{
+      flex:1.2;
+      min-width:340px;
+      height:680px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      min-height:0;
+    }
+
+    .viz{
+      position:relative;
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:#040b18;
+      height:680px;
+      overflow:hidden;
+    }
+    #threeContainer{ width:100%; height:100%; display:block; }
+    #threeContainer canvas{ width:100% !important; height:100% !important; display:block; }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:10px;
+      background:var(--panel);
+      padding:10px;
+      flex:0 0 auto;
+    }
+
+    .card-title{
+      font-size:13px;
+      font-weight:800;
+      color:#31465f;
+      margin:0 0 8px 0;
+      letter-spacing:0.2px;
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:6px;
+      padding:8px;
+    }
+    button{
+      border:none;
+      border-radius:8px;
+      padding:6px 8px;
+      min-height:30px;
+      color:#fff;
+      font-weight:700;
+      cursor:pointer;
+      font-size:12px;
+      line-height:1.1;
+    }
+    button:disabled{ opacity:0.55; cursor:not-allowed; }
+    .btn-blue{ background:var(--blue); }
+    .btn-blue:hover{ background:#1d4ed8; }
+    .btn-green{ background:var(--green); }
+    .btn-green:hover{ background:#187d2f; }
+    .btn-orange{ background:var(--orange); }
+    .btn-orange:hover{ background:#b86f00; }
+    .btn-red{ background:var(--red); }
+    .btn-red:hover{ background:#a82723; }
+    .btn-teal{ background:var(--teal); }
+    .btn-teal:hover{ background:#0b5e58; }
+    .btn-purple{ background:var(--purple); }
+    .btn-purple:hover{ background:#5b21b6; }
+
+    .field{
+      display:grid;
+      grid-template-columns:150px 1fr 68px;
+      gap:8px;
+      align-items:center;
+      margin-bottom:8px;
+      font-size:13px;
+    }
+    .field:last-child{ margin-bottom:0; }
+    .field input[type="range"]{ width:100%; }
+
+    .value{
+      text-align:center;
+      border:1px solid var(--border);
+      border-radius:6px;
+      padding:4px 6px;
+      background:#f8fafc;
+      font-weight:700;
+      font-size:12px;
+    }
+
+    .status-grid-3{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+    }
+    .status-box{
+      border:1px solid var(--border);
+      border-radius:8px;
+      padding:6px;
+      background:#f8fbff;
+      text-align:center;
+    }
+    .status-k{
+      font-size:11px;
+      color:#42566d;
+      margin-bottom:4px;
+      line-height:1.1;
+    }
+    .status-v{
+      font-size:16px;
+      font-weight:800;
+      margin-top:2px;
+      line-height:1.1;
+    }
+
+    .table-wrap{
+      border:1px solid var(--border);
+      border-radius:10px;
+      overflow:auto;
+      background:#fff;
+      flex:1 1 auto;
+      min-height:0;
+      max-height:none;
+    }
+    table{
+      width:100%;
+      border-collapse:collapse;
+      table-layout:fixed;
+      font-size:11px;
+    }
+    th,td{
+      border:1px solid #e6edf4;
+      padding:4px 5px;
+      text-align:center;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    th{ background:#f3f7fb; position:sticky; top:0; z-index:1; }
+
+    .sat-id-btn{
+      border:none;
+      border-radius:6px;
+      padding:3px 6px;
+      min-height:0;
+      background:#e7eefc;
+      color:#1d4ed8;
+      font-weight:800;
+      cursor:pointer;
+      font-size:11px;
+    }
+    .sat-id-btn.active{
+      background:#1d4ed8;
+      color:#fff;
+    }
+
+    .sphere-btn{
+      border:none;
+      border-radius:6px;
+      padding:3px 6px;
+      min-height:0;
+      cursor:pointer;
+      font-size:11px;
+      font-weight:800;
+      color:#fff;
+      background:#64748b;
+    }
+    .sphere-btn.on{ background:#7c3aed; }
+    .sphere-btn.off{ background:#64748b; }
+    .sphere-btn:disabled{
+      opacity:0.45;
+      cursor:not-allowed;
+    }
+
+    .ok{ background:#e8f9e8; color:#1f7d34; font-weight:700; }
+    .bad{ background:#fff1f1; color:#9e2323; font-weight:700; }
+    .mid{ background:#f2f6ff; color:#1d4ed8; font-weight:700; }
+
+    .tutorial-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(10,15,25,0.52);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:9999;
+      padding:14px;
+    }
+    .tutorial-card{
+      width:100%;
+      max-width:700px;
+      max-height:88vh;
+      overflow:auto;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:#fff;
+      box-shadow:0 10px 30px rgba(0,0,0,0.2);
+      padding:14px;
+    }
+    .tutorial-title{ margin:0 0 8px 0; font-size:20px; line-height:1.3; }
+    .tutorial-sub{ margin:0 0 10px 0; color:var(--muted); font-size:13px; line-height:1.4; }
+    .tutorial-list{ margin:0; padding-left:18px; font-size:14px; line-height:1.55; }
+    .tutorial-actions{ margin-top:12px; display:flex; justify-content:flex-end; }
+    .tutorial-close{
+      background:var(--blue);
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      padding:8px 12px;
+      font-weight:700;
+      cursor:pointer;
+      min-height:0;
+    }
+    .tutorial-close:hover{ background:#1d4ed8; }
+
+    @media (max-width:1024px){
+      .app{ flex-direction:column; }
+      .right{ min-width:0; height:auto; }
+      .viz{ height:500px; }
+      .field{ grid-template-columns:120px 1fr 58px; }
+      h1{ font-size:20px; }
+      .controls{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .status-grid-3{ grid-template-columns:1fr; }
+      .table-wrap{ max-height:360px; flex:0 0 auto; }
+    }
+  </style>
+</head>
+<body>
+  <div id="errorBox" class="error"></div>
+
+  <div class="header">
+    <div>
+      <h1 id="titleMain">3D GNSS Positioning Simulation</h1>
+    </div>
+    <div class="header-actions">
+      <button id="sim2dBtn" class="header-btn">Simplified 2D simulation</button>
+      <button id="tutorialBtn" class="header-btn tutorial-btn">Tutorial</button>
+      <button id="langBtn" class="header-btn lang-btn">中文</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <section class="left">
+      <div class="viz">
+        <div id="threeContainer"></div>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div class="card controls">
+        <button id="satPauseBtn" class="btn-orange">Pause Satellite</button>
+        <button id="autoDroneBtn" class="btn-blue">Drone Move</button>
+        <button id="showSpheresBtn" class="btn-purple">Effective Spheres: OFF</button>
+        <button id="connectionsBtn" class="btn-teal">Connections: OFF</button>
+        <button id="resetBtn" class="btn-red">Reset</button>
+      </div>
+
+      <div class="card">
+        <div id="droneLocationTitle" class="card-title">Drone Location</div>
+        <div class="field">
+          <label id="latLabel" for="latSlider">Latitude (°)</label>
+          <input id="latSlider" type="range" min="-85" max="85" step="0.1" value="22.3" />
+          <span id="latValue" class="value">22.3</span>
+        </div>
+        <div class="field">
+          <label id="lonLabel" for="lonSlider">Longitude (°)</label>
+          <input id="lonSlider" type="range" min="-180" max="180" step="0.1" value="114.2" />
+          <span id="lonValue" class="value">114.2</span>
+        </div>
+        <div class="field">
+          <label id="altLabel" for="altSlider">Altitude</label>
+          <input id="altSlider" type="range" min="0.2" max="5.0" step="0.1" value="1.2" />
+          <span id="altValue" class="value">1.2</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="status-grid-3">
+          <div class="status-box">
+            <div id="selectedK" class="status-k">Selected Satellites</div>
+            <div id="selectedCount" class="status-v">0</div>
+          </div>
+          <div class="status-box">
+            <div id="possibleK" class="status-k">Possible Positions</div>
+            <div id="possibleCount" class="status-v">0</div>
+          </div>
+          <div class="status-box">
+            <div id="confK" class="status-k">Confidence</div>
+            <div id="confidenceText" class="status-v">--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th id="thSat">Satellite</th>
+              <th id="thUse">Connected</th>
+              <th id="thActive">Active Sphere?</th>
+              <th id="thRange">Measured Distance</th>
+            </tr>
+          </thead>
+          <tbody id="satTableBody"></tbody>
+        </table>
+      </div>
+    </aside>
+  </div>
+
+  <div id="tutorialBackdrop" class="tutorial-backdrop">
+    <div class="tutorial-card">
+      <h2 id="tutorialTitle" class="tutorial-title">Tutorial</h2>
+      <p id="tutorialSub" class="tutorial-sub">Quick guide for students</p>
+      <ol id="tutorialList" class="tutorial-list"></ol>
+      <div class="tutorial-actions">
+        <button id="tutorialCloseBtn" class="tutorial-close">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function bootstrap() {
+      const errorBox = document.getElementById('errorBox');
+      function showError(msg) {
+        errorBox.style.display = 'block';
+        errorBox.textContent =
+          'Could not load required 3D libraries.\n' +
+          msg +
+          '\n\nIf sandbox blocks CDN files, run this HTML in a local browser.';
+      }
+      function loadScript(src) {
+        return new Promise((resolve, reject) => {
+          const s = document.createElement('script');
+          s.src = src;
+          s.async = true;
+          s.onload = () => resolve(src);
+          s.onerror = () => reject(new Error('Failed: ' + src));
+          document.head.appendChild(s);
+        });
+      }
+      async function loadWithFallback(urls) {
+        let lastErr = null;
+        for (const u of urls) {
+          try { await loadScript(u); return; }
+          catch (e) { lastErr = e; }
+        }
+        throw lastErr || new Error('All CDNs failed.');
+      }
+      async function loadThree() {
+        await loadWithFallback([
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js',
+          'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+          'https://unpkg.com/three@0.128.0/build/three.min.js'
+        ]);
+        if (!window.THREE) throw new Error('THREE failed to initialize');
+        await loadWithFallback([
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js',
+          'https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js'
+        ]);
+        if (!window.THREE.OrbitControls) throw new Error('OrbitControls failed to initialize');
+      }
+      loadThree().then(() => initApp(window.THREE)).catch(e => showError(String(e)));
+    })();
+
+    function initApp(THREE) {
+      const EARTH_RADIUS = 20;
+      const EFFECTIVE_RADIUS = 72;
+      const EARTH_TILT_DEG = 23.44;
+      const EARTH_ROT_SPEED = 0.028;
+
+      const ORBIT_COUNTS = { MEO: 84, GEO: 30, IGSO: 30 };
+      const SAT_COUNT = ORBIT_COUNTS.MEO + ORBIT_COUNTS.GEO + ORBIT_COUNTS.IGSO;
+
+      const MIN_SOLVE_SATS = 4;
+      const MAX_SOLVE_SATS = 12;
+      const POSSIBLE_MAX_POINTS = 260;
+
+      let satellitesPaused = false;
+      let autoDrone = false;
+      let showAllSpheres = false;
+      let showConnections = false;
+      let activeSatIds = new Set();
+      let manualSphereSatIds = new Set();
+      let lang = 'en';
+
+      const i18n = {
+        en: {
+          titleMain: '3D GNSS Positioning Simulation',
+          sim2d: 'Simplified 2D simulation',
+          tutorialBtn: 'Tutorial',
+          tutorialTitle: 'Student Tutorial: How to Read This 3D GNSS Simulation',
+          tutorialSub: 'Use this as a learning lab to connect geometry with positioning accuracy.',
+          tutorialSteps: [
+            'Start by watching the scene for 10–15 seconds: satellites move in orbit and Earth rotates. This helps you build spatial intuition.',
+            'Orbit basics: MEO satellites provide strong global geometry, GEO satellites stay over similar longitudes for stable regional coverage, and IGSO satellites add inclined paths that improve geometry over time. Together they support more reliable drone positioning.',
+            'Set the drone in the Drone Location box (Latitude, Longitude, Altitude). These are the true coordinates you are trying to estimate.',
+            'In the table, click satellite IDs to mark them as Selected. Think of selection as choosing which measurements your receiver trusts.',
+            'Use the orbit tags next to each satellite ID (MEO/GEO/IGSO) to compare how different orbit types contribute to coverage and solution stability.',
+            'Read Possible Positions: many points means ambiguity, fewer points means a more constrained solution, and one point means a unique fix.',
+            'Use Active Sphere ON/OFF to inspect each selected satellite’s range sphere. Intersections explain why more good satellites improve certainty.',
+            'Turn on Drone Move to observe dynamic behavior. Notice confidence and possible points changing continuously as geometry evolves.',
+            'Learning checkpoint: compare cases with poor geometry (clustered satellites) versus good geometry (well spread satellites).',
+            'Reset anytime and repeat with a new location to test your hypothesis like a scientist.'
+          ],
+          tutorialClose: 'Close',
+          langBtn: '中文',
+          pauseSat: 'Pause Satellite',
+          resumeSat: 'Resume Satellite',
+          autoOn: 'Drone Move',
+          autoOff: 'Stop Drone Move',
+          showSpheres: 'Effective Spheres: ',
+          connections: 'Connections: ',
+          on: 'ON',
+          off: 'OFF',
+          reset: 'Reset',
+          droneLocation: 'Drone Location',
+          lat: 'Latitude (°)',
+          lon: 'Longitude (°)',
+          alt: 'Altitude',
+          selectedK: 'Selected Satellites',
+          possibleK: 'Possible Positions',
+          confK: 'Confidence',
+          thSat: 'Satellite',
+          thUse: 'Connected',
+          thActive: 'Active Sphere?',
+          thRange: 'Measured Distance',
+          yes: 'Yes',
+          no: 'No',
+          confHigh: 'High',
+          confMid: 'Medium',
+          confLow: 'Low'
+        },
+        zh: {
+          titleMain: '3D GNSS 定位模擬',
+          sim2d: '簡化 2D 模擬',
+          tutorialBtn: '教學',
+          tutorialTitle: '學生教學：如何閱讀這個 3D GNSS 模擬',
+          tutorialSub: '把它當成學習實驗室，連結空間幾何與定位準確度。',
+          tutorialSteps: [
+            '先觀察 10–15 秒：衛星繞行、地球自轉，建立三維空間直覺。',
+            '軌道概念：MEO 提供主要全球幾何；GEO 在相近經度上空維持穩定區域覆蓋；IGSO 以傾斜軌道補強幾何變化。三者搭配可提升無人機定位可靠性。',
+            '在「無人機位置」設定緯度、經度與高度，這是你要估算的真實位置。',
+            '在表格點選衛星編號作為「已選衛星」，可理解為接收機採用的量測來源。',
+            '利用衛星編號旁的軌道標籤（MEO/GEO/IGSO），比較不同軌道類型對覆蓋與解穩定性的影響。',
+            '查看「可能位置」：點越多代表歧義越大；點越少代表解越收斂；1 點代表唯一解。',
+            '用 Active Sphere 的 開/關 觀察各衛星量測球，理解球面交會如何形成定位解。',
+            '啟用「無人機移動」看動態變化：當幾何配置改變，可靠度與可能位置會即時變動。',
+            '學習重點：比較「衛星分布集中」與「衛星分布分散」兩種情況的定位差異。',
+            '可隨時重設並重做實驗，用不同位置驗證你的假設。'
+          ],
+          tutorialClose: '關閉',
+          langBtn: 'EN',
+          pauseSat: '暫停衛星',
+          resumeSat: '繼續衛星',
+          autoOn: '無人機移動',
+          autoOff: '停止無人機移動',
+          showSpheres: '有效球體：',
+          connections: '連線：',
+          on: '開',
+          off: '關',
+          reset: '重設',
+          droneLocation: '無人機位置',
+          lat: '緯度 (°)',
+          lon: '經度 (°)',
+          alt: '高度',
+          selectedK: '已選衛星',
+          possibleK: '可能位置',
+          confK: '可靠度',
+          thSat: '衛星',
+          thUse: '已連接',
+          thActive: '啟用球體？',
+          thRange: '量測距離',
+          yes: '是',
+          no: '否',
+          confHigh: '高',
+          confMid: '中',
+          confLow: '低'
+        }
+      };
+
+      const droneState = { latDeg: 22.3, lonDeg: 114.2, alt: 1.2 };
+
+      const ui = {
+        titleMain: document.getElementById('titleMain'),
+        sim2dBtn: document.getElementById('sim2dBtn'),
+        tutorialBtn: document.getElementById('tutorialBtn'),
+        langBtn: document.getElementById('langBtn'),
+        satPauseBtn: document.getElementById('satPauseBtn'),
+        autoDroneBtn: document.getElementById('autoDroneBtn'),
+        showSpheresBtn: document.getElementById('showSpheresBtn'),
+        connectionsBtn: document.getElementById('connectionsBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        droneLocationTitle: document.getElementById('droneLocationTitle'),
+        latLabel: document.getElementById('latLabel'),
+        lonLabel: document.getElementById('lonLabel'),
+        altLabel: document.getElementById('altLabel'),
+        latSlider: document.getElementById('latSlider'),
+        lonSlider: document.getElementById('lonSlider'),
+        altSlider: document.getElementById('altSlider'),
+        latValue: document.getElementById('latValue'),
+        lonValue: document.getElementById('lonValue'),
+        altValue: document.getElementById('altValue'),
+        selectedK: document.getElementById('selectedK'),
+        possibleK: document.getElementById('possibleK'),
+        confK: document.getElementById('confK'),
+        selectedCount: document.getElementById('selectedCount'),
+        possibleCount: document.getElementById('possibleCount'),
+        confidenceText: document.getElementById('confidenceText'),
+        thSat: document.getElementById('thSat'),
+        thUse: document.getElementById('thUse'),
+        thActive: document.getElementById('thActive'),
+        thRange: document.getElementById('thRange'),
+        satTableBody: document.getElementById('satTableBody'),
+        tutorialBackdrop: document.getElementById('tutorialBackdrop'),
+        tutorialTitle: document.getElementById('tutorialTitle'),
+        tutorialSub: document.getElementById('tutorialSub'),
+        tutorialList: document.getElementById('tutorialList'),
+        tutorialCloseBtn: document.getElementById('tutorialCloseBtn')
+      };
+
+      let satAudio = null;
+      function enableSatelliteSound() {
+        if (satAudio) return;
+        satAudio = new Audio('satellite_sound_trim.mp3');
+        satAudio.loop = true;
+        satAudio.volume = 0.15;
+        satAudio.preload = 'auto';
+
+        const tryPlay = () => satAudio.play().catch(() => {});
+        tryPlay();
+
+        const unlock = () => {
+          tryPlay();
+          window.removeEventListener('pointerdown', unlock);
+          window.removeEventListener('touchstart', unlock);
+          window.removeEventListener('keydown', unlock);
+        };
+        window.addEventListener('pointerdown', unlock, { once: true });
+        window.addEventListener('touchstart', unlock, { once: true });
+        window.addEventListener('keydown', unlock, { once: true });
+      }
+
+      function t(k){ return i18n[lang][k] || k; }
+      function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+      function degToRad(v){ return v * Math.PI / 180; }
+      function lerp(a,b,p){ return a + (b-a)*p; }
+
+      function renderTutorial() {
+        ui.tutorialTitle.textContent = t('tutorialTitle');
+        ui.tutorialSub.textContent = t('tutorialSub');
+        ui.tutorialCloseBtn.textContent = t('tutorialClose');
+        ui.tutorialList.innerHTML = '';
+        const steps = t('tutorialSteps');
+        if (Array.isArray(steps)) {
+          steps.forEach(s => {
+            const li = document.createElement('li');
+            li.textContent = s;
+            ui.tutorialList.appendChild(li);
+          });
+        }
+      }
+
+      function openTutorial(){ renderTutorial(); ui.tutorialBackdrop.style.display = 'flex'; }
+      function closeTutorial(){ ui.tutorialBackdrop.style.display = 'none'; }
+
+      function applyLanguage() {
+        document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+        ui.titleMain.textContent = t('titleMain');
+        ui.sim2dBtn.textContent = t('sim2d');
+        ui.tutorialBtn.textContent = t('tutorialBtn');
+        ui.langBtn.textContent = t('langBtn');
+        ui.droneLocationTitle.textContent = t('droneLocation');
+        ui.latLabel.textContent = t('lat');
+        ui.lonLabel.textContent = t('lon');
+        ui.altLabel.textContent = t('alt');
+        ui.selectedK.textContent = t('selectedK');
+        ui.possibleK.textContent = t('possibleK');
+        ui.confK.textContent = t('confK');
+        ui.thSat.textContent = t('thSat');
+        ui.thUse.textContent = t('thUse');
+        ui.thActive.textContent = t('thActive');
+        ui.thRange.textContent = t('thRange');
+        updateButtonTexts();
+        renderTutorial();
+      }
+
+      function geodeticToCartesian(latDeg, lonDeg, radius){
+        const lat = degToRad(latDeg);
+        const lon = degToRad(lonDeg);
+        const cosLat = Math.cos(lat);
+        return new THREE.Vector3(
+          radius * cosLat * Math.cos(lon),
+          radius * Math.sin(lat),
+          radius * cosLat * Math.sin(lon)
+        );
+      }
+
+      function hasLineOfSight(pointA, pointB, earthRadius){
+        const ab = new THREE.Vector3().subVectors(pointB, pointA);
+        const abLenSq = ab.lengthSq();
+        if (abLenSq < 1e-10) return false;
+        const t0 = clamp(-pointA.dot(ab) / abLenSq, 0, 1);
+        const closest = new THREE.Vector3().copy(pointA).addScaledVector(ab, t0);
+        return closest.length() > earthRadius + 0.02;
+      }
+
+      function transpose(A){
+        const rows = A.length, cols = A[0].length;
+        const T = new Array(cols);
+        for (let c = 0; c < cols; c++){
+          T[c] = new Array(rows);
+          for (let r = 0; r < rows; r++) T[c][r] = A[r][c];
+        }
+        return T;
+      }
+      function matMul(A, B){
+        const rA = A.length, cA = A[0].length, cB = B[0].length;
+        const R = Array.from({ length: rA }, () => Array(cB).fill(0));
+        for (let i = 0; i < rA; i++){
+          for (let k = 0; k < cA; k++){
+            const aik = A[i][k];
+            for (let j = 0; j < cB; j++) R[i][j] += aik * B[k][j];
+          }
+        }
+        return R;
+      }
+      function matVecMul(A, v){
+        const out = Array(A.length).fill(0);
+        for (let i = 0; i < A.length; i++){
+          let s = 0;
+          for (let j = 0; j < A[0].length; j++) s += A[i][j] * v[j];
+          out[i] = s;
+        }
+        return out;
+      }
+      function invertMatrix(M){
+        const n = M.length;
+        const A = M.map(row => row.slice());
+        const I = Array.from({ length: n }, (_, r) =>
+          Array.from({ length: n }, (_, c) => (r === c ? 1 : 0))
+        );
+        for (let col = 0; col < n; col++){
+          let pivot = col;
+          let maxAbs = Math.abs(A[col][col]);
+          for (let r = col + 1; r < n; r++){
+            const v = Math.abs(A[r][col]);
+            if (v > maxAbs){ maxAbs = v; pivot = r; }
+          }
+          if (maxAbs < 1e-12) return null;
+          if (pivot !== col){
+            [A[col], A[pivot]] = [A[pivot], A[col]];
+            [I[col], I[pivot]] = [I[pivot], I[col]];
+          }
+          const diag = A[col][col];
+          for (let j = 0; j < n; j++){ A[col][j] /= diag; I[col][j] /= diag; }
+          for (let r = 0; r < n; r++){
+            if (r === col) continue;
+            const f = A[r][col];
+            for (let j = 0; j < n; j++){
+              A[r][j] -= f * A[col][j];
+              I[r][j] -= f * I[col][j];
+            }
+          }
+        }
+        return I;
+      }
+
+      function solveTrilateration(selectedSats, initialPos, initialClockBias){
+        let x = [initialPos.x, initialPos.y, initialPos.z, initialClockBias];
+        let success = false;
+
+        for (let iter = 0; iter < 10; iter++){
+          const H = [];
+          const v = [];
+          for (const s of selectedSats){
+            const dx = x[0] - s.pos.x;
+            const dy = x[1] - s.pos.y;
+            const dz = x[2] - s.pos.z;
+            const ri = Math.sqrt(dx*dx + dy*dy + dz*dz);
+            if (ri < 1e-9) continue;
+            const pred = ri + x[3];
+            const res = s.measuredRange - pred;
+            H.push([dx/ri, dy/ri, dz/ri, 1]);
+            v.push(res);
+          }
+          if (H.length < 4) break;
+          const Ht = transpose(H);
+          const HtH = matMul(Ht, H);
+          const HtHInv = invertMatrix(HtH);
+          if (!HtHInv) break;
+          const Htv = matVecMul(Ht, v);
+          const delta = matVecMul(HtHInv, Htv);
+
+          x[0] += delta[0];
+          x[1] += delta[1];
+          x[2] += delta[2];
+          x[3] += delta[3];
+
+          const stepSize = Math.sqrt(delta[0]*delta[0] + delta[1]*delta[1] + delta[2]*delta[2]);
+          if (stepSize < 1e-4){ success = true; break; }
+          if (iter === 9) success = true;
+        }
+
+        return { success, estPos: new THREE.Vector3(x[0], x[1], x[2]), clockBias: x[3] };
+      }
+
+      function satelliteColor(index, total){
+        const hue = (index * 360 / total) % 360;
+        const c = new THREE.Color();
+        c.setHSL(hue / 360, 0.84, 0.56);
+        return c;
+      }
+
+      function hash2(x, y){
+        const s = Math.sin(x * 127.1 + y * 311.7) * 43758.5453123;
+        return s - Math.floor(s);
+      }
+      function smoothNoise(x, y){
+        const x0 = Math.floor(x), y0 = Math.floor(y);
+        const x1 = x0 + 1, y1 = y0 + 1;
+        const sx = x - x0, sy = y - y0;
+        const n00 = hash2(x0, y0), n10 = hash2(x1, y0), n01 = hash2(x0, y1), n11 = hash2(x1, y1);
+        const ix0 = lerp(n00, n10, sx * sx * (3 - 2 * sx));
+        const ix1 = lerp(n01, n11, sx * sx * (3 - 2 * sx));
+        return lerp(ix0, ix1, sy * sy * (3 - 2 * sy));
+      }
+      function fbm(x, y, oct=7){
+        let v = 0, a = 0.5, f = 1;
+        for (let i = 0; i < oct; i++){ v += a * smoothNoise(x * f, y * f); f *= 2; a *= 0.5; }
+        return v;
+      }
+
+      function drawContinentMask(ctx, w, h){
+        function llToXY(lat, lon){ return [(lon + 180) / 360 * w, (90 - lat) / 180 * h]; }
+        function poly(points){
+          ctx.beginPath();
+          for (let i = 0; i < points.length; i++){
+            const [x, y] = llToXY(points[i][0], points[i][1]);
+            if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.closePath(); ctx.fill();
+        }
+        ctx.fillStyle = '#fff';
+        poly([[72,-167],[70,-145],[66,-125],[60,-110],[52,-100],[48,-92],[42,-85],[33,-80],[24,-98],[18,-105],[20,-120],[27,-130],[40,-140],[52,-150],[62,-165]]);
+        poly([[82,-73],[78,-50],[72,-35],[63,-42],[60,-52],[65,-62],[74,-68]]);
+        poly([[12,-81],[5,-77],[-6,-73],[-16,-70],[-28,-66],[-40,-63],[-53,-60],[-55,-49],[-43,-40],[-30,-46],[-16,-53],[-3,-60],[9,-70]]);
+        poly([[72,-10],[70,15],[66,40],[62,70],[58,95],[54,120],[50,145],[46,165],[40,150],[35,130],[32,110],[35,90],[40,70],[46,55],[52,40],[56,25],[60,5],[56,-10],[50,-20],[45,-5],[42,15],[38,30],[34,45],[30,60],[28,75],[30,90],[34,105],[40,115],[44,125],[42,140],[35,150],[28,140],[20,120],[15,100],[20,80],[24,60],[30,40],[35,20],[42,5],[48,-5],[56,-15],[64,-20]]);
+        poly([[37,-17],[33,0],[30,12],[25,23],[18,32],[8,39],[-4,42],[-17,39],[-27,31],[-34,22],[-35,10],[-30,1],[-18,-5],[-6,-10],[7,-13],[22,-14],[31,-15]]);
+        poly([[28,34],[24,48],[18,56],[12,52],[14,44],[20,38]]);
+        poly([[25,70],[20,78],[12,83],[8,78],[12,72],[18,68]]);
+        poly([[10,95],[6,105],[0,112],[-5,116],[-8,108],[-2,98],[4,92]]);
+        poly([[-11,112],[-18,118],[-24,130],[-30,142],[-35,151],[-42,146],[-44,134],[-40,122],[-34,114],[-25,110],[-16,111]]);
+        poly([[-13,48],[-18,50],[-24,49],[-26,45],[-20,43],[-15,45]]);
+        poly([[-70,-180],[-74,-140],[-76,-100],[-78,-60],[-79,-20],[-79,20],[-78,60],[-76,100],[-74,140],[-70,180]]);
+      }
+
+      function createNormalFromHeight(heightData, w, h, strength){
+        const normal = new Uint8ClampedArray(w * h * 4);
+        function hAt(x, y){
+          const xx = (x + w) % w;
+          const yy = (y + h) % h;
+          return heightData[(yy * w + xx) * 4] / 255;
+        }
+        for (let y = 0; y < h; y++){
+          for (let x = 0; x < w; x++){
+            const hl = hAt(x - 1, y);
+            const hr = hAt(x + 1, y);
+            const hd = hAt(x, y - 1);
+            const hu = hAt(x, y + 1);
+            const dx = (hr - hl) * strength;
+            const dy = (hu - hd) * strength;
+            let nx = -dx;
+            let ny = -dy;
+            let nz = 1.0;
+            const len = Math.sqrt(nx*nx + ny*ny + nz*nz) || 1;
+            nx /= len; ny /= len; nz /= len;
+            const i = (y * w + x) * 4;
+            normal[i] = Math.floor((nx * 0.5 + 0.5) * 255);
+            normal[i+1] = Math.floor((ny * 0.5 + 0.5) * 255);
+            normal[i+2] = Math.floor((nz * 0.5 + 0.5) * 255);
+            normal[i+3] = 255;
+          }
+        }
+        return normal;
+      }
+
+      function createEarthTextures(){
+        const w = 2048, h = 1024;
+        const mapCanvas = document.createElement('canvas'); mapCanvas.width = w; mapCanvas.height = h;
+        const mapCtx = mapCanvas.getContext('2d');
+        const bumpCanvas = document.createElement('canvas'); bumpCanvas.width = w; bumpCanvas.height = h;
+        const bumpCtx = bumpCanvas.getContext('2d');
+        const specCanvas = document.createElement('canvas'); specCanvas.width = w; specCanvas.height = h;
+        const specCtx = specCanvas.getContext('2d');
+        const cloudCanvas = document.createElement('canvas'); cloudCanvas.width = w; cloudCanvas.height = h;
+        const cloudCtx = cloudCanvas.getContext('2d');
+        const normalCanvas = document.createElement('canvas'); normalCanvas.width = w; normalCanvas.height = h;
+        const normalCtx = normalCanvas.getContext('2d');
+
+        const oceanGrad = mapCtx.createLinearGradient(0, 0, 0, h);
+        oceanGrad.addColorStop(0, '#0f3b64');
+        oceanGrad.addColorStop(0.33, '#155889');
+        oceanGrad.addColorStop(0.67, '#124b79');
+        oceanGrad.addColorStop(1, '#0b3155');
+        mapCtx.fillStyle = oceanGrad;
+        mapCtx.fillRect(0, 0, w, h);
+
+        const maskCanvas = document.createElement('canvas');
+        maskCanvas.width = w; maskCanvas.height = h;
+        const maskCtx = maskCanvas.getContext('2d');
+        drawContinentMask(maskCtx, w, h);
+
+        const mapImg = mapCtx.getImageData(0,0,w,h);
+        const bumpImg = bumpCtx.createImageData(w,h);
+        const specImg = specCtx.createImageData(w,h);
+        const cloudImg = cloudCtx.createImageData(w,h);
+        const mask = maskCtx.getImageData(0,0,w,h).data;
+
+        for (let y = 0; y < h; y++){
+          const lat = 90 - (y / h) * 180;
+          const latAbs = Math.abs(lat) / 90;
+          for (let x = 0; x < w; x++){
+            const i = (y * w + x) * 4;
+            const nx = x / w, ny = y / h;
+            const isLand = mask[i + 3] > 10;
+
+            const nBase = fbm(nx * 3.0, ny * 3.0, 7);
+            const nDetail = fbm(nx * 16.0 + 3.1, ny * 16.0 - 8.7, 6);
+            const nMicro = fbm(nx * 38.0 - 7.2, ny * 38.0 + 5.4, 5);
+            const trench = fbm(nx * 7.2 + 12.8, ny * 7.2 - 19.6, 5);
+            const moisture = fbm(nx * 5.4 + 18.3, ny * 5.4 - 10.2, 6);
+
+            let r,g,b,bumpV,specV;
+
+            if (isLand){
+              const mountain = clamp(0.40*nDetail + 0.60*nMicro,0,1);
+              const desert = moisture < 0.31 && latAbs < 0.48;
+              const snow = latAbs > 0.77 || (mountain > 0.80 && latAbs > 0.35);
+
+              if (snow){
+                r = 233; g = 238; b = 243;
+              } else if (desert){
+                r = 181; g = 152; b = 104;
+              } else if (mountain > 0.73){
+                r = 122; g = 123; b = 120;
+              } else if (moisture > 0.62){
+                r = 67; g = 127; b = 76;
+              } else {
+                r = 95; g = 136; b = 84;
+              }
+
+              const relief = Math.floor((nMicro - 0.5) * 62 + (nDetail - 0.5) * 45);
+              r = clamp(r + relief, 0, 255);
+              g = clamp(g + relief, 0, 255);
+              b = clamp(b + relief, 0, 255);
+
+              bumpV = clamp(105 + mountain * 130 + nMicro * 46, 0, 255);
+              specV = 20;
+            } else {
+              const abyss = clamp(0.55*nBase + 0.45*trench,0,1);
+              r = clamp(10 + nBase * 18 - abyss * 8, 0, 255);
+              g = clamp(52 + nBase * 62 - abyss * 12, 0, 255);
+              b = clamp(96 + nBase * 80 - abyss * 16, 0, 255);
+
+              const waveBand = Math.sin((ny * Math.PI * 14) + nDetail * 4.5) * 3;
+              r = clamp(r + waveBand + (nMicro - 0.5) * 12, 0, 255);
+              g = clamp(g + waveBand + (nMicro - 0.5) * 16, 0, 255);
+              b = clamp(b + waveBand + (nMicro - 0.5) * 22, 0, 255);
+
+              bumpV = clamp(36 + nDetail * 24 + nMicro * 22, 0, 255);
+              specV = clamp(160 + (1 - abyss) * 78, 0, 255);
+            }
+
+            mapImg.data[i] = r; mapImg.data[i+1] = g; mapImg.data[i+2] = b; mapImg.data[i+3] = 255;
+            bumpImg.data[i] = bumpV; bumpImg.data[i+1] = bumpV; bumpImg.data[i+2] = bumpV; bumpImg.data[i+3] = 255;
+            specImg.data[i] = specV; specImg.data[i+1] = specV; specImg.data[i+2] = specV; specImg.data[i+3] = 255;
+
+            const cloudN = fbm(nx * 5.2 + 11.2, ny * 5.2 - 7.3, 6);
+            const cloudDetail = fbm(nx * 20.0 - 4.7, ny * 20.0 + 2.6, 5);
+            const cloudMix = 0.58 * cloudN + 0.42 * cloudDetail;
+            const cloudAlpha = clamp((cloudMix - 0.56) * 430, 0, 205);
+            cloudImg.data[i] = 255;
+            cloudImg.data[i+1] = 255;
+            cloudImg.data[i+2] = 255;
+            cloudImg.data[i+3] = cloudAlpha;
+          }
+        }
+
+        const normalData = createNormalFromHeight(bumpImg.data, w, h, 4.2);
+        const normalImg = normalCtx.createImageData(w, h);
+        normalImg.data.set(normalData);
+
+        mapCtx.putImageData(mapImg, 0, 0);
+        bumpCtx.putImageData(bumpImg, 0, 0);
+        specCtx.putImageData(specImg, 0, 0);
+        cloudCtx.putImageData(cloudImg, 0, 0);
+        normalCtx.putImageData(normalImg, 0, 0);
+
+        const mapTex = new THREE.CanvasTexture(mapCanvas);
+        const bumpTex = new THREE.CanvasTexture(bumpCanvas);
+        const specTex = new THREE.CanvasTexture(specCanvas);
+        const cloudTex = new THREE.CanvasTexture(cloudCanvas);
+        const normalTex = new THREE.CanvasTexture(normalCanvas);
+
+        mapTex.needsUpdate = bumpTex.needsUpdate = specTex.needsUpdate = cloudTex.needsUpdate = normalTex.needsUpdate = true;
+        return { mapTex, bumpTex, specTex, cloudTex, normalTex };
+      }
+
+      function orientUpToNormal(obj, normal){
+        const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0), normal.clone().normalize());
+        obj.quaternion.copy(q);
+      }
+
+      function createTextSprite(text, colorHex, isActive){
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 128;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,256,128);
+
+        if (isActive){
+          ctx.fillStyle = 'rgba(255,255,255,0.95)';
+          ctx.strokeStyle = 'rgba(17,24,39,0.95)';
+          ctx.lineWidth = 3;
+          ctx.fillRect(12,24,232,80);
+          ctx.strokeRect(12,24,232,80);
+          ctx.fillStyle = '#111827';
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,0.04)';
+          ctx.strokeStyle = 'rgba(255,255,255,0.32)';
+          ctx.lineWidth = 2;
+          ctx.fillRect(12,24,232,80);
+          ctx.strokeRect(12,24,232,80);
+          ctx.fillStyle = colorHex;
+        }
+
+        ctx.font = '700 40px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 128, 64);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(3.6, 1.8, 1);
+        return sprite;
+      }
+
+      function createPoleLabelSprite(text, colorHex){
+        const canvas = document.createElement('canvas');
+        canvas.width = 220; canvas.height = 110;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0,0,220,110);
+
+        ctx.fillStyle = 'rgba(10,15,25,0.74)';
+        ctx.strokeStyle = colorHex;
+        ctx.lineWidth = 3;
+        ctx.fillRect(16, 18, 188, 74);
+        ctx.strokeRect(16, 18, 188, 74);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 44px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 110, 55);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(3.3, 1.65, 1);
+        return sprite;
+      }
+
+      function createSphereLabelSprite(text, colorHex){
+        const canvas = document.createElement('canvas');
+        canvas.width = 256; canvas.height = 112;
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, 256, 112);
+
+        ctx.fillStyle = 'rgba(10,15,25,0.78)';
+        ctx.strokeStyle = colorHex;
+        ctx.lineWidth = 3;
+        ctx.fillRect(14, 20, 228, 72);
+        ctx.strokeRect(14, 20, 228, 72);
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '700 38px Arial';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 128, 56);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthWrite: false });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(4.2, 1.85, 1);
+        sprite.visible = false;
+        return sprite;
+      }
+
+      function createNestedSphere(color){
+        const group = new THREE.Group();
+        const g = new THREE.SphereGeometry(1, 22, 16);
+
+        const outer = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
+          color: color.clone(), transparent: true, opacity: 0.10, depthWrite: false
+        }));
+        const m1 = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
+          color: color.clone().offsetHSL(0, -0.05, 0.05), transparent: true, opacity: 0.12, depthWrite: false
+        }));
+        const m2 = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
+          color: color.clone().offsetHSL(0, -0.08, 0.1), transparent: true, opacity: 0.16, depthWrite: false
+        }));
+        const wire = new THREE.Mesh(g, new THREE.MeshBasicMaterial({
+          color: color.clone(), wireframe: true, transparent: true, opacity: 0.46, depthWrite: false
+        }));
+
+        m1.scale.set(0.76, 0.76, 0.76);
+        m2.scale.set(0.50, 0.50, 0.50);
+        group.add(outer, m1, m2, wire);
+        group.visible = false;
+        return group;
+      }
+
+      function createGraticule(radius, stepDeg){
+        const group = new THREE.Group();
+        const mat = new THREE.LineBasicMaterial({
+          color: 0x8eb5d8,
+          transparent: true,
+          opacity: 0.34
+        });
+
+        for (let lat = -75; lat <= 75; lat += stepDeg){
+          const pts = [];
+          for (let lon = -180; lon <= 180; lon += 4) pts.push(geodeticToCartesian(lat, lon, radius));
+          const g = new THREE.BufferGeometry().setFromPoints(pts);
+          group.add(new THREE.Line(g, mat));
+        }
+        for (let lon = -180; lon < 180; lon += stepDeg){
+          const pts = [];
+          for (let lat = -90; lat <= 90; lat += 3) pts.push(geodeticToCartesian(lat, lon, radius));
+          const g = new THREE.BufferGeometry().setFromPoints(pts);
+          group.add(new THREE.Line(g, mat));
+        }
+        return group;
+      }
+
+      const container = document.getElementById('threeContainer');
+      const scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x040b18);
+
+      const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 1200);
+      const renderer = new THREE.WebGLRenderer({ antialias:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      container.appendChild(renderer.domElement);
+
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.08;
+      controls.enablePan = false;
+      controls.minDistance = 45;
+      controls.maxDistance = 190;
+
+      function setCenteredView(){
+        camera.position.set(0, 0, 84);
+        camera.lookAt(0,0,0);
+        controls.target.set(0,0,0);
+        controls.update();
+      }
+      setCenteredView();
+
+      scene.add(new THREE.AmbientLight(0xffffff, 0.48));
+      const sun = new THREE.DirectionalLight(0xffffff, 0.98);
+      sun.position.set(110,70,60); scene.add(sun);
+      const rim = new THREE.DirectionalLight(0x6aa0ff, 0.55);
+      rim.position.set(-90,-20,-80); scene.add(rim);
+
+      const worldTiltGroup = new THREE.Group();
+      worldTiltGroup.rotation.z = degToRad(EARTH_TILT_DEG);
+      scene.add(worldTiltGroup);
+
+      const earthSpinGroup = new THREE.Group();
+      worldTiltGroup.add(earthSpinGroup);
+
+      const tex = createEarthTextures();
+      const earth = new THREE.Mesh(
+        new THREE.SphereGeometry(EARTH_RADIUS, 96, 96),
+        new THREE.MeshPhongMaterial({
+          map: tex.mapTex,
+          bumpMap: tex.bumpTex,
+          bumpScale: 0.78,
+          normalMap: tex.normalTex,
+          normalScale: new THREE.Vector2(0.72, 0.72),
+          specularMap: tex.specTex,
+          specular: new THREE.Color(0x3a5573),
+          shininess: 33,
+          transparent: true,
+          opacity: 0.5,
+          depthWrite: false
+        })
+      );
+      earth.rotation.y = Math.PI;
+      earthSpinGroup.add(earth);
+
+      const graticule = createGraticule(EARTH_RADIUS * 1.001, 15);
+      earthSpinGroup.add(graticule);
+
+      const cloudLayer = new THREE.Mesh(
+        new THREE.SphereGeometry(EARTH_RADIUS * 1.018, 72, 72),
+        new THREE.MeshPhongMaterial({
+          map: tex.cloudTex,
+          transparent: true,
+          opacity: 0.24,
+          depthWrite: false
+        })
+      );
+      earthSpinGroup.add(cloudLayer);
+
+      const atmosphere = new THREE.Mesh(
+        new THREE.SphereGeometry(EARTH_RADIUS * 1.05, 72, 72),
+        new THREE.MeshBasicMaterial({ color:0x7bb7ff, transparent:true, opacity:0.09, side:THREE.BackSide, depthWrite:false })
+      );
+      earthSpinGroup.add(atmosphere);
+
+      const northPoleMarker = new THREE.Group();
+      const nPin = new THREE.Mesh(
+        new THREE.ConeGeometry(0.35, 1.05, 16),
+        new THREE.MeshStandardMaterial({ color:0xff5c5c, metalness:0.2, roughness:0.55 })
+      );
+      nPin.position.copy(geodeticToCartesian(90, 0, EARTH_RADIUS + 0.52));
+      orientUpToNormal(nPin, nPin.position);
+      northPoleMarker.add(nPin);
+      const nLabel = createPoleLabelSprite('N', '#ff5c5c');
+      nLabel.position.copy(geodeticToCartesian(90, 0, EARTH_RADIUS + 2.45));
+      northPoleMarker.add(nLabel);
+      earthSpinGroup.add(northPoleMarker);
+
+      const southPoleMarker = new THREE.Group();
+      const sPin = new THREE.Mesh(
+        new THREE.ConeGeometry(0.35, 1.05, 16),
+        new THREE.MeshStandardMaterial({ color:0x5ca8ff, metalness:0.2, roughness:0.55 })
+      );
+      sPin.position.copy(geodeticToCartesian(-90, 0, EARTH_RADIUS + 0.52));
+      orientUpToNormal(sPin, sPin.position);
+      southPoleMarker.add(sPin);
+      const sLabel = createPoleLabelSprite('S', '#5ca8ff');
+      sLabel.position.copy(geodeticToCartesian(-90, 0, EARTH_RADIUS + 2.45));
+      southPoleMarker.add(sLabel);
+      earthSpinGroup.add(southPoleMarker);
+
+      function createDroneModel(colorHex){
+        const g = new THREE.Group();
+        g.add(new THREE.Mesh(
+          new THREE.BoxGeometry(1.2,0.35,1.2),
+          new THREE.MeshStandardMaterial({ color:0x20252b, metalness:0.5, roughness:0.4 })
+        ));
+        const armMat = new THREE.MeshStandardMaterial({ color:0x3f4b57, metalness:0.55, roughness:0.35 });
+        g.add(new THREE.Mesh(new THREE.BoxGeometry(2.8,0.12,0.16), armMat));
+        g.add(new THREE.Mesh(new THREE.BoxGeometry(0.16,0.12,2.8), armMat));
+        function rotor(x,z){
+          const disc = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.24,0.24,0.06,20),
+            new THREE.MeshStandardMaterial({ color:0x111519, metalness:0.4, roughness:0.45 })
+          );
+          disc.position.set(x,0.18,z); g.add(disc);
+        }
+        rotor(1.45,1.45); rotor(1.45,-1.45); rotor(-1.45,1.45); rotor(-1.45,-1.45);
+        const beacon = new THREE.Mesh(
+          new THREE.SphereGeometry(0.12, 12, 12),
+          new THREE.MeshBasicMaterial({ color:colorHex })
+        );
+        beacon.position.set(0,0.35,0); g.add(beacon);
+        g.scale.set(0.75,0.75,0.75);
+        worldTiltGroup.add(g);
+        return g;
+      }
+
+      const trueDroneModel = createDroneModel(0x00e676);
+
+      const fixCoreGeom = new THREE.BufferGeometry();
+      fixCoreGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3), 3));
+      const fixGlowGeom = new THREE.BufferGeometry();
+      fixGlowGeom.setAttribute('position', new THREE.BufferAttribute(new Float32Array(3), 3));
+
+      const fixCoreMat = new THREE.PointsMaterial({
+        color:0xff2bd6,size:1.35,sizeAttenuation:true,transparent:true,opacity:0.95,depthWrite:false,blending:THREE.AdditiveBlending
+      });
+      const fixGlowMat = new THREE.PointsMaterial({
+        color:0xffffff,size:2.25,sizeAttenuation:true,transparent:true,opacity:0.45,depthWrite:false,blending:THREE.AdditiveBlending
+      });
+
+      const fixCore = new THREE.Points(fixCoreGeom, fixCoreMat);
+      const fixGlow = new THREE.Points(fixGlowGeom, fixGlowMat);
+      fixCore.visible = false;
+      fixGlow.visible = false;
+      worldTiltGroup.add(fixGlow);
+      worldTiltGroup.add(fixCore);
+
+      const possiblePositionsArray = new Float32Array(POSSIBLE_MAX_POINTS * 3);
+      const possibleGeom = new THREE.BufferGeometry();
+      possibleGeom.setAttribute('position', new THREE.BufferAttribute(possiblePositionsArray, 3));
+      possibleGeom.setDrawRange(0, 0);
+
+      const possibleMat = new THREE.PointsMaterial({
+        color:0xff8cf2,size:0.72,sizeAttenuation:true,transparent:true,opacity:0.65,depthWrite:false,blending:THREE.AdditiveBlending
+      });
+      const possibleGlowMat = new THREE.PointsMaterial({
+        color:0xffffff,size:1.18,sizeAttenuation:true,transparent:true,opacity:0.24,depthWrite:false,blending:THREE.AdditiveBlending
+      });
+
+      const possibleDots = new THREE.Points(possibleGeom, possibleMat);
+      const possibleGlow = new THREE.Points(possibleGeom, possibleGlowMat);
+      worldTiltGroup.add(possibleGlow);
+      worldTiltGroup.add(possibleDots);
+
+      function buildOrbitCatalog() {
+        const list = [];
+        for (let i = 0; i < ORBIT_COUNTS.MEO; i++) {
+          const inclSet = [50,53,56,59,62,65,68];
+          const inclination = degToRad(inclSet[i % inclSet.length] + ((i % 3) - 1) * 0.6);
+          const altitude = 7.2 + (i % 9) * 0.22 + Math.sin(i * 1.73) * 0.12;
+          const raan = degToRad((i * 73 + (i % 5) * 9) % 360);
+          const phase = degToRad((i * 137.507764 + (i % 7) * 11) % 360);
+          const speed = 0.034 + (i % 6) * 0.0022;
+          const direction = (i % 2 === 0) ? 1 : -1;
+          list.push({ orbitType: 'MEO', inclination, altitude, raan, phase, speed, direction });
+        }
+        for (let i = 0; i < ORBIT_COUNTS.GEO; i++) {
+          const inclination = degToRad((i % 3) * 0.7);
+          const altitude = 12.8 + (i % 5) * 0.06;
+          const raan = degToRad((i * 360 / ORBIT_COUNTS.GEO * 1.7) % 360);
+          const phase = degToRad((i * 360 / ORBIT_COUNTS.GEO + (i % 6) * 7) % 360);
+          const speed = EARTH_ROT_SPEED * (1 + ((i % 4) - 1.5) * 0.002);
+          list.push({ orbitType: 'GEO', inclination, altitude, raan, phase, speed, direction: 1 });
+        }
+        for (let i = 0; i < ORBIT_COUNTS.IGSO; i++) {
+          const inclSet = [28,42,55];
+          const inclination = degToRad(inclSet[i % inclSet.length] + ((i % 2) ? 0.8 : -0.8));
+          const altitude = 12.4 + (i % 6) * 0.07;
+          const raan = degToRad((i * 360 / ORBIT_COUNTS.IGSO * 2.3 + (i % 7) * 13) % 360);
+          const phase = degToRad((i * 360 / ORBIT_COUNTS.IGSO + (i % 4) * 15) % 360);
+          const speed = EARTH_ROT_SPEED * (1 + ((i % 5) - 2) * 0.003);
+          list.push({ orbitType: 'IGSO', inclination, altitude, raan, phase, speed, direction: 1 });
+        }
+        return list;
+      }
+
+      const satellites = [];
+      const orbitCatalog = buildOrbitCatalog();
+
+      for (let satIndex = 0; satIndex < orbitCatalog.length; satIndex++){
+        const cfg = orbitCatalog[satIndex];
+        const id = satIndex + 1;
+        const idText = 'S' + String(id).padStart(3,'0');
+        const orbitRadius = EARTH_RADIUS + cfg.altitude;
+        const color = satelliteColor(satIndex, SAT_COUNT);
+
+        const model = new THREE.Group();
+        model.add(new THREE.Mesh(
+          new THREE.BoxGeometry(1.2, 0.7, 0.8),
+          new THREE.MeshStandardMaterial({ color:0xbec9d6, metalness:0.75, roughness:0.28 })
+        ));
+        const panelMat = new THREE.MeshStandardMaterial({
+          color: color.clone().multiplyScalar(0.65),
+          metalness:0.35, roughness:0.42
+        });
+        const lp = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.08,0.9), panelMat);
+        const rp = new THREE.Mesh(new THREE.BoxGeometry(1.8,0.08,0.9), panelMat);
+        lp.position.set(-1.55,0,0); rp.position.set(1.55,0,0);
+        model.add(lp); model.add(rp);
+
+        const labelActive = createTextSprite(idText, '#111827', true);
+        labelActive.position.set(0, 1.45, 0);
+        const labelInactive = createTextSprite(idText, '#' + color.getHexString(), false);
+        labelInactive.position.set(0, 1.45, 0);
+        model.add(labelActive);
+        model.add(labelInactive);
+
+        model.scale.set(0.75,0.75,0.75);
+        worldTiltGroup.add(model);
+
+        const losLine = new THREE.Line(
+          new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]),
+          new THREE.LineBasicMaterial({ color, transparent:true, opacity:0.95 })
+        );
+        losLine.visible = false;
+        worldTiltGroup.add(losLine);
+
+        const pseudoNest = createNestedSphere(color);
+        worldTiltGroup.add(pseudoNest);
+
+        const sphereLabel = createSphereLabelSprite(idText, '#' + color.getHexString());
+        worldTiltGroup.add(sphereLabel);
+
+        satellites.push({
+          id, idText,
+          orbitType: cfg.orbitType,
+          altitude: cfg.altitude,
+          orbitRadius,
+          inclination: cfg.inclination,
+          raan: cfg.raan,
+          phase: cfg.phase,
+          speed: cfg.speed,
+          direction: cfg.direction,
+          color,
+          model, label: labelActive, labelActive, labelInactive, losLine, pseudoNest, sphereLabel,
+          pos:new THREE.Vector3(),
+          distance:0, los:false, inRange:false, measuredRange:null
+        });
+      }
+
+      const rowRefs = [];
+
+      function buildTable(){
+        ui.satTableBody.innerHTML = '';
+        rowRefs.length = 0;
+
+        for (let i = 0; i < satellites.length; i++){
+          const s = satellites[i];
+          const tr = document.createElement('tr');
+
+          const tdSat = document.createElement('td');
+          const satBtn = document.createElement('button');
+          satBtn.className = 'sat-id-btn';
+          satBtn.setAttribute('data-sat-id', String(s.id));
+          satBtn.textContent = s.idText + ' (' + s.orbitType + ')';
+          tdSat.appendChild(satBtn);
+
+          const tdUse = document.createElement('td');
+          tdUse.textContent = t('no');
+
+          const tdActive = document.createElement('td');
+          const sphereBtn = document.createElement('button');
+          sphereBtn.className = 'sphere-btn off';
+          sphereBtn.setAttribute('data-sat-id', String(s.id));
+          sphereBtn.textContent = t('off');
+          sphereBtn.disabled = true;
+          tdActive.appendChild(sphereBtn);
+
+          const tdRange = document.createElement('td');
+          tdRange.textContent = '--';
+
+          tr.append(tdSat, tdUse, tdActive, tdRange);
+          ui.satTableBody.appendChild(tr);
+
+          rowRefs.push({ satBtn, tdUse, tdActive, sphereBtn, tdRange });
+        }
+      }
+      buildTable();
+
+      ui.satTableBody.addEventListener('click', (e) => {
+        const satBtn = e.target.closest('.sat-id-btn');
+        if (satBtn) {
+          const id = Number(satBtn.getAttribute('data-sat-id'));
+          if (activeSatIds.has(id)) {
+            activeSatIds.delete(id);
+            manualSphereSatIds.delete(id);
+          } else {
+            activeSatIds.add(id);
+          }
+          updateActiveButtons();
+          return;
+        }
+
+        const sphereBtn = e.target.closest('.sphere-btn');
+        if (sphereBtn) {
+          if (sphereBtn.disabled) return;
+          const id = Number(sphereBtn.getAttribute('data-sat-id'));
+
+          if (manualSphereSatIds.has(id)) manualSphereSatIds.delete(id);
+          else manualSphereSatIds.add(id);
+
+          const isOn = manualSphereSatIds.has(id);
+          sphereBtn.classList.toggle('on', isOn);
+          sphereBtn.classList.toggle('off', !isOn);
+          sphereBtn.textContent = isOn ? t('on') : t('off');
+        }
+      });
+
+      function updateActiveButtons(){
+        rowRefs.forEach((r, idx) => {
+          const id = satellites[idx].id;
+          r.satBtn.classList.toggle('active', activeSatIds.has(id));
+        });
+      }
+
+      function updateButtonTexts(){
+        ui.satPauseBtn.textContent = satellitesPaused ? t('resumeSat') : t('pauseSat');
+        ui.autoDroneBtn.textContent = autoDrone ? t('autoOff') : t('autoOn');
+        ui.showSpheresBtn.textContent = t('showSpheres') + (showAllSpheres ? t('on') : t('off'));
+        ui.connectionsBtn.textContent = t('connections') + (showConnections ? t('on') : t('off'));
+        ui.resetBtn.textContent = t('reset');
+      }
+
+      function syncSliders(){
+        ui.latSlider.value = String(droneState.latDeg);
+        ui.lonSlider.value = String(droneState.lonDeg);
+        ui.altSlider.value = String(droneState.alt);
+        ui.latValue.textContent = droneState.latDeg.toFixed(1);
+        ui.lonValue.textContent = droneState.lonDeg.toFixed(1);
+        ui.altValue.textContent = droneState.alt.toFixed(1);
+      }
+
+      function updateDroneFromUI(){
+        droneState.latDeg = clamp(parseFloat(ui.latSlider.value), -85, 85);
+        droneState.lonDeg = clamp(parseFloat(ui.lonSlider.value), -180, 180);
+        droneState.alt = clamp(parseFloat(ui.altSlider.value), 0.2, 5.0);
+        syncSliders();
+      }
+
+      ui.latSlider.addEventListener('input', updateDroneFromUI);
+      ui.lonSlider.addEventListener('input', updateDroneFromUI);
+      ui.altSlider.addEventListener('input', updateDroneFromUI);
+
+      ui.satPauseBtn.addEventListener('click', () => {
+        satellitesPaused = !satellitesPaused;
+        updateButtonTexts();
+      });
+
+      ui.autoDroneBtn.addEventListener('click', () => {
+        const turningOn = !autoDrone;
+        autoDrone = !autoDrone;
+        if (turningOn) {
+          activeSatIds.clear();
+          manualSphereSatIds.clear();
+          updateActiveButtons();
+        }
+        updateButtonTexts();
+      });
+
+      ui.showSpheresBtn.addEventListener('click', () => {
+        showAllSpheres = !showAllSpheres;
+        updateButtonTexts();
+      });
+
+      ui.connectionsBtn.addEventListener('click', () => {
+        showConnections = !showConnections;
+        updateButtonTexts();
+      });
+
+      ui.tutorialBtn.addEventListener('click', openTutorial);
+      ui.tutorialCloseBtn.addEventListener('click', closeTutorial);
+      ui.tutorialBackdrop.addEventListener('click', (e) => {
+        if (e.target === ui.tutorialBackdrop) closeTutorial();
+      });
+
+      ui.langBtn.addEventListener('click', () => {
+        lang = (lang === 'en') ? 'zh' : 'en';
+        applyLanguage();
+        buildTable();
+        updateActiveButtons();
+      });
+
+      ui.resetBtn.addEventListener('click', () => {
+        satellitesPaused = false;
+        autoDrone = false;
+        showAllSpheres = false;
+        showConnections = false;
+
+        droneState.latDeg = 22.3;
+        droneState.lonDeg = 114.2;
+        droneState.alt = 1.2;
+
+        activeSatIds.clear();
+        manualSphereSatIds.clear();
+        setCenteredView();
+        syncSliders();
+        updateButtonTexts();
+        updateActiveButtons();
+
+        fixCore.visible = false;
+        fixGlow.visible = false;
+        possibleGeom.setDrawRange(0, 0);
+      });
+
+      ui.sim2dBtn.addEventListener('click', () => {
+        window.location.href = '001a_GPS.html';
+      });
+
+      function resize(){
+        const w = container.clientWidth || 900;
+        const h = container.clientHeight || 680;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      function updateSatellitePosition(s, tSec){
+        const u = s.phase + s.direction * s.speed * tSec;
+        const x1 = s.orbitRadius * Math.cos(u);
+        const y1 = s.orbitRadius * Math.sin(u);
+
+        const ci = Math.cos(s.inclination), si = Math.sin(s.inclination);
+        const x2 = x1, y2 = y1 * ci, z2 = y1 * si;
+
+        const cO = Math.cos(s.raan), sO = Math.sin(s.raan);
+        const x = x2 * cO + z2 * sO;
+        const y = y2;
+        const z = -x2 * sO + z2 * cO;
+
+        s.pos.set(x,y,z);
+        s.model.position.copy(s.pos);
+        s.model.lookAt(0,0,0);
+      }
+
+      function updateDroneModel(){
+        const r = EARTH_RADIUS + droneState.alt;
+        const p = geodeticToCartesian(droneState.latDeg, droneState.lonDeg, r);
+        trueDroneModel.position.copy(p);
+        orientUpToNormal(trueDroneModel, p);
+        return p;
+      }
+
+      function confidenceFromSolve(activeCount){
+        if (activeCount >= 8) return t('confHigh');
+        if (activeCount >= 4) return t('confMid');
+        return t('confLow');
+      }
+
+      let lastEstPos = new THREE.Vector3(0, 0, EARTH_RADIUS + 2);
+      let lastClockBias = 0;
+      let measTick = 0;
+      let possibleTick = 0;
+      let lastPossibleCount = 0;
+
+      function setFixPointVisible(pos, visible){
+        fixCore.visible = visible;
+        fixGlow.visible = visible;
+        if (!visible) return;
+        const a = fixCore.geometry.attributes.position.array;
+        const b = fixGlow.geometry.attributes.position.array;
+        a[0] = pos.x; a[1] = pos.y; a[2] = pos.z;
+        b[0] = pos.x; b[1] = pos.y; b[2] = pos.z;
+        fixCore.geometry.attributes.position.needsUpdate = true;
+        fixGlow.geometry.attributes.position.needsUpdate = true;
+      }
+
+      function targetPossibleCountBySatCount(n){
+        if (n <= 0) return 0;
+        if (n === 1) return 220;
+        if (n === 2) return 120;
+        if (n === 3) return 45;
+        if (n === 4) return 12;
+        if (n === 5) return 6;
+        if (n === 6) return 4;
+        if (n === 7) return 3;
+        if (n === 8) return 2;
+        return 1;
+      }
+
+      function spreadBySatCount(n){
+        if (n <= 1) return 8.5;
+        if (n === 2) return 5.2;
+        if (n === 3) return 2.8;
+        if (n === 4) return 1.2;
+        if (n === 5) return 0.75;
+        if (n === 6) return 0.52;
+        if (n === 7) return 0.36;
+        if (n === 8) return 0.24;
+        return 0.12;
+      }
+
+      function fillPossiblePositions(activeUsable, centerPos){
+        if (activeUsable.length === 0){
+          possibleGeom.setDrawRange(0, 0);
+          lastPossibleCount = 0;
+          return;
+        }
+
+        const n = activeUsable.length;
+        const targetCount = Math.min(targetPossibleCountBySatCount(n), POSSIBLE_MAX_POINTS);
+        const spreadBase = spreadBySatCount(n);
+
+        if (targetCount <= 1){
+          possiblePositionsArray[0] = centerPos.x;
+          possiblePositionsArray[1] = centerPos.y;
+          possiblePositionsArray[2] = centerPos.z;
+          possibleGeom.attributes.position.needsUpdate = true;
+          possibleGeom.setDrawRange(0, 1);
+          lastPossibleCount = 1;
+          return;
+        }
+
+        const candidates = [];
+        const tries = targetCount * 16;
+
+        for (let i = 0; i < tries; i++){
+          const theta = Math.acos(2 * Math.random() - 1);
+          const phi = Math.random() * Math.PI * 2;
+          const dir = new THREE.Vector3(
+            Math.sin(theta) * Math.cos(phi),
+            Math.cos(theta),
+            Math.sin(theta) * Math.sin(phi)
+          );
+          const radialJitter = (Math.random() * 2 - 1) * spreadBase;
+          const tangentialJitter = (Math.random() * 2 - 1) * spreadBase;
+
+          const p = centerPos.clone().addScaledVector(dir, radialJitter);
+
+          const tangent = new THREE.Vector3().copy(dir).cross(new THREE.Vector3(0.31, 0.86, 0.27));
+          if (tangent.lengthSq() > 1e-8){
+            tangent.normalize();
+            p.addScaledVector(tangent, tangentialJitter * 0.7);
+          }
+
+          const rMin = EARTH_RADIUS + 0.2;
+          const rMax = EARTH_RADIUS + 5.2;
+          const len = p.length();
+          if (len < rMin || len > rMax){
+            p.normalize().multiplyScalar(clamp(len, rMin, rMax));
+          }
+
+          let rms = 0;
+          for (let k = 0; k < activeUsable.length; k++){
+            const s = activeUsable[k];
+            const pred = p.distanceTo(s.pos);
+            const e = pred - s.measuredRange;
+            rms += e * e;
+          }
+          rms = Math.sqrt(rms / activeUsable.length);
+          candidates.push({ p, rms });
+        }
+
+        candidates.sort((a,b)=>a.rms-b.rms);
+        const take = Math.min(targetCount, candidates.length, POSSIBLE_MAX_POINTS);
+
+        for (let i = 0; i < take; i++){
+          const p = candidates[i].p;
+          possiblePositionsArray[i*3 + 0] = p.x;
+          possiblePositionsArray[i*3 + 1] = p.y;
+          possiblePositionsArray[i*3 + 2] = p.z;
+        }
+        possibleGeom.attributes.position.needsUpdate = true;
+        possibleGeom.setDrawRange(0, take);
+        lastPossibleCount = take;
+      }
+
+      function updateAll(dronePos, dt, nowMs){
+        let usableCount = 0;
+        for (const s of satellites){
+          s.distance = s.pos.distanceTo(dronePos);
+          s.los = hasLineOfSight(s.pos, dronePos, EARTH_RADIUS);
+          s.inRange = s.los && s.distance < EFFECTIVE_RADIUS;
+          if (s.inRange) usableCount++;
+        }
+
+        measTick += dt;
+        const refresh = measTick >= 0.5;
+        if (refresh) measTick = 0;
+
+        for (const s of satellites){
+          if (s.inRange){
+            if (refresh || s.measuredRange == null) s.measuredRange = s.pos.distanceTo(dronePos);
+          } else {
+            s.measuredRange = null;
+          }
+        }
+
+        const selectedCount = activeSatIds.size;
+        const selectedMode = activeSatIds.size > 0;
+
+        const activeUsable = satellites
+          .filter(s => activeSatIds.has(s.id) && s.inRange && s.measuredRange != null)
+          .slice(0, MAX_SOLVE_SATS);
+
+        const allEffectiveUsable = satellites
+          .filter(s => s.inRange && s.measuredRange != null)
+          .slice(0, MAX_SOLVE_SATS);
+
+        for (const s of satellites){
+          const isSelected = activeSatIds.has(s.id);
+          const isEffective = s.inRange;
+
+          const sphereOn = (showAllSpheres || manualSphereSatIds.has(s.id)) &&
+                           isEffective &&
+                           (!selectedMode || isSelected) &&
+                           s.measuredRange != null;
+
+          s.pseudoNest.visible = sphereOn;
+          s.sphereLabel.visible = sphereOn;
+
+          if (sphereOn){
+            s.pseudoNest.position.copy(s.pos);
+            const r = Math.max(0.1, s.measuredRange);
+            s.pseudoNest.scale.set(r,r,r);
+
+            const outward = s.pos.clone().normalize().multiplyScalar(1.8);
+            s.sphereLabel.position.copy(s.pos).add(outward);
+          }
+
+          const lineOn = showConnections && isEffective && (!selectedMode || isSelected);
+          s.losLine.visible = lineOn;
+          if (lineOn){
+            s.losLine.geometry.setFromPoints([s.pos, dronePos]);
+            s.losLine.material.color.copy(s.color);
+          }
+
+          let targetOpacity = s.los ? (isEffective ? 1 : 0.58) : 0.28;
+          if (selectedMode && !isSelected) targetOpacity *= 0.55;
+
+          s.model.traverse(obj => {
+            if (obj.isMesh && obj.material){
+              obj.material.transparent = true;
+              obj.material.opacity = targetOpacity;
+            }
+          });
+
+          if (s.labelActive && s.labelActive.material){
+            s.labelActive.visible = isEffective;
+            s.labelActive.material.opacity = isEffective ? 1 : 0;
+          }
+          if (s.labelInactive && s.labelInactive.material){
+            s.labelInactive.visible = !isEffective;
+            s.labelInactive.material.opacity = !isEffective ? Math.max(0.5, targetOpacity) : 0;
+          }
+        }
+
+        let estPos = null;
+        let solveOk = false;
+
+        if (activeUsable.length >= MIN_SOLVE_SATS){
+          const solve = solveTrilateration(activeUsable, lastEstPos, lastClockBias);
+          if (solve.success){
+            solveOk = true;
+            estPos = solve.estPos.clone();
+            lastEstPos.copy(estPos);
+            lastClockBias = solve.clockBias;
+          }
+        }
+
+        const showFix = solveOk && estPos && activeUsable.length >= 4;
+        setFixPointVisible(showFix ? estPos : new THREE.Vector3(), !!showFix);
+
+        const possibleSource = autoDrone
+          ? allEffectiveUsable
+          : (activeSatIds.size > 0 ? activeUsable : allEffectiveUsable);
+
+        possibleTick += dt;
+        if (possibleTick >= 0.28){
+          possibleTick = 0;
+          const center = showFix ? estPos : dronePos;
+          fillPossiblePositions(possibleSource, center);
+        }
+
+        const pulse = 0.5 + 0.5 * Math.sin(nowMs * 0.014);
+        fixCoreMat.opacity = 0.62 + 0.38 * pulse;
+        fixGlowMat.opacity = 0.18 + 0.36 * pulse;
+        fixCoreMat.size = 1.0 + 0.8 * pulse;
+        fixGlowMat.size = 1.8 + 1.6 * pulse;
+
+        const pulse2 = 0.5 + 0.5 * Math.sin(nowMs * 0.012 + 1.7);
+        possibleMat.opacity = 0.35 + 0.45 * pulse2;
+        possibleGlowMat.opacity = 0.12 + 0.24 * pulse2;
+        possibleMat.size = 0.5 + 0.55 * pulse2;
+        possibleGlowMat.size = 0.95 + 0.95 * pulse2;
+
+        for (let i = 0; i < satellites.length; i++){
+          const s = satellites[i];
+          const r = rowRefs[i];
+          const isSelected = activeSatIds.has(s.id);
+          const sphereActive = manualSphereSatIds.has(s.id);
+
+          r.tdUse.textContent = s.inRange ? t('yes') : t('no');
+          r.tdRange.textContent = s.measuredRange == null ? '--' : s.measuredRange.toFixed(2);
+
+          r.tdUse.className = s.inRange ? 'ok' : 'bad';
+          r.tdActive.className = s.inRange ? 'mid' : '';
+
+          r.sphereBtn.disabled = !(s.inRange && isSelected);
+          r.sphereBtn.classList.toggle('on', s.inRange && isSelected && sphereActive);
+          r.sphereBtn.classList.toggle('off', !s.inRange || !isSelected || !sphereActive);
+          r.sphereBtn.textContent = (s.inRange && isSelected && sphereActive) ? t('on') : t('off');
+        }
+
+        updateActiveButtons();
+
+        const displaySelectedCount = selectedMode ? selectedCount : usableCount;
+        const confCount = selectedMode ? activeUsable.length : allEffectiveUsable.length;
+
+        ui.selectedCount.textContent = String(displaySelectedCount);
+        ui.possibleCount.textContent = String(lastPossibleCount);
+        ui.confidenceText.textContent = confidenceFromSolve(confCount);
+      }
+
+      let lastTime = performance.now();
+      let simTime = 0;
+
+      function animate(now){
+        const dt = Math.min((now - lastTime)/1000, 0.05);
+        lastTime = now;
+        simTime += dt;
+
+        if (autoDrone){
+          droneState.latDeg = 25 * Math.sin(simTime * 0.22);
+          droneState.lonDeg = (simTime * 18) % 360 - 180;
+          droneState.alt = 1.0 + 1.1 * (0.5 + 0.5 * Math.sin(simTime * 0.6));
+          syncSliders();
+        }
+
+        if (!satellitesPaused){
+          for (const s of satellites) updateSatellitePosition(s, simTime);
+        }
+
+        earthSpinGroup.rotation.y += dt * EARTH_ROT_SPEED;
+        cloudLayer.rotation.y += dt * (EARTH_ROT_SPEED * 1.35);
+
+        const dronePos = updateDroneModel();
+        updateAll(dronePos, dt, now);
+
+        controls.update();
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      function init(){
+        enableSatelliteSound();
+        syncSliders();
+        updateButtonTexts();
+        applyLanguage();
+        updateActiveButtons();
+
+        for (const s of satellites) updateSatellitePosition(s, 0);
+        const startPos = updateDroneModel();
+        updateAll(startPos, 0.016, performance.now());
+
+        requestAnimationFrame(animate);
+      }
+
+      init();
+    }
+  </script>
+</body>
+</html>
