@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>GNSS Satellite Positioning of Drone</title>
+<title>2D GNSS Satellite Positioning</title>
 <style>
 body { font-family: Arial,sans-serif; margin:0; padding:10px; display:flex; flex-direction:column; align-items:center; min-height:100vh; box-sizing:border-box; }
 h1 { text-align:center; margin:0 0 5px; width:100%; font-size:24px; }
-.header-container { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1200px; margin:0 auto 10px; }
-.header-buttons { display:flex; gap:10px; }
-.container { display:flex; gap:10px; width:100%; max-width:1200px; margin:0 auto; }
+.header-container { display:flex; justify-content:space-between; align-items:center; width:100%; max-width:1200px; margin:0 auto 10px; gap:10px; }
+.header-buttons { display:flex; gap:10px; align-items:center; }
+.container { display:flex; gap:10px; width:100%; max-width:1200px; margin:0 auto; align-items:flex-start; }
 .left-panel { flex:2; display:flex; flex-direction:column; gap:10px; }
 .visualization { position:relative; height:600px; width:100%; }
 canvas { border:1px solid #000; cursor:grab; touch-action:none; width:100%; height:100%; }
@@ -18,15 +18,22 @@ table { border-collapse:collapse; width:100%; table-layout:fixed; }
 th, td { border:1px solid #ddd; padding:2px; text-align:center; height:14px; line-height:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; box-sizing:border-box; }
 th { background-color:#f2f2f2; }
 .satellite-table table th, .satellite-table table td { width:33%; min-width:70px; max-width:1fr; }
-.distance-display { background:#f8f8f8; padding:4.2px; width:60px; text-align:center; display:inline-block; box-sizing:border-box; }
-.right-panel { flex:1; display:flex; flex-direction:column; gap:10px; }
+
+/* --- Compact table sizing so right side height can match left side --- */
+.satellite-table th, .satellite-table td { font-size:11px; padding:1px; height:12px; line-height:12px; }
+.distance-display { background:#f8f8f8; padding:2px; width:56px; text-align:center; display:inline-block; box-sizing:border-box; font-size:11px; }
+
+.right-panel { flex:1; display:flex; flex-direction:column; gap:10px; min-height:0; }
+.satellite-table { flex:1; min-height:0; overflow:auto; }
+
 button { padding:5px 10px; cursor:pointer; width:120px; font-size:14px; box-sizing:border-box; border:none; border-radius:4px; color:white; }
 .button-row-full { display:flex; gap:10px; }
 .button-row-full button { flex:1; background:orange; transition:0.3s; }
 .button-row-full button:hover { background:darkorange; }
 .button-row-three { display:flex; gap:10px; }
 .button-row-three #showAllSatellitesButton, .button-row-three #showEffectiveSatellitesButton { flex:1; }
-.triangleButton { width:60px; height:22px; font-size:12px; margin:1px 0; background:#888; color:white; border-radius:8px; border:none; cursor:pointer; opacity:1; transition:background 0.15s, opacity 0.15s; }
+
+.triangleButton { width:58px; height:20px; font-size:11px; margin:1px 0; background:#888; color:white; border-radius:8px; border:none; cursor:pointer; opacity:1; transition:background 0.15s, opacity 0.15s; }
 .triangleButton.disabled { background:#ccc; color:#888; opacity:0.7; cursor:not-allowed; }
 .triangleButton.on { background: #219c42 !important; color: #fff; font-weight: bold; opacity: 1 !important; }
 .triangleButton.off { background: #888 !important; color: #fff; font-weight: normal; opacity: 1 !important; }
@@ -36,6 +43,11 @@ button { padding:5px 10px; cursor:pointer; width:120px; font-size:14px; box-sizi
 .triangle-detected { background: #b8ffc0 !important; }
 .langButton { background:#4CAF50; }
 .langButton:hover { background:#90EE90; }
+
+/* New 3D button */
+#gnss3DButton { background:#17a2b8; width:auto; min-width:220px; }
+#gnss3DButton:hover { background:#138496; }
+
 #tutorialButton { background:#28a745; }
 #tutorialButton:hover { background:#218838; }
 #resetButton { background:#dc3545; }
@@ -54,19 +66,23 @@ button { padding:5px 10px; cursor:pointer; width:120px; font-size:14px; box-sizi
 .blink { animation:blink 1s infinite; }
 .positioning-header-group { display:flex; align-items:center; gap:4px; margin:4px 0 0 0; justify-content:center; }
 .positioning-header-flex { display: flex; flex-direction: column; align-items: center; justify-content:center; width: 100%; }
-.pos-toggle-btn { width:70px; height:22px; font-size:12px; border-radius:12px; border:none; outline:none; color:white; font-weight:bold; margin:0 1.5px; transition:background 0.2s; padding:0; cursor:pointer; }
+.pos-toggle-btn { width:66px; height:20px; font-size:11px; border-radius:12px; border:none; outline:none; color:white; font-weight:bold; margin:0 1.5px; transition:background 0.2s; padding:0; cursor:pointer; }
 .pos-on { background:#888; color:white; }
 .pos-off { background:#219c42; color:white; }
 .pos-on.active, .pos-off.active { background:#219c42; color:white; box-shadow:0 0 3px #219c4233; }
 .pos-on:not(.active) { background:#888; }
 .pos-off:not(.active) { background:#888; }
+
 @media (max-width:700px) {
 .visualization { height:340px; }
 th, td { font-size:11px; }
-.triangleButton { font-size:10px; width:50px; }
+.satellite-table th, .satellite-table td { font-size:10px; height:11px; line-height:11px; }
+.distance-display { width:50px; font-size:10px; }
+.triangleButton { font-size:10px; width:50px; height:18px; }
 .positioning-header-group { gap:2px; }
 .pos-toggle-btn { width:56px; height:20px; font-size:10px; }
 .satellite-table table th, .satellite-table table td { min-width:50px; }
+#gnss3DButton { min-width:160px; font-size:12px; padding:5px 8px; }
 }
 </style>
 </head>
@@ -79,10 +95,10 @@ th, td { font-size:11px; }
 
 <div class="header-container">
 <h1 id="mainTitle">
-GNSS Satellite Positioning of Drone
-<span style="font-size:16px;font-weight:normal;">(simplified 2D simulation)</span>
+2D GNSS Satellite Positioning
 </h1>
 <div class="header-buttons">
+<button id="gnss3DButton">3D GNSS Simulation</button>
 <button id="langButton" class="langButton">繁體中文</button>
 </div>
 </div>
@@ -368,6 +384,26 @@ canvas.width=viz.clientWidth;
 canvas.height=viz.clientHeight;
 offsetX=canvas.width/2; offsetY=canvas.height/2;
 scale=canvas.width/100;
+}
+
+/* Match right-panel height with left-panel height */
+function syncPanelHeights(){
+const leftPanel = document.querySelector('.left-panel');
+const rightPanel = document.querySelector('.right-panel');
+const satelliteTable = document.querySelector('.satellite-table');
+if(!leftPanel || !rightPanel || !satelliteTable) return;
+
+const leftHeight = leftPanel.offsetHeight;
+rightPanel.style.height = leftHeight + 'px';
+
+const row1 = rightPanel.querySelector('.button-row-full');
+const row2 = rightPanel.querySelector('.button-row-three');
+const gap = 10; // same as right-panel gap
+const usedHeight = (row1 ? row1.offsetHeight : 0) + (row2 ? row2.offsetHeight : 0) + gap * 2;
+const tableHeight = Math.max(120, leftHeight - usedHeight);
+
+satelliteTable.style.height = tableHeight + 'px';
+satelliteTable.style.overflowY = 'auto';
 }
 
 function drawGridAndAxes(){
@@ -700,8 +736,9 @@ simFrame = requestAnimationFrame(animateSimulation);
 
 let isEnglish=true;
 const translations={
-pageTitle:{en:'GPS Satellite Positioning of Drone',zh:'無人機 GNSS 衛星定位'},
-subtitle:{en:'(simplified 2D simulation)',zh:'(簡化二維模擬)'},
+pageTitle:{en:'2D GNSS Satellite Positioning',zh:'2D GNSS 衛星定位'},
+subtitle:{en:'',zh:''},
+simulation3D:{en:'3D GNSS Simulation',zh:'3D GNSS 模擬'},
 showHideAllSatellites:{en:'Show All Satellites',zh:'顯示所有衛星'},
 hideAllSatellites:{en:'Hide All Satellites',zh:'隱藏所有衛星'},
 showEffectiveSatellite:{en:'Show Effective Satellites',zh:'顯示有效衛星'},
@@ -758,6 +795,7 @@ resumeDroneMove:{en:'Resume Drone Move',zh:'恢復無人機移動'}
 
 function updateLanguage(){
 document.getElementById('langButton').textContent = isEnglish?'繁體中文':'English';
+document.getElementById('gnss3DButton').textContent = translations.simulation3D[isEnglish?'en':'zh'];
 document.getElementById('mainTitle').innerHTML =
 `${translations.pageTitle[isEnglish?'en':'zh']} <span style="font-size:16px;font-weight:normal;">${translations.subtitle[isEnglish?'en':'zh']}</span>`;
 document.title = translations.pageTitle[isEnglish?'en':'zh'];
@@ -798,10 +836,14 @@ row.querySelector('td:first-child').textContent=`${i} (${name})`;
 }
 });
 updateVisualization();
+syncPanelHeights();
 }
 
 document.getElementById('langButton').addEventListener('click',()=>{
 isEnglish=!isEnglish; updateLanguage();
+});
+document.getElementById('gnss3DButton').addEventListener('click',()=>{
+window.location.href = 'drone_GNSS_2.html';
 });
 document.getElementById('pauseSatellitesButton').addEventListener('click',()=>{
 satellitesPaused=!satellitesPaused;
@@ -851,6 +893,7 @@ document.getElementById('simulationButton').textContent=
 translations.simulation[isEnglish?'en':'zh'];
 stopAllRadar();
 updateVisualization();
+syncPanelHeights();
 });
 
 // --- Tutorial Modal ---
@@ -935,15 +978,16 @@ posOnBtn.addEventListener('click', ()=>{
 window.addEventListener('resize',()=>{
 updateCanvasDimensions();
 updateVisualization();
+syncPanelHeights();
 });
 
 updateCanvasDimensions();
 updateLanguage();
 animateSatellites();
 updateVisualization();
+syncPanelHeights();
 
 });
 </script>
 </body>
 </html>
-
