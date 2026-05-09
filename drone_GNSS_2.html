@@ -98,6 +98,54 @@
     #threeContainer{ width:100%; height:100%; display:block; }
     #threeContainer canvas{ width:100% !important; height:100% !important; display:block; }
 
+    .canvas-btn{
+      position:absolute;
+      top:10px;
+      right:10px;
+      z-index:30;
+      border:none;
+      border-radius:8px;
+      padding:7px 11px;
+      min-height:0;
+      cursor:pointer;
+      font-size:12px;
+      font-weight:800;
+      color:#fff;
+      background:#1f9d3a;
+      box-shadow:0 3px 10px rgba(0,0,0,0.32);
+    }
+    .canvas-btn:hover{ background:#187d2f; }
+
+    .canvas-loading{
+      position:absolute;
+      inset:0;
+      z-index:25;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#ffffff;
+      font-weight:800;
+      font-size:24px;
+      letter-spacing:0.4px;
+      background:rgba(0,0,0,0.38);
+      pointer-events:none;
+      text-shadow:0 2px 8px rgba(0,0,0,0.55);
+    }
+
+    .canvas-footnote{
+      position:absolute;
+      left:12px;
+      bottom:10px;
+      z-index:20;
+      color:#ffffff;
+      font-size:14px;
+      font-weight:800;
+      letter-spacing:0.3px;
+      text-shadow:0 2px 8px rgba(0,0,0,0.6);
+      user-select:none;
+      pointer-events:none;
+    }
+
     .card{
       border:1px solid var(--border);
       border-radius:10px;
@@ -190,6 +238,9 @@
       margin-top:2px;
       line-height:1.1;
     }
+    .conf-low{ color:#c6342f; }
+    .conf-mid{ color:#1d4ed8; }
+    .conf-high{ color:#1f9d3a; }
 
     .table-wrap{
       border:1px solid var(--border);
@@ -266,7 +317,7 @@
     }
     .tutorial-card{
       width:100%;
-      max-width:700px;
+      max-width:760px;
       max-height:88vh;
       overflow:auto;
       border:1px solid var(--border);
@@ -277,7 +328,29 @@
     }
     .tutorial-title{ margin:0 0 8px 0; font-size:20px; line-height:1.3; }
     .tutorial-sub{ margin:0 0 10px 0; color:var(--muted); font-size:13px; line-height:1.4; }
-    .tutorial-list{ margin:0; padding-left:18px; font-size:14px; line-height:1.55; }
+    .tutorial-sections{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .tutorial-section{
+      border:1px solid #e3ebf5;
+      border-radius:10px;
+      background:#f9fbfe;
+      padding:10px;
+    }
+    .tutorial-section h3{
+      margin:0 0 8px 0;
+      font-size:15px;
+      color:#23364c;
+    }
+    .tutorial-list{
+      margin:0;
+      padding-left:18px;
+      font-size:14px;
+      line-height:1.55;
+    }
+
     .tutorial-actions{ margin-top:12px; display:flex; justify-content:flex-end; }
     .tutorial-close{
       background:var(--blue);
@@ -300,6 +373,7 @@
       .controls{ grid-template-columns:repeat(2,minmax(0,1fr)); }
       .status-grid-3{ grid-template-columns:1fr; }
       .table-wrap{ max-height:360px; flex:0 0 auto; }
+      .canvas-loading{ font-size:20px; }
     }
   </style>
 </head>
@@ -321,6 +395,9 @@
     <section class="left">
       <div class="viz">
         <div id="threeContainer"></div>
+        <div id="loadingOverlay" class="canvas-loading">Loading ...</div>
+        <button id="soundToggleBtn" class="canvas-btn">Sound Off</button>
+        <div class="canvas-footnote">C Y YEUNG, EdUHK</div>
       </div>
     </section>
 
@@ -389,7 +466,7 @@
     <div class="tutorial-card">
       <h2 id="tutorialTitle" class="tutorial-title">Tutorial</h2>
       <p id="tutorialSub" class="tutorial-sub">Quick guide for students</p>
-      <ol id="tutorialList" class="tutorial-list"></ol>
+      <div id="tutorialSections" class="tutorial-sections"></div>
       <div class="tutorial-actions">
         <button id="tutorialCloseBtn" class="tutorial-close">Close</button>
       </div>
@@ -399,12 +476,17 @@
   <script>
     (function bootstrap() {
       const errorBox = document.getElementById('errorBox');
+      const loadingOverlay = document.getElementById('loadingOverlay');
+
       function showError(msg) {
         errorBox.style.display = 'block';
         errorBox.textContent =
           'Could not load required 3D libraries.\n' +
           msg +
           '\n\nIf sandbox blocks CDN files, run this HTML in a local browser.';
+        if (loadingOverlay) {
+          loadingOverlay.textContent = 'Loading failed. Please check CDN/network.';
+        }
       }
       function loadScript(src) {
         return new Promise((resolve, reject) => {
@@ -468,17 +550,32 @@
           tutorialBtn: 'Tutorial',
           tutorialTitle: 'Student Tutorial: How to Read This 3D GNSS Simulation',
           tutorialSub: 'Use this as a learning lab to connect geometry with positioning accuracy.',
-          tutorialSteps: [
-            'Start by watching the scene for 10–15 seconds: satellites move in orbit and Earth rotates. This helps you build spatial intuition.',
-            'Orbit basics: MEO satellites provide strong global geometry, GEO satellites stay over similar longitudes for stable regional coverage, and IGSO satellites add inclined paths that improve geometry over time. Together they support more reliable drone positioning.',
-            'Set the drone in the Drone Location box (Latitude, Longitude, Altitude). These are the true coordinates you are trying to estimate.',
-            'In the table, click satellite IDs to mark them as Selected. Think of selection as choosing which measurements your receiver trusts.',
-            'Use the orbit tags next to each satellite ID (MEO/GEO/IGSO) to compare how different orbit types contribute to coverage and solution stability.',
-            'Read Possible Positions: many points means ambiguity, fewer points means a more constrained solution, and one point means a unique fix.',
-            'Use Active Sphere ON/OFF to inspect each selected satellite’s range sphere. Intersections explain why more good satellites improve certainty.',
-            'Turn on Drone Move to observe dynamic behavior. Notice confidence and possible points changing continuously as geometry evolves.',
-            'Learning checkpoint: compare cases with poor geometry (clustered satellites) versus good geometry (well spread satellites).',
-            'Reset anytime and repeat with a new location to test your hypothesis like a scientist.'
+          tutorialSections: [
+            {
+              title: 'A. Concept Focus: Satellites, Orbits, and Coverage',
+              items: [
+                'Watch for 10–15 seconds first: satellites orbit while Earth rotates. This builds 3D spatial intuition.',
+                'MEO satellites provide broad global geometry, GEO satellites keep stable regional visibility, and IGSO satellites add inclined paths that improve geometry over time.',
+                'Compare orbit tags (MEO/GEO/IGSO) in the table and observe how each orbit family contributes to line-of-sight availability.'
+              ]
+            },
+            {
+              title: 'B. Operational Focus: How to Use the Simulation',
+              items: [
+                'Set Latitude, Longitude, and Altitude in Drone Location to define the drone’s true position.',
+                'Click satellite IDs to connect selected satellites. This models choosing trusted measurements.',
+                'Use “Active Sphere” and “Connections” to visualize range geometry and line-of-sight relationships.',
+                'Use “Drone Move” to observe how dynamic geometry changes the solution in real time.'
+              ]
+            },
+            {
+              title: 'C. Data Interpretation Focus: Confidence and Possible Positions',
+              items: [
+                'Possible Positions indicates ambiguity: many points = weak constraint, fewer points = stronger constraint, one point = unique fix.',
+                'Confidence colour mapping: Low = red, Medium = blue, High = green.',
+                'Learning task: compare poor geometry (clustered satellites) vs. strong geometry (well-distributed satellites), then reset and test another location.'
+              ]
+            }
           ],
           tutorialClose: 'Close',
           langBtn: '中文',
@@ -506,7 +603,10 @@
           no: 'No',
           confHigh: 'High',
           confMid: 'Medium',
-          confLow: 'Low'
+          confLow: 'Low',
+          soundOff: 'Sound Off',
+          soundOn: 'Sound On',
+          loading: 'Loading ...'
         },
         zh: {
           titleMain: '3D GNSS 定位模擬',
@@ -514,17 +614,32 @@
           tutorialBtn: '教學',
           tutorialTitle: '學生教學：如何閱讀這個 3D GNSS 模擬',
           tutorialSub: '把它當成學習實驗室，連結空間幾何與定位準確度。',
-          tutorialSteps: [
-            '先觀察 10–15 秒：衛星繞行、地球自轉，建立三維空間直覺。',
-            '軌道概念：MEO 提供主要全球幾何；GEO 在相近經度上空維持穩定區域覆蓋；IGSO 以傾斜軌道補強幾何變化。三者搭配可提升無人機定位可靠性。',
-            '在「無人機位置」設定緯度、經度與高度，這是你要估算的真實位置。',
-            '在表格點選衛星編號作為「已選衛星」，可理解為接收機採用的量測來源。',
-            '利用衛星編號旁的軌道標籤（MEO/GEO/IGSO），比較不同軌道類型對覆蓋與解穩定性的影響。',
-            '查看「可能位置」：點越多代表歧義越大；點越少代表解越收斂；1 點代表唯一解。',
-            '用 Active Sphere 的 開/關 觀察各衛星量測球，理解球面交會如何形成定位解。',
-            '啟用「無人機移動」看動態變化：當幾何配置改變，可靠度與可能位置會即時變動。',
-            '學習重點：比較「衛星分布集中」與「衛星分布分散」兩種情況的定位差異。',
-            '可隨時重設並重做實驗，用不同位置驗證你的假設。'
+          tutorialSections: [
+            {
+              title: 'A. 概念重點：衛星、軌道與覆蓋',
+              items: [
+                '先觀察 10–15 秒：衛星繞行、地球自轉，建立三維空間直覺。',
+                'MEO 提供主要全球幾何；GEO 在相近經度上空維持穩定區域覆蓋；IGSO 以傾斜軌道補強幾何變化。',
+                '比較表格中的軌道標籤（MEO/GEO/IGSO），觀察不同軌道類型對可視覆蓋的影響。'
+              ]
+            },
+            {
+              title: 'B. 操作重點：如何進行模擬',
+              items: [
+                '在「無人機位置」設定緯度、經度與高度，作為真實位置。',
+                '在表格點選衛星編號以建立連接，模擬接收機採用的量測來源。',
+                '使用「Active Sphere」與「Connections」觀察距離球與視線幾何。',
+                '啟用「無人機移動」觀察動態場景下定位幾何的即時變化。'
+              ]
+            },
+            {
+              title: 'C. 判讀重點：可靠度與可能位置',
+              items: [
+                '「可能位置」點越多代表歧義越大；點越少代表解越收斂；1 點代表唯一解。',
+                '可靠度顏色：低（紅色）、中（藍色）、高（綠色）。',
+                '學習任務：比較「衛星分布集中」與「衛星分布分散」兩種情況，再重設到不同位置驗證假設。'
+              ]
+            }
           ],
           tutorialClose: '關閉',
           langBtn: 'EN',
@@ -552,7 +667,10 @@
           no: '否',
           confHigh: '高',
           confMid: '中',
-          confLow: '低'
+          confLow: '低',
+          soundOff: '關閉聲音',
+          soundOn: '開啟聲音',
+          loading: '載入中 ...'
         }
       };
 
@@ -563,6 +681,8 @@
         sim2dBtn: document.getElementById('sim2dBtn'),
         tutorialBtn: document.getElementById('tutorialBtn'),
         langBtn: document.getElementById('langBtn'),
+        soundToggleBtn: document.getElementById('soundToggleBtn'),
+        loadingOverlay: document.getElementById('loadingOverlay'),
         satPauseBtn: document.getElementById('satPauseBtn'),
         autoDroneBtn: document.getElementById('autoDroneBtn'),
         showSpheresBtn: document.getElementById('showSpheresBtn'),
@@ -592,11 +712,30 @@
         tutorialBackdrop: document.getElementById('tutorialBackdrop'),
         tutorialTitle: document.getElementById('tutorialTitle'),
         tutorialSub: document.getElementById('tutorialSub'),
-        tutorialList: document.getElementById('tutorialList'),
+        tutorialSections: document.getElementById('tutorialSections'),
         tutorialCloseBtn: document.getElementById('tutorialCloseBtn')
       };
 
       let satAudio = null;
+      let soundEnabled = true;
+
+      function updateSoundButtonText() {
+        ui.soundToggleBtn.textContent = soundEnabled ? t('soundOff') : t('soundOn');
+      }
+
+      function setSoundEnabled(enabled) {
+        soundEnabled = enabled;
+        if (satAudio) {
+          if (soundEnabled) {
+            satAudio.muted = false;
+            satAudio.play().catch(() => {});
+          } else {
+            satAudio.pause();
+          }
+        }
+        updateSoundButtonText();
+      }
+
       function enableSatelliteSound() {
         if (satAudio) return;
         satAudio = new Audio('satellite_sound_trim.mp3');
@@ -604,7 +743,7 @@
         satAudio.volume = 0.15;
         satAudio.preload = 'auto';
 
-        const tryPlay = () => satAudio.play().catch(() => {});
+        const tryPlay = () => { if (soundEnabled) satAudio.play().catch(() => {}); };
         tryPlay();
 
         const unlock = () => {
@@ -622,20 +761,39 @@
       function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
       function degToRad(v){ return v * Math.PI / 180; }
       function lerp(a,b,p){ return a + (b-a)*p; }
+      function smoothstep(a,b,x){
+        const t = clamp((x-a)/(b-a),0,1);
+        return t*t*(3-2*t);
+      }
 
       function renderTutorial() {
         ui.tutorialTitle.textContent = t('tutorialTitle');
         ui.tutorialSub.textContent = t('tutorialSub');
         ui.tutorialCloseBtn.textContent = t('tutorialClose');
-        ui.tutorialList.innerHTML = '';
-        const steps = t('tutorialSteps');
-        if (Array.isArray(steps)) {
-          steps.forEach(s => {
+        ui.tutorialSections.innerHTML = '';
+
+        const sections = t('tutorialSections');
+        if (!Array.isArray(sections)) return;
+
+        sections.forEach(sec => {
+          const block = document.createElement('section');
+          block.className = 'tutorial-section';
+
+          const h = document.createElement('h3');
+          h.textContent = sec.title || '';
+          block.appendChild(h);
+
+          const ol = document.createElement('ol');
+          ol.className = 'tutorial-list';
+          (sec.items || []).forEach(item => {
             const li = document.createElement('li');
-            li.textContent = s;
-            ui.tutorialList.appendChild(li);
+            li.textContent = item;
+            ol.appendChild(li);
           });
-        }
+
+          block.appendChild(ol);
+          ui.tutorialSections.appendChild(block);
+        });
       }
 
       function openTutorial(){ renderTutorial(); ui.tutorialBackdrop.style.display = 'flex'; }
@@ -658,7 +816,9 @@
         ui.thUse.textContent = t('thUse');
         ui.thActive.textContent = t('thActive');
         ui.thRange.textContent = t('thRange');
+        ui.loadingOverlay.textContent = t('loading');
         updateButtonTexts();
+        updateSoundButtonText();
         renderTutorial();
       }
 
@@ -807,6 +967,26 @@
         for (let i = 0; i < oct; i++){ v += a * smoothNoise(x * f, y * f); f *= 2; a *= 0.5; }
         return v;
       }
+      function ridge(x, y, oct=6){
+        let v = 0, a = 0.55, f = 1;
+        for (let i = 0; i < oct; i++){
+          const n = smoothNoise(x * f, y * f);
+          v += a * (1 - Math.abs(2*n - 1));
+          f *= 2.02;
+          a *= 0.5;
+        }
+        return clamp(v, 0, 1);
+      }
+      function lonDiff(a,b){
+        let d = Math.abs(a-b) % 360;
+        if (d > 180) d = 360 - d;
+        return d;
+      }
+      function gaussian2(lat, lon, lat0, lon0, sLat, sLon){
+        const dLat = (lat-lat0)/sLat;
+        const dLon = lonDiff(lon, lon0)/sLon;
+        return Math.exp(-(dLat*dLat + dLon*dLon));
+      }
 
       function drawContinentMask(ctx, w, h){
         function llToXY(lat, lon){ return [(lon + 180) / 360 * w, (90 - lat) / 180 * h]; }
@@ -816,20 +996,65 @@
             const [x, y] = llToXY(points[i][0], points[i][1]);
             if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
           }
-          ctx.closePath(); ctx.fill();
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
         }
-        ctx.fillStyle = '#fff';
-        poly([[72,-167],[70,-145],[66,-125],[60,-110],[52,-100],[48,-92],[42,-85],[33,-80],[24,-98],[18,-105],[20,-120],[27,-130],[40,-140],[52,-150],[62,-165]]);
-        poly([[82,-73],[78,-50],[72,-35],[63,-42],[60,-52],[65,-62],[74,-68]]);
-        poly([[12,-81],[5,-77],[-6,-73],[-16,-70],[-28,-66],[-40,-63],[-53,-60],[-55,-49],[-43,-40],[-30,-46],[-16,-53],[-3,-60],[9,-70]]);
-        poly([[72,-10],[70,15],[66,40],[62,70],[58,95],[54,120],[50,145],[46,165],[40,150],[35,130],[32,110],[35,90],[40,70],[46,55],[52,40],[56,25],[60,5],[56,-10],[50,-20],[45,-5],[42,15],[38,30],[34,45],[30,60],[28,75],[30,90],[34,105],[40,115],[44,125],[42,140],[35,150],[28,140],[20,120],[15,100],[20,80],[24,60],[30,40],[35,20],[42,5],[48,-5],[56,-15],[64,-20]]);
-        poly([[37,-17],[33,0],[30,12],[25,23],[18,32],[8,39],[-4,42],[-17,39],[-27,31],[-34,22],[-35,10],[-30,1],[-18,-5],[-6,-10],[7,-13],[22,-14],[31,-15]]);
-        poly([[28,34],[24,48],[18,56],[12,52],[14,44],[20,38]]);
-        poly([[25,70],[20,78],[12,83],[8,78],[12,72],[18,68]]);
-        poly([[10,95],[6,105],[0,112],[-5,116],[-8,108],[-2,98],[4,92]]);
-        poly([[-11,112],[-18,118],[-24,130],[-30,142],[-35,151],[-42,146],[-44,134],[-40,122],[-34,114],[-25,110],[-16,111]]);
-        poly([[-13,48],[-18,50],[-24,49],[-26,45],[-20,43],[-15,45]]);
-        poly([[-70,-180],[-74,-140],[-76,-100],[-78,-60],[-79,-20],[-79,20],[-78,60],[-76,100],[-74,140],[-70,180]]);
+
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = 'rgba(255,255,255,0.98)';
+        ctx.lineWidth = 1.3;
+        ctx.lineJoin = 'round';
+
+        // North America
+        poly([
+          [72,-168],[70,-158],[68,-148],[66,-140],[63,-132],[60,-124],[57,-118],[54,-112],[51,-106],[48,-100],
+          [45,-94],[42,-88],[39,-83],[36,-79],[33,-77],[30,-79],[27,-83],[24,-88],[22,-94],[20,-100],[19,-108],
+          [20,-116],[22,-123],[25,-130],[29,-136],[33,-142],[39,-149],[45,-155],[53,-160],[61,-164],[68,-167]
+        ]);
+        // Greenland
+        poly([[82,-73],[80,-62],[78,-50],[75,-40],[71,-35],[67,-40],[64,-48],[64,-57],[67,-65],[72,-70],[77,-73]]);
+        // South America
+        poly([
+          [12,-81],[9,-79],[6,-76],[2,-73],[-3,-70],[-8,-68],[-13,-66],[-18,-64],[-24,-62],[-30,-60],[-36,-58],
+          [-42,-56],[-48,-54],[-54,-50],[-55,-44],[-53,-40],[-49,-38],[-44,-37],[-39,-38],[-34,-41],[-29,-45],
+          [-24,-49],[-19,-53],[-14,-56],[-9,-60],[-4,-64],[2,-69],[7,-74],[11,-78]
+        ]);
+        // Europe
+        poly([
+          [71,-10],[71,0],[70,9],[69,18],[67,26],[64,33],[61,37],[58,34],[55,29],[53,22],[51,16],[49,10],[47,4],
+          [46,-2],[47,-8],[50,-11],[55,-13],[61,-13],[67,-12]
+        ]);
+        // Africa
+        poly([
+          [37,-17],[35,-10],[33,-2],[31,6],[29,14],[26,21],[22,28],[17,33],[11,37],[5,40],[-2,42],[-9,41],[-16,38],
+          [-22,33],[-27,28],[-31,22],[-34,16],[-35,9],[-34,2],[-31,-2],[-27,-5],[-22,-7],[-16,-9],[-10,-11],[-3,-12],
+          [5,-13],[13,-14],[21,-15],[29,-15],[34,-16]
+        ]);
+        // Asia (main)
+        poly([
+          [77,26],[76,36],[75,46],[74,58],[73,70],[72,82],[70,95],[68,108],[65,121],[62,134],[58,147],[53,159],[48,170],
+          [43,177],[37,171],[34,162],[32,152],[31,142],[30,130],[30,118],[31,106],[33,94],[35,84],[38,74],[42,64],[46,56],
+          [50,49],[54,43],[58,38],[63,34],[69,30],[74,27]
+        ]);
+        // India
+        poly([[29,69],[26,75],[23,80],[19,84],[15,81],[14,75],[16,70],[20,67],[24,66]]);
+        // SEA + Indonesia (coarse islands)
+        poly([[15,95],[12,103],[8,110],[3,115],[-2,114],[-5,108],[-3,100],[2,95],[8,92]]);
+        poly([[-7,106],[-10,112],[-7,118],[-3,120],[1,116],[-1,110]]);
+        poly([[-1,118],[-4,124],[-2,130],[2,132],[5,128],[3,121]]);
+        // Japan/Korea
+        poly([[45,129],[42,133],[38,136],[35,138],[33,134],[36,130],[40,127]]);
+        // Australia
+        poly([[-11,112],[-16,114],[-21,118],[-26,124],[-31,132],[-34,140],[-34,148],[-30,154],[-24,154],[-18,150],[-13,144],[-11,136],[-10,126]]);
+        // Madagascar
+        poly([[-13,48],[-17,50],[-22,49],[-25,46],[-23,43],[-18,43],[-14,45]]);
+        // Antarctica
+        poly([
+          [-66,-180],[-68,-165],[-70,-150],[-72,-135],[-74,-120],[-75,-105],[-76,-90],[-77,-75],[-78,-60],[-78,-45],
+          [-79,-30],[-79,-15],[-79,0],[-79,15],[-79,30],[-78,45],[-78,60],[-77,75],[-76,90],[-75,105],[-74,120],[-72,135],[-70,150],[-68,165],[-66,180]
+        ]);
       }
 
       function createNormalFromHeight(heightData, w, h, strength){
@@ -864,6 +1089,7 @@
 
       function createEarthTextures(){
         const w = 2048, h = 1024;
+
         const mapCanvas = document.createElement('canvas'); mapCanvas.width = w; mapCanvas.height = h;
         const mapCtx = mapCanvas.getContext('2d');
         const bumpCanvas = document.createElement('canvas'); bumpCanvas.width = w; bumpCanvas.height = h;
@@ -875,88 +1101,154 @@
         const normalCanvas = document.createElement('canvas'); normalCanvas.width = w; normalCanvas.height = h;
         const normalCtx = normalCanvas.getContext('2d');
 
+        // Ocean base gradient
         const oceanGrad = mapCtx.createLinearGradient(0, 0, 0, h);
-        oceanGrad.addColorStop(0, '#0f3b64');
-        oceanGrad.addColorStop(0.33, '#155889');
-        oceanGrad.addColorStop(0.67, '#124b79');
-        oceanGrad.addColorStop(1, '#0b3155');
+        oceanGrad.addColorStop(0, '#0b355c');
+        oceanGrad.addColorStop(0.32, '#125180');
+        oceanGrad.addColorStop(0.66, '#0f4672');
+        oceanGrad.addColorStop(1, '#082c4d');
         mapCtx.fillStyle = oceanGrad;
         mapCtx.fillRect(0, 0, w, h);
 
+        // Land mask
         const maskCanvas = document.createElement('canvas');
         maskCanvas.width = w; maskCanvas.height = h;
         const maskCtx = maskCanvas.getContext('2d');
         drawContinentMask(maskCtx, w, h);
+        const mask = maskCtx.getImageData(0,0,w,h).data;
 
         const mapImg = mapCtx.getImageData(0,0,w,h);
         const bumpImg = bumpCtx.createImageData(w,h);
         const specImg = specCtx.createImageData(w,h);
         const cloudImg = cloudCtx.createImageData(w,h);
-        const mask = maskCtx.getImageData(0,0,w,h).data;
+
+        function isLandAt(px, py){
+          const x = (px + w) % w;
+          const y = clamp(py, 0, h - 1);
+          return mask[(y * w + x) * 4 + 3] > 10;
+        }
+
+        function nearCoast(px, py){
+          if (isLandAt(px, py)) return false;
+          for (let dy = -2; dy <= 2; dy++){
+            for (let dx = -2; dx <= 2; dx++){
+              if (isLandAt(px + dx, py + dy)) return true;
+            }
+          }
+          return false;
+        }
 
         for (let y = 0; y < h; y++){
           const lat = 90 - (y / h) * 180;
           const latAbs = Math.abs(lat) / 90;
+
           for (let x = 0; x < w; x++){
             const i = (y * w + x) * 4;
+            const lon = (x / w) * 360 - 180;
             const nx = x / w, ny = y / h;
             const isLand = mask[i + 3] > 10;
 
-            const nBase = fbm(nx * 3.0, ny * 3.0, 7);
-            const nDetail = fbm(nx * 16.0 + 3.1, ny * 16.0 - 8.7, 6);
-            const nMicro = fbm(nx * 38.0 - 7.2, ny * 38.0 + 5.4, 5);
-            const trench = fbm(nx * 7.2 + 12.8, ny * 7.2 - 19.6, 5);
-            const moisture = fbm(nx * 5.4 + 18.3, ny * 5.4 - 10.2, 6);
+            // Noise fields
+            const nBase = fbm(nx * 2.8, ny * 2.8, 7);
+            const nDetail = fbm(nx * 12.5 + 5.1, ny * 12.5 - 3.6, 6);
+            const nMicro = fbm(nx * 34.0 - 2.3, ny * 34.0 + 9.4, 5);
+            const nMoist = fbm(nx * 5.0 + 13.7, ny * 5.0 - 8.9, 6);
+            const rNoise = ridge(nx * 18.0 + 2.1, ny * 18.0 - 1.4, 5);
 
             let r,g,b,bumpV,specV;
 
+            // Broad mountain chain fields (to improve realism)
+            const andes = gaussian2(lat, lon, -20, -72, 22, 8);
+            const rockies = gaussian2(lat, lon, 43, -112, 18, 12);
+            const himalaya = gaussian2(lat, lon, 30, 85, 8, 16);
+            const alps = gaussian2(lat, lon, 46, 10, 4.5, 6);
+            const eastAfrica = gaussian2(lat, lon, 7, 36, 10, 7);
+            const australiaRange = gaussian2(lat, lon, -27, 147, 12, 8);
+            const antarcticRidge = gaussian2(lat, lon, -80, 160, 5, 45);
+
+            const mountainField = clamp(
+              0.95*himalaya + 0.85*andes + 0.75*rockies + 0.52*alps + 0.45*eastAfrica + 0.35*australiaRange + 0.4*antarcticRidge
+              + 0.35*rNoise, 0, 1
+            );
+
             if (isLand){
-              const mountain = clamp(0.40*nDetail + 0.60*nMicro,0,1);
-              const desert = moisture < 0.31 && latAbs < 0.48;
-              const snow = latAbs > 0.77 || (mountain > 0.80 && latAbs > 0.35);
+              const humidity = clamp(0.55*nMoist + 0.45*(1 - latAbs), 0, 1);
+              const desertBand = (latAbs > 0.18 && latAbs < 0.48) ? 1 : 0;
+              const desertness = desertBand * (1 - humidity) * (1 - mountainField) * 1.2;
+              const snow = (latAbs > 0.74) || (mountainField > 0.62 && latAbs > 0.28);
 
               if (snow){
-                r = 233; g = 238; b = 243;
-              } else if (desert){
-                r = 181; g = 152; b = 104;
-              } else if (mountain > 0.73){
-                r = 122; g = 123; b = 120;
-              } else if (moisture > 0.62){
-                r = 67; g = 127; b = 76;
+                r = 232; g = 238; b = 245;
+              } else if (desertness > 0.45){
+                r = 194; g = 163; b = 112;
+              } else if (mountainField > 0.58){
+                r = 122; g = 124; b = 122;
+              } else if (humidity > 0.62){
+                r = 69; g = 128; b = 74;
               } else {
-                r = 95; g = 136; b = 84;
+                r = 102; g = 137; b = 88;
               }
 
-              const relief = Math.floor((nMicro - 0.5) * 62 + (nDetail - 0.5) * 45);
+              const relief = Math.floor((nMicro - 0.5) * 54 + (nDetail - 0.5) * 40 + mountainField * 18);
               r = clamp(r + relief, 0, 255);
               g = clamp(g + relief, 0, 255);
               b = clamp(b + relief, 0, 255);
 
-              bumpV = clamp(105 + mountain * 130 + nMicro * 46, 0, 255);
-              specV = 20;
+              // coastal greener fringe on land
+              let coastLandBoost = 0;
+              for (let dy = -1; dy <= 1; dy++){
+                for (let dx = -1; dx <= 1; dx++){
+                  if (!isLandAt(x + dx, y + dy)) coastLandBoost += 1;
+                }
+              }
+              if (coastLandBoost > 0){
+                g = clamp(g + 6, 0, 255);
+                b = clamp(b + 2, 0, 255);
+              }
+
+              bumpV = clamp(95 + mountainField * 145 + nMicro * 36 + rNoise * 28, 0, 255);
+              specV = clamp(12 + (snow ? 18 : 0), 0, 255);
             } else {
-              const abyss = clamp(0.55*nBase + 0.45*trench,0,1);
-              r = clamp(10 + nBase * 18 - abyss * 8, 0, 255);
-              g = clamp(52 + nBase * 62 - abyss * 12, 0, 255);
-              b = clamp(96 + nBase * 80 - abyss * 16, 0, 255);
+              // Ocean depth + shelves
+              const abyssNoise = clamp(0.50*nBase + 0.30*nDetail + 0.20*ridge(nx*9.2, ny*9.2, 4), 0, 1);
+              const isShelf = nearCoast(x, y);
+              const shelfBoost = isShelf ? 0.28 : 0;
 
-              const waveBand = Math.sin((ny * Math.PI * 14) + nDetail * 4.5) * 3;
-              r = clamp(r + waveBand + (nMicro - 0.5) * 12, 0, 255);
-              g = clamp(g + waveBand + (nMicro - 0.5) * 16, 0, 255);
-              b = clamp(b + waveBand + (nMicro - 0.5) * 22, 0, 255);
+              const depth = clamp(0.1 + abyssNoise * 0.95 - shelfBoost, 0, 1);
 
-              bumpV = clamp(36 + nDetail * 24 + nMicro * 22, 0, 255);
-              specV = clamp(160 + (1 - abyss) * 78, 0, 255);
+              // richer ocean colors
+              const baseR = 8 + (1 - depth) * 18;
+              const baseG = 45 + (1 - depth) * 52;
+              const baseB = 88 + (1 - depth) * 82;
+
+              // currents/waves texture
+              const current = Math.sin((ny * Math.PI * 18) + nDetail * 6.5 + nx * 12) * 2.8;
+              const microWave = (nMicro - 0.5) * 18;
+
+              r = clamp(baseR + current + microWave * 0.4, 0, 255);
+              g = clamp(baseG + current + microWave * 0.8, 0, 255);
+              b = clamp(baseB + current + microWave, 0, 255);
+
+              // shallow coastal tint
+              if (isShelf){
+                r = clamp(r + 8, 0, 255);
+                g = clamp(g + 18, 0, 255);
+                b = clamp(b + 16, 0, 255);
+              }
+
+              bumpV = clamp(28 + (1 - depth) * 20 + nDetail * 18 + nMicro * 15, 0, 255);
+              specV = clamp(155 + (1 - depth) * 90, 0, 255);
             }
 
             mapImg.data[i] = r; mapImg.data[i+1] = g; mapImg.data[i+2] = b; mapImg.data[i+3] = 255;
             bumpImg.data[i] = bumpV; bumpImg.data[i+1] = bumpV; bumpImg.data[i+2] = bumpV; bumpImg.data[i+3] = 255;
             specImg.data[i] = specV; specImg.data[i+1] = specV; specImg.data[i+2] = specV; specImg.data[i+3] = 255;
 
-            const cloudN = fbm(nx * 5.2 + 11.2, ny * 5.2 - 7.3, 6);
-            const cloudDetail = fbm(nx * 20.0 - 4.7, ny * 20.0 + 2.6, 5);
-            const cloudMix = 0.58 * cloudN + 0.42 * cloudDetail;
-            const cloudAlpha = clamp((cloudMix - 0.56) * 430, 0, 205);
+            // Clouds
+            const c1 = fbm(nx * 5.3 + 10.7, ny * 5.3 - 6.9, 6);
+            const c2 = fbm(nx * 19.0 - 4.2, ny * 19.0 + 2.1, 5);
+            const cloudMix = 0.58*c1 + 0.42*c2;
+            const cloudAlpha = clamp((cloudMix - 0.56) * 430, 0, 210);
             cloudImg.data[i] = 255;
             cloudImg.data[i+1] = 255;
             cloudImg.data[i+2] = 255;
@@ -964,7 +1256,7 @@
           }
         }
 
-        const normalData = createNormalFromHeight(bumpImg.data, w, h, 4.2);
+        const normalData = createNormalFromHeight(bumpImg.data, w, h, 4.7);
         const normalImg = normalCtx.createImageData(w, h);
         normalImg.data.set(normalData);
 
@@ -1165,12 +1457,12 @@
         new THREE.MeshPhongMaterial({
           map: tex.mapTex,
           bumpMap: tex.bumpTex,
-          bumpScale: 0.78,
+          bumpScale: 0.86,
           normalMap: tex.normalTex,
-          normalScale: new THREE.Vector2(0.72, 0.72),
+          normalScale: new THREE.Vector2(0.84, 0.84),
           specularMap: tex.specTex,
           specular: new THREE.Color(0x3a5573),
-          shininess: 33,
+          shininess: 36,
           transparent: true,
           opacity: 0.5,
           depthWrite: false
@@ -1489,6 +1781,10 @@
       ui.lonSlider.addEventListener('input', updateDroneFromUI);
       ui.altSlider.addEventListener('input', updateDroneFromUI);
 
+      ui.soundToggleBtn.addEventListener('click', () => {
+        setSoundEnabled(!soundEnabled);
+      });
+
       ui.satPauseBtn.addEventListener('click', () => {
         satellitesPaused = !satellitesPaused;
         updateButtonTexts();
@@ -1591,9 +1887,9 @@
       }
 
       function confidenceFromSolve(activeCount){
-        if (activeCount >= 8) return t('confHigh');
-        if (activeCount >= 4) return t('confMid');
-        return t('confLow');
+        if (activeCount >= 8) return { text: t('confHigh'), level: 'high' };
+        if (activeCount >= 4) return { text: t('confMid'), level: 'mid' };
+        return { text: t('confLow'), level: 'low' };
       }
 
       let lastEstPos = new THREE.Vector3(0, 0, EARTH_RADIUS + 2);
@@ -1855,10 +2151,15 @@
 
         const displaySelectedCount = selectedMode ? selectedCount : usableCount;
         const confCount = selectedMode ? activeUsable.length : allEffectiveUsable.length;
+        const conf = confidenceFromSolve(confCount);
 
         ui.selectedCount.textContent = String(displaySelectedCount);
         ui.possibleCount.textContent = String(lastPossibleCount);
-        ui.confidenceText.textContent = confidenceFromSolve(confCount);
+        ui.confidenceText.textContent = conf.text;
+        ui.confidenceText.classList.remove('conf-low', 'conf-mid', 'conf-high');
+        if (conf.level === 'high') ui.confidenceText.classList.add('conf-high');
+        else if (conf.level === 'mid') ui.confidenceText.classList.add('conf-mid');
+        else ui.confidenceText.classList.add('conf-low');
       }
 
       let lastTime = performance.now();
@@ -1897,11 +2198,13 @@
         updateButtonTexts();
         applyLanguage();
         updateActiveButtons();
+        updateSoundButtonText();
 
         for (const s of satellites) updateSatellitePosition(s, 0);
         const startPos = updateDroneModel();
         updateAll(startPos, 0.016, performance.now());
 
+        ui.loadingOverlay.style.display = 'none';
         requestAnimationFrame(animate);
       }
 
