@@ -204,6 +204,7 @@
         <button onclick="showApp('app2', this)" id="btn-gps">Satellite Positioning</button>
         <button onclick="showApp('app3', this)" id="btn-movement">Movement Principle</button>
         <button onclick="showApp('app4', this)" id="btn-virtual">Virtual Flight</button>
+        <button onclick="showApp('app16', this)" id="btn-propeller">Propeller Configuration</button>
         <button onclick="showApp('app5', this)" id="btn-quadphysics">QuadPhysics</button>
         <button onclick="showApp('app6', this)" id="btn-concept">Concept Assessment</button>
       </div>
@@ -250,6 +251,7 @@
   <div id="app2"          class="app"><iframe src=""></iframe></div>
   <div id="app3"          class="app"><iframe src=""></iframe></div>
   <div id="app4"          class="app"><iframe src=""></iframe></div>
+  <div id="app16"         class="app"><iframe src=""></iframe></div>
   <div id="app5"          class="app"><iframe src=""></iframe></div>
   <div id="app6"          class="app"><iframe src=""></iframe></div>
   <div id="app7"          class="app"><iframe src=""></iframe></div>
@@ -280,6 +282,7 @@
           gps: 'Satellite Positioning',
           movement: 'Movement Principle',
           virtual: 'Virtual Flight',
+          propeller: 'Propeller Configuration',
           quadphysics: 'QuadPhysics',
           concept: 'Concept Assessment',
           motionspeed: 'Motion & Speed',
@@ -308,6 +311,7 @@
           gps: '衛星定位',
           movement: '運動原理',
           virtual: '虛擬飛行',
+          propeller: '螺旋槳配置',
           quadphysics: '四軸機物理',
           concept: '概念評估',
           motionspeed: '運動與速度',
@@ -331,6 +335,7 @@
       'app2':          'drone_GNSS_2.html',
       'app3':          '002_control.html',
       'app4':          '002a_flight.html',
+      'app16':         'propellers_install.html',
       'app5':          '003_force.html',
       'app6':          '003a_forcepair.html',
       'app7':          '004_Hor_Speed.html',
@@ -366,6 +371,7 @@
       document.getElementById('btn-gps').textContent = lang.buttons.gps;
       document.getElementById('btn-movement').textContent = lang.buttons.movement;
       document.getElementById('btn-virtual').textContent = lang.buttons.virtual;
+      document.getElementById('btn-propeller').textContent = lang.buttons.propeller;
       document.getElementById('btn-quadphysics').textContent = lang.buttons.quadphysics;
       document.getElementById('btn-concept').textContent = lang.buttons.concept;
       document.getElementById('btn-motionspeed').textContent = lang.buttons.motionspeed;
@@ -440,7 +446,3 @@
   </script>
 </body>
 </html>
-
-
-
-
