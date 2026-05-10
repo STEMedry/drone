@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quadcopter - Scientific Inquiry Simulator</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #ffffff;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    #app {
+      width: 100%;
+      height: 100%;
+      touch-action: none;
+    }
+
+    .title {
+      position: fixed;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 33;
+      border: 1px solid #d1d5db;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 28px; /* 1.8x of 20px */
+      font-weight: 900;
+      color: #111827;
+      text-align: center;
+      max-width: min(92vw, 980px);
+      line-height: 1.2;
+    }
+
+    .instruction {
+      position: fixed;
+      top: 72px; /* doubled spacing from title area */
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 32;
+      border: 1px solid #d1d5db;
+      background: rgba(255, 255, 255, 0.96);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 16px;
+      font-weight: 700;
+      color: #111827;
+      text-align: center;
+      max-width: min(92vw, 980px);
+      line-height: 1.35;
+    }
+
+    .top-controls {
+      position: fixed;
+      top: 8px;       /* moved up */
+      right: 10px;    /* top-right corner */
+      z-index: 34;
+      display: flex;
+      gap: 8px;
+      flex-wrap: nowrap;
+      justify-content: flex-end;
+      max-width: calc(100vw - 20px);
+    }
+
+    .top-controls .ui-btn {
+      background: #16a34a;
+      color: #ffffff;
+      border-color: #15803d;
+      min-width: 132px;
+    }
+
+    #tutorialBtn {
+      min-width: 92px;   /* reduced width */
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+
+    .top-controls .ui-btn:hover { background: #15803d; }
+
+    .mission-box {
+      position: fixed;
+      top: 62px; /* moved up accordingly */
+      right: 12px;
+      z-index: 31;
+      display: none;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .mission-progress {
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+    }
+
+    .mission-completed {
+      border: 1px solid #1d4ed8;
+      background: #2563eb;
+      color: #ffffff;
+      box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-wrap {
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: calc(100vw - 28px);
+    }
+
+    .ui-btn {
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      min-width: 148px;
+      text-align: center;
+    }
+
+    .ui-btn:hover { background: #f9fafb; }
+    .ui-btn:active { transform: translateY(1px); }
+
+    .ui-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .action-pill {
+      border: 1px solid #d1d5db;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 10px 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      color: #111827;
+      font-size: 14px;
+      line-height: 1.3;
+      font-weight: 700;
+      min-height: 20px;
+      min-width: 148px;
+      text-align: center;
+    }
+
+    .action-pill.highlight {
+      background: rgba(254, 240, 138, 0.95);
+      border-color: #eab308;
+      color: #78350f;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: 88px;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: #111827;
+      color: #ffffff;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s ease;
+      max-width: min(92vw, 560px);
+      text-align: center;
+    }
+
+    .toast.show { opacity: 1; }
+
+    .congrats {
+      position: fixed;
+      z-index: 45;
+      top: 54px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22, 163, 74, 0.95);
+      color: #ffffff;
+      border: 2px solid rgba(255,255,255,0.9);
+      border-radius: 14px;
+      padding: 10px 14px;
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.25;
+      text-align: center;
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.28);
+      display: none;
+      max-width: min(92vw, 880px);
+      pointer-events: none;
+    }
+
+    .quiz-panel {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 42;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.99);
+      box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
+      padding: 10px;
+      display: none;
+      overflow: hidden;
+    }
+
+    .quiz-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .quiz-headline {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      min-width: 0;
+      flex-wrap: nowrap;
+      overflow: hidden;
+    }
+
+    .quiz-title {
+      margin: 0;
+      font-size: 17px;
+      color: #111827;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .quiz-sub-inline {
+      margin: 0;
+      font-size: 13px;
+      color: #6b7280;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .quiz-close {
+      border: 1px solid #d1d5db;
+      background: #ffffff;
+      color: #111827;
+      font-weight: 900;
+      font-size: 16px;
+      line-height: 1;
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      cursor: pointer;
+      flex: 0 0 auto;
+    }
+
+    .quiz-close:hover { background: #f3f4f6; }
+
+    .quiz-table-wrap {
+      border: 1px solid #e5e7eb;
+      border-radius: 8px;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    .quiz-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      font-size: 12px;
+    }
+
+    .quiz-table th, .quiz-table td {
+      border: 1px solid #e5e7eb;
+      padding: 4px 4px;
+      text-align: center;
+      color: #111827;
+      white-space: normal;
+      line-height: 1.2;
+      height: 34px;
+    }
+
+    .quiz-table th:first-child,
+    .quiz-table td:first-child {
+      text-align: left;
+      width: 82px;
+      font-weight: 700;
+      padding-left: 8px;
+    }
+
+    .quiz-cell-correct { background: #dcfce7; color: #166534; font-weight: 700; }
+    .quiz-cell-wrong { background: #fee2e2; color: #991b1b; font-weight: 700; }
+
+    .quiz-select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      padding: 2px 3px;
+      background: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      color: #111827;
+      height: 24px;
+    }
+
+    .quiz-final {
+      margin-top: 8px;
+      border-radius: 8px;
+      border: 1px solid #bbf7d0;
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 800;
+      padding: 8px 10px;
+      display: none;
+      font-size: 13px;
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.5);
+      padding: 16px;
+    }
+
+    .modal.show { display: flex; }
+
+    .modal-card {
+      width: min(760px, 100%);
+      max-height: min(92vh, 760px);
+      overflow: auto;
+      background: #ffffff;
+      border-radius: 14px;
+      border: 1px solid #d1d5db;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+      padding: 14px;
+    }
+
+    .modal-title {
+      margin: 0 0 10px 0;
+      font-size: 19px;
+      color: #111827;
+    }
+
+    .step-meta {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .step-box {
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 12px;
+      line-height: 1.45;
+      color: #111827;
+      background: #f9fafb;
+      white-space: pre-line;
+    }
+
+    .modal-footer {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    @media (max-width: 860px) {
+      .title {
+        top: 6px;
+        font-size: 28px; /* scaled up on mobile too */
+        padding: 8px 10px;
+        max-width: calc(100vw - 16px);
+      }
+
+      .instruction {
+        top: 102px; /* doubled spacing preserved on mobile */
+        font-size: 16px;
+        padding: 7px 10px;
+        max-width: calc(100vw - 16px);
+      }
+
+      .top-controls {
+        top: 6px;
+        right: 8px;
+        gap: 6px;
+      }
+
+      .top-controls .ui-btn {
+        min-width: 116px;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      #tutorialBtn {
+        min-width: 82px;
+      }
+
+      .mission-box {
+        top: 46px;
+      }
+
+      .quiz-table { font-size: 10px; }
+      .quiz-table th, .quiz-table td { padding: 2px 2px; height: 30px; }
+      .quiz-select { font-size: 10px; height: 22px; }
+      .quiz-title { font-size: 14px; }
+      .quiz-sub-inline { font-size: 11px; }
+      .quiz-table th:first-child,
+      .quiz-table td:first-child { width: 66px; }
+
+      .ui-btn {
+        min-width: 132px;
+        padding: 9px 12px;
+        font-size: 13px;
+      }
+
+      .action-pill {
+        min-width: 132px;
+        font-size: 13px;
+        padding: 9px 10px;
+      }
+
+      .toast { bottom: 78px; font-size: 13px; }
+      .congrats { top: 58px; font-size: 15px; padding: 9px 10px; }
+    }
+  </style>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.161.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.161.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app"></div>
+
+  <div id="titleBar" class="title"></div>
+  <div id="instructionBar" class="instruction"></div>
+
+  <div class="top-controls">
+    <button id="tutorialBtn" class="ui-btn">Tutorial</button>
+    <button id="langBtn" class="ui-btn">English / 繁中</button>
+  </div>
+
+  <div id="missionProgressBox" class="mission-box mission-progress">Mission in progress</div>
+  <div id="missionBox" class="mission-box mission-completed">Mission Completed</div>
+
+  <div class="btn-wrap">
+    <div id="actionPill" class="action-pill">None</div>
+    <button id="flightBtn" class="ui-btn">Take off</button>
+    <button id="detachBtn" class="ui-btn">Propeller detached</button>
+    <button id="colorBtn" class="ui-btn">Colour</button>
+  </div>
+
+  <div id="toast" class="toast"></div>
+  <div id="congrats" class="congrats"></div>
+
+  <div id="quizPanel" class="quiz-panel">
+    <div class="quiz-head">
+      <div class="quiz-headline">
+        <h3 id="quizTitle" class="quiz-title"></h3>
+        <p id="quizSub" class="quiz-sub-inline"></p>
+      </div>
+      <button id="quizCloseBtn" class="quiz-close" aria-label="Close">✕</button>
+    </div>
+    <div class="quiz-table-wrap">
+      <table class="quiz-table">
+        <thead>
+          <tr id="quizHeadRow"></tr>
+        </thead>
+        <tbody id="quizBody"></tbody>
+      </table>
+    </div>
+    <div id="quizFinal" class="quiz-final"></div>
+  </div>
+
+  <div id="tutorialModal" class="modal" role="dialog" aria-modal="true" aria-label="Tutorial">
+    <div class="modal-card">
+      <h2 id="tutorialTitle" class="modal-title">Scientific Method Tutorial</h2>
+      <div id="tutorialStepMeta" class="step-meta"></div>
+      <div id="tutorialStepText" class="step-box"></div>
+      <div class="modal-footer">
+        <button id="prevStepBtn" class="ui-btn">Previous</button>
+        <button id="nextStepBtn" class="ui-btn">Next</button>
+        <button id="closeTutorialBtn" class="ui-btn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+    import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+
+    const I18N = {
+      en: {
+        title: "Propeller Configuration & Scientific Inquiry",
+        tutorial: "Tutorial",
+        languageToggle: "English / 繁中",
+        takeoff: "Take off",
+        land: "Land",
+        landing: "Landing...",
+        detached: "Propeller detached",
+        colour: "Colour",
+        instruction: "Drag propellers to motors, press Take off to test, and complete the table after success.",
+        actionNone: "None",
+        msgCongrats: "🎉 Great job! Correct setup verified and successful takeoff!",
+        msgSingleObserve: "Observation mode: one propeller spins for 3 seconds, then slows to stop in 2 seconds.",
+        msgFailed: "Configuration is not sufficient for takeoff. Observe and revise your setup.",
+        msgDblDetach: "Propeller detached and placed on the ground.",
+        msgQuizAllCorrect: "🌟 Excellent! You correctly completed all 8 motion-speed cases.",
+        missionDone: "Mission Completed",
+        missionProgress: "Mission in progress",
+        action1: "Roll Right",
+        action2: "Roll Left",
+        action3: "Pitch Backward",
+        action4: "Pitch Forward",
+        action5: "Yaw Left",
+        action6: "Yaw Right",
+        actionObserve: "Single-Propeller Spin Observation",
+        actionNormalFlight: "Stable Flight",
+
+        quizTitle: "Propeller Speed Logic Check",
+        quizSub: "Choose Fast/Slow for each propeller in each motion case",
+        thPropeller: "Propeller",
+        thFL: "FL",
+        thFR: "FR",
+        thRL: "RL",
+        thRR: "RR",
+        select: "Select",
+        fast: "Fast",
+        slow: "Slow",
+        motion_throttleUp: "Throttle Up",
+        motion_throttleDown: "Throttle Down",
+        motion_yawLeft: "Yaw Left",
+        motion_yawRight: "Yaw Right",
+        motion_pitchForward: "Pitch Forward",
+        motion_pitchBackward: "Pitch Backward",
+        motion_rollLeft: "Roll Left",
+        motion_rollRight: "Roll Right",
+
+        tutTitle: "Scientific Method Tutorial",
+        tutPrev: "Previous",
+        tutNext: "Next",
+        tutClose: "Close",
+        tutStep: "Step",
+        tutSteps: [
+`1) Identify the Problem
+Question: Which propeller configuration enables stable quadcopter takeoff?
+Variables:
+• Independent: propeller type and position
+• Dependent: motion outcome
+• Controlled: same drone, same operation, same environment`,
+`2) Observe Propeller Types
+• Type A: white center dot
+• Type B: no white center dot
+Different positions require specific directions/types.`,
+`3) Interaction Controls
+Desktop:
+• Left-drag = move propeller
+• Right-drag = rotate view
+• Double-click installed propeller = detach to ground
+Touchscreen:
+• One finger = move propeller
+• Two fingers = rotate/zoom view`,
+`4) Form a Hypothesis
+Predict before testing:
+“If I install type __ at motor __, the drone will __.”`,
+`5) Run Trials
+• Install propellers
+• Press “Take off”
+• Observe motion
+• Use “Propeller detached” to reset
+Tip: change one placement at a time.`,
+`6) Record Evidence
+Record each trial outcome:
+Roll / Pitch / Yaw / Stable takeoff.`,
+`7) Validate Speed Logic Table
+After successful takeoff, complete the 8-row propeller speed table (Fast/Slow for FL, FR, RL, RR).`,
+`8) Communicate Conclusions
+Summarize:
+• final correct configuration
+• evidence from repeated trials
+• what to test next for stronger confidence.`
+        ]
+      },
+      zh: {
+        title: "螺旋槳配置與科學探究",
+        tutorial: "教學",
+        languageToggle: "English / 繁中",
+        takeoff: "起飛",
+        land: "降落",
+        landing: "降落中...",
+        detached: "螺旋槳分離",
+        colour: "顏色",
+        instruction: "拖曳螺旋槳到馬達，按「起飛」測試；成功後完成速度邏輯表。",
+        actionNone: "無",
+        msgCongrats: "🎉 做得很好！你已完成正確配置並成功起飛！",
+        msgSingleObserve: "觀察模式：單一螺旋槳先轉 3 秒，再用 2 秒慢慢停下。",
+        msgFailed: "目前配置不足以起飛。請觀察現象並修正配置。",
+        msgDblDetach: "螺旋槳已分離並放到地面。",
+        msgQuizAllCorrect: "🌟 太棒了！你已正確完成 8 種動作速度組合。",
+        missionDone: "任務完成",
+        missionProgress: "任務進行中",
+        action1: "向右滾轉",
+        action2: "向左滾轉",
+        action3: "向後俯仰",
+        action4: "向前俯仰",
+        action5: "向左偏航",
+        action6: "向右偏航",
+        actionObserve: "單槳旋轉方向觀察",
+        actionNormalFlight: "穩定飛行",
+
+        quizTitle: "螺旋槳速度邏輯檢核",
+        quizSub: "為每種動作選擇每個螺旋槳的快/慢",
+        thPropeller: "螺旋槳",
+        thFL: "左前",
+        thFR: "右前",
+        thRL: "左後",
+        thRR: "右後",
+        select: "選擇",
+        fast: "快",
+        slow: "慢",
+        motion_throttleUp: "上升",
+        motion_throttleDown: "下降",
+        motion_yawLeft: "左偏航",
+        motion_yawRight: "右偏航",
+        motion_pitchForward: "前俯仰",
+        motion_pitchBackward: "後俯仰",
+        motion_rollLeft: "左滾轉",
+        motion_rollRight: "右滾轉",
+
+        tutTitle: "科學方法教學",
+        tutPrev: "上一步",
+        tutNext: "下一步",
+        tutClose: "關閉",
+        tutStep: "步驟",
+        tutSteps: [
+`1) 提出問題
+核心問題：哪一種螺旋槳配置可讓四軸機穩定起飛？
+變因：
+• 自變項：槳型與位置
+• 應變項：飛行結果
+• 控制變因：同一機體、同一環境、同樣操作`,
+`2) 觀察槳型
+• A 型：中心白點
+• B 型：無白點
+不同位置需對應正確旋向與槳型。`,
+`3) 操作方式
+桌面：
+• 左鍵拖曳：移動螺旋槳
+• 右鍵拖曳：改變視角
+• 雙擊已安裝槳：分離到地面
+觸控：
+• 單指：移動螺旋槳
+• 雙指：旋轉/縮放視角`,
+`4) 建立假設
+先寫預測：
+「若把 __ 型螺旋槳裝在 __ 馬達，結果會 __。」`,
+`5) 進行試驗
+• 安裝螺旋槳
+• 按「起飛」
+• 觀察動作
+• 用「螺旋槳分離」重設
+建議：一次只改一個條件。`,
+`6) 紀錄證據
+逐次記錄：
+滾轉 / 俯仰 / 偏航 / 穩定起飛。`,
+`7) 完成速度邏輯表
+成功起飛後，完成速度表（每種動作下，左前/右前/左後/右後：快或慢）。`,
+`8) 溝通與結論
+說明：
+• 最終正確配置
+• 重複試驗證據
+• 下一步可再驗證的方向。`
+        ]
+      }
+    };
+
+    let lang = "en";
+    function t(key) { return I18N[lang][key]; }
+
+    const QUIZ_CASES = [
+      { key: "throttleUp",    expect: ["fast","fast","fast","fast"] },
+      { key: "throttleDown",  expect: ["slow","slow","slow","slow"] },
+      { key: "yawLeft",       expect: ["fast","slow","slow","fast"] },
+      { key: "yawRight",      expect: ["slow","fast","fast","slow"] },
+      { key: "pitchForward",  expect: ["slow","slow","fast","fast"] },
+      { key: "pitchBackward", expect: ["fast","fast","slow","slow"] },
+      { key: "rollLeft",      expect: ["slow","fast","slow","fast"] },
+      { key: "rollRight",     expect: ["fast","slow","fast","slow"] }
+    ];
+    const PROP_KEYS = ["thFL", "thFR", "thRL", "thRR"];
+
+    const quizAnswers = QUIZ_CASES.map(() => ["", "", "", ""]);
+    let quizUnlocked = false;
+    let quizAllCorrect = false;
+
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0xffffff);
+
+    const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 120);
+    camera.position.set(8.2, 5.0, 8.4);
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    document.getElementById("app").appendChild(renderer.domElement);
+
+    const controls = new OrbitControls(camera, renderer.domElement);
+    controls.enableDamping = true;
+    controls.enablePan = false;
+    controls.minDistance = 4.5;
+    controls.maxDistance = 24;
+    controls.target.set(0, 0.45, 0);
+    controls.mouseButtons.LEFT = THREE.MOUSE.PAN;
+    controls.mouseButtons.MIDDLE = THREE.MOUSE.DOLLY;
+    controls.mouseButtons.RIGHT = THREE.MOUSE.ROTATE;
+    controls.touches.ONE = THREE.TOUCH.PAN;
+    controls.touches.TWO = THREE.TOUCH.DOLLY_ROTATE;
+    renderer.domElement.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    scene.add(new THREE.HemisphereLight(0xffffff, 0xe5e7eb, 0.9));
+    const dir = new THREE.DirectionalLight(0xffffff, 1.08);
+    dir.position.set(7, 9, 6);
+    dir.castShadow = true;
+    dir.shadow.mapSize.set(2048, 2048);
+    scene.add(dir);
+
+    const groundY = -1.0;
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(42, 42),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, metalness: 0 })
+    );
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.y = groundY;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    const grid = new THREE.GridHelper(42, 42, 0xd1d5db, 0xe5e7eb);
+    grid.position.y = groundY + 0.02;
+    scene.add(grid);
+
+    const drone = new THREE.Group();
+    scene.add(drone);
+    drone.rotation.order = "YXZ";
+
+    const propsRoot = new THREE.Group();
+    scene.add(propsRoot);
+
+    const baseYaw = 0.54;
+    drone.rotation.y = baseYaw;
+    drone.position.set(0, 0, 0);
+
+    const blackBodyMat = new THREE.MeshStandardMaterial({ color: 0x374151, roughness: 0.45, metalness: 0.28 });
+    const whiteShellMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.78, metalness: 0.06 });
+    const armMat = new THREE.MeshStandardMaterial({ color: 0x2b3340, roughness: 0.5, metalness: 0.25 });
+    const darkDetailMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.4, metalness: 0.25 });
+    const motorWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.16, metalness: 0.72 });
+    const shaftMat = new THREE.MeshStandardMaterial({ color: 0x6b7280, roughness: 0.22, metalness: 0.65 });
+    const footWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.22 });
+    const propMat = new THREE.MeshStandardMaterial({ color: 0x23272f, roughness: 0.52, metalness: 0.08 });
+    const hubMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.42, metalness: 0.2 });
+
+    const underBodyHeight = 0.8112;
+    const underBodyLength = 3.35;
+    const underBody = new THREE.Mesh(
+      new RoundedBoxGeometry(2.15, underBodyHeight, underBodyLength, 8, 0.14),
+      blackBodyMat
+    );
+    underBody.position.set(0, 0.16, -0.20);
+    underBody.castShadow = true;
+    drone.add(underBody);
+
+    const blackNose = new THREE.Mesh(new THREE.SphereGeometry(0.68, 36, 24), blackBodyMat);
+    blackNose.position.set(0, 0.16, 1.43);
+    blackNose.scale.set(1.55, 0.68, 0.95);
+    blackNose.castShadow = true;
+    drone.add(blackNose);
+
+    const topShell = new THREE.Mesh(
+      new RoundedBoxGeometry(1.95, 0.312, 2.95, 8, 0.11),
+      whiteShellMat
+    );
+    topShell.position.set(0, 0.49, -0.12);
+    topShell.castShadow = true;
+    drone.add(topShell);
+
+    const whiteNose = new THREE.Mesh(new THREE.SphereGeometry(0.50, 32, 24), whiteShellMat);
+    whiteNose.position.set(0, 0.49, 1.26);
+    whiteNose.scale.set(1.34, 0.56, 1.0);
+    whiteNose.castShadow = true;
+    drone.add(whiteNose);
+
+    const shellSeam = new THREE.Mesh(
+      new THREE.BoxGeometry(1.99, 0.01, 3.28),
+      new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.8, metalness: 0.05 })
+    );
+    shellSeam.position.set(0, 0.36, 0.00);
+    drone.add(shellSeam);
+
+    const coverOutlineMat = new THREE.LineBasicMaterial({ color: 0xffffff });
+    const topShellOutline = new THREE.LineSegments(new THREE.EdgesGeometry(topShell.geometry), coverOutlineMat);
+    topShellOutline.position.copy(topShell.position);
+    topShellOutline.visible = false;
+    drone.add(topShellOutline);
+
+    const whiteNoseOutline = new THREE.LineSegments(new THREE.EdgesGeometry(whiteNose.geometry), coverOutlineMat);
+    whiteNoseOutline.position.copy(whiteNose.position);
+    whiteNoseOutline.scale.copy(whiteNose.scale);
+    whiteNoseOutline.visible = false;
+    drone.add(whiteNoseOutline);
+
+    const underBodyBottomY = underBody.position.y - underBodyHeight * 0.5;
+    const bottomCoverWidth = 1.86;
+    const bottomCoverLength = 3.22;
+    const coverCurveDepth = 0.08;
+    const lowCoverY = underBodyBottomY;
+
+    const bottomCoverMat = new THREE.MeshStandardMaterial({
+      color: 0xd1d5db,
+      roughness: 0.75,
+      metalness: 0.08,
+      side: THREE.DoubleSide
+    });
+
+    const bottomCoverGeo = new THREE.PlaneGeometry(bottomCoverWidth, bottomCoverLength, 28, 44);
+    const posAttr = bottomCoverGeo.attributes.position;
+    for (let i = 0; i < posAttr.count; i++) {
+      const x = posAttr.getX(i);
+      const y = posAttr.getY(i);
+      const rx = x / (bottomCoverWidth * 0.5);
+      const rz = y / (bottomCoverLength * 0.5);
+      const blend = Math.max(0, 1 - (0.65 * rx * rx + 0.35 * rz * rz));
+      posAttr.setZ(i, -coverCurveDepth * blend);
+    }
+    posAttr.needsUpdate = true;
+    bottomCoverGeo.computeVertexNormals();
+
+    const bottomCover = new THREE.Mesh(bottomCoverGeo, bottomCoverMat);
+    bottomCover.rotation.x = -Math.PI / 2;
+    bottomCover.position.set(0, lowCoverY, 0.02);
+    bottomCover.castShadow = true;
+    bottomCover.receiveShadow = true;
+    drone.add(bottomCover);
+
+    const coverFill = new THREE.Mesh(
+      new RoundedBoxGeometry(1.94, 0.06, 3.28, 8, 0.06),
+      blackBodyMat
+    );
+    coverFill.position.set(0, underBodyBottomY - 0.02, 0.02);
+    coverFill.castShadow = true;
+    coverFill.receiveShadow = true;
+    drone.add(coverFill);
+
+    function coverYOffsetAt(xWorld, zWorld) {
+      const dx = xWorld - bottomCover.position.x;
+      const dz = zWorld - bottomCover.position.z;
+      const rx = dx / (bottomCoverWidth * 0.5);
+      const rz = dz / (bottomCoverLength * 0.5);
+      const blend = Math.max(0, 1 - (0.65 * rx * rx + 0.35 * rz * rz));
+      return -coverCurveDepth * blend;
+    }
+
+    const ventLineMat = new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 0.55, metalness: 0.12 });
+    const vents = new THREE.Group();
+    const ventLength = bottomCoverLength * 0.5;
+    const xPositions = [-0.40, -0.24, -0.08, 0.08, 0.24, 0.40];
+    for (let i = 0; i < xPositions.length; i++) {
+      const x = xPositions[i];
+      const z = 0.0;
+      const ySurf = lowCoverY + coverYOffsetAt(x, z);
+      const line = new THREE.Mesh(new RoundedBoxGeometry(0.075, 0.014, ventLength, 4, 0.015), ventLineMat);
+      line.position.set(x, ySurf - 0.004, z);
+      line.castShadow = true;
+      line.receiveShadow = true;
+      vents.add(line);
+    }
+    drone.add(vents);
+
+    const irMat = new THREE.MeshStandardMaterial({
+      color: 0xfb923c, transparent: true, opacity: 0.55, roughness: 0.25, metalness: 0.05
+    });
+    const irL = new THREE.Mesh(new THREE.SphereGeometry(0.20, 28, 20), irMat);
+    const irR = new THREE.Mesh(new THREE.SphereGeometry(0.20, 28, 20), irMat);
+    irL.position.set(-0.22, lowCoverY + 0.12, -1.22);
+    irR.position.set( 0.22, lowCoverY + 0.12, -1.22);
+    drone.add(irL, irR);
+
+    const labelCanvas = document.createElement("canvas");
+    labelCanvas.width = 2048;
+    labelCanvas.height = 512;
+    const lctx = labelCanvas.getContext("2d");
+    const labelTex = new THREE.CanvasTexture(labelCanvas);
+    labelTex.colorSpace = THREE.SRGBColorSpace;
+
+    function drawEduhkLabel(color = "#111111") {
+      lctx.clearRect(0, 0, labelCanvas.width, labelCanvas.height);
+      lctx.fillStyle = color;
+      lctx.font = "900 210px Arial, Helvetica, sans-serif";
+      lctx.textAlign = "center";
+      lctx.textBaseline = "middle";
+      lctx.fillText("EdUHK", labelCanvas.width / 2, labelCanvas.height / 2 + 8);
+      labelTex.needsUpdate = true;
+    }
+
+    const label = new THREE.Mesh(
+      new THREE.PlaneGeometry(3.75, 0.875),
+      new THREE.MeshBasicMaterial({ map: labelTex, transparent: true })
+    );
+    label.position.set(0, 0.648, -0.88);
+    label.rotation.x = -Math.PI / 2;
+    drone.add(label);
+
+    const camHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.16, 24), darkDetailMat);
+    camHousing.rotation.x = Math.PI / 2;
+    camHousing.position.set(0, 0.16, 2.04);
+    drone.add(camHousing);
+
+    const lensOuter = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.11, 0.11, 0.06, 24),
+      new THREE.MeshStandardMaterial({ color: 0x101010, roughness: 0.2, metalness: 0.45 })
+    );
+    lensOuter.rotation.x = Math.PI / 2;
+    lensOuter.position.set(0, 0.16, 2.12);
+    drone.add(lensOuter);
+
+    const lensInner = new THREE.Mesh(new THREE.CircleGeometry(0.06, 20), new THREE.MeshBasicMaterial({ color: 0x22c55e }));
+    lensInner.position.set(0, 0.16, 2.155);
+    drone.add(lensInner);
+
+    const lensWhiteRing = new THREE.Mesh(
+      new THREE.RingGeometry(0.062, 0.078, 28),
+      new THREE.MeshBasicMaterial({ color: 0xffffff })
+    );
+    lensWhiteRing.position.set(0, 0.16, 2.1548);
+    drone.add(lensWhiteRing);
+
+    const ledBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.24, 0.035),
+      new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.35, metalness: 0.2 })
+    );
+    ledBody.position.set(0.62, 0.20, 2.08);
+    drone.add(ledBody);
+
+    const ledPurpleMat = new THREE.MeshBasicMaterial({
+      color: 0xc084fc,
+      transparent: true,
+      opacity: 1
+    });
+    const frontLedRect = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.20), ledPurpleMat);
+    frontLedRect.position.set(0.62, 0.20, 2.101);
+    drone.add(frontLedRect);
+
+    const frontLedGlow = new THREE.PointLight(0xc084fc, 0.8, 1.8, 2);
+    frontLedGlow.position.set(0.62, 0.20, 2.16);
+    drone.add(frontLedGlow);
+
+    const rearHoleFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(1.20, 0.48, 0.10),
+      new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.45, metalness: 0.2 })
+    );
+    rearHoleFrame.position.set(0, 0.21, -1.92);
+    drone.add(rearHoleFrame);
+
+    const rearHoleInset = new THREE.Mesh(
+      new THREE.BoxGeometry(0.98, 0.30, 0.12),
+      new THREE.MeshStandardMaterial({ color: 0x030712, roughness: 0.65, metalness: 0.05 })
+    );
+    rearHoleInset.position.set(0, 0.21, -1.87);
+    drone.add(rearHoleInset);
+
+    const batteryBlock = new THREE.Mesh(
+      new RoundedBoxGeometry(0.90, 0.28, 1.26, 6, 0.04),
+      new THREE.MeshStandardMaterial({ color: 0xd1d5db, roughness: 0.62, metalness: 0.15 })
+    );
+    batteryBlock.position.set(0, 0.21, -1.17);
+    drone.add(batteryBlock);
+
+    const batteryRearCap = new THREE.Mesh(
+      new THREE.BoxGeometry(0.90, 0.26, 0.03),
+      new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.5, metalness: 0.25 })
+    );
+    batteryRearCap.position.set(0, 0.21, -1.79);
+    drone.add(batteryRearCap);
+
+    const motorPositions = [
+      new THREE.Vector3(-2.475, 0.34,  2.325),
+      new THREE.Vector3( 2.475, 0.34,  2.325),
+      new THREE.Vector3(-2.475, 0.34, -2.325),
+      new THREE.Vector3( 2.475, 0.34, -2.325)
+    ];
+    const propMounts = motorPositions.map((p) => new THREE.Vector3(p.x, p.y + 0.48, p.z));
+
+    const motorRequirements = [
+      { isCW: true,  hasWhiteDot: false },
+      { isCW: false, hasWhiteDot: true  },
+      { isCW: false, hasWhiteDot: true  },
+      { isCW: true,  hasWhiteDot: false }
+    ];
+
+    const motorRadius = 0.20;
+    const motorHeight = 0.69;
+    const footCentersLocal = [];
+    const footTopYs = [];
+    const footBottomYs = [];
+
+    function addArmTo(position) {
+      const start = new THREE.Vector3(position.x * 0.30, 0.29, position.z * 0.30);
+      const end = position.clone().setY(0.34);
+      const dirVec = new THREE.Vector3().subVectors(end, start);
+      const len = dirVec.length();
+      const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, len, 14), armMat);
+      arm.castShadow = true;
+      arm.position.copy(start).add(end).multiplyScalar(0.5);
+      arm.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dirVec.clone().normalize());
+      drone.add(arm);
+    }
+
+    function createBladeGeometry({ length = 2.16, neckWidth = 0.16, maxWidth = 0.352, tipWidth = 0.12, thickness = 0.042, sweep = 0.08, mirror = false } = {}) {
+      const s = new THREE.Shape();
+      const sign = mirror ? -1 : 1;
+      const y0 = (v) => v * sign;
+
+      s.moveTo(0.00, y0(-neckWidth * 0.45));
+      s.bezierCurveTo(length * 0.10, y0(-maxWidth * 0.70), length * 0.35, y0(-maxWidth * 0.65), length * 0.63, y0(-maxWidth * 0.28 - sweep));
+      s.bezierCurveTo(length * 0.82, y0(-maxWidth * 0.13 - sweep * 0.5), length * 0.94, y0(-tipWidth * 0.55), length, y0(-tipWidth * 0.50));
+      s.lineTo(length, y0(tipWidth * 0.50));
+      s.bezierCurveTo(length * 0.95, y0(tipWidth * 0.58), length * 0.82, y0(maxWidth * 0.20 + sweep * 0.4), length * 0.60, y0(maxWidth * 0.58 + sweep));
+      s.bezierCurveTo(length * 0.33, y0(maxWidth * 0.82), length * 0.10, y0(maxWidth * 0.60), 0.00, y0(neckWidth * 0.45));
+      s.quadraticCurveTo(-length * 0.04, y0(0), 0.00, y0(-neckWidth * 0.45));
+
+      const extrude = new THREE.ExtrudeGeometry(s, {
+        depth: thickness, bevelEnabled: true, bevelThickness: 0.007, bevelSize: 0.006, bevelSegments: 1, curveSegments: 24
+      });
+      extrude.rotateX(Math.PI / 2);
+      extrude.translate(0, -thickness * 0.5, 0);
+      extrude.computeVertexNormals();
+      return extrude;
+    }
+
+    function createPropeller({ isCW = true, hasWhiteDot = false } = {}) {
+      const root = new THREE.Group();
+      const spinner = new THREE.Group();
+      root.add(spinner);
+
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 22), hubMat);
+      spinner.add(hub);
+
+      const dome = new THREE.Mesh(
+        new THREE.SphereGeometry(0.055, 18, 14),
+        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.22 })
+      );
+      dome.position.y = 0.05;
+      spinner.add(dome);
+
+      const bladeGeo = createBladeGeometry({ mirror: !isCW });
+      const pitch = isCW ? 0.22 : -0.22;
+      for (let k = 0; k < 2; k++) {
+        const blade = new THREE.Mesh(bladeGeo, propMat);
+        blade.position.set(0.08, 0.02, 0);
+        blade.rotation.y = k * Math.PI;
+        blade.rotation.x = (k === 0) ? pitch : -pitch;
+        blade.castShadow = true;
+        spinner.add(blade);
+      }
+
+      if (hasWhiteDot) {
+        const centerCircle = new THREE.Mesh(new THREE.CircleGeometry(0.065, 24), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        centerCircle.rotation.x = -Math.PI / 2;
+        centerCircle.position.set(0, 0.056, 0);
+        spinner.add(centerCircle);
+      }
+      return { root, spinner };
+    }
+
+    motorPositions.forEach((pos) => {
+      addArmTo(pos);
+
+      const motor = new THREE.Mesh(new THREE.CylinderGeometry(motorRadius, motorRadius, motorHeight, 24), footWhiteMat);
+      motor.position.copy(pos);
+      motor.castShadow = true;
+      drone.add(motor);
+
+      const shaftHeight = 0.216;
+      const motorTopY = pos.y + motorHeight * 0.5;
+      const exposedAboveMotor = 0.15;
+      const shaftCenterY = motorTopY + exposedAboveMotor - shaftHeight * 0.5;
+
+      const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.048, shaftHeight, 18), shaftMat);
+      shaft.position.set(pos.x, shaftCenterY, pos.z);
+      shaft.castShadow = true;
+      drone.add(shaft);
+
+      const shaftTip = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.055, 0.055, 0.018, 18),
+        new THREE.MeshStandardMaterial({ color: 0x4b5563, roughness: 0.28, metalness: 0.58 })
+      );
+      shaftTip.position.set(pos.x, shaftCenterY + shaftHeight * 0.5 + 0.008, pos.z);
+      shaftTip.castShadow = true;
+      drone.add(shaftTip);
+
+      const motorBottomY = pos.y - motorHeight * 0.5;
+      const fullHeightToGround = motorBottomY - groundY;
+      const footHeight = fullHeightToGround * 0.6;
+      const footCenterY = motorBottomY - footHeight * 0.5;
+
+      const foot = new THREE.Mesh(new THREE.CylinderGeometry(motorRadius, 0.16, footHeight, 28), motorWhiteMat);
+      foot.position.set(pos.x, footCenterY, pos.z);
+      foot.castShadow = true;
+      drone.add(foot);
+
+      footCentersLocal.push(new THREE.Vector3(pos.x, footCenterY, pos.z));
+      footTopYs.push(footCenterY + footHeight * 0.5);
+      footBottomYs.push(footCenterY - footHeight * 0.5);
+    });
+
+    const propStates = [];
+    const propPickMeshes = [];
+    const motorOccupiedBy = [null, null, null, null];
+    let usedHiddenAutoSetup = false;
+
+    function addPropInstance(isCW, hasWhiteDot) {
+      const { root, spinner } = createPropeller({ isCW, hasWhiteDot });
+      propsRoot.add(root);
+
+      const idx = propStates.length;
+      propStates.push({ root, spinner, isCW, hasWhiteDot, attachedMotor: null, detached: true, spinAngle: Math.random() * Math.PI * 2 });
+
+      root.traverse((child) => {
+        if (child.isMesh) {
+          child.userData.propIndex = idx;
+          propPickMeshes.push(child);
+        }
+      });
+    }
+
+    for (let set = 0; set < 2; set++) {
+      for (let i = 0; i < 4; i++) addPropInstance(motorRequirements[i].isCW, motorRequirements[i].hasWhiteDot);
+    }
+
+    function propMatchesMotor(propIndex, motorIndex) {
+      const p = propStates[propIndex];
+      const req = motorRequirements[motorIndex];
+      return p.isCW === req.isCW && p.hasWhiteDot === req.hasWhiteDot;
+    }
+
+    function getMotorMountWorld(motorIndex) { return drone.localToWorld(propMounts[motorIndex].clone()); }
+    function getMotorCenterWorld(motorIndex) { return drone.localToWorld(motorPositions[motorIndex].clone()); }
+    function getFootAreaWorld(motorIndex) { const m = getMotorCenterWorld(motorIndex); return new THREE.Vector3(m.x, groundY + 0.10, m.z); }
+    function getFootCenterWorld(motorIndex) { return drone.localToWorld(footCentersLocal[motorIndex].clone()); }
+    function getFootBoundsWorld(motorIndex) {
+      const top = drone.localToWorld(new THREE.Vector3(footCentersLocal[motorIndex].x, footTopYs[motorIndex], footCentersLocal[motorIndex].z));
+      const bottom = drone.localToWorld(new THREE.Vector3(footCentersLocal[motorIndex].x, footBottomYs[motorIndex], footCentersLocal[motorIndex].z));
+      return { topY: top.y, bottomY: bottom.y };
+    }
+
+    function clearMotorOccupancyOfProp(propIndex) {
+      const s = propStates[propIndex];
+      if (s.attachedMotor !== null && motorOccupiedBy[s.attachedMotor] === propIndex) motorOccupiedBy[s.attachedMotor] = null;
+      s.attachedMotor = null;
+      s.detached = true;
+    }
+
+    function attachPropToMotor(propIndex, motorIndex) {
+      const s = propStates[propIndex];
+      if (motorOccupiedBy[motorIndex] !== null && motorOccupiedBy[motorIndex] !== propIndex) return false;
+      clearMotorOccupancyOfProp(propIndex);
+      motorOccupiedBy[motorIndex] = propIndex;
+      s.attachedMotor = motorIndex;
+      s.detached = false;
+      s.root.position.copy(getMotorMountWorld(motorIndex));
+      s.root.quaternion.copy(drone.quaternion);
+      return true;
+    }
+
+    function clampDetachedWorldPosition(v) { if (v.y < groundY + 0.05) v.y = groundY + 0.05; return v; }
+
+    function placePropDetachedAtWorld(propIndex, worldPos) {
+      clearMotorOccupancyOfProp(propIndex);
+      clampDetachedWorldPosition(worldPos);
+      const s = propStates[propIndex];
+      s.root.position.copy(worldPos);
+      s.root.rotation.set(0, s.root.rotation.y, 0);
+    }
+
+    function generateRandomDetachedSpots(count) {
+      const spots = [];
+      const minDist = 0.78;
+      let tries = 0;
+      while (spots.length < count && tries < 2600) {
+        tries++;
+        const angle = THREE.MathUtils.randFloat(0, Math.PI * 2);
+        const radius = THREE.MathUtils.randFloat(3.6, 7.2);
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = groundY + THREE.MathUtils.randFloat(0.06, 0.14);
+        const p = new THREE.Vector3(x, y, z);
+
+        let ok = true;
+        for (const s of spots) { if (s.distanceTo(p) < minDist) { ok = false; break; } }
+        if (ok) spots.push(p);
+      }
+      while (spots.length < count) {
+        const i = spots.length;
+        const angle = (i / count) * Math.PI * 2;
+        spots.push(new THREE.Vector3(Math.cos(angle) * 5.2, groundY + 0.08, Math.sin(angle) * 5.2));
+      }
+      return spots;
+    }
+
+    function detachAllPropsRandom() {
+      const spots = generateRandomDetachedSpots(propStates.length);
+      for (let i = 0; i < propStates.length; i++) {
+        placePropDetachedAtWorld(i, spots[i].clone());
+        propStates[i].root.rotation.y = Math.random() * Math.PI * 2;
+      }
+    }
+
+    function restoreAllPropsCorrectly() {
+      detachAllPropsRandom();
+      for (let m = 0; m < 4; m++) {
+        for (let p = 0; p < propStates.length; p++) {
+          if (propStates[p].attachedMotor === null && propMatchesMotor(p, m)) { attachPropToMotor(p, m); break; }
+        }
+      }
+      usedHiddenAutoSetup = true;
+      resetDroneAttitudeAndPose();
+    }
+
+    function allPropsCorrect() {
+      for (let m = 0; m < 4; m++) {
+        const p = motorOccupiedBy[m];
+        if (p === null) return false;
+        if (!propMatchesMotor(p, m)) return false;
+      }
+      return true;
+    }
+
+    function installedCount() { return motorOccupiedBy.filter((x) => x !== null).length; }
+
+    function getInstalledAndCorrectMasks() {
+      let installedMask = 0;
+      let correctMask = 0;
+      let installed = 0;
+      let correct = 0;
+      for (let m = 0; m < 4; m++) {
+        const p = motorOccupiedBy[m];
+        if (p !== null) {
+          installed++; installedMask |= (1 << m);
+          if (propMatchesMotor(p, m)) { correct++; correctMask |= (1 << m); }
+        }
+      }
+      return { installedMask, correctMask, installed, correct };
+    }
+
+    function evaluatePartialMode() {
+      const { correctMask, installed, correct } = getInstalledAndCorrectMasks();
+      if (installed !== correct) return null;
+
+      if (installed === 2) {
+        switch (correctMask) {
+          case 0b0101: return "leftOnly";
+          case 0b1010: return "rightOnly";
+          case 0b0011: return "frontOnly";
+          case 0b1100: return "rearOnly";
+          case 0b1001: return "circledOnly";
+          case 0b0110: return "nonCircledOnly";
+          default: return null;
+        }
+      }
+
+      if (installed === 3) {
+        if (correctMask === 0b1110) return "yawLeftMissingFL";
+        if (correctMask === 0b1101) return "yawRightMissingFR";
+        if (correctMask === 0b1011) return "yawRightMissingRL";
+        if (correctMask === 0b0111) return "yawLeftMissingRR";
+      }
+      return null;
+    }
+
+    function detachAttachedPropToGround(propIndex) {
+      const s = propStates[propIndex];
+      if (s.attachedMotor === null) return false;
+      const m = s.attachedMotor;
+
+      const motorCenter = getMotorCenterWorld(m);
+      const droneCenter = drone.getWorldPosition(new THREE.Vector3());
+
+      const outward = new THREE.Vector3().subVectors(motorCenter, droneCenter);
+      outward.y = 0;
+      if (outward.lengthSq() < 0.0001) outward.set(1, 0, 0);
+      outward.normalize();
+
+      const drop = motorCenter.clone().add(outward.multiplyScalar(0.9));
+      drop.y = groundY + 0.08;
+      placePropDetachedAtWorld(propIndex, drop);
+      return true;
+    }
+
+    detachAllPropsRandom();
+
+    const titleBar = document.getElementById("titleBar");
+    const flightBtn = document.getElementById("flightBtn");
+    const detachBtn = document.getElementById("detachBtn");
+    const colorBtn = document.getElementById("colorBtn");
+    const tutorialBtn = document.getElementById("tutorialBtn");
+    const langBtn = document.getElementById("langBtn");
+    const actionPill = document.getElementById("actionPill");
+    const instructionBar = document.getElementById("instructionBar");
+
+    const toastEl = document.getElementById("toast");
+    const congratsEl = document.getElementById("congrats");
+    let toastTimer = null;
+    let congratsUntil = 0;
+
+    const quizPanel = document.getElementById("quizPanel");
+    const quizTitle = document.getElementById("quizTitle");
+    const quizSub = document.getElementById("quizSub");
+    const quizHeadRow = document.getElementById("quizHeadRow");
+    const quizBody = document.getElementById("quizBody");
+    const quizFinal = document.getElementById("quizFinal");
+    const quizCloseBtn = document.getElementById("quizCloseBtn");
+
+    const missionBox = document.getElementById("missionBox");
+    const missionProgressBox = document.getElementById("missionProgressBox");
+
+    const tutorialModal = document.getElementById("tutorialModal");
+    const tutorialTitle = document.getElementById("tutorialTitle");
+    const tutorialStepMeta = document.getElementById("tutorialStepMeta");
+    const tutorialStepText = document.getElementById("tutorialStepText");
+    const prevStepBtn = document.getElementById("prevStepBtn");
+    const nextStepBtn = document.getElementById("nextStepBtn");
+    const closeTutorialBtn = document.getElementById("closeTutorialBtn");
+    let tutorialStep = 0;
+
+    function showToast(msg, ms = 2600) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toastEl.classList.remove("show"), ms);
+    }
+
+    const yellowActionKeys = new Set(["action1", "action2", "action3", "action4", "action5", "action6"]);
+    let currentActionKey = "actionNone";
+    function setAction(key) {
+      currentActionKey = key;
+      actionPill.textContent = t(key);
+      if (yellowActionKeys.has(key)) actionPill.classList.add("highlight");
+      else actionPill.classList.remove("highlight");
+    }
+
+    function updateMissionBoxes() {
+      const panelShown = quizPanel.style.display === "block";
+      missionBox.style.display = "none";
+      missionProgressBox.style.display = "none";
+      if (!quizUnlocked || panelShown) return;
+      if (quizAllCorrect) missionBox.style.display = "block";
+      else missionProgressBox.style.display = "block";
+    }
+
+    missionBox.addEventListener("click", () => {
+      quizPanel.style.display = "block";
+      updateMissionBoxes();
+    });
+    missionProgressBox.addEventListener("click", () => {
+      quizPanel.style.display = "block";
+      updateMissionBoxes();
+    });
+
+    function updateTutorialContent() {
+      const steps = I18N[lang].tutSteps;
+      tutorialTitle.textContent = t("tutTitle");
+      tutorialStepMeta.textContent = `${t("tutStep")} ${tutorialStep + 1} / ${steps.length}`;
+      tutorialStepText.textContent = steps[tutorialStep];
+      prevStepBtn.disabled = tutorialStep === 0;
+      nextStepBtn.disabled = tutorialStep === steps.length - 1;
+    }
+    tutorialBtn.addEventListener("click", () => { tutorialStep = 0; updateTutorialContent(); tutorialModal.classList.add("show"); });
+    closeTutorialBtn.addEventListener("click", () => tutorialModal.classList.remove("show"));
+    prevStepBtn.addEventListener("click", () => { tutorialStep = Math.max(0, tutorialStep - 1); updateTutorialContent(); });
+    nextStepBtn.addEventListener("click", () => { tutorialStep = Math.min(I18N[lang].tutSteps.length - 1, tutorialStep + 1); updateTutorialContent(); });
+    tutorialModal.addEventListener("click", (e) => { if (e.target === tutorialModal) tutorialModal.classList.remove("show"); });
+
+    function showCongrats() {
+      congratsEl.textContent = t("msgCongrats");
+      congratsUntil = performance.now() + 4400;
+      congratsEl.style.display = "block";
+      quizUnlocked = true;
+      quizPanel.style.display = "block";
+      updateMissionBoxes();
+    }
+
+    quizCloseBtn.addEventListener("click", () => {
+      quizPanel.style.display = "none";
+      updateMissionBoxes();
+    });
+
+    langBtn.addEventListener("click", () => {
+      lang = (lang === "en") ? "zh" : "en";
+      updateUIText();
+      renderQuizTable();
+      evaluateQuizTable();
+      if (tutorialModal.classList.contains("show")) updateTutorialContent();
+      if (congratsEl.style.display === "block") congratsEl.textContent = t("msgCongrats");
+      updateMissionBoxes();
+    });
+
+    const colorSchemes = [
+      { shell: 0xf8fafc, seam: 0xd1d5db, outline: false, labelColor: "#111111" },
+      { shell: 0xffea00, seam: 0xffffff, outline: true,  labelColor: "#ffffff" },
+      { shell: 0x0b1f66, seam: 0xffffff, outline: true,  labelColor: "#ffffff" },
+      { shell: 0x8a2d2d, seam: 0xffffff, outline: true,  labelColor: "#ffffff" }
+    ];
+    let colorIndex = 0;
+    function applyDroneColor(index) {
+      const c = colorSchemes[index % colorSchemes.length];
+      whiteShellMat.color.setHex(c.shell);
+      shellSeam.material.color.setHex(c.seam);
+      topShellOutline.visible = c.outline;
+      whiteNoseOutline.visible = c.outline;
+      drawEduhkLabel(c.labelColor);
+    }
+    colorBtn.addEventListener("click", () => {
+      colorIndex = (colorIndex + 1) % colorSchemes.length;
+      applyDroneColor(colorIndex);
+    });
+
+    function renderQuizTable() {
+      quizTitle.textContent = t("quizTitle");
+      quizSub.textContent = t("quizSub");
+
+      quizHeadRow.innerHTML = "";
+      const firstTh = document.createElement("th");
+      firstTh.textContent = t("thPropeller");
+      quizHeadRow.appendChild(firstTh);
+
+      for (let m = 0; m < QUIZ_CASES.length; m++) {
+        const th = document.createElement("th");
+        th.textContent = t(`motion_${QUIZ_CASES[m].key}`);
+        quizHeadRow.appendChild(th);
+      }
+
+      quizBody.innerHTML = "";
+      for (let p = 0; p < 4; p++) {
+        const tr = document.createElement("tr");
+        tr.dataset.prop = String(p);
+
+        const rowLabel = document.createElement("td");
+        rowLabel.textContent = t(PROP_KEYS[p]);
+        tr.appendChild(rowLabel);
+
+        for (let m = 0; m < QUIZ_CASES.length; m++) {
+          const td = document.createElement("td");
+          td.dataset.motion = String(m);
+          td.dataset.prop = String(p);
+
+          const sel = document.createElement("select");
+          sel.className = "quiz-select";
+          sel.dataset.motion = String(m);
+          sel.dataset.prop = String(p);
+
+          const optSelect = document.createElement("option");
+          optSelect.value = "";
+          optSelect.textContent = t("select");
+          sel.appendChild(optSelect);
+
+          const optFast = document.createElement("option");
+          optFast.value = "fast";
+          optFast.textContent = t("fast");
+          sel.appendChild(optFast);
+
+          const optSlow = document.createElement("option");
+          optSlow.value = "slow";
+          optSlow.textContent = t("slow");
+          sel.appendChild(optSlow);
+
+          sel.value = quizAnswers[m][p] || "";
+          sel.addEventListener("change", (e) => {
+            const mm = Number(e.target.dataset.motion);
+            const pp = Number(e.target.dataset.prop);
+            quizAnswers[mm][pp] = e.target.value;
+            evaluateQuizTable();
+          });
+
+          td.appendChild(sel);
+          tr.appendChild(td);
+        }
+        quizBody.appendChild(tr);
+      }
+    }
+
+    function evaluateQuizTable() {
+      let allCorrect = true;
+
+      const cells = quizBody.querySelectorAll("td[data-motion]");
+      cells.forEach((td) => {
+        const m = Number(td.dataset.motion);
+        const p = Number(td.dataset.prop);
+        const ans = quizAnswers[m][p];
+        const exp = QUIZ_CASES[m].expect[p];
+        td.classList.remove("quiz-cell-correct", "quiz-cell-wrong");
+        if (ans === exp) td.classList.add("quiz-cell-correct");
+        else {
+          td.classList.add("quiz-cell-wrong");
+          allCorrect = false;
+        }
+      });
+
+      quizAllCorrect = allCorrect;
+      if (allCorrect) {
+        quizFinal.textContent = t("msgQuizAllCorrect");
+        quizFinal.style.display = "block";
+      } else {
+        quizFinal.style.display = "none";
+      }
+      updateMissionBoxes();
+    }
+
+    const spinDir = [1, -1, -1, 1];
+    const baseSpin = 0.88;
+    const hoverAltitude = 1.35;
+    const takeoffDuration = 2.0;
+    const landingDuration = 4.0;
+    const failedSpinDuration = 3.0;
+    const partialDuration = 2.0;
+
+    let flightState = "ground";
+    let stateTime = 0;
+    let hoverPhase = 0;
+
+    let partialMode = null;
+    const partialStartRot = new THREE.Euler();
+    const partialStartPos = new THREE.Vector3();
+
+    const flightAnchorPos = new THREE.Vector3(0, 0, 0);
+    let flightAnchorYaw = baseYaw;
+
+    let pendingCongrats = false;
+
+    function settleGroundPose() {
+      drone.position.y = 0;
+      drone.rotation.x = 0;
+      drone.rotation.z = 0;
+      flightAnchorPos.set(drone.position.x, 0, drone.position.z);
+      flightAnchorYaw = drone.rotation.y;
+    }
+    function resetDroneAttitudeAndPose() {
+      drone.rotation.set(0, baseYaw, 0);
+      drone.position.set(0, 0, 0);
+      flightAnchorPos.set(0, 0, 0);
+      flightAnchorYaw = baseYaw;
+    }
+
+    function refreshButtonTexts() {
+      if (flightState === "ground") flightBtn.textContent = t("takeoff");
+      else if (flightState === "hover" || flightState === "takeoff") flightBtn.textContent = t("land");
+      else if (flightState === "landing") flightBtn.textContent = t("landing");
+      else flightBtn.textContent = t("takeoff");
+      detachBtn.textContent = t("detached");
+      colorBtn.textContent = t("colour");
+    }
+
+    function setState(next) {
+      flightState = next;
+      stateTime = 0;
+      detachBtn.disabled = next !== "ground";
+      if (next === "ground") settleGroundPose();
+      refreshButtonTexts();
+      if (next === "hover" && pendingCongrats) {
+        pendingCongrats = false;
+        showCongrats();
+      }
+    }
+
+    function startPartialResponse(mode) {
+      partialMode = mode;
+      partialStartRot.copy(drone.rotation);
+      partialStartPos.copy(drone.position);
+      setState("partialResponse");
+
+      if (mode === "leftOnly") setAction("action2");
+      else if (mode === "rightOnly") setAction("action1");
+      else if (mode === "frontOnly") setAction("action3");
+      else if (mode === "rearOnly") setAction("action4");
+      else if (mode === "circledOnly") setAction("action6");
+      else if (mode === "nonCircledOnly") setAction("action5");
+      else if (mode === "yawLeftMissingFL" || mode === "yawLeftMissingRR") setAction("action5");
+      else if (mode === "yawRightMissingFR" || mode === "yawRightMissingRL") setAction("action6");
+    }
+
+    const threePropLiftProfiles = {
+      yawLeftMissingFL:  [0.0, 0.7, 0.7, 1.0],
+      yawRightMissingFR: [0.7, 0.0, 1.0, 0.7],
+      yawRightMissingRL: [0.7, 1.0, 0.0, 0.7],
+      yawLeftMissingRR:  [1.0, 0.7, 0.7, 0.0]
+    };
+
+    const motorSigns = [
+      { x: -1, z: +1 }, { x: +1, z: +1 }, { x: -1, z: -1 }, { x: +1, z: -1 }
+    ];
+
+    function getThreePropTiltXZ(mode, maxTilt = 0.14) {
+      const w = threePropLiftProfiles[mode];
+      if (!w) return { x: 0, z: 0 };
+
+      let sumW = 0, wx = 0, wz = 0;
+      for (let i = 0; i < 4; i++) { sumW += w[i]; wx += motorSigns[i].x * w[i]; wz += motorSigns[i].z * w[i]; }
+      if (sumW <= 0.0001) return { x: 0, z: 0 };
+
+      const rawZ = (wx / sumW) * 1.15;
+      const rawX = (-wz / sumW) * 1.15;
+      return {
+        x: THREE.MathUtils.clamp(rawX * maxTilt, -maxTilt, maxTilt),
+        z: THREE.MathUtils.clamp(rawZ * maxTilt, -maxTilt, maxTilt)
+      };
+    }
+
+    flightBtn.addEventListener("click", () => {
+      if (flightState === "ground") {
+        const cnt = installedCount();
+        if (cnt === 1) {
+          setAction("actionObserve");
+          setState("singleObserve");
+          showToast(t("msgSingleObserve"), 3000);
+          return;
+        }
+
+        const partial = evaluatePartialMode();
+        if (partial) { startPartialResponse(partial); return; }
+
+        if (allPropsCorrect()) {
+          flightAnchorPos.set(drone.position.x, 0, drone.position.z);
+          flightAnchorYaw = drone.rotation.y;
+          setAction("actionNormalFlight");
+          pendingCongrats = !usedHiddenAutoSetup;
+          setState("takeoff");
+        } else {
+          setAction("actionNone");
+          setState("failedSpin");
+          showToast(t("msgFailed"), 2600);
+        }
+      } else if (flightState === "hover") {
+        setState("landing");
+      }
+    });
+
+    detachBtn.addEventListener("click", () => {
+      if (flightState !== "ground") return;
+      usedHiddenAutoSetup = false;
+      setAction("actionNone");
+      resetDroneAttitudeAndPose();
+      detachAllPropsRandom();
+    });
+
+    function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
+    function easeInOutQuad(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
+
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+    const dragPlane = new THREE.Plane();
+    const dragOffset = new THREE.Vector3();
+
+    let dragging = { active: false, propIndex: -1, startedAttachedMotor: null, startWorldPos: new THREE.Vector3(), allowAutoInstall: false };
+    let pointerDownInfo = { x: 0, y: 0, moved: false };
+    let dragOutline = null;
+    let orbitUnlockAt = 0;
+
+    function freezeOrbitMoment(ms = 170) { controls.enabled = false; orbitUnlockAt = performance.now() + ms; }
+    function showDragOutline(propIndex) {
+      clearDragOutline();
+      dragOutline = new THREE.BoxHelper(propStates[propIndex].root, 0xffffff);
+      dragOutline.material.depthTest = false;
+      dragOutline.material.transparent = true;
+      dragOutline.material.opacity = 1;
+      scene.add(dragOutline);
+    }
+    function clearDragOutline() {
+      if (!dragOutline) return;
+      scene.remove(dragOutline);
+      dragOutline.geometry.dispose();
+      dragOutline.material.dispose();
+      dragOutline = null;
+    }
+
+    function setPointerFromEvent(e) {
+      const rect = renderer.domElement.getBoundingClientRect();
+      pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+      pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
+    }
+
+    function getRayPlanePoint(e) {
+      setPointerFromEvent(e);
+      raycaster.setFromCamera(pointer, camera);
+      const hit = new THREE.Vector3();
+      if (raycaster.ray.intersectPlane(dragPlane, hit)) return hit;
+      return null;
+    }
+
+    function updateDraggedPropPosition(e) {
+      const hit = getRayPlanePoint(e);
+      if (!hit) return;
+      const targetWorld = hit.clone().add(dragOffset);
+      clampDetachedWorldPosition(targetWorld);
+      propStates[dragging.propIndex].root.position.copy(targetWorld);
+      if (dragOutline) dragOutline.update();
+    }
+
+    function findInstallMotorForProp(propIndex) {
+      const p = propStates[propIndex].root.position;
+      let bestMotor = -1;
+      let bestScore = Infinity;
+
+      for (let m = 0; m < 4; m++) {
+        if (motorOccupiedBy[m] !== null && motorOccupiedBy[m] !== propIndex) continue;
+
+        const motorC = getMotorCenterWorld(m);
+        const mount = getMotorMountWorld(m);
+        const footArea = getFootAreaWorld(m);
+        const footC = getFootCenterWorld(m);
+        const footB = getFootBoundsWorld(m);
+
+        const dxM = p.x - motorC.x, dzM = p.z - motorC.z, dyM = p.y - motorC.y;
+        const hM = Math.hypot(dxM, dzM);
+
+        const dxMount = p.x - mount.x, dzMount = p.z - mount.z, dyMount = p.y - mount.y;
+        const hMount = Math.hypot(dxMount, dzMount);
+
+        const dxFootA = p.x - footArea.x, dzFootA = p.z - footArea.z, dyFootA = p.y - footArea.y;
+        const hFootA = Math.hypot(dxFootA, dzFootA);
+
+        const dxFoot = p.x - footC.x, dzFoot = p.z - footC.z;
+        const hFoot = Math.hypot(dxFoot, dzFoot);
+        const yInFootBand = (p.y >= footB.bottomY - 0.15 && p.y <= footB.topY + 0.24);
+
+        const nearUnderFoot = (hFootA < 0.78 && Math.abs(dyFootA) < 0.70);
+        const touchFoot = (hFoot < motorRadius + 0.18 && yInFootBand);
+        const touchMotor = (hM < motorRadius + 0.22 && Math.abs(dyM) < motorHeight * 0.6 + 0.28);
+        const nearMotorTop = (hMount < 0.70 && Math.abs(dyMount) < 0.70);
+
+        if (nearUnderFoot || touchFoot || touchMotor || nearMotorTop) {
+          const score = Math.min(
+            hFootA + Math.abs(dyFootA) * 0.25,
+            hFoot + (yInFootBand ? 0 : 0.8),
+            hM + Math.abs(dyM) * 0.25,
+            hMount + Math.abs(dyMount) * 0.25
+          );
+          if (score < bestScore) { bestScore = score; bestMotor = m; }
+        }
+      }
+      return bestMotor;
+    }
+
+    function getProjectedBoxRectForProp(propIndex) {
+      const box = new THREE.Box3().setFromObject(propStates[propIndex].root);
+      if (box.isEmpty()) return null;
+
+      const w = renderer.domElement.clientWidth;
+      const h = renderer.domElement.clientHeight;
+      const corners = [
+        new THREE.Vector3(box.min.x, box.min.y, box.min.z),
+        new THREE.Vector3(box.min.x, box.min.y, box.max.z),
+        new THREE.Vector3(box.min.x, box.max.y, box.min.z),
+        new THREE.Vector3(box.min.x, box.max.y, box.max.z),
+        new THREE.Vector3(box.max.x, box.min.y, box.min.z),
+        new THREE.Vector3(box.max.x, box.min.y, box.max.z),
+        new THREE.Vector3(box.max.x, box.max.y, box.min.z),
+        new THREE.Vector3(box.max.x, box.max.y, box.max.z)
+      ];
+
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      let anyVisible = false;
+
+      for (const c of corners) {
+        const ndc = c.clone().project(camera);
+        if (ndc.z < -1 || ndc.z > 1) continue;
+        anyVisible = true;
+        const sx = (ndc.x * 0.5 + 0.5) * w;
+        const sy = (-ndc.y * 0.5 + 0.5) * h;
+        if (sx < minX) minX = sx;
+        if (sx > maxX) maxX = sx;
+        if (sy < minY) minY = sy;
+        if (sy > maxY) maxY = sy;
+      }
+      if (!anyVisible) return null;
+      return { minX, minY, maxX, maxY, cx: (minX + maxX) * 0.5, cy: (minY + maxY) * 0.5 };
+    }
+
+    function projectWorldToScreen(v3) {
+      const ndc = v3.clone().project(camera);
+      if (ndc.z < -1 || ndc.z > 1) return null;
+      const w = renderer.domElement.clientWidth;
+      const h = renderer.domElement.clientHeight;
+      return { x: (ndc.x * 0.5 + 0.5) * w, y: (-ndc.y * 0.5 + 0.5) * h, z: ndc.z };
+    }
+
+    function findCoveredMotorForPropInView(propIndex) {
+      const rect = getProjectedBoxRectForProp(propIndex);
+      if (!rect) return -1;
+
+      const propCenterWorld = propStates[propIndex].root.getWorldPosition(new THREE.Vector3());
+      const propCenterScreen = projectWorldToScreen(propCenterWorld);
+      if (!propCenterScreen) return -1;
+
+      let bestMotor = -1;
+      let bestScore = Infinity;
+      const pad = 5;
+
+      for (let m = 0; m < 4; m++) {
+        if (motorOccupiedBy[m] !== null && motorOccupiedBy[m] !== propIndex) continue;
+        const motorPoint = getMotorMountWorld(m);
+        const motorScreen = projectWorldToScreen(motorPoint);
+        if (!motorScreen) continue;
+
+        const inRect =
+          motorScreen.x >= rect.minX - pad &&
+          motorScreen.x <= rect.maxX + pad &&
+          motorScreen.y >= rect.minY - pad &&
+          motorScreen.y <= rect.maxY + pad;
+        if (!inRect) continue;
+        if (propCenterScreen.z > motorScreen.z + 0.02) continue;
+
+        const screenDist = Math.hypot(motorScreen.x - rect.cx, motorScreen.y - rect.cy);
+        const depthPenalty = Math.abs(motorScreen.z - propCenterScreen.z) * 180;
+        const worldPenalty = propCenterWorld.distanceTo(motorPoint) * 40;
+        const score = screenDist + depthPenalty + worldPenalty;
+        if (score < bestScore) { bestScore = score; bestMotor = m; }
+      }
+      return bestMotor;
+    }
+
+    function resolvePropIndexFromObject(obj) {
+      let cur = obj;
+      while (cur) {
+        if (cur.userData && typeof cur.userData.propIndex === "number") return cur.userData.propIndex;
+        cur = cur.parent;
+      }
+      return -1;
+    }
+
+    renderer.domElement.addEventListener("pointerdown", (e) => {
+      pointerDownInfo = { x: e.clientX, y: e.clientY, moved: false };
+      if (flightState !== "ground") return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+
+      setPointerFromEvent(e);
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(propPickMeshes, false);
+
+      if (hits.length > 0) {
+        const propIndex = resolvePropIndexFromObject(hits[0].object);
+        if (propIndex !== -1) {
+          usedHiddenAutoSetup = false;
+          const state = propStates[propIndex];
+          const wasAttached = state.attachedMotor;
+
+          dragging.active = true;
+          dragging.propIndex = propIndex;
+          dragging.startedAttachedMotor = wasAttached;
+          dragging.startWorldPos.copy(state.root.position);
+          dragging.allowAutoInstall = (wasAttached === null);
+
+          clearMotorOccupancyOfProp(propIndex);
+
+          const propWorldPos = state.root.position.clone();
+          const camNormal = camera.getWorldDirection(new THREE.Vector3()).normalize();
+          dragPlane.setFromNormalAndCoplanarPoint(camNormal, propWorldPos);
+
+          const planeHit = new THREE.Vector3();
+          if (raycaster.ray.intersectPlane(dragPlane, planeHit)) dragOffset.copy(propWorldPos).sub(planeHit);
+          else dragOffset.set(0, 0, 0);
+
+          showDragOutline(propIndex);
+          controls.enabled = false;
+          updateDraggedPropPosition(e);
+        }
+      }
+    });
+
+    renderer.domElement.addEventListener("pointermove", (e) => {
+      if (Math.abs(e.clientX - pointerDownInfo.x) > 3 || Math.abs(e.clientY - pointerDownInfo.y) > 3) pointerDownInfo.moved = true;
+      if (dragging.active) {
+        updateDraggedPropPosition(e);
+        if (dragging.allowAutoInstall) {
+          const idx = dragging.propIndex;
+          const coveredMotor = findCoveredMotorForPropInView(idx);
+          const touchMotor = coveredMotor !== -1 ? coveredMotor : findInstallMotorForProp(idx);
+
+          if (touchMotor !== -1) {
+            attachPropToMotor(idx, touchMotor);
+            dragging.active = false;
+            dragging.propIndex = -1;
+            dragging.startedAttachedMotor = null;
+            dragging.allowAutoInstall = false;
+            clearDragOutline();
+            freezeOrbitMoment(180);
+          }
+        }
+      }
+    });
+
+    renderer.domElement.addEventListener("pointerup", (e) => {
+      if (dragging.active) {
+        const idx = dragging.propIndex;
+        const movedDist = propStates[idx].root.position.distanceTo(dragging.startWorldPos);
+
+        const coveredMotor = findCoveredMotorForPropInView(idx);
+        const targetMotor = coveredMotor !== -1 ? coveredMotor : findInstallMotorForProp(idx);
+
+        let attached = false;
+        if (targetMotor !== -1) {
+          const sameAsStart = dragging.startedAttachedMotor !== null && targetMotor === dragging.startedAttachedMotor;
+          if (!(sameAsStart && movedDist < 1.1)) attached = attachPropToMotor(idx, targetMotor);
+        }
+
+        if (!attached) {
+          const p = propStates[idx].root.position.clone();
+          clampDetachedWorldPosition(p);
+          placePropDetachedAtWorld(idx, p);
+          freezeOrbitMoment(80);
+        } else {
+          freezeOrbitMoment(180);
+        }
+
+        dragging.active = false;
+        dragging.propIndex = -1;
+        dragging.startedAttachedMotor = null;
+        dragging.allowAutoInstall = false;
+        clearDragOutline();
+        return;
+      }
+
+      if (!pointerDownInfo.moved && flightState === "ground") {
+        setPointerFromEvent(e);
+        raycaster.setFromCamera(pointer, camera);
+        const labelHit = raycaster.intersectObject(label, false);
+        if (labelHit.length > 0) restoreAllPropsCorrectly();
+      }
+    });
+
+    renderer.domElement.addEventListener("pointerleave", () => {
+      if (dragging.active) {
+        dragging.active = false;
+        dragging.propIndex = -1;
+        dragging.startedAttachedMotor = null;
+        dragging.allowAutoInstall = false;
+        clearDragOutline();
+        freezeOrbitMoment(100);
+      }
+    });
+
+    renderer.domElement.addEventListener("dblclick", (e) => {
+      if (flightState !== "ground") return;
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+
+      setPointerFromEvent(e);
+      raycaster.setFromCamera(pointer, camera);
+      const hits = raycaster.intersectObjects(propPickMeshes, false);
+      if (hits.length === 0) return;
+
+      const propIndex = resolvePropIndexFromObject(hits[0].object);
+      if (propIndex === -1) return;
+
+      if (propStates[propIndex].attachedMotor !== null) {
+        const ok = detachAttachedPropToGround(propIndex);
+        if (ok) {
+          usedHiddenAutoSetup = false;
+          setAction("actionNone");
+          showToast(t("msgDblDetach"), 1400);
+        }
+      }
+    });
+
+    const clock = new THREE.Clock();
+    let ledBlinkPhase = 0;
+
+    function updateAttachedPropTransforms() {
+      for (let i = 0; i < propStates.length; i++) {
+        const s = propStates[i];
+        if (s.attachedMotor !== null) {
+          s.root.position.copy(getMotorMountWorld(s.attachedMotor));
+          s.root.quaternion.copy(drone.quaternion);
+        }
+      }
+    }
+
+    function isYawMode(mode) {
+      return mode === "circledOnly" || mode === "nonCircledOnly" || mode === "yawLeftMissingFL" || mode === "yawRightMissingFR" || mode === "yawRightMissingRL" || mode === "yawLeftMissingRR";
+    }
+    function isTwoPropYawMode(mode) { return mode === "circledOnly" || mode === "nonCircledOnly"; }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      const dt = Math.min(0.05, clock.getDelta());
+      stateTime += dt;
+
+      ledBlinkPhase += dt * 5.2;
+      const ledOn = Math.sin(ledBlinkPhase) > 0;
+      ledPurpleMat.opacity = ledOn ? 1 : 0.2;
+      frontLedGlow.intensity = ledOn ? 1.4 : 0.2;
+
+      if (congratsEl.style.display === "block" && performance.now() > congratsUntil) congratsEl.style.display = "none";
+
+      let spinFactor = 0;
+      if (flightState === "ground") { drone.position.y = 0; spinFactor = 0; }
+
+      if (flightState === "singleObserve") {
+        drone.position.y = 0;
+        if (stateTime < 3.0) spinFactor = 1;
+        else {
+          const q = Math.min((stateTime - 3.0) / 2.0, 1);
+          spinFactor = 1 - 0.98 * q;
+          if (q >= 1) { spinFactor = 0; setState("ground"); setAction("actionNone"); }
+        }
+      }
+
+      if (flightState === "failedSpin") {
+        drone.position.y = 0;
+        spinFactor = 1;
+        if (stateTime >= failedSpinDuration) { setState("ground"); spinFactor = 0; }
+      }
+
+      if (flightState === "partialResponse") {
+        const p = Math.min(stateTime / partialDuration, 1);
+        spinFactor = 1;
+
+        const rollStrong = 0.34, pitchStrong = 0.30, yawAmount = 0.48;
+
+        if (!isYawMode(partialMode)) {
+          drone.position.set(0, 0, 0);
+          drone.rotation.set(0, baseYaw, 0);
+          const pulse = p < 0.5 ? easeOutCubic(p / 0.5) : (1 - easeOutCubic((p - 0.5) / 0.5));
+
+          if (partialMode === "leftOnly") drone.rotation.z = -rollStrong * pulse;
+          else if (partialMode === "rightOnly") drone.rotation.z = +rollStrong * pulse;
+          else if (partialMode === "frontOnly") { drone.rotation.x = -pitchStrong * pulse; drone.position.y = 0.10 * pulse; }
+          else if (partialMode === "rearOnly") { drone.rotation.x = +pitchStrong * pulse; drone.position.y = 0.10 * pulse; }
+
+          if (p >= 1) { spinFactor = 0; resetDroneAttitudeAndPose(); setState("ground"); }
+        } else {
+          const twoPropYaw = isTwoPropYawMode(partialMode);
+          const yawBase = partialStartRot.y;
+          drone.position.set(partialStartPos.x, 0, partialStartPos.z);
+          drone.rotation.set(0, yawBase, 0);
+
+          let targetYaw = yawBase;
+          let targetX = 0;
+          let targetZ = 0;
+
+          if (partialMode === "circledOnly") targetYaw = yawBase - yawAmount;
+          else if (partialMode === "nonCircledOnly") targetYaw = yawBase + yawAmount;
+          else if (partialMode === "yawLeftMissingFL") { targetYaw = yawBase + yawAmount; ({ x: targetX, z: targetZ } = getThreePropTiltXZ("yawLeftMissingFL")); }
+          else if (partialMode === "yawRightMissingFR") { targetYaw = yawBase - yawAmount; ({ x: targetX, z: targetZ } = getThreePropTiltXZ("yawRightMissingFR")); }
+          else if (partialMode === "yawRightMissingRL") { targetYaw = yawBase - yawAmount; ({ x: targetX, z: targetZ } = getThreePropTiltXZ("yawRightMissingRL")); }
+          else if (partialMode === "yawLeftMissingRR") { targetYaw = yawBase + yawAmount; ({ x: targetX, z: targetZ } = getThreePropTiltXZ("yawLeftMissingRR")); }
+
+          if (twoPropYaw) {
+            const e = easeOutCubic(p);
+            drone.rotation.y = yawBase + (targetYaw - yawBase) * e;
+            if (p >= 1) {
+              spinFactor = 0;
+              drone.position.y = 0;
+              drone.rotation.x = 0;
+              drone.rotation.z = 0;
+              drone.rotation.y = targetYaw;
+              setState("ground");
+            }
+          } else {
+            const stageSplit = 0.65;
+            const stageA = Math.min(p / stageSplit, 1);
+            const stageB = p > stageSplit ? Math.min((p - stageSplit) / (1 - stageSplit), 1) : 0;
+            const eA = easeOutCubic(stageA);
+
+            drone.rotation.y = yawBase + (targetYaw - yawBase) * eA;
+            drone.rotation.x = targetX * eA;
+            drone.rotation.z = targetZ * eA;
+            drone.position.y = 0.22 * eA;
+
+            if (stageB > 0) {
+              const eB = easeInOutQuad(stageB);
+              drone.rotation.y = targetYaw;
+              drone.rotation.x = targetX * (1 - eB);
+              drone.rotation.z = targetZ * (1 - eB);
+              drone.position.y = 0.22 * (1 - eB);
+            }
+
+            if (p >= 1) {
+              spinFactor = 0;
+              drone.position.y = 0;
+              drone.rotation.x = 0;
+              drone.rotation.z = 0;
+              drone.rotation.y = targetYaw;
+              setState("ground");
+            }
+          }
+        }
+      }
+
+      if (flightState === "takeoff") {
+        const p = Math.min(stateTime / takeoffDuration, 1);
+        drone.position.x = flightAnchorPos.x;
+        drone.position.z = flightAnchorPos.z;
+        drone.rotation.x = 0;
+        drone.rotation.z = 0;
+        drone.rotation.y = flightAnchorYaw;
+        drone.position.y = easeOutCubic(p) * hoverAltitude;
+        spinFactor = 1;
+        if (p >= 1) setState("hover");
+      }
+
+      if (flightState === "hover") {
+        hoverPhase += dt;
+        drone.position.x = flightAnchorPos.x;
+        drone.position.z = flightAnchorPos.z;
+        drone.rotation.x = 0;
+        drone.rotation.z = 0;
+        drone.rotation.y = flightAnchorYaw;
+        drone.position.y = hoverAltitude + Math.sin(hoverPhase * 2.0) * 0.012;
+        spinFactor = 1;
+      }
+
+      if (flightState === "landing") {
+        const p = Math.min(stateTime / landingDuration, 1);
+        drone.position.x = flightAnchorPos.x;
+        drone.position.z = flightAnchorPos.z;
+        drone.rotation.x = 0;
+        drone.rotation.z = 0;
+        drone.rotation.y = flightAnchorYaw;
+        drone.position.y = hoverAltitude * (1 - easeInOutQuad(p));
+
+        const slowWindowStart = landingDuration - 2.0;
+        if (stateTime <= slowWindowStart) spinFactor = 1;
+        else {
+          const q = Math.min((stateTime - slowWindowStart) / 2.0, 1);
+          spinFactor = 1 - 0.95 * q;
+        }
+
+        if (p >= 1) {
+          drone.position.y = 0;
+          drone.rotation.x = 0;
+          drone.rotation.z = 0;
+          setAction("actionNone");
+          setState("ground");
+          spinFactor = 0;
+        }
+      }
+
+      for (let i = 0; i < propStates.length; i++) {
+        const s = propStates[i];
+        if (s.attachedMotor !== null) {
+          s.spinAngle += spinDir[s.attachedMotor] * baseSpin * spinFactor;
+          s.spinner.rotation.y = s.spinAngle;
+        }
+      }
+
+      updateAttachedPropTransforms();
+      if (dragOutline) dragOutline.update();
+      if (!dragging.active && performance.now() >= orbitUnlockAt) controls.enabled = true;
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    function updateUIText() {
+      titleBar.textContent = t("title");
+      instructionBar.textContent = t("instruction");
+      tutorialBtn.textContent = t("tutorial");
+      langBtn.textContent = t("languageToggle");
+      missionBox.textContent = t("missionDone");
+      missionProgressBox.textContent = t("missionProgress");
+
+      refreshButtonTexts();
+      actionPill.textContent = t(currentActionKey);
+
+      prevStepBtn.textContent = t("tutPrev");
+      nextStepBtn.textContent = t("tutNext");
+      closeTutorialBtn.textContent = t("tutClose");
+      tutorialTitle.textContent = t("tutTitle");
+    }
+
+    drawEduhkLabel("#111111");
+    applyDroneColor(colorIndex);
+    renderQuizTable();
+    evaluateQuizTable();
+    updateUIText();
+    setAction("actionNone");
+    animate();
+
+    window.addEventListener("resize", () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  </script>
+</body>
+</html>
