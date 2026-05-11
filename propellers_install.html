@@ -146,6 +146,15 @@
       transform: none;
     }
 
+    .reset-btn {
+      background: #dc2626;
+      color: #ffffff;
+      border-color: #b91c1c;
+    }
+    .reset-btn:hover {
+      background: #b91c1c;
+    }
+
     .action-pill {
       border: 1px solid #d1d5db;
       background: rgba(255, 255, 255, 0.95);
@@ -212,16 +221,18 @@
     .quiz-panel {
       position: fixed;
       left: 12px;
-      right: 12px;
-      bottom: calc(12px + env(safe-area-inset-bottom));
+      top: 50%;
+      transform: translateY(-50%);
+      width: min(274px, calc(100vw - 24px));
+      max-height: min(78vh, 620px);
       z-index: 42;
       border: 1px solid #d1d5db;
       border-radius: 12px;
       background: rgba(255, 255, 255, 0.99);
       box-shadow: 0 10px 26px rgba(0, 0, 0, 0.18);
-      padding: 10px;
+      padding: 8px;
       display: none;
-      overflow: hidden;
+      overflow: auto;
     }
 
     .quiz-head {
@@ -243,19 +254,14 @@
 
     .quiz-title {
       margin: 0;
-      font-size: 17px;
+      font-size: 15px;
       color: #111827;
       white-space: nowrap;
       flex: 0 0 auto;
     }
 
     .quiz-sub-inline {
-      margin: 0;
-      font-size: 13px;
-      color: #6b7280;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      display: none;
     }
 
     .quiz-close {
@@ -265,8 +271,8 @@
       font-weight: 900;
       font-size: 16px;
       line-height: 1;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       border-radius: 8px;
       cursor: pointer;
       flex: 0 0 auto;
@@ -285,41 +291,90 @@
       width: 100%;
       border-collapse: collapse;
       table-layout: fixed;
-      font-size: 12px;
+      font-size: 11px;
     }
 
     .quiz-table th, .quiz-table td {
       border: 1px solid #e5e7eb;
-      padding: 4px 4px;
+      padding: 2px 1px;
       text-align: center;
       color: #111827;
       white-space: normal;
       line-height: 1.2;
-      height: 34px;
+      height: 30px;
     }
 
     .quiz-table th:first-child,
     .quiz-table td:first-child {
       text-align: left;
-      width: 82px;
+      width: 50px;
       font-weight: 700;
-      padding-left: 8px;
+      padding-left: 5px;
+    }
+
+    .quiz-table th:nth-child(2),
+    .quiz-table td:nth-child(2) {
+      width: 66px;
+      padding-left: 1px;
+      padding-right: 1px;
     }
 
     .quiz-cell-correct { background: #dcfce7; color: #166534; font-weight: 700; }
     .quiz-cell-wrong { background: #fee2e2; color: #991b1b; font-weight: 700; }
 
-    .quiz-select {
-      width: 100%;
-      border: 1px solid #d1d5db;
+    .quiz-head-btn {
+      border: 1px solid #15803d;
+      background: #22c55e;
+      color: #ffffff;
       border-radius: 6px;
-      padding: 2px 3px;
-      background: #fff;
       font-size: 11px;
+      font-weight: 800;
+      padding: 4px 4px;
+      width: 100%;
+      cursor: pointer;
+      line-height: 1.1;
+    }
+    .quiz-head-btn:hover { background: #16a34a; }
+    .quiz-head-btn:disabled { opacity: 0.65; cursor: not-allowed; }
+
+    .quiz-select {
+      width: 56px;
+      border: 1px solid #d1d5db;
+      border-radius: 5px;
+      padding: 1px 2px;
+      background: #fff;
+      font-size: 10px;
       font-weight: 700;
       color: #111827;
-      height: 24px;
+      height: 21px;
+      margin: 0 auto;
+      display: block;
     }
+
+    .quiz-nav {
+      margin-top: 6px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      min-height: 32px;
+    }
+
+    .quiz-next {
+      border: 1px solid #2563eb;
+      background: #3b82f6;
+      color: #ffffff;
+      border-radius: 999px;
+      width: 32px;
+      height: 32px;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+    }
+
+    .quiz-next:hover { background: #2563eb; }
 
     .quiz-final {
       margin-top: 8px;
@@ -536,13 +591,21 @@
       #tutorialBtn { min-width: 82px; }
       .mission-box { top: 46px; }
 
+      .quiz-panel {
+        left: 10px;
+        width: min(258px, calc(100vw - 20px));
+        top: 56%;
+        max-height: 72vh;
+      }
+
       .quiz-table { font-size: 10px; }
-      .quiz-table th, .quiz-table td { padding: 2px 2px; height: 30px; }
-      .quiz-select { font-size: 10px; height: 22px; }
-      .quiz-title { font-size: 14px; }
-      .quiz-sub-inline { font-size: 11px; }
+      .quiz-table th, .quiz-table td { padding: 2px 1px; height: 28px; }
+      .quiz-select { font-size: 10px; height: 21px; width: 52px; }
+      .quiz-title { font-size: 13px; }
       .quiz-table th:first-child,
-      .quiz-table td:first-child { width: 66px; }
+      .quiz-table td:first-child { width: 46px; }
+      .quiz-table th:nth-child(2),
+      .quiz-table td:nth-child(2) { width: 60px; }
 
       .ui-btn {
         min-width: 132px;
@@ -628,6 +691,7 @@
     <button id="flightBtn" class="ui-btn">Take off</button>
     <button id="detachBtn" class="ui-btn">Propeller detached</button>
     <button id="colorBtn" class="ui-btn">Colour</button>
+    <button id="resetBtn" class="ui-btn reset-btn">Reset</button>
   </div>
 
   <div id="toast" class="toast"></div>
@@ -646,6 +710,9 @@
         <thead><tr id="quizHeadRow"></tr></thead>
         <tbody id="quizBody"></tbody>
       </table>
+    </div>
+    <div class="quiz-nav">
+      <button id="quizNextBtn" class="quiz-next" aria-label="Next case">➜</button>
     </div>
     <div id="quizFinal" class="quiz-final"></div>
   </div>
@@ -678,6 +745,7 @@
         landing: "Landing...",
         detached: "Propeller detached",
         colour: "Colour",
+        reset: "Reset",
         instruction: "Drag propellers to motors, press Take off to test, and complete the table after success.",
         actionNone: "None",
         msgCongrats: "🎉 Great job! Correct setup verified and successful takeoff!",
@@ -685,6 +753,7 @@
         msgFailed: "Configuration is not sufficient for takeoff. Observe and revise your setup.",
         msgDblDetach: "Propeller detached and placed on the ground.",
         msgQuizAllCorrect: "🌟 Excellent! You correctly completed all 8 motion-speed cases.",
+        msgColumnDone: "✅ Column complete! Action demonstrated for 3 seconds.",
         missionDone: "Mission Completed",
         missionProgress: "Mission in progress",
         action1: "Roll Right",
@@ -706,8 +775,9 @@
         controlsTouchL1: "One finger = move propeller;",
         controlsTouchL2: "Two fingers = rotate/zoom view",
         authorSignature: "Richard C Y YEUNG, EdUHK",
-        quizTitle: "Propeller Speed Logic Check",
-        quizSub: "Choose Fast/Slow for each propeller in each motion case",
+        quizTitle: "Propeller Speed Combination",
+        quizSub: "",
+        quizProgress: "Progress",
         thPropeller: "Propeller",
         thFL: "FL",
         thFR: "FR",
@@ -778,6 +848,7 @@ Summarize:
         landing: "降落中...",
         detached: "螺旋槳分離",
         colour: "顏色",
+        reset: "重設",
         instruction: "拖曳螺旋槳到馬達，按「起飛」測試；成功後完成速度邏輯表。",
         actionNone: "無",
         msgCongrats: "🎉 做得很好！你已完成正確配置並成功起飛！",
@@ -785,6 +856,7 @@ Summarize:
         msgFailed: "目前配置不足以起飛。請觀察現象並修正配置。",
         msgDblDetach: "螺旋槳已分離並放到地面。",
         msgQuizAllCorrect: "🌟 太棒了！你已正確完成 8 種動作速度組合。",
+        msgColumnDone: "✅ 本欄完成！已示範對應動作 3 秒。",
         missionDone: "任務完成",
         missionProgress: "任務進行中",
         action1: "向右滾轉",
@@ -806,8 +878,9 @@ Summarize:
         controlsTouchL1: "單指 = 移動螺旋槳；",
         controlsTouchL2: "雙指 = 旋轉/縮放視角",
         authorSignature: "Richard C Y YEUNG, EdUHK",
-        quizTitle: "螺旋槳速度邏輯檢核",
-        quizSub: "為每種動作選擇每個螺旋槳的快/慢",
+        quizTitle: "螺旋槳速度組合",
+        quizSub: "",
+        quizProgress: "進度",
         thPropeller: "螺旋槳",
         thFL: "左前",
         thFR: "右前",
@@ -887,6 +960,8 @@ Summarize:
     const PROP_KEYS = ["thFL", "thFR", "thRL", "thRR"];
 
     const quizAnswers = QUIZ_CASES.map(() => ["", "", "", ""]);
+    const quizCaseSolved = QUIZ_CASES.map(() => false);
+    let currentQuizCase = 0;
     let quizUnlocked = false;
     let quizAllCorrect = false;
 
@@ -935,6 +1010,25 @@ Summarize:
     const grid = new THREE.GridHelper(42, 42, 0xd1d5db, 0xe5e7eb);
     grid.position.y = groundY + 0.02;
     scene.add(grid);
+
+    const flowGroup = new THREE.Group();
+    scene.add(flowGroup);
+    const flowMarkers = [];
+    const flowBounds = 22;
+    for (let i = 0; i < 160; i++) {
+      const marker = new THREE.Mesh(
+        new THREE.SphereGeometry(0.03, 8, 8),
+        new THREE.MeshBasicMaterial({ color: 0xd1d5db })
+      );
+      marker.position.set(
+        THREE.MathUtils.randFloatSpread(flowBounds * 2),
+        groundY + 0.04,
+        THREE.MathUtils.randFloatSpread(flowBounds * 2)
+      );
+      flowGroup.add(marker);
+      flowMarkers.push(marker);
+    }
+    const bgScroll = new THREE.Vector2(0, 0);
 
     const drone = new THREE.Group();
     scene.add(drone);
@@ -1235,20 +1329,21 @@ Summarize:
       const spinner = new THREE.Group();
       root.add(spinner);
 
-      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 22), hubMat);
+      const localHubMat = hubMat.clone();
+      const localBladeMat = propMat.clone();
+      const localDomeMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.22 });
+
+      const hub = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 22), localHubMat);
       spinner.add(hub);
 
-      const dome = new THREE.Mesh(
-        new THREE.SphereGeometry(0.055, 18, 14),
-        new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.35, metalness: 0.22 })
-      );
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(0.055, 18, 14), localDomeMat);
       dome.position.y = 0.05;
       spinner.add(dome);
 
       const bladeGeo = createBladeGeometry({ mirror: !isCW });
       const pitch = isCW ? 0.22 : -0.22;
       for (let k = 0; k < 2; k++) {
-        const blade = new THREE.Mesh(bladeGeo, propMat);
+        const blade = new THREE.Mesh(bladeGeo, localBladeMat);
         blade.position.set(0.08, 0.02, 0);
         blade.rotation.y = k * Math.PI;
         blade.rotation.x = (k === 0) ? pitch : -pitch;
@@ -1316,11 +1411,64 @@ Summarize:
     const motorOccupiedBy = [null, null, null, null];
     let usedHiddenAutoSetup = false;
 
+    function setPropOpacity(propIndex, alpha) {
+      const s = propStates[propIndex];
+      s.root.traverse((obj) => {
+        if (!obj.isMesh) return;
+        const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+        mats.forEach((m) => {
+          if (!m) return;
+          m.transparent = alpha < 1 ? true : m.transparent;
+          m.opacity = alpha;
+          m.needsUpdate = true;
+        });
+      });
+      s.opacity = alpha;
+    }
+
+    function resetAllPropsVisualState() {
+      for (let i = 0; i < propStates.length; i++) {
+        propStates[i].root.visible = true;
+        setPropOpacity(i, 1);
+      }
+    }
+
+    const detachedFade = {
+      active: false,
+      time: 0,
+      duration: 1.2,
+      targets: []
+    };
+
+    function startDetachedFadeOut() {
+      detachedFade.targets = [];
+      for (let i = 0; i < propStates.length; i++) {
+        if (propStates[i].attachedMotor === null && propStates[i].root.visible) detachedFade.targets.push(i);
+      }
+      if (detachedFade.targets.length === 0) {
+        detachedFade.active = false;
+        return;
+      }
+      detachedFade.time = 0;
+      detachedFade.active = true;
+      detachedFade.targets.forEach((idx) => {
+        propStates[idx].root.visible = true;
+        setPropOpacity(idx, 1);
+      });
+    }
+
+    function stopDetachedFadeOut(resetVisual = false) {
+      detachedFade.active = false;
+      detachedFade.time = 0;
+      detachedFade.targets = [];
+      if (resetVisual) resetAllPropsVisualState();
+    }
+
     function addPropInstance(isCW, hasWhiteDot) {
       const { root, spinner } = createPropeller({ isCW, hasWhiteDot });
       propsRoot.add(root);
       const idx = propStates.length;
-      propStates.push({ root, spinner, isCW, hasWhiteDot, attachedMotor: null, detached: true, spinAngle: Math.random() * Math.PI * 2 });
+      propStates.push({ root, spinner, isCW, hasWhiteDot, attachedMotor: null, detached: true, spinAngle: Math.random() * Math.PI * 2, opacity: 1 });
 
       root.traverse((child) => {
         if (child.isMesh) {
@@ -1364,6 +1512,8 @@ Summarize:
       motorOccupiedBy[motorIndex] = propIndex;
       s.attachedMotor = motorIndex;
       s.detached = false;
+      s.root.visible = true;
+      setPropOpacity(propIndex, 1);
       s.root.position.copy(getMotorMountWorld(motorIndex));
       s.root.quaternion.copy(drone.quaternion);
       return true;
@@ -1375,6 +1525,8 @@ Summarize:
       clearMotorOccupancyOfProp(propIndex);
       clampDetachedWorldPosition(worldPos);
       const s = propStates[propIndex];
+      s.root.visible = true;
+      setPropOpacity(propIndex, 1);
       s.root.position.copy(worldPos);
       s.root.rotation.set(0, s.root.rotation.y, 0);
     }
@@ -1405,6 +1557,8 @@ Summarize:
     }
 
     function detachAllPropsRandom() {
+      stopDetachedFadeOut(false);
+      resetAllPropsVisualState();
       const spots = generateRandomDetachedSpots(propStates.length);
       for (let i = 0; i < propStates.length; i++) {
         placePropDetachedAtWorld(i, spots[i].clone());
@@ -1499,6 +1653,7 @@ Summarize:
     const flightBtn = document.getElementById("flightBtn");
     const detachBtn = document.getElementById("detachBtn");
     const colorBtn = document.getElementById("colorBtn");
+    const resetBtn = document.getElementById("resetBtn");
     const tutorialBtn = document.getElementById("tutorialBtn");
     const langBtn = document.getElementById("langBtn");
     const actionPill = document.getElementById("actionPill");
@@ -1518,6 +1673,7 @@ Summarize:
     const quizBody = document.getElementById("quizBody");
     const quizFinal = document.getElementById("quizFinal");
     const quizCloseBtn = document.getElementById("quizCloseBtn");
+    const quizNextBtn = document.getElementById("quizNextBtn");
 
     const missionBox = document.getElementById("missionBox");
     const missionProgressBox = document.getElementById("missionProgressBox");
@@ -1677,20 +1833,104 @@ Summarize:
       applyDroneColor(colorIndex);
     });
 
+    function completedQuizCount() {
+      return quizCaseSolved.reduce((acc, x) => acc + (x ? 1 : 0), 0);
+    }
+
+    function actionFromCaseKey(caseKey) {
+      switch (caseKey) {
+        case "rollRight": return "action1";
+        case "rollLeft": return "action2";
+        case "pitchBackward": return "action3";
+        case "pitchForward": return "action4";
+        case "yawLeft": return "action5";
+        case "yawRight": return "action6";
+        default: return "actionNormalFlight";
+      }
+    }
+
+    const quizDemo = {
+      active: false,
+      key: null,
+      time: 0,
+      duration: 3.0,
+      caseIndex: -1,
+      startPos: new THREE.Vector3(),
+      startRot: new THREE.Euler(),
+      capY: null
+    };
+    let quizPoseHold = false;
+
+    function startQuizDemo(caseIndex) {
+      if (quizDemo.active) return;
+      quizPoseHold = true;
+      quizDemo.active = true;
+      quizDemo.key = QUIZ_CASES[caseIndex].key;
+      quizDemo.time = 0;
+      quizDemo.duration = 3.0;
+      quizDemo.caseIndex = caseIndex;
+      quizDemo.startPos.copy(drone.position);
+      quizDemo.startRot.copy(drone.rotation);
+      quizDemo.capY = null;
+      setAction(actionFromCaseKey(quizDemo.key));
+      updateQuizNextButton();
+      renderCurrentCaseHeaderCell();
+    }
+
+    function randomNextUnsolvedCase() {
+      const candidates = [];
+      for (let i = 0; i < QUIZ_CASES.length; i++) {
+        if (!quizCaseSolved[i] && i !== currentQuizCase) candidates.push(i);
+      }
+      if (candidates.length === 0) {
+        for (let i = 0; i < QUIZ_CASES.length; i++) if (!quizCaseSolved[i]) candidates.push(i);
+      }
+      if (candidates.length === 0) return -1;
+      const pick = Math.floor(Math.random() * candidates.length);
+      return candidates[pick];
+    }
+
+    function updateQuizNextButton() {
+      const doneCount = completedQuizCount();
+      const canShow = quizCaseSolved[currentQuizCase] && doneCount < QUIZ_CASES.length && !quizDemo.active;
+      quizNextBtn.style.display = canShow ? "inline-flex" : "none";
+    }
+
+    function renderCurrentCaseHeaderCell() {
+      const th = quizHeadRow.querySelector('th[data-current="1"]');
+      if (!th) return;
+
+      th.innerHTML = "";
+      th.classList.remove("quiz-cell-correct");
+
+      const label = t(`motion_${QUIZ_CASES[currentQuizCase].key}`);
+      if (quizCaseSolved[currentQuizCase]) {
+        th.classList.add("quiz-cell-correct");
+        const btn = document.createElement("button");
+        btn.className = "quiz-head-btn";
+        btn.type = "button";
+        btn.textContent = label;
+        btn.disabled = quizDemo.active;
+        btn.addEventListener("click", () => startQuizDemo(currentQuizCase));
+        th.appendChild(btn);
+      } else {
+        th.textContent = label;
+      }
+    }
+
     function renderQuizTable() {
       quizTitle.textContent = t("quizTitle");
-      quizSub.textContent = t("quizSub");
+      quizSub.textContent = "";
 
       quizHeadRow.innerHTML = "";
       const firstTh = document.createElement("th");
       firstTh.textContent = t("thPropeller");
       quizHeadRow.appendChild(firstTh);
 
-      for (let m = 0; m < QUIZ_CASES.length; m++) {
-        const th = document.createElement("th");
-        th.textContent = t(`motion_${QUIZ_CASES[m].key}`);
-        quizHeadRow.appendChild(th);
-      }
+      const motionTh = document.createElement("th");
+      motionTh.dataset.current = "1";
+      quizHeadRow.appendChild(motionTh);
+      renderCurrentCaseHeaderCell();
 
       quizBody.innerHTML = "";
       for (let p = 0; p < 4; p++) {
@@ -1701,68 +1941,94 @@ Summarize:
         rowLabel.textContent = t(PROP_KEYS[p]);
         tr.appendChild(rowLabel);
 
-        for (let m = 0; m < QUIZ_CASES.length; m++) {
-          const td = document.createElement("td");
-          td.dataset.motion = String(m);
-          td.dataset.prop = String(p);
+        const td = document.createElement("td");
+        td.dataset.motion = String(currentQuizCase);
+        td.dataset.prop = String(p);
 
-          const sel = document.createElement("select");
-          sel.className = "quiz-select";
-          sel.dataset.motion = String(m);
-          sel.dataset.prop = String(p);
+        const sel = document.createElement("select");
+        sel.className = "quiz-select";
+        sel.dataset.motion = String(currentQuizCase);
+        sel.dataset.prop = String(p);
 
-          const optSelect = document.createElement("option");
-          optSelect.value = "";
-          optSelect.textContent = t("select");
-          sel.appendChild(optSelect);
+        const optSelect = document.createElement("option");
+        optSelect.value = "";
+        optSelect.textContent = t("select");
+        sel.appendChild(optSelect);
 
-          const optFast = document.createElement("option");
-          optFast.value = "fast";
-          optFast.textContent = t("fast");
-          sel.appendChild(optFast);
+        const optFast = document.createElement("option");
+        optFast.value = "fast";
+        optFast.textContent = t("fast");
+        sel.appendChild(optFast);
 
-          const optSlow = document.createElement("option");
-          optSlow.value = "slow";
-          optSlow.textContent = t("slow");
-          sel.appendChild(optSlow);
+        const optSlow = document.createElement("option");
+        optSlow.value = "slow";
+        optSlow.textContent = t("slow");
+        sel.appendChild(optSlow);
 
-          sel.value = quizAnswers[m][p] || "";
-          sel.addEventListener("change", (e) => {
-            const mm = Number(e.target.dataset.motion);
-            const pp = Number(e.target.dataset.prop);
-            quizAnswers[mm][pp] = e.target.value;
-            evaluateQuizTable();
-          });
+        sel.value = quizAnswers[currentQuizCase][p] || "";
+        sel.disabled = quizCaseSolved[currentQuizCase];
+        sel.addEventListener("change", (e) => {
+          const mm = Number(e.target.dataset.motion);
+          const pp = Number(e.target.dataset.prop);
+          quizAnswers[mm][pp] = e.target.value;
+          evaluateQuizTable();
+        });
 
-          td.appendChild(sel);
-          tr.appendChild(td);
-        }
+        td.appendChild(sel);
+        tr.appendChild(td);
         quizBody.appendChild(tr);
       }
+
+      updateQuizNextButton();
     }
 
     function evaluateQuizTable() {
-      let allCorrect = true;
+      const m = currentQuizCase;
+      let allCorrectCurrent = true;
       const cells = quizBody.querySelectorAll("td[data-motion]");
+
       cells.forEach((td) => {
-        const m = Number(td.dataset.motion);
         const p = Number(td.dataset.prop);
         const ans = quizAnswers[m][p];
         const exp = QUIZ_CASES[m].expect[p];
         td.classList.remove("quiz-cell-correct", "quiz-cell-wrong");
+
         if (ans === exp) td.classList.add("quiz-cell-correct");
-        else { td.classList.add("quiz-cell-wrong"); allCorrect = false; }
+        else if (ans !== "") { td.classList.add("quiz-cell-wrong"); allCorrectCurrent = false; }
+        else allCorrectCurrent = false;
       });
 
-      quizAllCorrect = allCorrect;
-      if (allCorrect) {
+      const wasSolved = quizCaseSolved[m];
+      if (allCorrectCurrent && !wasSolved) {
+        quizCaseSolved[m] = true;
+        renderCurrentCaseHeaderCell();
+        showToast(t("msgColumnDone"), 1800);
+        startQuizDemo(m);
+      } else {
+        renderCurrentCaseHeaderCell();
+      }
+
+      const doneCount = completedQuizCount();
+
+      quizAllCorrect = (doneCount === QUIZ_CASES.length);
+      if (quizAllCorrect) {
         quizFinal.textContent = t("msgQuizAllCorrect");
         quizFinal.style.display = "block";
       } else {
         quizFinal.style.display = "none";
       }
+
+      updateQuizNextButton();
       updateMissionBoxes();
     }
+
+    quizNextBtn.addEventListener("click", () => {
+      const next = randomNextUnsolvedCase();
+      if (next === -1) return;
+      currentQuizCase = next;
+      renderQuizTable();
+      evaluateQuizTable();
+    });
 
     const spinDir = [1, -1, -1, 1];
     const baseSpin = 0.88;
@@ -1783,6 +2049,7 @@ Summarize:
     const flightAnchorPos = new THREE.Vector3(0, 0, 0);
     let flightAnchorYaw = baseYaw;
     let pendingCongrats = false;
+    let landingStartY = hoverAltitude;
 
     function settleGroundPose() {
       drone.position.y = 0;
@@ -1805,11 +2072,14 @@ Summarize:
       else flightBtn.textContent = t("takeoff");
       detachBtn.textContent = t("detached");
       colorBtn.textContent = t("colour");
+      resetBtn.textContent = t("reset");
     }
 
     function setState(next) {
       flightState = next;
       stateTime = 0;
+      if (next === "landing") landingStartY = Math.max(0, drone.position.y);
+      if (next === "ground") quizPoseHold = false;
       detachBtn.disabled = next !== "ground";
       if (next === "ground") settleGroundPose();
       refreshButtonTexts();
@@ -1825,6 +2095,8 @@ Summarize:
       setAction("actionNormalFlight");
       pendingCongrats = !usedHiddenAutoSetup;
       unlockHintsAndShow();
+      quizPoseHold = false;
+      startDetachedFadeOut();
       setState("takeoff");
     }
 
@@ -1898,10 +2170,72 @@ Summarize:
     detachBtn.addEventListener("click", () => {
       if (flightState !== "ground") return;
       usedHiddenAutoSetup = false;
+      quizPoseHold = false;
+      stopDetachedFadeOut(true);
       setAction("actionNone");
       resetDroneAttitudeAndPose();
       detachAllPropsRandom();
     });
+
+    function resetToDefault() {
+      if (toastTimer) { clearTimeout(toastTimer); toastTimer = null; }
+      toastEl.classList.remove("show");
+      congratsEl.style.display = "none";
+      congratsUntil = 0;
+
+      tutorialModal.classList.remove("show");
+      tutorialStep = 0;
+
+      lang = "en";
+      usedHiddenAutoSetup = false;
+      pendingCongrats = false;
+      partialMode = null;
+      hoverPhase = 0;
+      stateTime = 0;
+
+      quizDemo.active = false;
+      quizDemo.key = null;
+      quizDemo.time = 0;
+      quizDemo.caseIndex = -1;
+      quizDemo.capY = null;
+      quizPoseHold = false;
+
+      stopDetachedFadeOut(true);
+
+      hintsUnlocked = false;
+      hintsVisible = false;
+      applyHintsVisibility();
+
+      for (let i = 0; i < QUIZ_CASES.length; i++) {
+        quizCaseSolved[i] = false;
+        for (let j = 0; j < 4; j++) quizAnswers[i][j] = "";
+      }
+      currentQuizCase = 0;
+      quizUnlocked = false;
+      quizAllCorrect = false;
+      quizPanel.style.display = "none";
+      quizFinal.style.display = "none";
+
+      colorIndex = 0;
+      applyDroneColor(colorIndex);
+
+      bgScroll.set(0, 0);
+      grid.position.x = 0;
+      grid.position.z = 0;
+
+      resetDroneAttitudeAndPose();
+      setState("ground");
+      setAction("actionNone");
+
+      detachAllPropsRandom();
+
+      renderQuizTable();
+      evaluateQuizTable();
+      updateUIText();
+      updateMissionBoxes();
+    }
+
+    resetBtn.addEventListener("click", resetToDefault);
 
     function easeOutCubic(x) { return 1 - Math.pow(1 - x, 3); }
     function easeInOutQuad(x) { return x < 0.5 ? 2 * x * x : 1 - Math.pow(-2 * x + 2, 2) / 2; }
@@ -2042,6 +2376,18 @@ Summarize:
       const w = renderer.domElement.clientWidth;
       const h = renderer.domElement.clientHeight;
       return { x: (ndc.x * 0.5 + 0.5) * w, y: (-ndc.y * 0.5 + 0.5) * h, z: ndc.z };
+    }
+
+    function getDroneTopScreenY() {
+      const box = new THREE.Box3().setFromObject(drone);
+      if (box.isEmpty()) return null;
+      const topPoint = new THREE.Vector3(
+        (box.min.x + box.max.x) * 0.5,
+        box.max.y,
+        (box.min.z + box.max.z) * 0.5
+      );
+      const p = projectWorldToScreen(topPoint);
+      return p ? p.y : null;
     }
 
     function findCoveredMotorForPropInView(propIndex) {
@@ -2291,10 +2637,63 @@ Summarize:
       }
     }
 
+    function rotateLocalToWorld(lx, lz, yaw) {
+      const c = Math.cos(yaw);
+      const s = Math.sin(yaw);
+      return new THREE.Vector2(lx * c + lz * s, -lx * s + lz * c);
+    }
+
+    function demoVelocityByCase(caseKey, yawRef) {
+      if (caseKey === "throttleUp" || caseKey === "throttleDown" || caseKey === "yawLeft" || caseKey === "yawRight") {
+        return new THREE.Vector2(0, 0);
+      }
+
+      if (caseKey === "pitchForward")  return rotateLocalToWorld(0.0, -2.0, yawRef);
+      if (caseKey === "pitchBackward") return rotateLocalToWorld(0.0,  2.0, yawRef);
+      if (caseKey === "rollLeft")      return rotateLocalToWorld(-2.2, 0.0, yawRef);
+      if (caseKey === "rollRight")     return rotateLocalToWorld( 2.2, 0.0, yawRef);
+
+      return new THREE.Vector2(0, 0);
+    }
+
+    function updateMovingBackground(dt, vel2) {
+      bgScroll.x += vel2.x * dt;
+      bgScroll.y += vel2.y * dt;
+
+      grid.position.x = ((bgScroll.x % 1) + 1) % 1;
+      grid.position.z = ((bgScroll.y % 1) + 1) % 1;
+      grid.position.y = groundY + 0.02;
+
+      for (let i = 0; i < flowMarkers.length; i++) {
+        const m = flowMarkers[i];
+        m.position.x += vel2.x * dt;
+        m.position.z += vel2.y * dt;
+
+        if (m.position.x > flowBounds) m.position.x -= flowBounds * 2;
+        if (m.position.x < -flowBounds) m.position.x += flowBounds * 2;
+        if (m.position.z > flowBounds) m.position.z -= flowBounds * 2;
+        if (m.position.z < -flowBounds) m.position.z += flowBounds * 2;
+      }
+    }
+
     function animate() {
       requestAnimationFrame(animate);
       const dt = Math.min(0.05, clock.getDelta());
       stateTime += dt;
+
+      if (detachedFade.active) {
+        detachedFade.time += dt;
+        const p = Math.min(detachedFade.time / detachedFade.duration, 1);
+        const alpha = 1 - p;
+        detachedFade.targets.forEach((idx) => {
+          const s = propStates[idx];
+          if (s.attachedMotor === null) {
+            setPropOpacity(idx, alpha);
+            if (p >= 1) s.root.visible = false;
+          }
+        });
+        if (p >= 1) detachedFade.active = false;
+      }
 
       ledBlinkPhase += dt * 5.2;
       const ledOn = Math.sin(ledBlinkPhase) > 0;
@@ -2411,14 +2810,18 @@ Summarize:
       }
 
       if (flightState === "hover") {
-        hoverPhase += dt;
-        drone.position.x = flightAnchorPos.x;
-        drone.position.z = flightAnchorPos.z;
-        drone.rotation.x = 0;
-        drone.rotation.z = 0;
-        drone.rotation.y = flightAnchorYaw;
-        drone.position.y = hoverAltitude + Math.sin(hoverPhase * 2.0) * 0.012;
-        spinFactor = 1;
+        if (!quizPoseHold) {
+          hoverPhase += dt;
+          drone.position.x = flightAnchorPos.x;
+          drone.position.z = flightAnchorPos.z;
+          drone.rotation.x = 0;
+          drone.rotation.z = 0;
+          drone.rotation.y = flightAnchorYaw;
+          drone.position.y = hoverAltitude + Math.sin(hoverPhase * 2.0) * 0.012;
+          spinFactor = 1;
+        } else {
+          spinFactor = 0;
+        }
       }
 
       if (flightState === "landing") {
@@ -2428,7 +2831,7 @@ Summarize:
         drone.rotation.x = 0;
         drone.rotation.z = 0;
         drone.rotation.y = flightAnchorYaw;
-        drone.position.y = hoverAltitude * (1 - easeInOutQuad(p));
+        drone.position.y = landingStartY * (1 - easeInOutQuad(p));
 
         const slowWindowStart = landingDuration - 2.0;
         if (stateTime <= slowWindowStart) spinFactor = 1;
@@ -2445,6 +2848,93 @@ Summarize:
           setState("ground");
           spinFactor = 0;
         }
+      }
+
+      if (quizDemo.active) {
+        quizDemo.time += dt;
+        const p = Math.min(quizDemo.time / quizDemo.duration, 1);
+
+        const sx = quizDemo.startPos.x;
+        const sy = quizDemo.startPos.y;
+        const sz = quizDemo.startPos.z;
+        const srx = quizDemo.startRot.x;
+        const sry = quizDemo.startRot.y;
+        const srz = quizDemo.startRot.z;
+
+        drone.position.set(sx, sy, sz);
+        drone.rotation.set(srx, sry, srz);
+
+        const key = quizDemo.key;
+        const liftDelta = 0.85;
+        const tilt = 0.30;
+        const yawDelta = 0.60;
+
+        if (key === "throttleUp") {
+          if (quizDemo.capY !== null) {
+            drone.position.y = quizDemo.capY;
+          } else {
+            const prevY = drone.position.y;
+            drone.position.y = sy + liftDelta * p;
+
+            const topY = getDroneTopScreenY();
+            const instrBottom = instructionBar.getBoundingClientRect().bottom + 1;
+            if (topY !== null && topY <= instrBottom) {
+              quizDemo.capY = prevY;
+              drone.position.y = quizDemo.capY;
+            }
+          }
+        } else if (key === "throttleDown") {
+          const targetGround = 0;
+          const nextY = sy + (targetGround - sy) * p;
+          drone.position.y = Math.max(targetGround, nextY);
+        } else if (key === "yawLeft") {
+          drone.rotation.y = sry + yawDelta * p;
+        } else if (key === "yawRight") {
+          drone.rotation.y = sry - yawDelta * p;
+        } else if (key === "pitchForward" || key === "pitchBackward" || key === "rollLeft" || key === "rollRight") {
+          const split = 0.58;
+          let signedTilt = 0;
+          if (key === "pitchForward") signedTilt = +tilt;
+          if (key === "pitchBackward") signedTilt = -tilt;
+          if (key === "rollLeft") signedTilt = -tilt;
+          if (key === "rollRight") signedTilt = +tilt;
+
+          let currentTilt = 0;
+          if (p <= split) {
+            const e = easeOutCubic(p / split);
+            currentTilt = signedTilt * e;
+          } else {
+            const e = easeInOutQuad((p - split) / (1 - split));
+            currentTilt = signedTilt * (1 - e);
+          }
+
+          if (key === "pitchForward" || key === "pitchBackward") {
+            drone.rotation.x = srx + currentTilt;
+            drone.rotation.z = 0;
+          } else {
+            drone.rotation.z = srz + currentTilt;
+            drone.rotation.x = 0;
+          }
+
+          if (p >= 1) {
+            drone.rotation.x = 0;
+            drone.rotation.z = 0;
+          }
+        }
+
+        spinFactor = Math.max(spinFactor, 1);
+        updateMovingBackground(dt, demoVelocityByCase(key, drone.rotation.y));
+
+        if (p >= 1) {
+          quizDemo.active = false;
+          spinFactor = 0;
+          setAction("actionNone");
+          renderCurrentCaseHeaderCell();
+          updateQuizNextButton();
+        }
+      } else {
+        grid.position.x = 0;
+        grid.position.z = 0;
       }
 
       for (let i = 0; i < propStates.length; i++) {
