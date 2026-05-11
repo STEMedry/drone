@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Quadcopter - Scientific Inquiry Simulator</title>
   <style>
     html, body {
@@ -30,7 +30,7 @@
       background: rgba(255, 255, 255, 0.98);
       border-radius: 10px;
       padding: 10px 14px;
-      font-size: 28px; /* 1.8x of 20px */
+      font-size: 28px;
       font-weight: 900;
       color: #111827;
       text-align: center;
@@ -40,7 +40,7 @@
 
     .instruction {
       position: fixed;
-      top: 72px; /* doubled spacing from title area */
+      top: 72px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 32;
@@ -58,8 +58,8 @@
 
     .top-controls {
       position: fixed;
-      top: 8px;       /* moved up */
-      right: 10px;    /* top-right corner */
+      top: 8px;
+      right: 10px;
       z-index: 34;
       display: flex;
       gap: 8px;
@@ -76,7 +76,7 @@
     }
 
     #tutorialBtn {
-      min-width: 92px;   /* reduced width */
+      min-width: 92px;
       padding-left: 10px;
       padding-right: 10px;
     }
@@ -85,7 +85,7 @@
 
     .mission-box {
       position: fixed;
-      top: 62px; /* moved up accordingly */
+      top: 62px;
       right: 12px;
       z-index: 31;
       display: none;
@@ -115,7 +115,7 @@
     .btn-wrap {
       position: fixed;
       right: 14px;
-      bottom: 14px;
+      bottom: calc(14px + env(safe-area-inset-bottom));
       z-index: 20;
       display: flex;
       flex-direction: column;
@@ -170,7 +170,7 @@
     .toast {
       position: fixed;
       left: 50%;
-      bottom: 88px;
+      bottom: calc(88px + env(safe-area-inset-bottom));
       transform: translateX(-50%);
       z-index: 40;
       background: #111827;
@@ -213,7 +213,7 @@
       position: fixed;
       left: 12px;
       right: 12px;
-      bottom: 12px;
+      bottom: calc(12px + env(safe-area-inset-bottom));
       z-index: 42;
       border: 1px solid #d1d5db;
       border-radius: 12px;
@@ -387,16 +387,135 @@
       justify-content: flex-end;
     }
 
+    .left-info-wrap {
+      position: fixed;
+      left: 14px;
+      bottom: calc(14px + env(safe-area-inset-bottom));
+      z-index: 19;
+      max-width: min(52vw, 560px);
+      pointer-events: none;
+    }
+
+    .controls-box {
+      border: 1px solid #d1d5db;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 14px;
+      line-height: 1.35;
+      color: #111827;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+      font-weight: 400;
+    }
+
+    .controls-box-title {
+      font-size: 14px;
+      font-weight: 400;
+      margin-bottom: 2px;
+    }
+
+    .controls-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      margin-top: 1px;
+    }
+
+    .controls-label {
+      flex: 0 0 auto;
+      min-width: 96px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .controls-detail {
+      display: block;
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .controls-detail-line {
+      display: block;
+      white-space: nowrap;
+      font-weight: 400;
+    }
+
+    .author-signature {
+      margin-top: 10px;
+      font-size: 17px;
+      line-height: 1.45;
+      font-weight: 900;
+      color: #000000;
+      text-shadow: 0 0 1px rgba(255,255,255,0.6);
+    }
+
+    .rotation-hints {
+      position: fixed;
+      inset: 0;
+      z-index: 35;
+      pointer-events: none;
+    }
+
+    .rot-indicator {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      opacity: 0;
+      transition: opacity 0.55s ease;
+    }
+
+    .rotation-hints.active .rot-indicator {
+      opacity: 1;
+    }
+
+    .rot-arrow {
+      font-size: 20px;
+      color: #111827;
+      line-height: 1;
+      font-weight: 900;
+      transform-origin: 50% 50%;
+      text-shadow: 0 1px 0 rgba(255,255,255,0.8);
+    }
+
+    .rot-tag {
+      border-radius: 8px;
+      padding: 6px 9px;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      white-space: nowrap;
+    }
+
+    .rot-indicator.cw .rot-tag {
+      background: #fb923c;
+      color: #111827;
+      border: 1px solid #ea580c;
+    }
+
+    .rot-indicator.ccw .rot-tag {
+      background: #4ade80;
+      color: #052e16;
+      border: 1px solid #16a34a;
+    }
+
+    @media (max-width: 980px) {
+      .left-info-wrap { max-width: min(58vw, 520px); }
+      .controls-label { min-width: 116px; }
+      .controls-detail-line { white-space: normal; }
+    }
+
     @media (max-width: 860px) {
       .title {
         top: 6px;
-        font-size: 28px; /* scaled up on mobile too */
+        font-size: 28px;
         padding: 8px 10px;
         max-width: calc(100vw - 16px);
       }
 
       .instruction {
-        top: 102px; /* doubled spacing preserved on mobile */
+        top: 102px;
         font-size: 16px;
         padding: 7px 10px;
         max-width: calc(100vw - 16px);
@@ -414,13 +533,8 @@
         font-size: 13px;
       }
 
-      #tutorialBtn {
-        min-width: 82px;
-      }
-
-      .mission-box {
-        top: 46px;
-      }
+      #tutorialBtn { min-width: 82px; }
+      .mission-box { top: 46px; }
 
       .quiz-table { font-size: 10px; }
       .quiz-table th, .quiz-table td { padding: 2px 2px; height: 30px; }
@@ -442,8 +556,23 @@
         padding: 9px 10px;
       }
 
-      .toast { bottom: 78px; font-size: 13px; }
+      .toast { bottom: calc(78px + env(safe-area-inset-bottom)); font-size: 13px; }
       .congrats { top: 58px; font-size: 15px; padding: 9px 10px; }
+
+      .left-info-wrap {
+        left: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        max-width: min(64vw, 500px);
+      }
+
+      .controls-box { font-size: 12px; padding: 7px 8px; }
+      .controls-box-title { font-size: 13px; }
+      .controls-label { min-width: 100px; }
+
+      .author-signature { margin-top: 8px; font-size: 14px; }
+
+      .rot-arrow { font-size: 16px; }
+      .rot-tag { font-size: 11px; padding: 5px 7px; }
     }
   </style>
 
@@ -470,6 +599,30 @@
   <div id="missionProgressBox" class="mission-box mission-progress">Mission in progress</div>
   <div id="missionBox" class="mission-box mission-completed">Mission Completed</div>
 
+  <div class="left-info-wrap">
+    <div id="controlsBox" class="controls-box"></div>
+    <div id="authorSignature" class="author-signature"></div>
+  </div>
+
+  <div id="rotationHints" class="rotation-hints">
+    <div class="rot-indicator ccw" data-motor="0">
+      <span class="rot-arrow">➤</span>
+      <span class="rot-tag"></span>
+    </div>
+    <div class="rot-indicator cw" data-motor="1">
+      <span class="rot-arrow">➤</span>
+      <span class="rot-tag"></span>
+    </div>
+    <div class="rot-indicator cw" data-motor="2">
+      <span class="rot-arrow">➤</span>
+      <span class="rot-tag"></span>
+    </div>
+    <div class="rot-indicator ccw" data-motor="3">
+      <span class="rot-arrow">➤</span>
+      <span class="rot-tag"></span>
+    </div>
+  </div>
+
   <div class="btn-wrap">
     <div id="actionPill" class="action-pill">None</div>
     <button id="flightBtn" class="ui-btn">Take off</button>
@@ -490,9 +643,7 @@
     </div>
     <div class="quiz-table-wrap">
       <table class="quiz-table">
-        <thead>
-          <tr id="quizHeadRow"></tr>
-        </thead>
+        <thead><tr id="quizHeadRow"></tr></thead>
         <tbody id="quizBody"></tbody>
       </table>
     </div>
@@ -544,7 +695,17 @@
         action6: "Yaw Right",
         actionObserve: "Single-Propeller Spin Observation",
         actionNormalFlight: "Stable Flight",
-
+        cwLabel: "Clockwise Propeller",
+        ccwLabel: "Counterclockwise Propeller",
+        controlsTitle: "Interaction Controls",
+        controlsDesktopLabel: "Desktop --",
+        controlsDesktopL1: "Left-drag = move propeller;",
+        controlsDesktopL2: "Right-drag = rotate view;",
+        controlsDesktopL3: "Double-click installed propeller = detach",
+        controlsTouchLabel: "Touchscreen --",
+        controlsTouchL1: "One finger = move propeller;",
+        controlsTouchL2: "Two fingers = rotate/zoom view",
+        authorSignature: "Richard C Y YEUNG, EdUHK",
         quizTitle: "Propeller Speed Logic Check",
         quizSub: "Choose Fast/Slow for each propeller in each motion case",
         thPropeller: "Propeller",
@@ -563,7 +724,6 @@
         motion_pitchBackward: "Pitch Backward",
         motion_rollLeft: "Roll Left",
         motion_rollRight: "Roll Right",
-
         tutTitle: "Scientific Method Tutorial",
         tutPrev: "Previous",
         tutNext: "Next",
@@ -635,7 +795,17 @@ Summarize:
         action6: "向右偏航",
         actionObserve: "單槳旋轉方向觀察",
         actionNormalFlight: "穩定飛行",
-
+        cwLabel: "順時針螺旋槳",
+        ccwLabel: "逆時針螺旋槳",
+        controlsTitle: "互動操作",
+        controlsDesktopLabel: "桌面版 --",
+        controlsDesktopL1: "左鍵拖曳 = 移動螺旋槳；",
+        controlsDesktopL2: "右鍵拖曳 = 旋轉視角；",
+        controlsDesktopL3: "雙擊已安裝螺旋槳 = 分離",
+        controlsTouchLabel: "觸控版 --",
+        controlsTouchL1: "單指 = 移動螺旋槳；",
+        controlsTouchL2: "雙指 = 旋轉/縮放視角",
+        authorSignature: "Richard C Y YEUNG, EdUHK",
         quizTitle: "螺旋槳速度邏輯檢核",
         quizSub: "為每種動作選擇每個螺旋槳的快/慢",
         thPropeller: "螺旋槳",
@@ -654,7 +824,6 @@ Summarize:
         motion_pitchBackward: "後俯仰",
         motion_rollLeft: "左滾轉",
         motion_rollRight: "右滾轉",
-
         tutTitle: "科學方法教學",
         tutPrev: "上一步",
         tutNext: "下一步",
@@ -969,11 +1138,7 @@ Summarize:
     ledBody.position.set(0.62, 0.20, 2.08);
     drone.add(ledBody);
 
-    const ledPurpleMat = new THREE.MeshBasicMaterial({
-      color: 0xc084fc,
-      transparent: true,
-      opacity: 1
-    });
+    const ledPurpleMat = new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 1 });
     const frontLedRect = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.20), ledPurpleMat);
     frontLedRect.position.set(0.62, 0.20, 2.101);
     drone.add(frontLedRect);
@@ -1011,10 +1176,10 @@ Summarize:
     drone.add(batteryRearCap);
 
     const motorPositions = [
-      new THREE.Vector3(-2.475, 0.34,  2.325),
-      new THREE.Vector3( 2.475, 0.34,  2.325),
-      new THREE.Vector3(-2.475, 0.34, -2.325),
-      new THREE.Vector3( 2.475, 0.34, -2.325)
+      new THREE.Vector3(-2.475, 0.34,  2.325), // FL
+      new THREE.Vector3( 2.475, 0.34,  2.325), // FR
+      new THREE.Vector3(-2.475, 0.34, -2.325), // RL
+      new THREE.Vector3( 2.475, 0.34, -2.325)  // RR
     ];
     const propMounts = motorPositions.map((p) => new THREE.Vector3(p.x, p.y + 0.48, p.z));
 
@@ -1141,6 +1306,11 @@ Summarize:
       footBottomYs.push(footCenterY - footHeight * 0.5);
     });
 
+    const bodyPickMeshes = [];
+    drone.traverse((obj) => {
+      if (obj.isMesh && obj !== label) bodyPickMeshes.push(obj);
+    });
+
     const propStates = [];
     const propPickMeshes = [];
     const motorOccupiedBy = [null, null, null, null];
@@ -1149,7 +1319,6 @@ Summarize:
     function addPropInstance(isCW, hasWhiteDot) {
       const { root, spinner } = createPropeller({ isCW, hasWhiteDot });
       propsRoot.add(root);
-
       const idx = propStates.length;
       propStates.push({ root, spinner, isCW, hasWhiteDot, attachedMotor: null, detached: true, spinAngle: Math.random() * Math.PI * 2 });
 
@@ -1334,6 +1503,8 @@ Summarize:
     const langBtn = document.getElementById("langBtn");
     const actionPill = document.getElementById("actionPill");
     const instructionBar = document.getElementById("instructionBar");
+    const controlsBox = document.getElementById("controlsBox");
+    const authorSignature = document.getElementById("authorSignature");
 
     const toastEl = document.getElementById("toast");
     const congratsEl = document.getElementById("congrats");
@@ -1360,6 +1531,65 @@ Summarize:
     const closeTutorialBtn = document.getElementById("closeTutorialBtn");
     let tutorialStep = 0;
 
+    const rotationHintsEl = document.getElementById("rotationHints");
+    const hintDefs = [
+      { motor: 0, type: "ccw", el: rotationHintsEl.querySelector('[data-motor="0"]') },
+      { motor: 1, type: "cw",  el: rotationHintsEl.querySelector('[data-motor="1"]') },
+      { motor: 2, type: "cw",  el: rotationHintsEl.querySelector('[data-motor="2"]') },
+      { motor: 3, type: "ccw", el: rotationHintsEl.querySelector('[data-motor="3"]') }
+    ];
+    hintDefs.forEach((h) => {
+      h.arrowEl = h.el.querySelector(".rot-arrow");
+      h.tagEl = h.el.querySelector(".rot-tag");
+    });
+
+    let hintsUnlocked = false;
+    let hintsVisible = false;
+
+    function updateHintTagTexts() {
+      hintDefs.forEach((h) => {
+        h.tagEl.textContent = (h.type === "cw") ? t("cwLabel") : t("ccwLabel");
+      });
+    }
+
+    function applyHintsVisibility() {
+      if (hintsUnlocked && hintsVisible) rotationHintsEl.classList.add("active");
+      else rotationHintsEl.classList.remove("active");
+    }
+
+    function unlockHintsAndShow() {
+      hintsUnlocked = true;
+      hintsVisible = true;
+      applyHintsVisibility();
+    }
+
+    function toggleHintsByBodyPress() {
+      if (!hintsUnlocked) return;
+      hintsVisible = !hintsVisible;
+      applyHintsVisibility();
+    }
+
+    function renderControlsBox() {
+      controlsBox.innerHTML = `
+        <div class="controls-box-title">${t("controlsTitle")}</div>
+        <div class="controls-row">
+          <span class="controls-label">${t("controlsDesktopLabel")}</span>
+          <span class="controls-detail">
+            <span class="controls-detail-line">${t("controlsDesktopL1")}</span>
+            <span class="controls-detail-line">${t("controlsDesktopL2")}</span>
+            <span class="controls-detail-line">${t("controlsDesktopL3")}</span>
+          </span>
+        </div>
+        <div class="controls-row">
+          <span class="controls-label">${t("controlsTouchLabel")}</span>
+          <span class="controls-detail">
+            <span class="controls-detail-line">${t("controlsTouchL1")}</span>
+            <span class="controls-detail-line">${t("controlsTouchL2")}</span>
+          </span>
+        </div>
+      `;
+    }
+
     function showToast(msg, ms = 2600) {
       toastEl.textContent = msg;
       toastEl.classList.add("show");
@@ -1385,14 +1615,8 @@ Summarize:
       else missionProgressBox.style.display = "block";
     }
 
-    missionBox.addEventListener("click", () => {
-      quizPanel.style.display = "block";
-      updateMissionBoxes();
-    });
-    missionProgressBox.addEventListener("click", () => {
-      quizPanel.style.display = "block";
-      updateMissionBoxes();
-    });
+    missionBox.addEventListener("click", () => { quizPanel.style.display = "block"; updateMissionBoxes(); });
+    missionProgressBox.addEventListener("click", () => { quizPanel.style.display = "block"; updateMissionBoxes(); });
 
     function updateTutorialContent() {
       const steps = I18N[lang].tutSteps;
@@ -1402,6 +1626,7 @@ Summarize:
       prevStepBtn.disabled = tutorialStep === 0;
       nextStepBtn.disabled = tutorialStep === steps.length - 1;
     }
+
     tutorialBtn.addEventListener("click", () => { tutorialStep = 0; updateTutorialContent(); tutorialModal.classList.add("show"); });
     closeTutorialBtn.addEventListener("click", () => tutorialModal.classList.remove("show"));
     prevStepBtn.addEventListener("click", () => { tutorialStep = Math.max(0, tutorialStep - 1); updateTutorialContent(); });
@@ -1518,7 +1743,6 @@ Summarize:
 
     function evaluateQuizTable() {
       let allCorrect = true;
-
       const cells = quizBody.querySelectorAll("td[data-motion]");
       cells.forEach((td) => {
         const m = Number(td.dataset.motion);
@@ -1527,10 +1751,7 @@ Summarize:
         const exp = QUIZ_CASES[m].expect[p];
         td.classList.remove("quiz-cell-correct", "quiz-cell-wrong");
         if (ans === exp) td.classList.add("quiz-cell-correct");
-        else {
-          td.classList.add("quiz-cell-wrong");
-          allCorrect = false;
-        }
+        else { td.classList.add("quiz-cell-wrong"); allCorrect = false; }
       });
 
       quizAllCorrect = allCorrect;
@@ -1561,7 +1782,6 @@ Summarize:
 
     const flightAnchorPos = new THREE.Vector3(0, 0, 0);
     let flightAnchorYaw = baseYaw;
-
     let pendingCongrats = false;
 
     function settleGroundPose() {
@@ -1597,6 +1817,15 @@ Summarize:
         pendingCongrats = false;
         showCongrats();
       }
+    }
+
+    function startSuccessfulTakeoff() {
+      flightAnchorPos.set(drone.position.x, 0, drone.position.z);
+      flightAnchorYaw = drone.rotation.y;
+      setAction("actionNormalFlight");
+      pendingCongrats = !usedHiddenAutoSetup;
+      unlockHintsAndShow();
+      setState("takeoff");
     }
 
     function startPartialResponse(mode) {
@@ -1655,13 +1884,8 @@ Summarize:
         const partial = evaluatePartialMode();
         if (partial) { startPartialResponse(partial); return; }
 
-        if (allPropsCorrect()) {
-          flightAnchorPos.set(drone.position.x, 0, drone.position.z);
-          flightAnchorYaw = drone.rotation.y;
-          setAction("actionNormalFlight");
-          pendingCongrats = !usedHiddenAutoSetup;
-          setState("takeoff");
-        } else {
+        if (allPropsCorrect()) startSuccessfulTakeoff();
+        else {
           setAction("actionNone");
           setState("failedSpin");
           showToast(t("msgFailed"), 2600);
@@ -1956,11 +2180,26 @@ Summarize:
         return;
       }
 
-      if (!pointerDownInfo.moved && flightState === "ground") {
+      if (!pointerDownInfo.moved) {
         setPointerFromEvent(e);
         raycaster.setFromCamera(pointer, camera);
-        const labelHit = raycaster.intersectObject(label, false);
-        if (labelHit.length > 0) restoreAllPropsCorrectly();
+
+        if (flightState === "ground") {
+          const labelHit = raycaster.intersectObject(label, false);
+          if (labelHit.length > 0) {
+            restoreAllPropsCorrectly();
+            startSuccessfulTakeoff();
+            return;
+          }
+        }
+
+        if (hintsUnlocked) {
+          const bodyHits = raycaster.intersectObjects(bodyPickMeshes, false);
+          if (bodyHits.length > 0) {
+            toggleHintsByBodyPress();
+            return;
+          }
+        }
       }
     });
 
@@ -2014,6 +2253,43 @@ Summarize:
       return mode === "circledOnly" || mode === "nonCircledOnly" || mode === "yawLeftMissingFL" || mode === "yawRightMissingFR" || mode === "yawRightMissingRL" || mode === "yawLeftMissingRR";
     }
     function isTwoPropYawMode(mode) { return mode === "circledOnly" || mode === "nonCircledOnly"; }
+
+    function updateRotationHintPositions() {
+      if (!hintsUnlocked) return;
+
+      const w = renderer.domElement.clientWidth;
+      const h = renderer.domElement.clientHeight;
+      const cx = w * 0.5;
+      const cy = h * 0.5;
+      const offsetPx = Math.min(88, Math.max(58, Math.min(w, h) * 0.09));
+
+      for (const hint of hintDefs) {
+        const anchor = getMotorMountWorld(hint.motor).clone();
+        anchor.y += 0.10;
+        const p = projectWorldToScreen(anchor);
+
+        if (!p) {
+          hint.el.style.display = "none";
+          continue;
+        }
+
+        const vx = p.x - cx;
+        const vy = p.y - cy;
+        const len = Math.hypot(vx, vy) || 1;
+        const nx = vx / len;
+        const ny = vy / len;
+
+        const lx = p.x + nx * offsetPx;
+        const ly = p.y + ny * offsetPx;
+
+        hint.el.style.display = "flex";
+        hint.el.style.left = `${lx}px`;
+        hint.el.style.top = `${ly}px`;
+
+        const angleDeg = Math.atan2(p.y - ly, p.x - lx) * 180 / Math.PI;
+        hint.arrowEl.style.transform = `rotate(${angleDeg}deg)`;
+      }
+    }
 
     function animate() {
       requestAnimationFrame(animate);
@@ -2180,6 +2456,8 @@ Summarize:
       }
 
       updateAttachedPropTransforms();
+      updateRotationHintPositions();
+
       if (dragOutline) dragOutline.update();
       if (!dragging.active && performance.now() >= orbitUnlockAt) controls.enabled = true;
 
@@ -2194,6 +2472,10 @@ Summarize:
       langBtn.textContent = t("languageToggle");
       missionBox.textContent = t("missionDone");
       missionProgressBox.textContent = t("missionProgress");
+
+      renderControlsBox();
+      authorSignature.textContent = t("authorSignature");
+      updateHintTagTexts();
 
       refreshButtonTexts();
       actionPill.textContent = t(currentActionKey);
@@ -2210,12 +2492,14 @@ Summarize:
     evaluateQuizTable();
     updateUIText();
     setAction("actionNone");
+    applyHintsVisibility();
     animate();
 
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      updateRotationHintPositions();
     });
   </script>
 </body>
