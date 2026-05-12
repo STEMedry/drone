@@ -12,6 +12,21 @@
       overflow: hidden;
       background: #ffffff;
       font-family: Arial, Helvetica, sans-serif;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    * {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    img, a {
+      -webkit-user-drag: none;
+      user-drag: none;
     }
 
     #app {
@@ -233,6 +248,7 @@
       padding: 8px;
       display: none;
       overflow: auto;
+      touch-action: none;
     }
 
     .quiz-head {
@@ -241,6 +257,8 @@
       justify-content: space-between;
       gap: 8px;
       margin-bottom: 6px;
+      cursor: move;
+      touch-action: none;
     }
 
     .quiz-headline {
@@ -321,6 +339,7 @@
 
     .quiz-cell-correct { background: #dcfce7; color: #166534; font-weight: 700; }
     .quiz-cell-wrong { background: #fee2e2; color: #991b1b; font-weight: 700; }
+    .quiz-cell-fast { color: #dc2626 !important; font-weight: 900 !important; }
 
     .quiz-head-btn {
       border: 1px solid #15803d;
@@ -354,11 +373,13 @@
     .quiz-nav {
       margin-top: 6px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: center;
       min-height: 32px;
+      gap: 8px;
     }
 
+    .quiz-prev,
     .quiz-next {
       border: 1px solid #2563eb;
       background: #3b82f6;
@@ -372,9 +393,17 @@
       cursor: pointer;
       display: none;
       box-shadow: 0 4px 10px rgba(37, 99, 235, 0.35);
+      align-items: center;
+      justify-content: center;
     }
 
+    .quiz-prev:hover,
     .quiz-next:hover { background: #2563eb; }
+    .quiz-prev:disabled,
+    .quiz-next:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
 
     .quiz-final {
       margin-top: 8px;
@@ -494,7 +523,13 @@
       white-space: nowrap;
       font-weight: 400;
     }
-
+.controls-cover-toggle {
+  margin-top: 4px;
+  padding-left: 0;
+  width: 100%;
+  text-align: left;
+  font-weight: 400; /* optional: match other detail text weight */
+}
     .author-signature {
       margin-top: 10px;
       font-size: 17px;
@@ -553,6 +588,39 @@
       background: #4ade80;
       color: #052e16;
       border: 1px solid #16a34a;
+    }
+
+    .speed-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 36;
+      pointer-events: none;
+    }
+
+    .speed-tag {
+      position: absolute;
+      transform: translate(-50%, -50%);
+      display: none;
+      padding: 3px 7px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 900;
+      background: rgba(255, 255, 255, 0.95);
+      border: 1px solid #111827;
+      color: #111827;
+      line-height: 1;
+      white-space: nowrap;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+    }
+
+    .speed-tag.fast {
+      color: #dc2626;
+      border-color: #dc2626;
+    }
+
+    .speed-tag.slow {
+      color: #111827;
+      border-color: #111827;
     }
 
     @media (max-width: 980px) {
@@ -636,6 +704,11 @@
 
       .rot-arrow { font-size: 16px; }
       .rot-tag { font-size: 11px; padding: 5px 7px; }
+
+      .speed-tag {
+        font-size: 11px;
+        padding: 2px 6px;
+      }
     }
   </style>
 
@@ -686,6 +759,13 @@
     </div>
   </div>
 
+  <div id="speedOverlay" class="speed-overlay">
+    <div class="speed-tag slow" data-motor="0">SLOW</div>
+    <div class="speed-tag slow" data-motor="1">SLOW</div>
+    <div class="speed-tag slow" data-motor="2">SLOW</div>
+    <div class="speed-tag slow" data-motor="3">SLOW</div>
+  </div>
+
   <div class="btn-wrap">
     <div id="actionPill" class="action-pill">None</div>
     <button id="flightBtn" class="ui-btn">Take off</button>
@@ -698,7 +778,7 @@
   <div id="congrats" class="congrats"></div>
 
   <div id="quizPanel" class="quiz-panel">
-    <div class="quiz-head">
+    <div id="quizHead" class="quiz-head">
       <div class="quiz-headline">
         <h3 id="quizTitle" class="quiz-title"></h3>
         <p id="quizSub" class="quiz-sub-inline"></p>
@@ -712,7 +792,8 @@
       </table>
     </div>
     <div class="quiz-nav">
-      <button id="quizNextBtn" class="quiz-next" aria-label="Next case">➜</button>
+      <button id="quizPrevBtn" class="quiz-prev" aria-label="Previous case">⬅</button>
+      <button id="quizNextBtn" class="quiz-next" aria-label="Next case">➡</button>
     </div>
     <div id="quizFinal" class="quiz-final"></div>
   </div>
@@ -735,6 +816,8 @@
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
     import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 
+    document.addEventListener("dragstart", (e) => e.preventDefault());
+
     const I18N = {
       en: {
         title: "Propeller Configuration & Scientific Inquiry",
@@ -752,7 +835,7 @@
         msgSingleObserve: "Observation mode: one propeller spins for 3 seconds, then slows to stop in 2 seconds.",
         msgFailed: "Configuration is not sufficient for takeoff. Observe and revise your setup.",
         msgDblDetach: "Propeller detached and placed on the ground.",
-        msgQuizAllCorrect: "🌟 Excellent! You correctly completed all 8 motion-speed cases.",
+        msgQuizAllCorrect: "Excellent! Mission completed.",
         msgColumnDone: "✅ Column complete! Action demonstrated for 3 seconds.",
         missionDone: "Mission Completed",
         missionProgress: "Mission in progress",
@@ -774,6 +857,7 @@
         controlsTouchLabel: "Touchscreen --",
         controlsTouchL1: "One finger = move propeller;",
         controlsTouchL2: "Two fingers = rotate/zoom view",
+        controlsCoverToggle: "Click the cover to show/hide propeller directions.",
         authorSignature: "Richard C Y YEUNG, EdUHK",
         quizTitle: "Propeller Speed Combination",
         quizSub: "",
@@ -783,6 +867,12 @@
         thFR: "FR",
         thRL: "RL",
         thRR: "RR",
+        boxFL: "FL",
+        boxFR: "FR",
+        boxRL: "RL",
+        boxRR: "RR",
+        boxFast: "FAST",
+        boxSlow: "SLOW",
         select: "Select",
         fast: "Fast",
         slow: "Slow",
@@ -855,7 +945,7 @@ Summarize:
         msgSingleObserve: "觀察模式：單一螺旋槳先轉 3 秒，再用 2 秒慢慢停下。",
         msgFailed: "目前配置不足以起飛。請觀察現象並修正配置。",
         msgDblDetach: "螺旋槳已分離並放到地面。",
-        msgQuizAllCorrect: "🌟 太棒了！你已正確完成 8 種動作速度組合。",
+        msgQuizAllCorrect: "表現出色！任務完成。",
         msgColumnDone: "✅ 本欄完成！已示範對應動作 3 秒。",
         missionDone: "任務完成",
         missionProgress: "任務進行中",
@@ -877,6 +967,7 @@ Summarize:
         controlsTouchLabel: "觸控版 --",
         controlsTouchL1: "單指 = 移動螺旋槳；",
         controlsTouchL2: "雙指 = 旋轉/縮放視角",
+        controlsCoverToggle: "點擊外殼可顯示／隱藏螺旋槳旋向提示。",
         authorSignature: "Richard C Y YEUNG, EdUHK",
         quizTitle: "螺旋槳速度組合",
         quizSub: "",
@@ -886,6 +977,12 @@ Summarize:
         thFR: "右前",
         thRL: "左後",
         thRR: "右後",
+        boxFL: "左前",
+        boxFR: "右前",
+        boxRL: "左後",
+        boxRR: "右後",
+        boxFast: "快",
+        boxSlow: "慢",
         select: "選擇",
         fast: "快",
         slow: "慢",
@@ -958,6 +1055,7 @@ Summarize:
       { key: "rollRight",     expect: ["fast","slow","fast","slow"] }
     ];
     const PROP_KEYS = ["thFL", "thFR", "thRL", "thRR"];
+    const MOTOR_BOX_KEYS = ["boxFR", "boxFL", "boxRR", "boxRL"];
 
     const quizAnswers = QUIZ_CASES.map(() => ["", "", "", ""]);
     const quizCaseSolved = QUIZ_CASES.map(() => false);
@@ -1229,12 +1327,12 @@ Summarize:
       new THREE.BoxGeometry(0.08, 0.24, 0.035),
       new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.35, metalness: 0.2 })
     );
-    ledBody.position.set(0.62, 0.20, 2.08);
+    ledBody.position.set(0.62, 0.20, 1.95);
     drone.add(ledBody);
 
     const ledPurpleMat = new THREE.MeshBasicMaterial({ color: 0xc084fc, transparent: true, opacity: 1 });
     const frontLedRect = new THREE.Mesh(new THREE.PlaneGeometry(0.06, 0.20), ledPurpleMat);
-    frontLedRect.position.set(0.62, 0.20, 2.101);
+    frontLedRect.position.set(0.62, 0.20, 1.98);
     drone.add(frontLedRect);
 
     const frontLedGlow = new THREE.PointLight(0xc084fc, 0.8, 1.8, 2);
@@ -1348,6 +1446,8 @@ Summarize:
         blade.rotation.y = k * Math.PI;
         blade.rotation.x = (k === 0) ? pitch : -pitch;
         blade.castShadow = true;
+        blade.userData.isBlade = true;
+        blade.userData.baseColor = 0x23272f;
         spinner.add(blade);
       }
 
@@ -1482,6 +1582,25 @@ Summarize:
       for (let i = 0; i < 4; i++) addPropInstance(motorRequirements[i].isCW, motorRequirements[i].hasWhiteDot);
     }
 
+    function resetBladeColors() {
+      for (let i = 0; i < propStates.length; i++) {
+        propStates[i].root.traverse((obj) => {
+          if (!obj.isMesh || !obj.userData || !obj.userData.isBlade) return;
+          const baseHex = (typeof obj.userData.baseColor === "number") ? obj.userData.baseColor : 0x23272f;
+          if (obj.material && obj.material.color) obj.material.color.setHex(baseHex);
+        });
+      }
+    }
+
+    function setAttachedPropBladeColorByMotor(motorIndex, hexColor) {
+      const propIdx = motorOccupiedBy[motorIndex];
+      if (propIdx === null) return;
+      propStates[propIdx].root.traverse((obj) => {
+        if (!obj.isMesh || !obj.userData || !obj.userData.isBlade) return;
+        if (obj.material && obj.material.color) obj.material.color.setHex(hexColor);
+      });
+    }
+
     function propMatchesMotor(propIndex, motorIndex) {
       const p = propStates[propIndex];
       const req = motorRequirements[motorIndex];
@@ -1559,6 +1678,7 @@ Summarize:
     function detachAllPropsRandom() {
       stopDetachedFadeOut(false);
       resetAllPropsVisualState();
+      resetBladeColors();
       const spots = generateRandomDetachedSpots(propStates.length);
       for (let i = 0; i < propStates.length; i++) {
         placePropDetachedAtWorld(i, spots[i].clone());
@@ -1667,12 +1787,14 @@ Summarize:
     let congratsUntil = 0;
 
     const quizPanel = document.getElementById("quizPanel");
+    const quizHead = document.getElementById("quizHead");
     const quizTitle = document.getElementById("quizTitle");
     const quizSub = document.getElementById("quizSub");
     const quizHeadRow = document.getElementById("quizHeadRow");
     const quizBody = document.getElementById("quizBody");
     const quizFinal = document.getElementById("quizFinal");
     const quizCloseBtn = document.getElementById("quizCloseBtn");
+    const quizPrevBtn = document.getElementById("quizPrevBtn");
     const quizNextBtn = document.getElementById("quizNextBtn");
 
     const missionBox = document.getElementById("missionBox");
@@ -1699,8 +1821,148 @@ Summarize:
       h.tagEl = h.el.querySelector(".rot-tag");
     });
 
+    const speedOverlay = document.getElementById("speedOverlay");
+    const speedLabelDefs = [0, 1, 2, 3].map((m) => ({
+      motor: m,
+      el: speedOverlay.querySelector(`[data-motor="${m}"]`),
+      speed: "slow"
+    }));
+
     let hintsUnlocked = false;
     let hintsVisible = false;
+
+    const quizPanelDrag = {
+      active: false,
+      pointerId: null,
+      offsetX: 0,
+      offsetY: 0
+    };
+
+    function clampQuizPanelToViewport() {
+      if (!quizPanel) return;
+      const rect = quizPanel.getBoundingClientRect();
+      const maxLeft = Math.max(0, window.innerWidth - rect.width);
+      const maxTop = Math.max(0, window.innerHeight - rect.height);
+
+      let left = rect.left;
+      let top = rect.top;
+
+      left = THREE.MathUtils.clamp(left, 0, maxLeft);
+      top = THREE.MathUtils.clamp(top, 0, maxTop);
+
+      quizPanel.style.left = `${left}px`;
+      quizPanel.style.top = `${top}px`;
+      quizPanel.style.transform = "none";
+    }
+
+    function initQuizPanelDrag() {
+      if (!quizHead) return;
+
+      quizHead.addEventListener("pointerdown", (e) => {
+        if (e.target.closest("#quizCloseBtn")) return;
+        if (e.button !== 0 && e.pointerType === "mouse") return;
+
+        const rect = quizPanel.getBoundingClientRect();
+        quizPanel.style.left = `${rect.left}px`;
+        quizPanel.style.top = `${rect.top}px`;
+        quizPanel.style.transform = "none";
+
+        quizPanelDrag.active = true;
+        quizPanelDrag.pointerId = e.pointerId;
+        quizPanelDrag.offsetX = e.clientX - rect.left;
+        quizPanelDrag.offsetY = e.clientY - rect.top;
+
+        try { quizHead.setPointerCapture(e.pointerId); } catch (_) {}
+        e.preventDefault();
+      });
+
+      quizHead.addEventListener("pointermove", (e) => {
+        if (!quizPanelDrag.active) return;
+        if (quizPanelDrag.pointerId !== null && e.pointerId !== quizPanelDrag.pointerId) return;
+
+        const rect = quizPanel.getBoundingClientRect();
+        const maxLeft = Math.max(0, window.innerWidth - rect.width);
+        const maxTop = Math.max(0, window.innerHeight - rect.height);
+
+        const nextLeft = THREE.MathUtils.clamp(e.clientX - quizPanelDrag.offsetX, 0, maxLeft);
+        const nextTop = THREE.MathUtils.clamp(e.clientY - quizPanelDrag.offsetY, 0, maxTop);
+
+        quizPanel.style.left = `${nextLeft}px`;
+        quizPanel.style.top = `${nextTop}px`;
+        quizPanel.style.transform = "none";
+        e.preventDefault();
+      });
+
+      function endQuizDrag(e) {
+        if (!quizPanelDrag.active) return;
+        if (quizPanelDrag.pointerId !== null && e.pointerId !== quizPanelDrag.pointerId) return;
+        quizPanelDrag.active = false;
+        quizPanelDrag.pointerId = null;
+        try { quizHead.releasePointerCapture(e.pointerId); } catch (_) {}
+      }
+
+      quizHead.addEventListener("pointerup", endQuizDrag);
+      quizHead.addEventListener("pointercancel", endQuizDrag);
+      quizHead.addEventListener("lostpointercapture", () => {
+        quizPanelDrag.active = false;
+        quizPanelDrag.pointerId = null;
+      });
+    }
+
+    function getSpeedTagText(isFast, motorIndex) {
+      const speedKey = isFast ? "boxFast" : "boxSlow";
+      const motorKey = MOTOR_BOX_KEYS[motorIndex];
+      return `${t(speedKey)} ${t(motorKey)}`;
+    }
+
+    function updateSpeedTagTexts() {
+      speedLabelDefs.forEach((d) => {
+        const isFast = d.speed === "fast";
+        d.el.textContent = getSpeedTagText(isFast, d.motor);
+      });
+    }
+
+    function hideSpeedLabels() {
+      speedLabelDefs.forEach((d) => {
+        d.el.style.display = "none";
+      });
+    }
+
+    function applyQuizDemoPropVisuals(caseIndex) {
+      resetBladeColors();
+      hideSpeedLabels();
+
+const expected = QUIZ_CASES[caseIndex].expect;
+
+// Determine if this demo case is a Roll or Yaw action
+const key = QUIZ_CASES[caseIndex].key;
+const isRollOrYaw =
+  key === "rollLeft" || key === "rollRight" ||
+  key === "yawLeft"  || key === "yawRight";
+
+for (let m = 0; m < 4; m++) {
+  // original fast/slow from the quiz table
+  let isFast = expected[m] === "fast";
+
+  // swap meaning only for roll and yaw demos
+  if (isRollOrYaw) isFast = !isFast;
+
+  if (isFast) setAttachedPropBladeColorByMotor(m, 0xdc2626);
+  else setAttachedPropBladeColorByMotor(m, 0x23272f);
+
+  const d = speedLabelDefs[m];
+  d.speed = isFast ? "fast" : "slow";
+  d.el.textContent = getSpeedTagText(isFast, m);
+  d.el.classList.toggle("fast", isFast);
+  d.el.classList.toggle("slow", !isFast);
+  d.el.style.display = "block";
+}
+    }
+
+    function clearQuizDemoPropVisuals() {
+      resetBladeColors();
+      hideSpeedLabels();
+    }
 
     function updateHintTagTexts() {
       hintDefs.forEach((h) => {
@@ -1736,13 +1998,17 @@ Summarize:
             <span class="controls-detail-line">${t("controlsDesktopL3")}</span>
           </span>
         </div>
-        <div class="controls-row">
-          <span class="controls-label">${t("controlsTouchLabel")}</span>
-          <span class="controls-detail">
-            <span class="controls-detail-line">${t("controlsTouchL1")}</span>
-            <span class="controls-detail-line">${t("controlsTouchL2")}</span>
-          </span>
-        </div>
+
+    <div class="controls-row">
+      <span class="controls-label">${t("controlsTouchLabel")}</span>
+      <span class="controls-detail">
+        <span class="controls-detail-line">${t("controlsTouchL1")}</span>
+        <span class="controls-detail-line">${t("controlsTouchL2")}</span>
+      </span>
+    </div>
+    <div class="controls-cover-toggle">
+      ${t("controlsCoverToggle")}
+    </div>
       `;
     }
 
@@ -1872,8 +2138,9 @@ Summarize:
       quizDemo.startPos.copy(drone.position);
       quizDemo.startRot.copy(drone.rotation);
       quizDemo.capY = null;
+      applyQuizDemoPropVisuals(caseIndex);
       setAction(actionFromCaseKey(quizDemo.key));
-      updateQuizNextButton();
+      updateQuizNavButtons();
       renderCurrentCaseHeaderCell();
     }
 
@@ -1890,10 +2157,21 @@ Summarize:
       return candidates[pick];
     }
 
-    function updateQuizNextButton() {
+    function updateQuizNavButtons() {
       const doneCount = completedQuizCount();
-      const canShow = quizCaseSolved[currentQuizCase] && doneCount < QUIZ_CASES.length && !quizDemo.active;
-      quizNextBtn.style.display = canShow ? "inline-flex" : "none";
+      const allDone = doneCount === QUIZ_CASES.length;
+      const canShowAdvance = quizCaseSolved[currentQuizCase] && doneCount < QUIZ_CASES.length && !quizDemo.active;
+
+      if (allDone) {
+        quizPrevBtn.style.display = "inline-flex";
+        quizNextBtn.style.display = "inline-flex";
+        quizPrevBtn.disabled = quizDemo.active || currentQuizCase <= 0;
+        quizNextBtn.disabled = quizDemo.active || currentQuizCase >= QUIZ_CASES.length - 1;
+      } else {
+        quizPrevBtn.style.display = "none";
+        quizNextBtn.style.display = canShowAdvance ? "inline-flex" : "none";
+        quizNextBtn.disabled = false;
+      }
     }
 
     function renderCurrentCaseHeaderCell() {
@@ -1979,7 +2257,7 @@ Summarize:
         quizBody.appendChild(tr);
       }
 
-      updateQuizNextButton();
+      updateQuizNavButtons();
     }
 
     function evaluateQuizTable() {
@@ -1991,11 +2269,17 @@ Summarize:
         const p = Number(td.dataset.prop);
         const ans = quizAnswers[m][p];
         const exp = QUIZ_CASES[m].expect[p];
-        td.classList.remove("quiz-cell-correct", "quiz-cell-wrong");
+        td.classList.remove("quiz-cell-correct", "quiz-cell-wrong", "quiz-cell-fast");
 
-        if (ans === exp) td.classList.add("quiz-cell-correct");
-        else if (ans !== "") { td.classList.add("quiz-cell-wrong"); allCorrectCurrent = false; }
-        else allCorrectCurrent = false;
+        if (ans === exp) {
+          td.classList.add("quiz-cell-correct");
+          if (exp === "fast") td.classList.add("quiz-cell-fast");
+        } else if (ans !== "") {
+          td.classList.add("quiz-cell-wrong");
+          allCorrectCurrent = false;
+        } else {
+          allCorrectCurrent = false;
+        }
       });
 
       const wasSolved = quizCaseSolved[m];
@@ -2018,11 +2302,27 @@ Summarize:
         quizFinal.style.display = "none";
       }
 
-      updateQuizNextButton();
+      updateQuizNavButtons();
       updateMissionBoxes();
     }
 
+    quizPrevBtn.addEventListener("click", () => {
+      if (!quizAllCorrect || quizDemo.active) return;
+      currentQuizCase = Math.max(0, currentQuizCase - 1);
+      renderQuizTable();
+      evaluateQuizTable();
+    });
+
     quizNextBtn.addEventListener("click", () => {
+      if (quizDemo.active) return;
+
+      if (quizAllCorrect) {
+        currentQuizCase = Math.min(QUIZ_CASES.length - 1, currentQuizCase + 1);
+        renderQuizTable();
+        evaluateQuizTable();
+        return;
+      }
+
       const next = randomNextUnsolvedCase();
       if (next === -1) return;
       currentQuizCase = next;
@@ -2174,6 +2474,7 @@ Summarize:
       stopDetachedFadeOut(true);
       setAction("actionNone");
       resetDroneAttitudeAndPose();
+      clearQuizDemoPropVisuals();
       detachAllPropsRandom();
     });
 
@@ -2199,6 +2500,7 @@ Summarize:
       quizDemo.caseIndex = -1;
       quizDemo.capY = null;
       quizPoseHold = false;
+      clearQuizDemoPropVisuals();
 
       stopDetachedFadeOut(true);
 
@@ -2215,6 +2517,11 @@ Summarize:
       quizAllCorrect = false;
       quizPanel.style.display = "none";
       quizFinal.style.display = "none";
+
+      // reset quiz panel position (default docking)
+      quizPanel.style.left = "";
+      quizPanel.style.top = "";
+      quizPanel.style.transform = "";
 
       colorIndex = 0;
       applyDroneColor(colorIndex);
@@ -2637,6 +2944,21 @@ Summarize:
       }
     }
 
+    function updateSpeedLabelPositions() {
+      for (const d of speedLabelDefs) {
+        if (d.el.style.display === "none") continue;
+        const anchor = getMotorMountWorld(d.motor).clone();
+        anchor.y += 0.62;
+        const p = projectWorldToScreen(anchor);
+        if (!p) {
+          d.el.style.display = "none";
+          continue;
+        }
+        d.el.style.left = `${p.x}px`;
+        d.el.style.top = `${p.y}px`;
+      }
+    }
+
     function rotateLocalToWorld(lx, lz, yaw) {
       const c = Math.cos(yaw);
       const s = Math.sin(yaw);
@@ -2929,8 +3251,9 @@ Summarize:
           quizDemo.active = false;
           spinFactor = 0;
           setAction("actionNone");
+          clearQuizDemoPropVisuals();
           renderCurrentCaseHeaderCell();
-          updateQuizNextButton();
+          updateQuizNavButtons();
         }
       } else {
         grid.position.x = 0;
@@ -2947,6 +3270,7 @@ Summarize:
 
       updateAttachedPropTransforms();
       updateRotationHintPositions();
+      updateSpeedLabelPositions();
 
       if (dragOutline) dragOutline.update();
       if (!dragging.active && performance.now() >= orbitUnlockAt) controls.enabled = true;
@@ -2966,6 +3290,7 @@ Summarize:
       renderControlsBox();
       authorSignature.textContent = t("authorSignature");
       updateHintTagTexts();
+      updateSpeedTagTexts();
 
       refreshButtonTexts();
       actionPill.textContent = t(currentActionKey);
@@ -2978,11 +3303,13 @@ Summarize:
 
     drawEduhkLabel("#111111");
     applyDroneColor(colorIndex);
+    initQuizPanelDrag();
     renderQuizTable();
     evaluateQuizTable();
     updateUIText();
     setAction("actionNone");
     applyHintsVisibility();
+    hideSpeedLabels();
     animate();
 
     window.addEventListener("resize", () => {
@@ -2990,6 +3317,8 @@ Summarize:
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
       updateRotationHintPositions();
+      updateSpeedLabelPositions();
+      if (quizPanel.style.transform === "none") clampQuizPanelToViewport();
     });
   </script>
 </body>
