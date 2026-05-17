@@ -127,6 +127,19 @@
       box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
     }
 
+    .multi-blade-btn {
+      position: fixed;
+      top: 108px;
+      right: 12px;
+      z-index: 31;
+      display: none;
+      min-width: 168px;
+      background: #2563eb;
+      color: #ffffff;
+      border-color: #1d4ed8;
+    }
+    .multi-blade-btn:hover { background: #1d4ed8; }
+
     .btn-wrap {
       position: fixed;
       right: 14px;
@@ -528,7 +541,7 @@
   padding-left: 0;
   width: 100%;
   text-align: left;
-  font-weight: 400; /* optional: match other detail text weight */
+  font-weight: 400;
 }
     .author-signature {
       margin-top: 10px;
@@ -658,6 +671,7 @@
 
       #tutorialBtn { min-width: 82px; }
       .mission-box { top: 46px; }
+      .multi-blade-btn { top: 92px; }
 
       .quiz-panel {
         left: 10px;
@@ -734,6 +748,7 @@
 
   <div id="missionProgressBox" class="mission-box mission-progress">Mission in progress</div>
   <div id="missionBox" class="mission-box mission-completed">Mission Completed</div>
+  <button id="multiBladeBtn" class="ui-btn multi-blade-btn">multi‑blade propellers</button>
 
   <div class="left-info-wrap">
     <div id="controlsBox" class="controls-box"></div>
@@ -829,6 +844,7 @@
         detached: "Propeller detached",
         colour: "Colour",
         reset: "Reset",
+        multiBlade: "multi‑blade propellers",
         instruction: "Drag propellers to motors, press Take off to test, and complete the table after success.",
         actionNone: "None",
         msgCongrats: "🎉 Great job! Correct setup verified and successful takeoff!",
@@ -939,6 +955,7 @@ Summarize:
         detached: "螺旋槳分離",
         colour: "顏色",
         reset: "重設",
+        multiBlade: "多槳葉螺旋槳",
         instruction: "拖曳螺旋槳到馬達，按「起飛」測試；成功後完成速度邏輯表。",
         actionNone: "無",
         msgCongrats: "🎉 做得很好！你已完成正確配置並成功起飛！",
@@ -1062,6 +1079,7 @@ Summarize:
     let currentQuizCase = 0;
     let quizUnlocked = false;
     let quizAllCorrect = false;
+    let firstSuccessAchieved = false;
 
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0xffffff);
@@ -1400,7 +1418,7 @@ Summarize:
       drone.add(arm);
     }
 
-    function createBladeGeometry({ length = 2.16, neckWidth = 0.16, maxWidth = 0.352, tipWidth = 0.12, thickness = 0.042, sweep = 0.08, mirror = false } = {}) {
+    function createBladeGeometry({ length = 2.16, neckWidth = 0.16, maxWidth = 0.352, tipWidth = 0.12, thickness = 0.042, sweep = 0.08, mirror = false, twist = 0 } = {}) {
       const s = new THREE.Shape();
       const sign = mirror ? -1 : 1;
       const y0 = (v) => v * sign;
@@ -1418,6 +1436,25 @@ Summarize:
       });
       extrude.rotateX(Math.PI / 2);
       extrude.translate(0, -thickness * 0.5, 0);
+
+      if (Math.abs(twist) > 0.0001) {
+        const pos = extrude.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+          const x = pos.getX(i);
+          const y = pos.getY(i);
+          const z = pos.getZ(i);
+          const u = THREE.MathUtils.clamp(x / length, 0, 1);
+          const a = twist * u;
+          const ca = Math.cos(a);
+          const sa = Math.sin(a);
+          const ny = y * ca - z * sa;
+          const nz = y * sa + z * ca;
+          pos.setY(i, ny);
+          pos.setZ(i, nz);
+        }
+        pos.needsUpdate = true;
+      }
+
       extrude.computeVertexNormals();
       return extrude;
     }
@@ -1511,6 +1548,85 @@ Summarize:
     const motorOccupiedBy = [null, null, null, null];
     let usedHiddenAutoSetup = false;
 
+    let propBladeMode = 2;
+
+    function bladeModeToConfig(mode) {
+      if (mode === 3) return { bladeCount: 3, lengthScale: 0.8 };
+      if (mode === 4) return { bladeCount: 4, lengthScale: 0.64 };
+      return { bladeCount: 2, lengthScale: 1.0 };
+    }
+
+    function getBladeModeSpinMultiplier() {
+      if (propBladeMode === 3) return 1.1;
+      if (propBladeMode === 4) return 1.2;
+      return 1.0;
+    }
+
+    function rebuildPropPickMeshes() {
+      propPickMeshes.length = 0;
+      for (let i = 0; i < propStates.length; i++) {
+        propStates[i].root.traverse((child) => {
+          if (child.isMesh) {
+            child.userData.propIndex = i;
+            propPickMeshes.push(child);
+          }
+        });
+      }
+    }
+
+    function rebuildPropellerBlades(propIndex, bladeCount, lengthScale) {
+      const s = propStates[propIndex];
+      const spinner = s.spinner;
+      const removed = [];
+
+      for (const child of spinner.children) {
+        if (child.userData && child.userData.isBlade) removed.push(child);
+      }
+
+      for (const blade of removed) {
+        spinner.remove(blade);
+        if (blade.geometry) blade.geometry.dispose();
+      }
+
+      const step = (Math.PI * 2) / bladeCount;
+      const pitch = s.isCW ? 0.22 : -0.22;
+
+      const twistForFlatBlades = s.isCW ? 0.28 : -0.28;
+      const bladeGeo = createBladeGeometry({
+        length: 2.16 * lengthScale,
+        mirror: !s.isCW,
+        twist: bladeCount >= 3 ? twistForFlatBlades : 0
+      });
+
+      for (let k = 0; k < bladeCount; k++) {
+        const blade = new THREE.Mesh(bladeGeo, propMat.clone());
+        blade.position.set(0.08, 0.02, 0);
+        blade.rotation.y = k * step;
+        if (bladeCount === 2) blade.rotation.x = (k === 0) ? pitch : -pitch;
+        else blade.rotation.x = 0;
+        blade.castShadow = true;
+        blade.userData.isBlade = true;
+        blade.userData.baseColor = 0x23272f;
+        spinner.add(blade);
+      }
+    }
+
+    function applyPropellerBladeMode(mode) {
+      const cfg = bladeModeToConfig(mode);
+      for (let i = 0; i < propStates.length; i++) {
+        rebuildPropellerBlades(i, cfg.bladeCount, cfg.lengthScale);
+      }
+      rebuildPropPickMeshes();
+      resetBladeColors();
+    }
+
+    function cyclePropellerBladeMode() {
+      if (propBladeMode === 2) propBladeMode = 3;
+      else if (propBladeMode === 3) propBladeMode = 4;
+      else propBladeMode = 2;
+      applyPropellerBladeMode(propBladeMode);
+    }
+
     function setPropOpacity(propIndex, alpha) {
       const s = propStates[propIndex];
       s.root.traverse((obj) => {
@@ -1581,6 +1697,7 @@ Summarize:
     for (let set = 0; set < 2; set++) {
       for (let i = 0; i < 4; i++) addPropInstance(motorRequirements[i].isCW, motorRequirements[i].hasWhiteDot);
     }
+    rebuildPropPickMeshes();
 
     function resetBladeColors() {
       for (let i = 0; i < propStates.length; i++) {
@@ -1799,6 +1916,7 @@ Summarize:
 
     const missionBox = document.getElementById("missionBox");
     const missionProgressBox = document.getElementById("missionProgressBox");
+    const multiBladeBtn = document.getElementById("multiBladeBtn");
 
     const tutorialModal = document.getElementById("tutorialModal");
     const tutorialTitle = document.getElementById("tutorialTitle");
@@ -1934,17 +2052,14 @@ Summarize:
 
 const expected = QUIZ_CASES[caseIndex].expect;
 
-// Determine if this demo case is a Roll or Yaw action
 const key = QUIZ_CASES[caseIndex].key;
 const isRollOrYaw =
   key === "rollLeft" || key === "rollRight" ||
   key === "yawLeft"  || key === "yawRight";
 
 for (let m = 0; m < 4; m++) {
-  // original fast/slow from the quiz table
   let isFast = expected[m] === "fast";
 
-  // swap meaning only for roll and yaw demos
   if (isRollOrYaw) isFast = !isFast;
 
   if (isFast) setAttachedPropBladeColorByMotor(m, 0xdc2626);
@@ -1975,9 +2090,9 @@ for (let m = 0; m < 4; m++) {
       else rotationHintsEl.classList.remove("active");
     }
 
-    function unlockHintsAndShow() {
+    function unlockHintsAfterFirstSuccess() {
       hintsUnlocked = true;
-      hintsVisible = true;
+      hintsVisible = false;
       applyHintsVisibility();
     }
 
@@ -2028,17 +2143,33 @@ for (let m = 0; m < 4; m++) {
       else actionPill.classList.remove("highlight");
     }
 
+    function updateDetachButtonState() {
+      detachBtn.disabled = (flightState !== "ground") || quizAllCorrect;
+    }
+
     function updateMissionBoxes() {
-      const panelShown = quizPanel.style.display === "block";
       missionBox.style.display = "none";
       missionProgressBox.style.display = "none";
-      if (!quizUnlocked || panelShown) return;
+      multiBladeBtn.style.display = "none";
+
+      if (!quizUnlocked) {
+        updateDetachButtonState();
+        return;
+      }
+
       if (quizAllCorrect) missionBox.style.display = "block";
       else missionProgressBox.style.display = "block";
+
+      multiBladeBtn.style.display = "block";
+      updateDetachButtonState();
     }
 
     missionBox.addEventListener("click", () => { quizPanel.style.display = "block"; updateMissionBoxes(); });
     missionProgressBox.addEventListener("click", () => { quizPanel.style.display = "block"; updateMissionBoxes(); });
+
+    multiBladeBtn.addEventListener("click", () => {
+      cyclePropellerBladeMode();
+    });
 
     function updateTutorialContent() {
       const steps = I18N[lang].tutSteps;
@@ -2056,6 +2187,8 @@ for (let m = 0; m < 4; m++) {
     tutorialModal.addEventListener("click", (e) => { if (e.target === tutorialModal) tutorialModal.classList.remove("show"); });
 
     function showCongrats() {
+      if (firstSuccessAchieved) return;
+      firstSuccessAchieved = true;
       congratsEl.textContent = t("msgCongrats");
       congratsUntil = performance.now() + 4400;
       congratsEl.style.display = "block";
@@ -2337,6 +2470,7 @@ for (let m = 0; m < 4; m++) {
     const landingDuration = 4.0;
     const failedSpinDuration = 3.0;
     const partialDuration = 2.0;
+    const throttleDownAboveGroundY = 0.32;
 
     let flightState = "ground";
     let stateTime = 0;
@@ -2373,14 +2507,17 @@ for (let m = 0; m < 4; m++) {
       detachBtn.textContent = t("detached");
       colorBtn.textContent = t("colour");
       resetBtn.textContent = t("reset");
+      multiBladeBtn.textContent = t("multiBlade");
     }
 
     function setState(next) {
       flightState = next;
       stateTime = 0;
       if (next === "landing") landingStartY = Math.max(0, drone.position.y);
-      if (next === "ground") quizPoseHold = false;
-      detachBtn.disabled = next !== "ground";
+      if (next === "ground") {
+        quizPoseHold = false;
+      }
+      updateDetachButtonState();
       if (next === "ground") settleGroundPose();
       refreshButtonTexts();
       if (next === "hover" && pendingCongrats) {
@@ -2393,8 +2530,8 @@ for (let m = 0; m < 4; m++) {
       flightAnchorPos.set(drone.position.x, 0, drone.position.z);
       flightAnchorYaw = drone.rotation.y;
       setAction("actionNormalFlight");
-      pendingCongrats = !usedHiddenAutoSetup;
-      unlockHintsAndShow();
+      pendingCongrats = !usedHiddenAutoSetup && !firstSuccessAchieved;
+      if (!usedHiddenAutoSetup && !firstSuccessAchieved) unlockHintsAfterFirstSuccess();
       quizPoseHold = false;
       startDetachedFadeOut();
       setState("takeoff");
@@ -2468,7 +2605,7 @@ for (let m = 0; m < 4; m++) {
     });
 
     detachBtn.addEventListener("click", () => {
-      if (flightState !== "ground") return;
+      if (flightState !== "ground" || quizAllCorrect) return;
       usedHiddenAutoSetup = false;
       quizPoseHold = false;
       stopDetachedFadeOut(true);
@@ -2493,6 +2630,7 @@ for (let m = 0; m < 4; m++) {
       partialMode = null;
       hoverPhase = 0;
       stateTime = 0;
+      firstSuccessAchieved = false;
 
       quizDemo.active = false;
       quizDemo.key = null;
@@ -2518,7 +2656,9 @@ for (let m = 0; m < 4; m++) {
       quizPanel.style.display = "none";
       quizFinal.style.display = "none";
 
-      // reset quiz panel position (default docking)
+      propBladeMode = 2;
+      applyPropellerBladeMode(propBladeMode);
+
       quizPanel.style.left = "";
       quizPanel.style.top = "";
       quizPanel.style.transform = "";
@@ -2868,7 +3008,7 @@ for (let m = 0; m < 4; m++) {
     });
 
     renderer.domElement.addEventListener("dblclick", (e) => {
-      if (flightState !== "ground") return;
+      if (flightState !== "ground" || quizAllCorrect) return;
       if (e.pointerType === "mouse" && e.button !== 0) return;
 
       setPointerFromEvent(e);
@@ -3206,9 +3346,11 @@ for (let m = 0; m < 4; m++) {
             }
           }
         } else if (key === "throttleDown") {
-          const targetGround = 0;
-          const nextY = sy + (targetGround - sy) * p;
-          drone.position.y = Math.max(targetGround, nextY);
+          if (sy > throttleDownAboveGroundY) {
+            drone.position.y = sy + (throttleDownAboveGroundY - sy) * p;
+          } else {
+            drone.position.y = sy;
+          }
         } else if (key === "yawLeft") {
           drone.rotation.y = sry + yawDelta * p;
         } else if (key === "yawRight") {
@@ -3260,10 +3402,11 @@ for (let m = 0; m < 4; m++) {
         grid.position.z = 0;
       }
 
+      const spinModeMul = getBladeModeSpinMultiplier();
       for (let i = 0; i < propStates.length; i++) {
         const s = propStates[i];
         if (s.attachedMotor !== null) {
-          s.spinAngle += spinDir[s.attachedMotor] * baseSpin * spinFactor;
+          s.spinAngle += spinDir[s.attachedMotor] * baseSpin * spinFactor * spinModeMul;
           s.spinner.rotation.y = s.spinAngle;
         }
       }
@@ -3286,6 +3429,7 @@ for (let m = 0; m < 4; m++) {
       langBtn.textContent = t("languageToggle");
       missionBox.textContent = t("missionDone");
       missionProgressBox.textContent = t("missionProgress");
+      multiBladeBtn.textContent = t("multiBlade");
 
       renderControlsBox();
       authorSignature.textContent = t("authorSignature");
